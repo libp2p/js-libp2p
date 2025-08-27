@@ -105,20 +105,24 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
    * Create a new stream over this connection
    */
   newStream = async (protocols: string[], options: NewStreamOptions = {}): Promise<Stream> => {
-    if (this.status !== 'open') {
-      throw new ConnectionClosedError(`The connection is "${this.status}" and not "open"`)
+    if (this.muxer == null) {
+      throw new MuxerUnavailableError('Connection is not multiplexed')
     }
 
-    if (!Array.isArray(protocols)) {
-      protocols = [protocols]
+    if (this.muxer.status !== 'open') {
+      throw new ConnectionClosedError(`The connection muxer is "${this.muxer.status}" and not "open"`)
+    }
+
+    if (this.maConn.status !== 'open') {
+      throw new ConnectionClosedError(`The connection is "${this.status}" and not "open"`)
     }
 
     if (this.limits != null && options?.runOnLimitedConnection !== true) {
       throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
     }
 
-    if (this.muxer == null) {
-      throw new MuxerUnavailableError('Connection is not multiplexed')
+    if (!Array.isArray(protocols)) {
+      protocols = [protocols]
     }
 
     this.log.trace('starting new stream for protocols %s', protocols)

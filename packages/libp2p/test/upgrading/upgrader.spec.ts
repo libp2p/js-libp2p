@@ -383,6 +383,7 @@ describe('upgrader', () => {
         stubInterface<StreamMuxerFactory>({
           protocol: muxerProtocol,
           createStreamMuxer: () => stubInterface<StreamMuxer>({
+            status: 'open',
             createStream: () => {
               return outboundStream
             }
@@ -420,6 +421,7 @@ describe('upgrader', () => {
         stubInterface<StreamMuxerFactory>({
           protocol: muxerProtocol,
           createStreamMuxer: () => stubInterface<StreamMuxer>({
+            status: 'open',
             createStream: () => {
               return outboundStream
             }

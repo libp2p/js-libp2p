@@ -77,6 +77,13 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
 
         yield event.detail
       }
+    } catch (err: any) {
+      // test for walk:error event
+      if (err.detail != null) {
+        throw err.detail
+      }
+
+      throw err
     } finally {
       signal.clear()
       this.walkers--

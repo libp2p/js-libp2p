@@ -1,7 +1,6 @@
-import { StreamCloseEvent, TypedEventEmitter } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
+import { StreamCloseEvent } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { echoStream, streamPair, echo } from '@libp2p/utils'
+import { echoStream, streamPair, echo, multiaddrConnectionPair, mockMuxer } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
@@ -12,7 +11,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createConnection } from '../../src/connection.js'
 import { UnhandledProtocolError } from '../../src/errors.ts'
 import type { ConnectionComponents, ConnectionInit } from '../../src/connection.js'
-import type { MultiaddrConnection, PeerStore, StreamMuxer, StreamMuxerEvents } from '@libp2p/interface'
+import type { MultiaddrConnection, PeerStore, StreamMuxer } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -23,14 +22,13 @@ describe('connection', () => {
   let peerStore: StubbedInstance<PeerStore>
   let registrar: StubbedInstance<Registrar>
   let init: ConnectionInit
-  let muxer: StubbedInstance<StreamMuxer>
-  let maConn: StubbedInstance<MultiaddrConnection>
+  let muxer: StreamMuxer
+  let maConn: MultiaddrConnection
 
   beforeEach(async () => {
-    maConn = stubInterface<MultiaddrConnection>({
-      remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/1234'),
-      log: defaultLogger().forComponent('libp2p:maconn')
-    })
+    const [outgoing, incoming] = multiaddrConnectionPair()
+
+    maConn = outgoing
     peerStore = stubInterface<PeerStore>()
     registrar = stubInterface<Registrar>()
 
@@ -45,24 +43,12 @@ describe('connection', () => {
       peerStore,
       registrar
     }
-    muxer = stubInterface<StreamMuxer>({
-      streams: []
-    })
-    const emitter = new TypedEventEmitter<StreamMuxerEvents>()
-    muxer.addEventListener.callsFake(emitter.addEventListener.bind(emitter))
-    muxer.dispatchEvent.callsFake(emitter.dispatchEvent.bind(emitter))
-    muxer.safeDispatchEvent.callsFake(emitter.safeDispatchEvent.bind(emitter))
 
-    muxer.createStream.callsFake(async () => {
-      const stream = await echoStream()
-      muxer.streams.push(stream)
+    const muxerFactory = mockMuxer()
+    muxer = muxerFactory.createStreamMuxer(outgoing)
 
-      stream.addEventListener('close', () => {
-        muxer.streams = muxer.streams.filter(s => s !== stream)
-      })
-
-      return stream
-    })
+    // create remote muxer
+    muxerFactory.createStreamMuxer(incoming)
 
     init = {
       id: '',
@@ -109,7 +95,6 @@ describe('connection', () => {
     expect(connection.remotePeer).to.exist()
     expect(connection.remoteAddr).to.exist()
     expect(connection.status).to.equal('open')
-    expect(connection).to.have.property('status', 'open')
     expect(connection.direction).to.exist()
     expect(connection.streams).to.eql([])
   })
@@ -147,7 +132,7 @@ describe('connection', () => {
   })
 
   it('should be able to close the connection after opening a stream', async () => {
-    muxer.createStream.resolves(echoStream())
+    muxer.createStream = () => echoStream()
     registrar.getHandler.withArgs(ECHO_PROTOCOL).returns({
       handler (stream): void {
         echo(stream)

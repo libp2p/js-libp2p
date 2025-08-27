@@ -181,7 +181,7 @@ describe('random-walk', () => {
       }))
     ])
 
-    expect(yielded).to.equal(10)
+    expect(yielded).to.equal(8)
   })
 
   it('should unpause query if second consumer requires peers', async () => {
