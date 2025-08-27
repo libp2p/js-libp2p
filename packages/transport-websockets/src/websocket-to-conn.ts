@@ -39,7 +39,7 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     let buf: Uint8Array
 
     if (evt.data instanceof Blob) {
-      buf = await evt.data.bytes()
+      buf = new Uint8Array(await evt.data.arrayBuffer())
     } else if (typeof evt.data === 'string') {
       buf = uint8ArrayFromString(evt.data)
     } else {
