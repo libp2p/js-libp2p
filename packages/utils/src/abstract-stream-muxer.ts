@@ -19,12 +19,6 @@ export interface AbstractStreamMuxerInit extends StreamMuxerOptions {
   name: string
 
   /**
-   * How many streams are allowed to be created before an event listener is
-   * added for the 'stream' event
-   */
-  maxEarlyStreams?: number
-
-  /**
    * A counter for muxer metrics
    */
   metrics?: CounterGroup
@@ -165,8 +159,8 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
       // to emit it later
       this.earlyStreams.push(stream)
 
-      if (this.earlyStreams.length === this.maxEarlyStreams) {
-        this.abort(new MaxEarlyStreamsError('Too many early streams were opened'))
+      if (this.earlyStreams.length > this.maxEarlyStreams) {
+        this.abort(new MaxEarlyStreamsError(`Too many early streams were opened - ${this.earlyStreams.length}/${this.maxEarlyStreams}`))
       }
 
       return

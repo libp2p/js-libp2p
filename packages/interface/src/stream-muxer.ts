@@ -32,6 +32,30 @@ export interface StreamMuxerOptions {
    * @default 10
    */
   maxEarlyStreams?: number
+
+  /**
+   * Maximum size of a message in bytes that we'll send on a stream - this
+   * ensures that a single stream doesn't hog a connection
+   *
+   * @default 65_536
+   */
+  maxMessageSize?: number
+
+  /**
+   * Maximum number of concurrent inbound streams that we accept - if the peer
+   * tries to open more streams, those will be reset immediately
+   *
+   * @default 1_000
+   */
+  maxInboundStreams?: number
+
+  /**
+   * Maximum number of concurrent outbound streams that we accept - if the
+   * application tries to open more streams, the call to `newStream` will throw
+   *
+   * @default 1_000
+   */
+  maxOutboundStreams?: number
 }
 
 /**

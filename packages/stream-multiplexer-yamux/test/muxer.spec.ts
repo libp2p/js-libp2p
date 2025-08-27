@@ -109,7 +109,7 @@ describe('muxer', () => {
   })
 
   it('test max inbound streams', async () => {
-    server['config']['maxInboundStreams'] = 1
+    server['maxInboundStreams'] = 1
 
     await client.createStream()
     await client.createStream()
@@ -120,7 +120,7 @@ describe('muxer', () => {
   })
 
   it('test max outbound streams', async () => {
-    client['config']['maxOutboundStreams'] = 1
+    client['maxOutboundStreams'] = 1
 
     await client.createStream()
     await sleep(10)

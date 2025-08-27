@@ -296,20 +296,22 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       // make the 'drain' event slow to fire
       // @ts-expect-error private fields
-      outboundConnection.local.delay = 100
+      outboundConnection.local.delay = 1000
 
       inboundStream = streams[0]
       outboundStream = streams[1]
 
       // ensure there are bytes left in the write queue
       // @ts-expect-error private fields
-      outboundStream.maxChunkSize = chunkSize - 1
+      outboundStream.maxMessageSize = chunkSize - 1
 
       // fill the send buffer
       while (true) {
-        const sendMore = outboundStream.send(new Uint8Array(chunkSize))
+        const sendMore = outboundStream.send(new Uint8Array(chunkSize * 10))
 
         if (sendMore === false) {
+          expect(outboundStream).to.have.nested.property('writeBuffer.byteLength').that.is.greaterThan(0)
+
           break
         }
       }

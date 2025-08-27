@@ -21,8 +21,12 @@ describe('stream', () => {
 
   beforeEach(() => {
     ([inboundConnection, outboundConnection] = multiaddrConnectionPair())
-    client = new YamuxMuxer(inboundConnection)
-    server = new YamuxMuxer(outboundConnection)
+    client = new YamuxMuxer(inboundConnection, {
+      maxEarlyStreams: 2000
+    })
+    server = new YamuxMuxer(outboundConnection, {
+      maxEarlyStreams: 2000
+    })
   })
 
   afterEach(async () => {
@@ -124,7 +128,7 @@ describe('stream', () => {
 
   it('test many streams', async () => {
     for (let i = 0; i < 1000; i++) {
-      client.createStream()
+      await client.createStream()
     }
     await sleep(100)
 
@@ -210,7 +214,7 @@ describe('stream', () => {
 
     const s1 = server.streams[0]
     expect(s1).to.not.be.undefined()
-    expect(s1.readStatus).to.equal('closed')
+    expect(s1.readStatus).to.equal('readable')
     expect(s1.writeStatus).to.equal('writable')
   })
 
@@ -228,7 +232,7 @@ describe('stream', () => {
           const data = new Array(10).fill(new Uint8Array(s1['recvWindowCapacity'] * 2))
 
           for (const buf of data) {
-            c1['config']['maxMessageSize'] = s1['recvWindowCapacity'] * 2
+            c1['maxMessageSize'] = s1['recvWindowCapacity'] * 2
             c1['sendWindowCapacity'] = s1['recvWindowCapacity'] * 2
             const sendMore = c1.send(buf)
 

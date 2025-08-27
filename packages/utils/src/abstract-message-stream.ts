@@ -21,7 +21,7 @@ export interface MessageStreamInit extends StreamOptions {
    * By default all available bytes are passed to the `sendData` method of
    * extending classes, if smaller chunks are required, pass a value here.
    */
-  maxChunkSize?: number
+  maxMessageSize?: number
 }
 
 export interface SendResult {
@@ -44,7 +44,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   public maxReadBufferLength: number
   public readonly log: Logger
   public direction: MessageStreamDirection
-  public maxChunkSize?: number
+  public maxMessageSize?: number
 
   public readStatus: MessageStreamReadStatus
   public writeStatus: MessageStreamWriteStatus
@@ -67,7 +67,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.direction = init.direction ?? 'outbound'
     this.inactivityTimeout = init.inactivityTimeout ?? 120_000
     this.maxReadBufferLength = init.maxReadBufferLength ?? DEFAULT_MAX_PAUSE_BUFFER_LENGTH
-    this.maxChunkSize = init.maxChunkSize
+    this.maxMessageSize = init.maxMessageSize
     this.readBuffer = new Uint8ArrayList()
     this.writeBuffer = new Uint8ArrayList()
 
@@ -383,7 +383,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     let canSendMore = true
 
     while (this.writeBuffer.byteLength > 0) {
-      const toSend = this.writeBuffer.sublist(0, Math.min(this.maxChunkSize ?? this.writeBuffer.byteLength, this.writeBuffer.byteLength))
+      const toSend = this.writeBuffer.sublist(0, Math.min(this.maxMessageSize ?? this.writeBuffer.byteLength, this.writeBuffer.byteLength))
       const sendResult = this.sendData(toSend)
       canSendMore = sendResult.canSendMore
 

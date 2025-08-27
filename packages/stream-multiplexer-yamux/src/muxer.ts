@@ -64,8 +64,6 @@ export interface ActivePing extends PromiseWithResolvers<number> {
 }
 
 export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
-  private readonly config: Config
-
   /** The next stream id to be used when initiating a new stream */
   private nextStreamID: number
 
@@ -90,15 +88,25 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
   private decoder: Decoder
   private keepAlive?: RepeatingTask
 
+  private enableKeepAlive: boolean
+  private keepAliveInterval: number
+  private maxInboundStreams: number
+  private maxOutboundStreams: number
+
   constructor (maConn: MessageStream, init: YamuxMuxerInit = {}) {
     super(maConn, {
+      ...init,
       protocol: YAMUX_PROTOCOL_ID,
       name: 'yamux'
     })
 
     this.client = maConn.direction === 'outbound'
-    this.config = { ...defaultConfig, ...init }
-    verifyConfig(this.config)
+    verifyConfig(init)
+
+    this.enableKeepAlive = init.enableKeepAlive ?? defaultConfig.enableKeepAlive
+    this.keepAliveInterval = init.keepAliveInterval ?? defaultConfig.keepAliveInterval
+    this.maxInboundStreams = init.maxInboundStreams ?? defaultConfig.maxInboundStreams
+    this.maxOutboundStreams = init.maxOutboundStreams ?? defaultConfig.maxOutboundStreams
 
     this.decoder = new Decoder()
 
@@ -113,8 +121,8 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
 
     this.log.trace('muxer created')
 
-    if (this.config.enableKeepAlive) {
-      this.log.trace('muxer keepalive enabled interval=%s', this.config.keepAliveInterval)
+    if (this.enableKeepAlive) {
+      this.log.trace('muxer keepalive enabled interval=%s', this.keepAliveInterval)
       this.keepAlive = repeatingTask(async (options) => {
         try {
           await this.ping(options)
@@ -122,7 +130,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
           // TODO: should abort here?
           this.log.error('ping error: %s', err)
         }
-      }, this.config.keepAliveInterval, {
+      }, this.keepAliveInterval, {
         // send an initial ping to establish RTT
         runImmediately: true
       })
@@ -149,7 +157,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     this.nextStreamID += 2
 
     // check against our configured maximum number of outbound streams
-    if (this.numOutboundStreams >= this.config.maxOutboundStreams) {
+    if (this.numOutboundStreams >= this.maxOutboundStreams) {
       throw new TooManyOutboundProtocolStreamsError('max outbound streams exceeded')
     }
 
@@ -291,7 +299,6 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
       direction,
       sendFrame: this.sendFrame.bind(this),
       log: this.log.newScope(`${direction}:${streamId}`),
-      config: this.config,
       getRTT: this.getRTT.bind(this)
     })
 
@@ -435,7 +442,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     }
 
     // check against our configured maximum number of inbound streams
-    if (this.numInboundStreams >= this.config.maxInboundStreams) {
+    if (this.numInboundStreams >= this.maxInboundStreams) {
       this.log('maxIncomingStreams exceeded, forcing stream reset')
       this.sendFrame({
         type: FrameType.WindowUpdate,

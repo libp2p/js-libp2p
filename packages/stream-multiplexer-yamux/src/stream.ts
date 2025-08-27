@@ -1,10 +1,10 @@
 import { AbstractStream } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { defaultConfig } from './config.js'
 import { INITIAL_STREAM_WINDOW } from './constants.js'
 import { isDataFrame } from './decode.ts'
 import { InvalidFrameError, ReceiveWindowExceededError } from './errors.js'
 import { Flag, FrameType, HEADER_LENGTH } from './frame.js'
-import type { Config } from './config.js'
 import type { Frame } from './decode.ts'
 import type { FrameHeader } from './frame.js'
 import type { AbortOptions } from '@libp2p/interface'
@@ -23,7 +23,9 @@ export interface YamuxStreamInit extends AbstractStreamInit {
   streamId: number
   sendFrame(header: FrameHeader, body?: Uint8ArrayList): boolean
   getRTT(): number
-  config: Config
+  initialStreamWindowSize?: number
+  maxMessageSize?: number
+  maxStreamWindowSize?: number
   state: StreamState
 }
 
@@ -32,14 +34,13 @@ export class YamuxStream extends AbstractStream {
   streamId: number
   state: StreamState
 
-  private readonly config: Config
-
   /** The number of available bytes to send */
   private sendWindowCapacity: number
   /** The number of bytes available to receive in a full window */
   private recvWindow: number
   /** The number of available bytes to receive */
   private recvWindowCapacity: number
+  private maxStreamWindowSize: number
 
   /**
    * An 'epoch' is the time it takes to process and read data
@@ -52,14 +53,17 @@ export class YamuxStream extends AbstractStream {
   private readonly sendFrame: (header: FrameHeader, body?: Uint8ArrayList) => boolean
 
   constructor (init: YamuxStreamInit) {
-    super(init)
+    super({
+      ...init,
+      maxMessageSize: (init.maxMessageSize ?? defaultConfig.maxMessageSize) - HEADER_LENGTH
+    })
 
-    this.config = init.config
     this.streamId = init.streamId
     this.state = init.state
     this.sendWindowCapacity = INITIAL_STREAM_WINDOW
-    this.recvWindow = this.config.initialStreamWindowSize
+    this.recvWindow = init.initialStreamWindowSize ?? defaultConfig.initialStreamWindowSize
     this.recvWindowCapacity = this.recvWindow
+    this.maxStreamWindowSize = init.maxStreamWindowSize ?? defaultConfig.maxStreamWindowSize
     this.epochStart = Date.now()
     this.getRTT = init.getRTT
     this.sendFrame = init.sendFrame
@@ -88,7 +92,7 @@ export class YamuxStream extends AbstractStream {
       }
 
       // send as much as we can
-      const toSend = Math.min(this.sendWindowCapacity, this.config.maxMessageSize - HEADER_LENGTH, buf.length)
+      const toSend = Math.min(this.sendWindowCapacity, buf.length)
       const flags = this.getSendFlags()
 
       const muxerSendMore = this.sendFrame({
@@ -258,7 +262,7 @@ export class YamuxStream extends AbstractStream {
     const rtt = this.getRTT()
     if (flags === 0 && rtt > -1 && now - this.epochStart < rtt * 4) {
       // we've already validated that maxStreamWindowSize can't be more than MAX_UINT32
-      this.recvWindow = Math.min(this.recvWindow * 2, this.config.maxStreamWindowSize)
+      this.recvWindow = Math.min(this.recvWindow * 2, this.maxStreamWindowSize)
     }
 
     if (this.recvWindowCapacity >= this.recvWindow && flags === 0) {

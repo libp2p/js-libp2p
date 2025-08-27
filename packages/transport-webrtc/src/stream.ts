@@ -40,7 +40,7 @@ export class WebRTCStream extends AbstractStream {
   constructor (init: WebRTCStreamInit) {
     super({
       ...init,
-      maxChunkSize: (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD
+      maxMessageSize: (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD
     })
 
     this.channel = init.channel
