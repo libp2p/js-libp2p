@@ -1,5 +1,5 @@
 import { isIPv4 } from '@chainsafe/is-ip'
-import { IceUdpMuxListener } from '@ipshipyard/node-datachannel'
+import { IceUdpMuxListener } from 'node-datachannel'
 import type { Logger } from '@libp2p/interface'
 import type { AddressInfo } from 'node:net'
 

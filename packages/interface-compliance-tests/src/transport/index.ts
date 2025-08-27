@@ -413,7 +413,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       assertStreamClosed(remoteStream)
     })
 
-    it('can close local stream for writing and reading while a remote stream is writing using source/sink', async function () {
+    it('can close local stream for writing and reading while a remote stream is reading and writing', async function () {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       if (listener == null) {

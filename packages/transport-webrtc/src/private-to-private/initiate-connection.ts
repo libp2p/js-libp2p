@@ -66,6 +66,18 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
   const messageStream = pbStream(stream).pb(Message)
   const peerConnection = new RTCPeerConnection(rtcConfiguration)
+  peerConnection.addEventListener('connectionstatechange', () => {
+    switch (peerConnection.connectionState) {
+      case 'failed':
+      case 'disconnected':
+      case 'closed':
+        peerConnection.close()
+        break
+      default:
+        break
+    }
+  })
+
   const muxerFactory = new DataChannelMuxerFactory({
     peerConnection,
     dataChannelOptions: dataChannel

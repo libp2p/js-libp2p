@@ -2,7 +2,7 @@ import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.js'
-import type { PeerConnection } from '@ipshipyard/node-datachannel'
+import type { PeerConnection } from 'node-datachannel'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
 

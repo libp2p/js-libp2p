@@ -199,6 +199,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     })
   } catch (err) {
     handshakeDataChannel.close()
+    peerConnection.close()
 
     throw err
   }

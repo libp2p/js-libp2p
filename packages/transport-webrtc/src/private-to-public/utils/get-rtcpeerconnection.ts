@@ -1,10 +1,10 @@
-import { PeerConnection } from '@ipshipyard/node-datachannel'
-import { RTCPeerConnection } from '@ipshipyard/node-datachannel/polyfill'
+import { PeerConnection } from 'node-datachannel'
+import { RTCPeerConnection } from 'node-datachannel/polyfill'
 import { Crypto } from '@peculiar/webcrypto'
 import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
-import type { CertificateFingerprint } from '@ipshipyard/node-datachannel'
+import type { CertificateFingerprint } from 'node-datachannel'
 
 const crypto = new Crypto()
 
@@ -14,7 +14,7 @@ interface DirectRTCPeerConnectionInit extends RTCConfiguration {
 }
 
 export class DirectRTCPeerConnection extends RTCPeerConnection {
-  private readonly peerConnection: PeerConnection
+  private peerConnection: PeerConnection
   private readonly ufrag: string
 
   constructor (init: DirectRTCPeerConnectionInit) {
@@ -22,6 +22,19 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
 
     this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
+
+    // make sure C++ peer connection is garbage collected
+    this.addEventListener('connectionstatechange', () => {
+      switch (this.connectionState) {
+        case 'failed':
+        case 'disconnected':
+        case 'closed':
+          this.peerConnection.close()
+          break
+        default:
+          break
+      }
+    })
   }
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {

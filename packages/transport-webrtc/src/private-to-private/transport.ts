@@ -206,6 +206,17 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
 
   async _onProtocol (stream: Stream, connection: Connection, signal: AbortSignal): Promise<void> {
     const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration))
+    peerConnection.addEventListener('connectionstatechange', () => {
+      switch (peerConnection.connectionState) {
+        case 'failed':
+        case 'disconnected':
+        case 'closed':
+          peerConnection.close()
+          break
+        default:
+          break
+      }
+    })
     const muxerFactory = new DataChannelMuxerFactory({
       peerConnection,
       dataChannelOptions: this.init.dataChannel
