@@ -150,6 +150,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     options.events?.increment({ peer_connection: true })
 
     const muxerFactory = new DataChannelMuxerFactory({
+      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       metrics: options.events,
       dataChannelOptions: options.dataChannel

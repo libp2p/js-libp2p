@@ -218,6 +218,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       }
     })
     const muxerFactory = new DataChannelMuxerFactory({
+      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       dataChannelOptions: this.init.dataChannel
     })
