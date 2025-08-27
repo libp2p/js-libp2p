@@ -1,14 +1,16 @@
 import net from 'node:net'
 import { Duplex } from 'node:stream'
+import tls from 'node:tls'
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { InvalidCryptoExchangeError, StreamClosedError, UnexpectedPeerError, StreamMessageEvent } from '@libp2p/interface'
+import { InvalidCryptoExchangeError, UnexpectedPeerError, StreamMessageEvent } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
-import { AbstractMessageStream, socketWriter } from '@libp2p/utils'
+import { AbstractMessageStream } from '@libp2p/utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import * as asn1X509 from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import * as asn1js from 'asn1js'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -16,7 +18,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidCertificateError } from './errors.js'
 import { KeyType, PublicKey } from './pb/index.js'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions, MessageStream, StreamCloseEvent } from '@libp2p/interface'
-import type { SendResult, SocketWriter } from '@libp2p/utils'
+import type { SendResult } from '@libp2p/utils'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -84,7 +86,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   const remotePeerId = peerIdFromCID(remoteLibp2pPublicKey.toCID())
 
   if (expectedPeerId?.equals(remotePeerId) === false) {
-    log?.error('invalid peer id')
+    log?.error('invalid peer id - expected %p got %p', expectedPeerId, remotePeerId)
     throw new UnexpectedPeerError()
   }
 
@@ -202,33 +204,15 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
 
     socket.pause()
 
-    const cleanUp = (): void => {
-      stream.removeEventListener('drain', onDrain)
-      stream.removeEventListener('close', onClose)
-      stream.removeEventListener('message', onMessage)
-    }
-
-    const onDrain = (): void => {
-      cleanUp()
-      callback()
-      socket.resume()
-    }
-    const onClose = (evt: StreamCloseEvent): void => {
-      cleanUp()
-
-      if (evt.error != null) {
-        callback(evt.error)
-      } else {
-        callback(new StreamClosedError('Stream closed before write'))
-      }
-    }
-
-    stream.addEventListener('drain', onDrain, {
-      once: true
+    pEvent(stream, 'drain', {
+      rejectionEvents: ['close']
     })
-    stream.addEventListener('close', onClose, {
-      once: true
-    })
+      .then(() => {
+        socket.resume()
+        callback()
+      }, (err) => {
+        callback(err)
+      })
   }
 
   // pause incoming messages until pulled from duplex
@@ -245,12 +229,10 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
       stream.resume()
     },
     final (cb) {
-      stream.closeWrite()
+      stream.close()
         .then(() => cb(), (err) => cb(err))
     }
   })
-
-  // const writer = socketWriter(socket)
 
   const onMessage = (evt: StreamMessageEvent): void => {
     const buf = evt.data
@@ -270,28 +252,32 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
   }
   stream.addEventListener('message', onMessage)
 
+  const onClose = (evt: StreamCloseEvent): void => {
+    socket.destroy(evt.error)
+  }
+  stream.addEventListener('close', onClose)
+
   return socket
 }
 
-class EncryptedMessageStream extends AbstractMessageStream {
+class EncryptedMultiaddrConnection extends AbstractMessageStream {
   private socket: net.Socket
-  private writer: SocketWriter
 
   /**
    * @param stream - The maConn that encrypted data is transferred over
    * @param socket - Performs encryption/decryption
    */
-  constructor (stream: MessageStream, socket: net.Socket) {
+  constructor (stream: MessageStream, socket: tls.TLSSocket) {
     super({
       log: stream.log,
       inactivityTimeout: stream.inactivityTimeout,
-      maxPauseBufferLength: stream.maxPauseBufferLength,
+      maxReadBufferLength: stream.maxReadBufferLength,
       direction: stream.direction
     })
 
     this.socket = socket
-    this.writer = socketWriter(socket)
 
+    // accept decrypted data
     this.socket.on('data', (buf) => {
       this.onData(buf)
     })
@@ -299,22 +285,27 @@ class EncryptedMessageStream extends AbstractMessageStream {
       stream.abort(err)
     })
     this.socket.on('close', () => {
-      stream.closeWrite()
+      stream.close()
         .catch(err => {
           stream.abort(err)
         })
     })
+
+    // can accept more plaintext data
     this.socket.on('drain', () => {
       this.safeDispatchEvent('drain')
     })
 
-    stream.addEventListener('remoteCloseWrite', () => {
-      this.onRemoteCloseWrite()
+    stream.addEventListener('close', () => {
+      socket.destroy()
+      this.onTransportClosed()
     })
+  }
 
-    stream.addEventListener('remoteCloseRead', () => {
-      this.onRemoteCloseRead()
-    })
+  async close (options?: AbortOptions): Promise<void> {
+    this.socket.destroySoon()
+
+    await pEvent(this.socket, 'close', options)
   }
 
   sendPause (): void {
@@ -325,12 +316,8 @@ class EncryptedMessageStream extends AbstractMessageStream {
     this.socket.resume()
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    this.socket.end()
-    options?.signal?.throwIfAborted()
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
+  async sendClose (options?: AbortOptions): Promise<void> {
+    this.socket.destroySoon()
     options?.signal?.throwIfAborted()
   }
 
@@ -339,13 +326,25 @@ class EncryptedMessageStream extends AbstractMessageStream {
   }
 
   sendData (data: Uint8ArrayList): SendResult {
+    let sentBytes = 0
+    let canSendMore = true
+
+    for (const buf of data) {
+      sentBytes += buf.byteLength
+      canSendMore = this.socket.write(buf)
+
+      if (!canSendMore) {
+        break
+      }
+    }
+
     return {
-      sentBytes: data.byteLength,
-      canSendMore: this.writer.write(data)
+      sentBytes,
+      canSendMore
     }
   }
 }
 
-export function toMessageStream (stream: MessageStream, socket: net.Socket): MessageStream {
-  return new EncryptedMessageStream(stream, socket)
+export function toMessageStream (stream: MessageStream, socket: tls.TLSSocket): MessageStream {
+  return new EncryptedMultiaddrConnection(stream, socket)
 }

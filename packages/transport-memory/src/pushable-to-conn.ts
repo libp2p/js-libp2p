@@ -38,6 +38,8 @@ class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {
         })) {
           this.onData(buf)
         }
+
+        this.onTransportClosed()
       })
       .catch(err => {
         this.abort(err)
@@ -57,12 +59,8 @@ class MemoryMultiaddrConnection extends AbstractMultiaddrConnection {
     }
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+  async sendClose (options?: AbortOptions): Promise<void> {
     this.localPushable.end()
-    options?.signal?.throwIfAborted()
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
     options?.signal?.throwIfAborted()
   }
 

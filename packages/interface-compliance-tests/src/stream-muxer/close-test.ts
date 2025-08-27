@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import map from 'it-map'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message } from './fixtures/pb/message.js'
@@ -68,7 +68,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
             const sendMore = stream.send(buf)
 
             if (!sendMore) {
-              await raceEvent(stream, 'drain')
+              await pEvent(stream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
             }
           }
         })
@@ -78,8 +82,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       // Pause, and then close the dialer
       await delay(50)
-      await inboundConnection.closeWrite()
-      await outboundConnection.closeWrite()
+      await inboundConnection.close()
+      await outboundConnection.close()
       await delay(50)
 
       expect(openedStreams).to.have.equal(expectedStreams)
@@ -108,7 +112,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
             const sendMore = stream.send(buf)
 
             if (!sendMore) {
-              await raceEvent(stream, 'drain')
+              await pEvent(stream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
             }
           }
         })
@@ -146,10 +154,16 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const streamPipes = streams.map(async stream => {
         for await (const buf of infiniteRandom()) {
+          if (stream.writeStatus !== 'writable') {
+            break
+          }
+
           const sendMore = stream.send(buf)
 
           if (!sendMore) {
-            await stream.onDrain
+            await pEvent(stream, 'drain', {
+              rejectionEvents: ['close']
+            })
           }
         }
       })
@@ -220,8 +234,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const remoteStream = listener.streams[0]
 
       await Promise.all([
-        raceEvent(remoteStream, 'close'),
-        localStream.closeWrite()
+        pEvent(remoteStream, 'close'),
+        pEvent(localStream, 'close'),
+        localStream.close()
       ])
 
       expect(dialer.streams).to.have.lengthOf(streamCount - 1)
@@ -239,7 +254,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         void Promise.resolve().then(async () => {
           try {
             // Immediate close for write
-            await evt.detail.closeWrite({
+            await evt.detail.close({
               signal: AbortSignal.timeout(1_000)
             })
 
@@ -266,21 +281,25 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       for (const buf of data) {
         if (!stream.send(buf)) {
-          await raceEvent(stream, 'drain')
+          await pEvent(stream, 'drain', {
+            rejectionEvents: [
+              'close'
+            ]
+          })
         }
       }
 
-      await stream.closeWrite({
+      await stream.close({
         signal: AbortSignal.timeout(1_000)
       })
 
       const err = await deferred.promise
-      expect(err).to.have.property('name', 'StreamClosedError')
+      expect(err).to.have.property('name', 'StreamStateError')
     })
 
     it('should emit a close event for closed streams not previously written', async () => {
       listener.addEventListener('stream', async (evt) => {
-        void evt.detail.closeWrite()
+        void evt.detail.close()
       })
 
       const deferred = Promise.withResolvers<void>()
@@ -289,7 +308,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         deferred.resolve()
       })
 
-      await stream.closeWrite()
+      await stream.close()
       await deferred.promise
     })
 
@@ -313,7 +332,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         void pb.read(Message)
           .then(async message => {
             deferred.resolve(message)
-            await evt.detail.closeWrite()
+            await evt.detail.close()
           })
           .catch(err => {
             deferred.reject(err)
@@ -330,7 +349,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       const pb = pbStream(stream)
       await pb.write(message, Message)
-      await stream.closeWrite()
+      await stream.close()
 
       await expect(deferred.promise).to.eventually.deep.equal(message)
     })
@@ -340,7 +359,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         listenerStream,
         dialerStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 
@@ -348,7 +367,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
 
       await Promise.all([
-        raceEvent(listenerStream, 'close'),
+        pEvent(listenerStream, 'close'),
         dialerStream.abort(new Error('Urk!'))
       ])
 
@@ -361,7 +380,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         listenerStream,
         dialerStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 
@@ -369,8 +388,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
 
       await Promise.all([
-        dialerStream.closeWrite(),
-        listenerStream.closeWrite()
+        dialerStream.close(),
+        listenerStream.close()
       ])
 
       await delay(10)
@@ -384,11 +403,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         listenerStream,
         dialerStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 
-      await dialerStream.closeWrite()
+      await dialerStream.close()
 
       expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
@@ -399,11 +418,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         listenerStream,
         dialerStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 
-      await listenerStream.closeWrite()
+      await listenerStream.close()
 
       expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
@@ -414,21 +433,21 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         listenerStream,
         dialerStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 
       expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
       expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
 
-      await listenerStream.closeWrite()
+      await listenerStream.close()
 
       expect(dialer.streams).to.include(dialerStream, 'dialer removed outbound stream before fully closing')
       expect(listener.streams).to.include(listenerStream, 'listener removed inbound stream before fully closing')
 
       await Promise.all([
-        raceEvent(listenerStream, 'close'),
-        dialerStream.closeWrite()
+        pEvent(listenerStream, 'close'),
+        dialerStream.close()
       ])
 
       await delay(10)

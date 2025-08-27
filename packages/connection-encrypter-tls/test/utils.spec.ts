@@ -1,11 +1,10 @@
 import { EventEmitter } from 'node:events'
-import net from 'node:net'
 import { logger } from '@libp2p/logger'
 import { streamPair } from '@libp2p/utils'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { expect } from 'aegir/chai'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.js'
@@ -102,7 +101,7 @@ describe('utils', () => {
       sent += buf.byteLength
 
       if (sendMore === false) {
-        await raceEvent(outboundSocket, 'drain')
+        await pEvent(outboundSocket, 'drain')
       }
     }
 
@@ -110,8 +109,8 @@ describe('utils', () => {
     inboundSocket.end()
 
     await Promise.all([
-      raceEvent(outboundStream, 'close'),
-      raceEvent(inboundStream, 'close')
+      pEvent(outboundStream, 'close'),
+      pEvent(inboundStream, 'close')
     ])
 
     expect(received).to.deep.equal(sent)
@@ -122,10 +121,10 @@ describe('utils', () => {
     const emitter = new EventEmitter()
 
     // close writable end of inbound stream
-    await inboundStream.closeWrite()
+    await inboundStream.close()
 
     // @ts-expect-error return types of emitter methods are incompatible
-    const socket = stubInterface<net.Socket>(emitter)
+    const socket = stubInterface<tls.TLSSocket>(emitter)
     const stream = toMessageStream(outboundStream, socket)
 
     const sent = new Array(1_000).fill(0).map(() => {
@@ -144,8 +143,8 @@ describe('utils', () => {
 
     emitter.emit('close')
 
-    await raceEvent(outboundStream, 'close')
+    await pEvent(outboundStream, 'close')
 
-    expect(received).to.deep.equal(sent)
+    expect(new Uint8ArrayList(...received).subarray()).to.equalBytes(new Uint8ArrayList(...sent).subarray())
   })
 })

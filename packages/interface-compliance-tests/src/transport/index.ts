@@ -1,13 +1,14 @@
-import { stop } from '@libp2p/interface'
+import { stop, TimeoutError } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import all from 'it-all'
 import drain from 'it-drain'
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
 import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
-import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader } from './utils.js'
 import type { TestSetup } from '../index.js'
@@ -75,6 +76,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     let listener: Libp2p<{ echo: Echo }> | undefined
     let dialAddrs: Multiaddr[]
     let dialMultiaddrMatcher: MultiaddrMatcher
+    let listenMultiaddrMatcher: MultiaddrMatcher
 
     afterEach(async () => {
       await stop(dialer, listener)
@@ -130,7 +132,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('should close all streams when the connection closes', async () => {
-      ({ dialer, listener, dialAddrs } = await getSetup(common))
+      ({ dialer, listener, dialAddrs, listenMultiaddrMatcher } = await getSetup(common))
 
       let incomingConnectionPromise: PromiseWithResolvers<Connection> | undefined
 
@@ -139,6 +141,10 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
         listener.addEventListener('connection:open', (event) => {
           const conn = event.detail
+
+          if (!listenMultiaddrMatcher.matches(conn.remoteAddr)) {
+            return
+          }
 
           if (conn.remotePeer.equals(dialer.peerId)) {
             incomingConnectionPromise?.resolve(conn)
@@ -159,22 +165,28 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         })
       }
 
-      const streams = connection.streams
-
-      // Close the connection and verify all streams have been closed
-      await connection.close()
-
-      await pWaitFor(() => connection.streams.length === 0, {
-        timeout: 5000
-      })
+      expect(connection).to.have.property('streams').that.has.lengthOf(5)
 
       if (remoteConn != null) {
-        await pWaitFor(() => remoteConn.streams.length === 0, {
+        await pWaitFor(() => remoteConn.streams.length === 5, {
           timeout: 5000
         })
       }
 
-      expect(streams.find(stream => stream.status === 'open')).to.be.undefined()
+      // Close the connection and verify all streams have been closed
+      await Promise.all([
+        pEvent(connection, 'close'),
+        pEvent(remoteConn ?? connection, 'close'),
+        connection.close()
+      ])
+
+      expect(connection).to.have.property('status', 'closed')
+      expect(connection).to.have.property('streams').that.is.empty()
+
+      if (remoteConn != null) {
+        expect(remoteConn).to.have.property('status', 'closed')
+        expect(remoteConn).to.have.property('streams').that.is.empty()
+      }
     })
 
     it('should not handle connection if upgradeInbound rejects', async function () {
@@ -226,17 +238,36 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       }
     })
 
+    it('should handle one small write', async function () {
+      const timeout = 120_000
+      this.timeout(timeout);
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      const connection = await dialer.dial(dialAddrs[0])
+
+      const input = new Uint8Array(1024).fill(5)
+      const output = await dialer.services.echo.echo(connection.remotePeer, input, {
+        signal: AbortSignal.timeout(timeout)
+      })
+
+      expect(output).to.equalBytes(input)
+      expect(connection.streams.filter(s => s.protocol === dialer.services.echo.protocol)).to.be.empty()
+    })
+
     it('should handle one big write', async function () {
       const timeout = 120_000
       this.timeout(timeout);
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
+      const connection = await dialer.dial(dialAddrs[0])
+
       const input = new Uint8Array(1024 * 1024 * 10).fill(5)
-      const output = await dialer.services.echo.echo(dialAddrs[0], input, {
+      const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
 
       expect(output).to.equalBytes(input)
+      expect(connection.streams.filter(s => s.protocol === dialer.services.echo.protocol)).to.be.empty()
     })
 
     it('should handle many small writes', async function () {
@@ -244,13 +275,17 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       this.timeout(timeout);
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
+      const connection = await dialer.dial(dialAddrs[0])
+      const echoProtocol = dialer.services.echo.protocol
+
       for (let i = 0; i < 2000; i++) {
         const input = new Uint8Array(1024).fill(5)
-        const output = await dialer.services.echo.echo(dialAddrs[0], input, {
+        const output = await dialer.services.echo.echo(connection.remotePeer, input, {
           signal: AbortSignal.timeout(timeout)
         })
 
         expect(output).to.equalBytes(input)
+        expect(connection.streams.filter(s => s.protocol === echoProtocol)).to.be.empty()
       }
     })
 
@@ -272,24 +307,27 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
           const sendMore = stream.send(new Uint8Array(chunkSize))
 
           if (!sendMore) {
-            await raceEvent(stream, 'drain')
+            await pEvent(stream, 'drain', {
+              rejectionEvents: [
+                'close'
+              ]
+            })
           }
         }
 
-        await stream.closeWrite()
+        await stream.close()
       })
 
       const stream = await dialer.dialProtocol(dialAddrs[0], protocol)
 
-      await stream.closeWrite()
+      const [
+        output
+      ] = await Promise.all([
+        all(stream),
+        stream.close()
+      ])
 
-      let read = 0
-
-      for await (const buf of stream) {
-        read += buf.byteLength
-      }
-
-      expect(read).to.equal(bytes)
+      expect(new Uint8ArrayList(...output).byteLength).to.equal(bytes)
     })
 
     it('can close local stream for writing and reading while a remote stream is writing', async function () {
@@ -327,7 +365,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // close the write end immediately
-      const p = stream.closeWrite()
+      const p = stream.close()
 
       const remoteStream = await getRemoteStream.promise
 
@@ -338,11 +376,15 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
           const sendMore = remoteStream.send(buf)
 
           if (sendMore === false) {
-            await raceEvent(stream, 'drain')
+            await pEvent(stream, 'drain', {
+              rejectionEvents: [
+                'close'
+              ]
+            })
           }
         }
 
-        await remoteStream.closeWrite()
+        await remoteStream.close()
       })
 
       // wait for remote to receive local close-write
@@ -405,7 +447,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-      const p = stream.closeWrite()
+      const p = stream.close()
 
       const remoteStream = await getRemoteStream.promise
 
@@ -422,7 +464,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       // remote closes write
-      await remoteStream.closeWrite()
+      await remoteStream.close()
 
       // wait to receive FIN_ACK
       await p
@@ -474,7 +516,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       await listener.start()
 
       await raceSignal(transportListeningPromise.promise, AbortSignal.timeout(1000), {
-        errorMessage: 'Did not emit listening event'
+        translateError: () => {
+          return new TimeoutError('Did not emit listening event')
+        }
       })
     })
 
@@ -499,7 +543,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       await listener.stop()
 
       await raceSignal(p, AbortSignal.timeout(1000), {
-        errorMessage: 'Did not emit close event'
+        translateError: () => {
+          return new TimeoutError('Did not emit close event')
+        }
       })
     })
   })
@@ -511,5 +557,4 @@ function assertStreamClosed (stream: Stream): void {
   expect(stream.writeStatus).to.equal('closed')
 
   expect(stream.timeline.close).to.be.a('number')
-  expect(stream.timeline.closeWrite).to.be.a('number')
 }

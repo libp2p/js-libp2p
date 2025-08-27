@@ -15,6 +15,9 @@ export interface SocketWriter {
   write (data: Uint8Array | Uint8Array[] | Uint8ArrayList): boolean
 }
 
+/**
+ * @deprecated delete if unused
+ */
 export function socketWriter (socket: stream.Duplex): SocketWriter {
   const queue = new Uint8ArrayList()
 

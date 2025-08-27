@@ -75,6 +75,7 @@ export class TCP implements Transport<TCPDialEvents> {
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true
     options.noDelay = options.noDelay ?? true
+    options.allowHalfOpen = options.allowHalfOpen ?? false
 
     // options.signal destroys the socket before 'connect' event
     const socket = await this._connect(ma, options)
@@ -88,7 +89,7 @@ export class TCP implements Transport<TCPDialEvents> {
         metrics: this.metrics?.events,
         direction: 'outbound',
         remoteAddr: ma,
-        log: this.components.logger.forComponent('libp2p:tcp:connection:outbound')
+        log: this.log.newScope('connection')
       })
     } catch (err: any) {
       this.metrics?.errors.increment({ outbound_to_connection: true })
@@ -120,7 +121,7 @@ export class TCP implements Transport<TCPDialEvents> {
         ...options
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
-      this.log('dialing %a', ma)
+      this.log('dialing %a with opts %o', ma, cOpts)
       rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {

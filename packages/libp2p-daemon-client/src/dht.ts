@@ -48,7 +48,7 @@ export class DHT {
 
     log('read', response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new ProtocolError(response.error?.msg ?? 'DHT put failed')
@@ -73,7 +73,7 @@ export class DHT {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'DHT get failed')
@@ -104,7 +104,7 @@ export class DHT {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'DHT find peer failed')
@@ -138,7 +138,7 @@ export class DHT {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'DHT provide failed')
@@ -166,7 +166,7 @@ export class DHT {
     const response = await sh.read(Response)
 
     if (response.type !== Response.Type.OK) {
-      await sh.unwrap().closeWrite()
+      await sh.unwrap().close()
       throw new OperationFailedError(response.error?.msg ?? 'DHT find providers failed')
     }
 
@@ -175,7 +175,7 @@ export class DHT {
 
       // Stream end
       if (dhtResponse.type === DHTResponse.Type.END) {
-        await sh.unwrap().closeWrite()
+        await sh.unwrap().close()
         return
       }
 
@@ -187,7 +187,7 @@ export class DHT {
         }
       } else {
         // Unexpected message received
-        await sh.unwrap().closeWrite()
+        await sh.unwrap().close()
         throw new ProtocolError('unexpected message received')
       }
     }
@@ -213,7 +213,7 @@ export class DHT {
     const response = await sh.read(Response)
 
     if (response.type !== Response.Type.OK) {
-      await sh.unwrap().closeWrite()
+      await sh.unwrap().close()
       throw new OperationFailedError(response.error?.msg ?? 'DHT find providers failed')
     }
 
@@ -222,7 +222,7 @@ export class DHT {
 
       // Stream end
       if (dhtResponse.type === DHTResponse.Type.END) {
-        await sh.unwrap().closeWrite()
+        await sh.unwrap().close()
         return
       }
 
@@ -236,7 +236,7 @@ export class DHT {
         }
       } else {
         // Unexpected message received
-        await sh.unwrap().closeWrite()
+        await sh.unwrap().close()
         throw new InvalidMessageError('unexpected message received')
       }
     }
@@ -260,7 +260,7 @@ export class DHT {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'DHT get public key failed')

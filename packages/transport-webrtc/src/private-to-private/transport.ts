@@ -186,7 +186,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       remoteAddr: remoteAddress,
       metrics: this.metrics?.dialerEvents,
       direction: 'outbound',
-      log: this.components.logger.forComponent('libp2p:webrtc:connection:outbound')
+      log: this.components.logger.forComponent('libp2p:webrtc:connection')
     })
 
     const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
@@ -219,7 +219,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       // close the stream if SDP messages have been exchanged successfully
-      await stream.closeWrite({
+      await stream.close({
         signal
       })
 
@@ -228,7 +228,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
         remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents,
         direction: 'inbound',
-        log: this.components.logger.forComponent('libp2p:webrtc:connection:inbound')
+        log: this.components.logger.forComponent('libp2p:webrtc:connection')
       })
 
       await this.components.upgrader.upgradeInbound(webRTCConn, {
@@ -253,7 +253,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
   private _closeOnShutdown (pc: RTCPeerConnection, webRTCConn: MultiaddrConnection): void {
     // close the connection on shut down
     const shutDownListener = (): void => {
-      webRTCConn.closeWrite()
+      webRTCConn.close()
         .catch(err => {
           this.log.error('could not close WebRTCMultiaddrConnection', err)
         })

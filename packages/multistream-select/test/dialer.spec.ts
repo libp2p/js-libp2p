@@ -32,8 +32,8 @@ describe('Dialer', () => {
       }
 
       await Promise.all([
-        outgoingStream.closeWrite(),
-        incomingStream.closeWrite()
+        outgoingStream.close(),
+        incomingStream.close()
       ])
 
       const output = all(incomingStream)
@@ -62,7 +62,7 @@ describe('Dialer', () => {
       ])
       expect(selection).to.equal(protocol)
 
-      await outgoingStream.closeWrite()
+      await outgoingStream.close()
 
       const output = new Uint8ArrayList()
       outgoingStream.addEventListener('message', (evt) => {
@@ -83,7 +83,7 @@ describe('Dialer', () => {
 
       await Promise.all([
         pEvent(outgoingStream, 'close'),
-        incomingStream.closeWrite(),
+        incomingStream.close(),
         receivedAllData.promise
       ])
 
@@ -130,8 +130,8 @@ describe('Dialer', () => {
       }
 
       await Promise.all([
-        outgoingStream.closeWrite(),
-        incomingStream.closeWrite()
+        outgoingStream.close(),
+        incomingStream.close()
       ])
 
       expect(new Uint8ArrayList(...(await output)).slice()).to.deep.equal(new Uint8ArrayList(...input).slice())
@@ -167,7 +167,7 @@ describe('Dialer', () => {
           await pEvent(outgoingStream, 'drain')
         }
       }
-      await outgoingStream.closeWrite()
+      await outgoingStream.close()
 
       expect(new Uint8ArrayList(...(await output)).subarray()).to.equalBytes(new Uint8ArrayList(
         Uint8Array.from([19]),
@@ -198,7 +198,7 @@ describe('Dialer', () => {
           await pEvent(outgoingStream, 'drain')
         }
       }
-      await outgoingStream.closeWrite()
+      await outgoingStream.close()
 
       expect(new Uint8ArrayList(...(await output)).slice()).to.eql(new Uint8ArrayList(...input).slice())
     })

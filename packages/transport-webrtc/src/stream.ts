@@ -2,6 +2,7 @@ import { StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
+import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
@@ -33,58 +34,20 @@ export class WebRTCStream extends AbstractStream {
    * and then the protobuf decoder.
    */
   private readonly incomingData: Pushable<Uint8Array>
-
   private readonly maxBufferedAmount: number
-
-  /**
-   * The maximum size of a message in bytes
-   */
-  private readonly maxMessageSize: number
+  private readonly receivedFinAck: PromiseWithResolvers<void>
 
   constructor (init: WebRTCStreamInit) {
-    /*
-    // override onEnd to send/receive FIN_ACK before closing the stream
-    const originalOnEnd = init.onEnd
-    init.onEnd = (err?: Error): void => {
-      this.log.trace('readable and writeable ends closed with status "%s"', this.status)
-
-      void Promise.resolve(async () => {
-        if (this.timeline.abort != null || this.timeline.reset !== null) {
-          return
-        }
-
-        // wait for FIN_ACK if we haven't received it already
-        try {
-          await pTimeout(this.receiveFinAck.promise, {
-            milliseconds: this.finAckTimeout
-          })
-        } catch (err) {
-          this.log.error('error receiving FIN_ACK', err)
-        }
-      })
-        .then(() => {
-          // stop processing incoming messages
-          this.incomingData.end()
-
-          // final cleanup
-          originalOnEnd?.(err)
-        })
-        .catch(err => {
-          this.log.error('error ending stream', err)
-        })
-        .finally(() => {
-          this.channel.close()
-        })
-    }
-    */
-
-    super(init)
+    super({
+      ...init,
+      maxChunkSize: (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD
+    })
 
     this.channel = init.channel
     this.channel.binaryType = 'arraybuffer'
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
-    this.maxMessageSize = (init.maxMessageSize ?? MAX_MESSAGE_SIZE) - PROTOBUF_OVERHEAD
+    this.receivedFinAck = Promise.withResolvers()
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -111,6 +74,7 @@ export class WebRTCStream extends AbstractStream {
       this.log.trace('received onclose event')
 
       this.onRemoteCloseWrite()
+      this.onTransportClosed()
     }
 
     this.channel.onerror = (evt) => {
@@ -130,6 +94,8 @@ export class WebRTCStream extends AbstractStream {
       this.incomingData.push(new Uint8Array(data, 0, data.byteLength))
     }
 
+    // dispatch drain event when the buffered amount drops to zero
+    this.channel.bufferedAmountLowThreshold = 0
     this.channel.onbufferedamountlow = () => {
       this.safeDispatchEvent('drain')
     }
@@ -150,6 +116,12 @@ export class WebRTCStream extends AbstractStream {
       .catch(err => {
         this.log.error('error processing incoming data channel messages', err)
       })
+
+    // clean up the datachannel when both ends have sent a FIN
+    const webRTCStreamOnClose = (): void => {
+      this.channel.close()
+    }
+    this.addEventListener('close', webRTCStreamOnClose)
   }
 
   sendNewStream (): void {
@@ -164,7 +136,9 @@ export class WebRTCStream extends AbstractStream {
     try {
       this.log.trace('sending message, channel state "%s"', this.channel.readyState)
       // send message without copying data
-      this.channel.send(data.subarray())
+      for (const buf of data) {
+        this.channel.send(buf)
+      }
     } catch (err: any) {
       this.log.error('error while sending message', err)
     }
@@ -179,11 +153,13 @@ export class WebRTCStream extends AbstractStream {
 
     return {
       sentBytes: data.byteLength,
-      canSendMore: this.channel.bufferedAmount > this.maxBufferedAmount
+      canSendMore: this.channel.bufferedAmount < this.maxBufferedAmount
     }
   }
 
   sendReset (): void {
+    this.receivedFinAck.resolve()
+
     try {
       this._sendFlag(Message.Flag.RESET)
     } catch (err) {
@@ -193,20 +169,20 @@ export class WebRTCStream extends AbstractStream {
     }
   }
 
-  async sendCloseWrite (options: AbortOptions): Promise<void> {
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
     if (this.channel.readyState === 'open') {
       this._sendFlag(Message.Flag.FIN)
     }
 
-    options.signal?.throwIfAborted()
+    await raceSignal(this.receivedFinAck.promise, options?.signal)
   }
 
-  async sendCloseRead (options: AbortOptions): Promise<void> {
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
     if (this.channel.readyState === 'open') {
       this._sendFlag(Message.Flag.STOP_SENDING)
     }
 
-    options.signal?.throwIfAborted()
+    options?.signal?.throwIfAborted()
   }
 
   /**
@@ -221,9 +197,11 @@ export class WebRTCStream extends AbstractStream {
       if (message.flag === Message.Flag.FIN) {
         // We should expect no more data from the remote, stop reading
         this.onRemoteCloseWrite()
+        this._sendFlag(Message.Flag.FIN_ACK)
       }
 
       if (message.flag === Message.Flag.RESET) {
+        this.receivedFinAck.resolve()
         // Stop reading and writing to the stream immediately
         this.onRemoteReset()
       }
@@ -232,10 +210,14 @@ export class WebRTCStream extends AbstractStream {
         // The remote has stopped reading
         this.onRemoteCloseRead()
       }
+
+      if (message.flag === Message.Flag.FIN_ACK) {
+        this.receivedFinAck.resolve()
+      }
     }
 
     // ignore data messages if we've closed the readable end already
-    if (this.readStatus === 'readable') {
+    if (this.readStatus === 'readable' || this.readStatus === 'paused') {
       return message.message
     }
   }
@@ -305,6 +287,7 @@ export function createStream (options: WebRTCStreamOptions): WebRTCStream {
   return new WebRTCStream({
     ...options,
     id: `${channel.id}`,
-    log: options.log.newScope(`${isHandshake === true ? 'handshake' : direction}:${channel.id}`)
+    log: options.log.newScope(`${isHandshake === true ? 'handshake' : direction}:${channel.id}`),
+    protocol: ''
   })
 }

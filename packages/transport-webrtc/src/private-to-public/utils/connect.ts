@@ -1,5 +1,5 @@
 import { noise } from '@chainsafe/libp2p-noise'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { WebRTCTransportError } from '../../error.js'
 import { DataChannelMuxerFactory } from '../../muxer.js'
 import { toMultiaddrConnection } from '../../rtcpeerconnection-to-conn.ts'
@@ -83,7 +83,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
 
     if (handshakeDataChannel.readyState !== 'open') {
       options.log.trace('%s wait for handshake channel to open, starting status %s', options.role, handshakeDataChannel.readyState)
-      await raceEvent(handshakeDataChannel, 'open', options.signal)
+      await pEvent(handshakeDataChannel, 'open', options)
     }
 
     options.log.trace('%s handshake channel opened', options.role)
@@ -128,7 +128,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       remoteAddr: options.remoteAddr,
       metrics: options.events,
       direction: options.role === 'client' ? 'outbound' : 'inbound',
-      log: options.logger.forComponent(`libp2p:webrtc-direct:connection:${options.role === 'client' ? 'outbound' : 'inbound'}`)
+      log: options.logger.forComponent('libp2p:webrtc-direct:connection')
     })
 
     peerConnection.addEventListener(CONNECTION_STATE_CHANGE_EVENT, () => {
@@ -136,7 +136,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
         case 'failed':
         case 'disconnected':
         case 'closed':
-          maConn.closeWrite().catch((err) => {
+          maConn.close().catch((err) => {
             options.log.error('error closing connection', err)
             maConn.abort(err)
           })

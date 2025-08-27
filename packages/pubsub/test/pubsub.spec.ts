@@ -180,9 +180,7 @@ describe('pubsub base implementation', () => {
       })
 
       afterEach(async () => {
-        try {
-          await stop(pubsubA, pubsubB)
-        } catch {}
+        await stop(pubsubA, pubsubB)
       })
 
       it('should send subscribe message to connected peers', async () => {

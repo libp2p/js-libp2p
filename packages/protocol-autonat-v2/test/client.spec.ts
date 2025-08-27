@@ -143,7 +143,7 @@ describe('autonat v2 - client', () => {
         }
       }
 
-      await incomingStream.closeWrite()
+      await incomingStream.close()
     })
 
     return connection

@@ -81,7 +81,7 @@ export class MemoryConnection {
     this.log = components.logger.forComponent('libp2p:memory')
   }
 
-  async dial (dialingPeerId: PeerId, signal: AbortSignal): Promise<MultiaddrConnection> {
+  async dial (dialingPeerId: PeerId, dialingPeerLog: Logger, signal: AbortSignal): Promise<MultiaddrConnection> {
     const self = this
 
     let dialerEnded = false
@@ -114,7 +114,7 @@ export class MemoryConnection {
       direction: 'outbound',
       localPushable: dialerPushable,
       remotePushable: listenerPushable,
-      log: this.log.newScope(`${connectionId}:outbound`)
+      log: dialingPeerLog.newScope(`connection:${connectionId}`)
     })
 
     const listener = pushableToMaConn({
@@ -123,7 +123,7 @@ export class MemoryConnection {
       direction: 'inbound',
       localPushable: listenerPushable,
       remotePushable: dialerPushable,
-      log: this.log.newScope(`${connectionId}:inbound`)
+      log: this.log.newScope(`connection:${connectionId}`)
     })
 
     this.connections.add(dialer)

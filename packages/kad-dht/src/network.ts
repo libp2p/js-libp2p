@@ -184,7 +184,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
       const response = await this._writeReadMessage(stream, msg, options)
 
-      stream.closeWrite(options)
+      stream.close(options)
         .catch(err => {
           this.log.error('error closing stream to %p', to, err)
           stream?.abort(err)
@@ -250,7 +250,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
       await this._writeMessage(stream, msg, options)
 
-      stream.closeWrite(options)
+      stream.close(options)
         .catch(err => {
           this.log.error('error closing stream to %p', to, err)
           stream?.abort(err)

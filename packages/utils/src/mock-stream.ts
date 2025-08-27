@@ -44,24 +44,12 @@ export class MockStream extends AbstractStream {
     })
 
     this.remote.addEventListener('message', (evt) => {
-      if (this.status !== 'open') {
-        return
-      }
-
       this.onData(evt.data)
     })
     this.remote.addEventListener('reset', (evt) => {
-      if (this.status !== 'open') {
-        return
-      }
-
       this.onRemoteReset()
     })
     this.remote.addEventListener('closeWrite', (evt) => {
-      if (this.status !== 'open') {
-        return
-      }
-
       this.onRemoteCloseWrite()
     })
   }

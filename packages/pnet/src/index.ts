@@ -61,7 +61,7 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { byteStream } from '@libp2p/utils'
 import { BoxMessageStream, decodeV1PSK } from './crypto.js'
 import { NONCE_LENGTH } from './key-generator.js'
-import type { ComponentLogger, ConnectionProtector, MultiaddrConnection, MessageStream, AbortOptions } from '@libp2p/interface'
+import type { ComponentLogger, ConnectionProtector, MultiaddrConnection, AbortOptions } from '@libp2p/interface'
 
 export { generateKey } from './key-generator.js'
 
@@ -107,7 +107,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
    * between its two peers from the PSK the Protector instance was
    * created with.
    */
-  async protect (connection: MultiaddrConnection, options?: AbortOptions): Promise<MessageStream> {
+  async protect (connection: MultiaddrConnection, options?: AbortOptions): Promise<MultiaddrConnection> {
     if (connection == null) {
       throw new InvalidParametersError('No connection for the handshake provided')
     }

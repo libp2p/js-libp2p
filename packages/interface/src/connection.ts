@@ -1,4 +1,4 @@
-import type { AbortOptions, Logger, TypedEventTarget, Stream, MessageStreamEvents, PeerId, MultiaddrConnectionDirection, MultiaddrConnectionTimeline, MessageStreamStatus } from './index.js'
+import type { AbortOptions, Logger, TypedEventTarget, Stream, MessageStreamEvents, PeerId, MultiaddrConnectionTimeline, MessageStreamStatus, MessageStreamDirection } from './index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export type ConnectionStatus = MessageStreamStatus
@@ -105,7 +105,7 @@ export interface Connection extends TypedEventTarget<Omit<MessageStreamEvents, '
   /**
    * Outbound connections are opened by the local node, inbound streams are opened by the remote
    */
-  direction: MultiaddrConnectionDirection
+  direction: MessageStreamDirection
 
   /**
    * When stream life cycle events occurred
@@ -128,6 +128,11 @@ export interface Connection extends TypedEventTarget<Omit<MessageStreamEvents, '
   status: ConnectionStatus
 
   /**
+   * Whether this connection is direct or, for example, is via a relay
+   */
+  direct: boolean
+
+  /**
    * If present, this connection has limits applied to it, perhaps by an
    * intermediate relay. Once the limits have been reached the connection will
    * be closed by the relay.
@@ -142,7 +147,7 @@ export interface Connection extends TypedEventTarget<Omit<MessageStreamEvents, '
   rtt?: number
 
   /**
-   * The connection logger
+   * The connection logger, used to log connection-specific information
    */
   log: Logger
 
@@ -152,13 +157,15 @@ export interface Connection extends TypedEventTarget<Omit<MessageStreamEvents, '
   newStream(protocols: string | string[], options?: NewStreamOptions): Promise<Stream>
 
   /**
-   * Gracefully close the connection. All queued data will be written to the
-   * underlying transport.
+   * Gracefully close the connection. The returned promise will resolve when all
+   * queued data has been written to the underlying transport. Any unread data
+   * will still be emitted as a 'message' event.
    */
   close(options?: AbortOptions): Promise<void>
 
   /**
-   * Immediately close the connection, any queued data will be discarded
+   * Immediately close the connection. Any data queued to be sent or read will
+   * be discarded.
    */
   abort(err: Error): void
 }

@@ -1,7 +1,8 @@
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { mockMuxer } from './mock-muxer.ts'
 import { multiaddrConnectionPair } from './multiaddr-connection-pair.ts'
 import { echo } from './stream-utils.ts'
+import type { MockMultiaddrConnectionInit } from './multiaddr-connection-pair.ts'
 import type { Stream, StreamOptions } from '@libp2p/interface'
 
 export interface StreamPairOptions {
@@ -29,9 +30,19 @@ export interface StreamPairOptions {
   outbound?: StreamOptions
 
   /**
+   * Configuration options for underlying inbound connection
+   */
+  outboundConnection?: Partial<MockMultiaddrConnectionInit>
+
+  /**
    * Configuration options for the outbound stream
    */
   inbound?: StreamOptions
+
+  /**
+   * Configuration options for underlying inbound connection
+   */
+  inboundConnection?: Partial<MockMultiaddrConnectionInit>
 }
 
 /**
@@ -39,7 +50,11 @@ export interface StreamPairOptions {
  * messages to simulate a network
  */
 export async function streamPair (opts: StreamPairOptions = {}): Promise<[Stream, Stream]> {
-  const [outboundConnection, inboundConnection] = multiaddrConnectionPair(opts)
+  const [outboundConnection, inboundConnection] = multiaddrConnectionPair({
+    ...opts,
+    outbound: opts.outboundConnection,
+    inbound: opts.inboundConnection
+  })
 
   const localMuxer = mockMuxer({
     streamOptions: opts.outbound
@@ -49,15 +64,15 @@ export async function streamPair (opts: StreamPairOptions = {}): Promise<[Stream
   }).createStreamMuxer(inboundConnection)
 
   const [
-    outboundStream,
-    inboundStream
+    inboundStream,
+    outboundStream
   ] = await Promise.all([
+    pEvent<'stream', CustomEvent<Stream>>(remoteMuxer, 'stream').then(evt => {
+      return evt.detail
+    }),
     localMuxer.createStream({
       ...opts.outbound,
       protocol: opts.protocol
-    }),
-    raceEvent<CustomEvent<Stream>>(remoteMuxer, 'stream').then(evt => {
-      return evt.detail
     })
   ])
 

@@ -147,7 +147,7 @@ describe('fetch', () => {
       await expect(fetch.fetch(remotePeer, key, {
         signal: AbortSignal.timeout(10)
       })).to.eventually.be.rejected
-        .with.property('name', 'AbortError')
+        .with.property('name', 'TimeoutError')
 
       expect(outgoingStream).to.have.property('status', 'aborted')
     })
@@ -244,7 +244,7 @@ describe('fetch', () => {
           errorPromise.resolve(err)
         })
 
-      await expect(errorPromise.promise).to.eventually.have.property('name', 'AbortError')
+      await expect(errorPromise.promise).to.eventually.have.property('name', 'TimeoutError')
     })
   })
 })

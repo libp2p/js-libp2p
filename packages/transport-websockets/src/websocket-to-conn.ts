@@ -24,9 +24,7 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
         return
       }
 
-      if (this.status === 'open') {
-        this.onRemoteCloseWrite()
-      }
+      this.onTransportClosed()
     }, { once: true })
 
     this.websocket.addEventListener('message', (evt) => {
@@ -66,12 +64,8 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     this.websocket.close(1006) // abnormal closure
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+  async sendClose (options?: AbortOptions): Promise<void> {
     this.websocket.close()
-    options?.signal?.throwIfAborted()
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
     options?.signal?.throwIfAborted()
   }
 

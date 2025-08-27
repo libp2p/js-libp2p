@@ -8,7 +8,7 @@ import { pEvent } from 'p-event'
 import { defaultConfig } from '../src/config.js'
 import { GoAwayCode } from '../src/frame.js'
 import { YamuxMuxer } from '../src/muxer.ts'
-import { StreamState } from '../src/stream.js'
+import { StreamState, YamuxStream } from '../src/stream.js'
 import { sleep } from './util.js'
 import type { MultiaddrConnection } from '@libp2p/interface'
 import type { Pushable } from 'it-pushable'
@@ -34,7 +34,7 @@ describe('stream', () => {
     const [
       s1, c1
     ] = await Promise.all([
-      pEvent(server, 'stream').then(evt => evt.detail),
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
       client.createStream()
     ])
 
@@ -48,7 +48,7 @@ describe('stream', () => {
           }
         }
 
-        await c1.closeWrite()
+        await c1.close()
       }),
       drain(s1)
     ])
@@ -62,7 +62,7 @@ describe('stream', () => {
     const [
       s1, c1
     ] = await Promise.all([
-      pEvent(server, 'stream').then(evt => evt.detail),
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
       client.createStream()
     ])
 
@@ -80,7 +80,7 @@ describe('stream', () => {
           }
         }
 
-        await c1.closeWrite()
+        await c1.close()
       }),
       drain(s1)
     ])
@@ -94,7 +94,7 @@ describe('stream', () => {
     const [
       s1, c1
     ] = await Promise.all([
-      pEvent(server, 'stream').then(evt => evt.detail),
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
       client.createStream(),
       server.ping()
     ])
@@ -112,7 +112,7 @@ describe('stream', () => {
             await pEvent(c1, 'drain')
           }
         }
-        await c1.closeWrite()
+        await c1.close()
       }),
       drain(s1)
     ])
@@ -163,11 +163,11 @@ describe('stream', () => {
   it('test stream close', async () => {
     server.addEventListener('stream', (evt) => {
       // close incoming streams
-      evt.detail.closeWrite()
+      evt.detail.close()
     })
 
     const c1 = await client.createStream()
-    await c1.closeWrite()
+    await c1.close()
     await sleep(100)
 
     expect(c1.state).to.equal(StreamState.Finished)
@@ -178,7 +178,7 @@ describe('stream', () => {
 
   it('test stream close write', async () => {
     const c1 = await client.createStream()
-    await c1.closeWrite()
+    await c1.close()
     await sleep(100)
 
     expect(c1.state).to.equal(StreamState.SYNSent)
@@ -202,7 +202,7 @@ describe('stream', () => {
 
   it('test stream close write', async () => {
     const c1 = await client.createStream()
-    await c1.closeWrite()
+    await c1.close()
     await sleep(5)
 
     expect(c1.readStatus).to.equal('readable')
@@ -218,7 +218,7 @@ describe('stream', () => {
     const [
       s1, c1
     ] = await Promise.all([
-      pEvent(server, 'stream').then(evt => evt.detail),
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
       client.createStream()
     ])
 
@@ -237,7 +237,7 @@ describe('stream', () => {
             }
           }
 
-          await c1.closeWrite()
+          await c1.close()
         })(),
         drain(s1)
       ])

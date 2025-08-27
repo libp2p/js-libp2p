@@ -1,13 +1,12 @@
-import { StreamMessageEvent, StreamCloseEvent } from '@libp2p/interface'
+import { StreamMessageEvent, StreamCloseEvent, InvalidParametersError } from '@libp2p/interface'
 import { pipe as itPipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
-import { raceEvent } from 'race-event'
 import { raceSignal } from 'race-signal'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { UnexpectedEOFError } from './errors.js'
-import type { MessageStream } from '@libp2p/interface'
+import type { MessageStream, MultiaddrConnection, Stream } from '@libp2p/interface'
 import type { AbortOptions } from '@multiformats/multiaddr'
 import type { Duplex, Source, Transform, Sink } from 'it-stream-types'
 
@@ -69,7 +68,7 @@ export interface ReadBytesOptions extends AbortOptions {
   bytes: number
 }
 
-export interface ByteStream<Stream extends MessageStream = MessageStream> {
+export interface ByteStream<S = Stream> {
   /**
    * Read bytes from the stream.
    *
@@ -93,16 +92,46 @@ export interface ByteStream<Stream extends MessageStream = MessageStream> {
    * will be emitted as a message event during the microtask queue of the
    * current event loop tick.
    */
-  unwrap(): Stream
+  unwrap(): S
 }
 
-export function byteStream <Stream extends MessageStream = MessageStream> (stream: Stream, opts?: ByteStreamOpts): ByteStream<Stream> {
+function isStream (obj?: any): obj is Stream {
+  return typeof obj?.closeRead === 'function'
+}
+
+function isMultiaddrConnection (obj?: any): obj is MultiaddrConnection {
+  return typeof obj?.close === 'function'
+}
+
+function isEOF (obj?: any): boolean {
+  if (isStream(obj)) {
+    return obj.readStatus === 'closing' || obj.readStatus === 'closed'
+  }
+
+  if (isMultiaddrConnection(obj)) {
+    return obj.status !== 'open'
+  }
+
+  return false
+}
+
+type ByteStreamReadable = Pick<Stream & MultiaddrConnection, 'addEventListener' | 'removeEventListener' | 'send' | 'push' | 'log'>
+
+function isValid (obj?: any): obj is ByteStreamReadable {
+  return obj?.addEventListener != null && obj?.removeEventListener != null && obj?.send != null && obj?.push != null && obj?.log != null
+}
+
+export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?: ByteStreamOpts): ByteStream<T> {
   const maxBufferSize = opts?.maxBufferSize ?? DEFAULT_MAX_BUFFER_SIZE
   const readBuffer = new Uint8ArrayList()
   let hasBytes = Promise.withResolvers<void>()
   let unwrapped = false
 
-  const onMessage = (evt: StreamMessageEvent): void => {
+  if (!isValid(stream)) {
+    throw new InvalidParametersError('Argument should be a Stream or a Multiaddr')
+  }
+
+  const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
     if (opts?.stopPropagation === true) {
       evt.stopImmediatePropagation()
     }
@@ -117,35 +146,37 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
 
     hasBytes.resolve()
   }
-  stream.addEventListener('message', onMessage)
+  stream.addEventListener('message', byteStreamOnMessageListener)
 
-  const onClose = (evt: StreamCloseEvent): void => {
+  const byteStreamOnCloseListener = (evt: StreamCloseEvent): void => {
     if (evt.error != null) {
       hasBytes.reject(evt.error)
     } else {
       hasBytes.resolve()
     }
   }
-  stream.addEventListener('close', onClose)
+  stream.addEventListener('close', byteStreamOnCloseListener)
 
-  const onRemoteCloseWrite = (): void => {
+  const byteStreamOnRemoteCloseWrite = (): void => {
     hasBytes.resolve()
   }
-  stream.addEventListener('remoteCloseWrite', onRemoteCloseWrite)
+  stream.addEventListener('remoteCloseWrite', byteStreamOnRemoteCloseWrite)
 
-  const byteStream: ByteStream<Stream> = {
+  const byteStream: ByteStream<any> = {
     // @ts-expect-error options type prevents type inference
     async read (options?: ReadBytesOptions) {
       if (unwrapped === true) {
         throw new UnwrappedError('Stream was unwrapped')
       }
 
-      if (stream.readStatus !== 'readable') {
+      if (isEOF(stream)) {
         if (options?.bytes == null) {
           return null
         }
 
-        throw new UnexpectedEOFError('Unexpected EOF - stream was not readable')
+        if (readBuffer.byteLength < options.bytes) {
+          throw new UnexpectedEOFError(`Unexpected EOF - stream closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`)
+        }
       }
 
       const bytesToRead = options?.bytes ?? 1
@@ -162,7 +193,7 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
 
         await raceSignal(hasBytes.promise, options?.signal)
 
-        if (stream.readStatus !== 'readable') {
+        if (isEOF(stream)) {
           if (readBuffer.byteLength === 0 && options?.bytes == null) {
             return null
           }
@@ -176,8 +207,8 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
       const toRead = options?.bytes ?? readBuffer.byteLength
 
       if (readBuffer.byteLength < toRead) {
-        if (stream.readStatus !== 'readable') {
-          throw new UnexpectedEOFError(`Unexpected EOF - stream status was "${stream.readStatus}" and not "readable"`)
+        if (isEOF(stream)) {
+          throw new UnexpectedEOFError(`Unexpected EOF - stream closed before ${toRead} bytes were read`)
         }
 
         return byteStream.read(options)
@@ -196,7 +227,10 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
       const sendMore = stream.send(data)
 
       if (sendMore === false) {
-        await raceEvent(stream, 'drain', options?.signal)
+        await pEvent(stream, 'drain', {
+          signal: options?.signal,
+          rejectionEvents: ['close']
+        })
       }
     },
     unwrap () {
@@ -207,12 +241,13 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
 
       // only unwrap once
       unwrapped = true
-      stream.removeEventListener('message', onMessage)
-      stream.removeEventListener('close', onClose)
-      stream.removeEventListener('remoteCloseWrite', onRemoteCloseWrite)
+      stream.removeEventListener('message', byteStreamOnMessageListener)
+      stream.removeEventListener('close', byteStreamOnCloseListener)
+      stream.removeEventListener('remoteCloseWrite', byteStreamOnRemoteCloseWrite)
 
       // emit any unread data
       if (readBuffer.byteLength > 0) {
+        stream.log.trace('stream unwrapped with %d unread bytes', readBuffer.byteLength)
         stream.push(readBuffer)
       }
 
@@ -223,7 +258,7 @@ export function byteStream <Stream extends MessageStream = MessageStream> (strea
   return byteStream
 }
 
-export interface LengthPrefixedStream<Stream extends MessageStream = MessageStream> {
+export interface LengthPrefixedStream<Stream = MessageStream> {
   /**
    * Read the next length-prefixed number of bytes from the stream
    */
@@ -252,7 +287,7 @@ export interface LengthPrefixedStreamOpts extends ByteStreamOpts {
   maxDataLength: number
 }
 
-export function lpStream <Stream extends MessageStream = MessageStream> (stream: Stream, opts: Partial<LengthPrefixedStreamOpts> = {}): LengthPrefixedStream<Stream> {
+export function lpStream <T extends MessageStream> (stream: T, opts: Partial<LengthPrefixedStreamOpts> = {}): LengthPrefixedStream<T> {
   const bytes = byteStream(stream, opts)
 
   if (opts.maxDataLength != null && opts.maxLengthLength == null) {
@@ -264,7 +299,7 @@ export function lpStream <Stream extends MessageStream = MessageStream> (stream:
   const decodeLength = opts?.lengthDecoder ?? varint.decode
   const encodeLength = opts?.lengthEncoder ?? varint.encode
 
-  const lpStream: LengthPrefixedStream<Stream> = {
+  const lpStream: LengthPrefixedStream<any> = {
     async read (options?: AbortOptions) {
       let dataLength: number = -1
       const lengthBuffer = new Uint8ArrayList()
@@ -362,7 +397,7 @@ export interface ProtobufEncoder<T> {
 /**
  * Convenience methods for working with protobuf streams
  */
-export interface ProtobufStream <Stream extends MessageStream = MessageStream> {
+export interface ProtobufStream<S = Stream> {
   /**
    * Read the next length-prefixed byte array from the stream and decode it as the passed protobuf format
    */
@@ -381,18 +416,18 @@ export interface ProtobufStream <Stream extends MessageStream = MessageStream> {
   /**
    * Returns an object with read/write methods for operating on one specific type of protobuf message
    */
-  pb<T>(proto: { encode: ProtobufEncoder<T>, decode: ProtobufDecoder<T> }): ProtobufMessageStream<T, Stream>
+  pb<T>(proto: { encode: ProtobufEncoder<T>, decode: ProtobufDecoder<T> }): ProtobufMessageStream<T, S>
 
   /**
    * Returns the underlying stream
    */
-  unwrap(): Stream
+  unwrap(): S
 }
 
 /**
  * A message reader/writer that only uses one type of message
  */
-export interface ProtobufMessageStream <T, S extends MessageStream = MessageStream> {
+export interface ProtobufMessageStream <T, S = Stream> {
   /**
    * Read a message from the stream
    */
@@ -418,10 +453,10 @@ export interface ProtobufStreamOpts extends LengthPrefixedStreamOpts {
 
 }
 
-export function pbStream <Stream extends MessageStream = MessageStream> (stream: Stream, opts?: Partial<ProtobufStreamOpts>): ProtobufStream<Stream> {
+export function pbStream <T extends MessageStream = Stream> (stream: T, opts?: Partial<ProtobufStreamOpts>): ProtobufStream<T> {
   const lp = lpStream(stream, opts)
 
-  const pbStream: ProtobufStream<Stream> = {
+  const pbStream: ProtobufStream<any> = {
     read: async (proto, options?: AbortOptions) => {
       // readLP, decode
       const value = await lp.read(options)
@@ -452,21 +487,46 @@ export function pbStream <Stream extends MessageStream = MessageStream> (stream:
   return pbStream
 }
 
-export function echo (channel: MessageStream): ReturnType<typeof itPipe> {
-  channel.addEventListener('remoteCloseWrite', () => {
-    channel.closeWrite()
-  })
+export async function echo (stream: MessageStream): Promise<void> {
+  const log = stream.log.newScope('echo')
+  const start = Date.now()
+  const signal = AbortSignal.timeout(20_000)
+  let bytes = 0
 
-  return pipe(channel, channel)
+  try {
+    for await (const buf of stream) {
+      bytes += buf.byteLength
+
+      if (!stream.send(buf)) {
+        stream.pause()
+
+        await pEvent(stream, 'drain', {
+          rejectionEvents: [
+            'close'
+          ]
+        })
+
+        stream.resume()
+      }
+    }
+
+    log('echoed %d bytes in %dms', bytes, Date.now() - start)
+
+    await stream.close({
+      signal
+    })
+  } catch (err: any) {
+    stream.abort(err)
+  }
 }
 
-export type PipeInput = Iterable<Uint8Array | Uint8ArrayList> | AsyncIterable<Uint8Array | Uint8ArrayList> | MessageStream
+export type PipeInput = Iterable<Uint8Array | Uint8ArrayList> | AsyncIterable<Uint8Array | Uint8ArrayList> | Stream
 
-function isMessageStream (obj?: any): obj is MessageStream {
+function isMessageStream (obj?: any): obj is Stream {
   return obj?.addEventListener != null
 }
 
-export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Iterable<Uint8ArrayList | Uint8Array> | AsyncIterable<Uint8ArrayList | Uint8Array>, Promise<void>> {
+export function messageStreamToDuplex (stream: Stream): Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Iterable<Uint8ArrayList | Uint8Array> | AsyncIterable<Uint8ArrayList | Uint8Array>, Promise<void>> {
   const source = pushable<Uint8ArrayList | Uint8Array>()
   const onError = Promise.withResolvers<IteratorResult<Uint8ArrayList | Uint8Array>>()
 
@@ -517,6 +577,10 @@ export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGener
           onError.promise
         ])
 
+        if (stream.writeStatus === 'closing' || stream.writeStatus === 'closed') {
+          break
+        }
+
         if (value != null) {
           if (!stream.send(value)) {
             await Promise.race([
@@ -534,7 +598,7 @@ export function messageStreamToDuplex (stream: MessageStream): Duplex<AsyncGener
         }
       }
 
-      await stream.closeWrite()
+      await stream.close()
     }
   }
 }

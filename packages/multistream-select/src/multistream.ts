@@ -9,7 +9,7 @@ const NewLine = uint8ArrayFromString('\n')
 /**
  * Read a length-prefixed string from the passed stream, stripping the final newline character
  */
-export async function readString (reader: LengthPrefixedStream, options?: AbortOptions): Promise<string> {
+export async function readString (reader: LengthPrefixedStream<any>, options?: AbortOptions): Promise<string> {
   const buf = await reader.read(options)
   const arr = buf.subarray()
 

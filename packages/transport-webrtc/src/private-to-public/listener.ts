@@ -205,7 +205,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         metrics: this.components.metrics,
         events: this.metrics?.listenerEvents,
         signal,
-        remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}`),
+        remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}/webrtc-direct`),
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,
         peerId: this.components.peerId,

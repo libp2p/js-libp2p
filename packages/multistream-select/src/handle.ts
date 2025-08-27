@@ -57,7 +57,6 @@ export async function handle <Stream extends MessageStream = MultiaddrConnection
   protocols = Array.isArray(protocols) ? protocols : [protocols]
 
   const log = stream.log.newScope('mss:handle')
-  log.trace('available protocols %s', protocols)
 
   const lp = lpStream(stream, {
     ...options,

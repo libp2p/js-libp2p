@@ -53,6 +53,6 @@ export class StreamHandler {
    */
   async close (): Promise<void> {
     log('closing the stream')
-    await this.rest().closeWrite()
+    await this.rest().close()
   }
 }

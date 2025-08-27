@@ -23,7 +23,7 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
 
       if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
         // nothing else to do but close the connection
-        this.onRemoteCloseWrite()
+        this.onTransportClosed()
       }
     }
   }
@@ -35,12 +35,8 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
     }
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+  async sendClose (options?: AbortOptions): Promise<void> {
     this.peerConnection.close()
-    options?.signal?.throwIfAborted()
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
     options?.signal?.throwIfAborted()
   }
 

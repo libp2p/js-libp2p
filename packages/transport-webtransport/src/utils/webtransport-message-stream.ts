@@ -1,4 +1,3 @@
-import { StreamMessageEvent } from '@libp2p/interface'
 import { AbstractMessageStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions } from '@libp2p/interface'
@@ -24,7 +23,7 @@ export class WebTransportMessageStream extends AbstractMessageStream {
         const { done, value } = await this.reader.read()
 
         if (value != null) {
-          this.dispatchEvent(new StreamMessageEvent(value))
+          this.onData(value)
         }
 
         if (done) {
@@ -37,16 +36,12 @@ export class WebTransportMessageStream extends AbstractMessageStream {
       })
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+  async close (options?: AbortOptions): Promise<void> {
     await raceSignal(this.writer.close(), options?.signal)
   }
 
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
-    options?.signal?.throwIfAborted()
-  }
-
   sendData (data: Uint8ArrayList): SendResult {
-    this.writer.write(data)
+    this.writer.write(data.subarray())
       .catch(err => {
         this.abort(err)
       })

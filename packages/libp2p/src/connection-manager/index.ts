@@ -2,6 +2,7 @@ import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, I
 import { PeerMap } from '@libp2p/peer-collections'
 import { RateLimiter } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
+import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
@@ -9,7 +10,7 @@ import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_Q
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
 import { dnsaddrResolver } from './resolvers/index.ts'
-import { multiaddrToIpNet } from './utils.js'
+import { findExistingConnection, multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
 import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
@@ -407,16 +408,22 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     )
 
     // Close all connections we're tracking
-    const tasks: Array<Promise<void>> = []
+    const tasks: Array<Promise<any>> = []
     for (const connectionList of this.connections.values()) {
       for (const connection of connectionList) {
-        tasks.push((async () => {
-          try {
-            await connection.close()
-          } catch (err) {
-            this.log.error(err)
-          }
-        })())
+        tasks.push(
+          Promise.all([
+            pEvent(connection, 'close', {
+              signal: AbortSignal.timeout(500)
+            }),
+            connection.close({
+              signal: AbortSignal.timeout(500)
+            })
+          ])
+            .catch(err => {
+              connection.abort(err)
+            })
+        )
       }
     }
 
@@ -512,7 +519,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       this.connections.delete(peerId)
 
       // broadcast disconnect event
-      this.events.safeDispatchEvent('peer:disconnect', { detail: connection.remotePeer })
+      this.events.safeDispatchEvent('peer:disconnect', { detail: peerId })
     }
   }
 
@@ -544,7 +551,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     try {
       options.signal?.throwIfAborted()
 
-      const { peerId } = getPeerAddress(peerIdOrMultiaddr)
+      const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
       if (this.peerId.equals(peerId)) {
         throw new InvalidPeerIdError('Can not dial self')
@@ -552,11 +559,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
       if (peerId != null && options.force !== true) {
         this.log('dial %p', peerId)
-        const existingConnection = this.getConnections(peerId)
-          .find(conn => conn.limits == null)
+        const existingConnection = findExistingConnection(peerId, this.getConnections(peerId), multiaddrs)
 
         if (existingConnection != null) {
-          this.log('had an existing non-limited connection to %p as %a', peerId, existingConnection.remoteAddr)
+          this.log('had an existing connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
           return existingConnection
@@ -620,7 +626,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     await Promise.all(
       connections.map(async connection => {
         try {
-          await connection.close(options)
+          await Promise.all([
+            pEvent(connection, 'close'),
+            connection.close(options)
+          ])
         } catch (err: any) {
           connection.abort(err)
         }

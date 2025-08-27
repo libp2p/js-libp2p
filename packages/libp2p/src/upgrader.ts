@@ -305,7 +305,9 @@ export class Upgrader implements UpgraderInterface {
         throw err
       }
 
+      stream.pause()
       await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundEncryptedConnection' : 'denyOutboundEncryptedConnection', remotePeer, maConn)
+      stream.resume()
 
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
@@ -322,12 +324,14 @@ export class Upgrader implements UpgraderInterface {
       throw err
     }
 
-    await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundUpgradedConnection' : 'denyOutboundUpgradedConnection', remotePeer, maConn)
-
     // create the connection muxer if one is configured
     if (muxerFactory != null) {
+      maConn.log('create muxer %s', muxerFactory.protocol)
       muxer = muxerFactory.createStreamMuxer(stream)
     }
+
+    stream.pause()
+    await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundUpgradedConnection' : 'denyOutboundUpgradedConnection', remotePeer, maConn)
 
     const conn = this._createConnection({
       id,
@@ -342,6 +346,8 @@ export class Upgrader implements UpgraderInterface {
     })
 
     conn.log('successfully upgraded connection')
+
+    stream.resume()
 
     return conn
   }

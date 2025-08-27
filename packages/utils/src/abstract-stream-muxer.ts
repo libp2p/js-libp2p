@@ -1,8 +1,9 @@
 import { MuxerClosedError, TypedEventEmitter } from '@libp2p/interface'
 import { raceSignal } from 'race-signal'
+import { MaxEarlyStreamsError } from './errors.ts'
 import { isPromise } from './is-promise.ts'
 import type { AbstractStream } from './abstract-stream.ts'
-import type { AbortOptions, CreateStreamOptions, Logger, MessageStream, Stream, StreamMuxer, StreamMuxerEvents, StreamMuxerOptions, StreamMuxerStatus, StreamOptions } from '@libp2p/interface'
+import type { AbortOptions, CounterGroup, CreateStreamOptions, EventHandler, Logger, MessageStream, Stream, StreamCloseEvent, StreamMessageEvent, StreamMuxer, StreamMuxerEvents, StreamMuxerOptions, StreamMuxerStatus, StreamOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface AbstractStreamMuxerInit extends StreamMuxerOptions {
@@ -16,6 +17,17 @@ export interface AbstractStreamMuxerInit extends StreamMuxerOptions {
    * connection's logger
    */
   name: string
+
+  /**
+   * How many streams are allowed to be created before an event listener is
+   * added for the 'stream' event
+   */
+  maxEarlyStreams?: number
+
+  /**
+   * A counter for muxer metrics
+   */
+  metrics?: CounterGroup
 }
 
 export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = AbstractStream> extends TypedEventEmitter<StreamMuxerEvents<MuxedStream>> implements StreamMuxer<MuxedStream> {
@@ -26,6 +38,10 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
   protected log: Logger
   protected maConn: MessageStream
   protected streamOptions?: StreamOptions
+  protected earlyStreams: MuxedStream[]
+  protected maxEarlyStreams: number
+
+  private readonly metrics?: CounterGroup
 
   constructor (maConn: MessageStream, init: AbstractStreamMuxerInit) {
     super()
@@ -33,35 +49,39 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
     this.maConn = maConn
     this.protocol = init.protocol
     this.streams = []
+    this.earlyStreams = []
     this.status = 'open'
     this.log = maConn.log.newScope(init.name)
     this.streamOptions = init.streamOptions
+    this.maxEarlyStreams = init.maxEarlyStreams ?? 10
+    this.metrics = init.metrics
 
     // read/write all data from/to underlying maConn
-    this.maConn.addEventListener('message', (evt) => {
+    const muxerMaConnOnMessage = (evt: StreamMessageEvent): void => {
       try {
         this.onData(evt.data)
       } catch (err: any) {
         this.abort(err)
         this.maConn.abort(err)
       }
-    })
-
-    // close muxer when underlying maConn closes
-    this.maConn.addEventListener('close', (evt) => {
-      if (this.status === 'open') {
-        this.onTransportClosed()
-      }
-    })
+    }
+    this.maConn.addEventListener('message', muxerMaConnOnMessage)
 
     // signal stream writers when the underlying connection can accept more data
-    this.maConn.addEventListener('drain', () => {
+    const muxerMaConnOnDrain = (): void => {
       this.log('underlying stream drained, signal %d streams to continue writing', this.streams.length)
 
       this.streams.forEach(stream => {
         stream.safeDispatchEvent('drain')
       })
-    })
+    }
+    this.maConn.addEventListener('drain', muxerMaConnOnDrain)
+
+    const muxerOnMaConnClose = (): void => {
+      this.log('underlying stream closed with status %s and %d streams', this.status, this.streams.length)
+      this.onTransportClosed()
+    }
+    this.maConn.addEventListener('close', muxerOnMaConnClose)
   }
 
   send (data: Uint8Array | Uint8ArrayList): boolean {
@@ -69,7 +89,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
   }
 
   async close (options?: AbortOptions): Promise<void> {
-    if (this.status === 'closed') {
+    if (this.status === 'closed' || this.status === 'closing') {
       return
     }
 
@@ -77,7 +97,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
 
     await raceSignal(Promise.all(
       [...this.streams].map(async s => {
-        await s.closeWrite(options)
+        await s.close(options)
       })
     ), options?.signal)
 
@@ -98,12 +118,12 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
     this.status = 'closed'
   }
 
-  onTransportClosed (): void {
+  onTransportClosed (err?: Error): void {
     this.status = 'closing'
 
     try {
       [...this.streams].forEach(stream => {
-        stream.onTransportClosed()
+        stream.onTransportClosed(err)
       })
     } catch (err: any) {
       this.abort(err)
@@ -140,28 +160,67 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
     this.streams.push(stream)
     this.cleanUpStream(stream)
 
+    if (this.listenerCount('stream') === 0) {
+      // no listener has been added for the stream event yet, store the stream
+      // to emit it later
+      this.earlyStreams.push(stream)
+
+      if (this.earlyStreams.length === this.maxEarlyStreams) {
+        this.abort(new MaxEarlyStreamsError('Too many early streams were opened'))
+      }
+
+      return
+    }
+
     this.safeDispatchEvent('stream', {
       detail: stream
     })
   }
 
   private cleanUpStream (stream: Stream): void {
-    const onEnd = (): void => {
+    const muxerOnStreamEnd = (evt: StreamCloseEvent): void => {
       const index = this.streams.findIndex(s => s === stream)
 
       if (index !== -1) {
         this.streams.splice(index, 1)
       }
 
-      // TODO: standardize metrics
-      // this.metrics?.increment({ [`${stream.direction}_stream_end`]: true })
-      // this.metrics?.increment({ [`${stream.direction}_stream_error`]: true })
+      if (evt.error != null) {
+        if (evt.local) {
+          this.metrics?.increment({ [`${stream.direction}_stream_reset`]: true })
+        } else {
+          this.metrics?.increment({ [`${stream.direction}_stream_abort`]: true })
+        }
+      } else {
+        this.metrics?.increment({ [`${stream.direction}_stream_end`]: true })
+      }
     }
+    stream.addEventListener('close', muxerOnStreamEnd)
 
-    // TODO: standardize metrics
-    // this.metrics?.increment({ [`${stream.direction}_stream`]: true })
+    this.metrics?.increment({ [`${stream.direction}_stream`]: true })
+  }
 
-    stream.addEventListener('close', onEnd)
+  addEventListener<K extends keyof StreamMuxerEvents<MuxedStream>>(type: K, listener: EventHandler<StreamMuxerEvents<MuxedStream>[K]> | null, options?: boolean | AddEventListenerOptions): void
+  addEventListener (type: string, listener: EventHandler<Event>, options?: boolean | AddEventListenerOptions): void
+  addEventListener (...args: any[]): void {
+    // @ts-expect-error cannot ensure args has enough members
+    super.addEventListener.apply(this, args)
+
+    // if a 'stream' listener is being added and we have early streams, emit
+    // them
+    if (args[0] === 'stream' && this.earlyStreams.length > 0) {
+      // event listeners can be added in constructors and often use object
+      // properties - if this the case we can access a class member before it
+      // has been initialized so dispatch the message in the microtask queue
+      queueMicrotask(() => {
+        this.earlyStreams.forEach(stream => {
+          this.safeDispatchEvent('stream', {
+            detail: stream
+          })
+        })
+        this.earlyStreams = []
+      })
+    }
   }
 
   /**

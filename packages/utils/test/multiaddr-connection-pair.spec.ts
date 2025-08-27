@@ -10,13 +10,15 @@ describe('multiaddr-conection-pair', () => {
     const sent: Uint8Array[] = []
     const received: Uint8Array[] = []
 
-    await inbound.closeWrite()
-
     inbound.addEventListener('message', (evt) => {
       received.push(evt.data.subarray())
     })
 
     for (let i = 0; i < 1_000; i++) {
+      if (outbound.status !== 'open') {
+        break
+      }
+
       const buf = uint8ArrayFromString(`send data ${i}`)
       sent.push(buf)
 
@@ -31,7 +33,7 @@ describe('multiaddr-conection-pair', () => {
 
     await Promise.all([
       pEvent(inbound, 'close'),
-      outbound.closeWrite()
+      outbound.close()
     ])
 
     expect(received).to.deep.equal(sent)
@@ -54,6 +56,10 @@ describe('multiaddr-conection-pair', () => {
     await Promise.all([
       (async () => {
         for (let i = 0; i < messages; i++) {
+          if (outbound.status !== 'open') {
+            break
+          }
+
           const buf = uint8ArrayFromString(`send data ${i}`)
           const sendMore = outbound.send(buf)
 
@@ -63,11 +69,13 @@ describe('multiaddr-conection-pair', () => {
             })
           }
         }
-
-        await outbound.closeWrite()
       })(),
       (async () => {
         for (let i = 0; i < messages; i++) {
+          if (outbound.status !== 'open') {
+            break
+          }
+
           const buf = uint8ArrayFromString(`send data ${i}`)
           const sendMore = inbound.send(buf)
 
@@ -77,14 +85,14 @@ describe('multiaddr-conection-pair', () => {
             })
           }
         }
-
-        await inbound.closeWrite()
       })()
     ])
 
     await Promise.all([
       pEvent(outbound, 'close'),
-      pEvent(inbound, 'close')
+      pEvent(inbound, 'close'),
+      outbound.close(),
+      inbound.close()
     ])
 
     expect(outboundReceived).to.have.lengthOf(messages)

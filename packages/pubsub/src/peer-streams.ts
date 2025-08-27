@@ -3,7 +3,7 @@ import { pipe } from '@libp2p/utils'
 import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { ComponentLogger, Logger, Stream, PeerId, PeerStreamEvents } from '@libp2p/interface'
 import type { DecoderOptions as LpDecoderOptions } from 'it-length-prefixed'
@@ -130,7 +130,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
     this.outboundStream = pushable<Uint8ArrayList>({
       onEnd: (shouldEmit) => {
         // close writable side of the stream if it exists
-        this._rawOutboundStream?.closeWrite()
+        this._rawOutboundStream?.close()
           .catch(err => {
             this.log('error closing outbound stream', err)
           })
@@ -151,7 +151,11 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
           const sendMore = stream.send(buf)
 
           if (sendMore === false) {
-            await raceEvent(stream, 'drain')
+            await pEvent(stream, 'drain', {
+              rejectionEvents: [
+                'close'
+              ]
+            })
           }
         }
       }

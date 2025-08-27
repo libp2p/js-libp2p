@@ -24,7 +24,7 @@ import { HandshakeTimeoutError } from './errors.js'
 import { generateCertificate, verifyPeerCertificate, toNodeDuplex, toMessageStream } from './utils.js'
 import { PROTOCOL } from './index.js'
 import type { TLSComponents } from './index.js'
-import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, MessageStream } from '@libp2p/interface'
+import type { ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, MessageStream } from '@libp2p/interface'
 import type { TLSSocketOptions } from 'node:tls'
 
 export class TLS implements ConnectionEncrypter {
@@ -75,18 +75,18 @@ export class TLS implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+  async secureInbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     return this._encrypt(connection, true, options)
   }
 
-  async secureOutbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+  async secureOutbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     return this._encrypt(connection, false, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+  async _encrypt (connection: MessageStream, isServer: boolean, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     const log = connection.log?.newScope('tls') ?? this.log
     let streamMuxer: StreamMuxerFactory | undefined
 
@@ -131,20 +131,25 @@ export class TLS implements ConnectionEncrypter {
       }
     }
 
+    const duplex = toNodeDuplex(connection)
     let socket: TLSSocket
 
     if (isServer) {
-      socket = new TLSSocket(toNodeDuplex(connection), {
+      socket = new TLSSocket(duplex, {
         ...opts,
         // require clients to send certificates
         requestCert: true
       })
     } else {
       socket = connect({
-        socket: toNodeDuplex(connection),
+        socket: duplex,
         ...opts
       })
     }
+
+    duplex.on('error', (err) => {
+      socket.emit('error', err)
+    })
 
     const onAbort = (): void => {
       this.metrics[isServer ? 'server' : 'client'].events?.increment({
@@ -158,11 +163,11 @@ export class TLS implements ConnectionEncrypter {
 
     options?.signal?.addEventListener('abort', onAbort)
 
-    return new Promise<SecuredConnection<Stream>>((resolve, reject) => {
+    return new Promise<SecuredConnection<MessageStream>>((resolve, reject) => {
       const verifyRemote = (): void => {
         const remote = socket.getPeerCertificate()
 
-        verifyPeerCertificate(remote.raw, options?.remotePeer, this.log)
+        verifyPeerCertificate(remote.raw, options?.remotePeer, log)
           .then(remotePeer => {
             log('remote certificate ok, remote peer %p', remotePeer)
 
@@ -191,12 +196,13 @@ export class TLS implements ConnectionEncrypter {
             this.metrics[isServer ? 'server' : 'client'].errors?.increment({
               verify_peer_certificate: true
             })
+
             socket.emit('error', err)
           })
       }
 
       socket.on('error', (err: Error) => {
-        this.log.error('error encrypting %s connection - %e', isServer ? 'server' : 'client', err)
+        log.error('error encrypting %s connection - %e', connection.direction, err)
 
         if (err.name !== 'HandshakeTimeoutError') {
           this.metrics[isServer ? 'server' : 'client'].events?.increment({
@@ -204,13 +210,13 @@ export class TLS implements ConnectionEncrypter {
           })
         }
 
-        socket.destroy(err)
+        socket.destroy()
         connection.abort(err)
 
         reject(err)
       })
       socket.once('secure', () => {
-        this.log('verifying remote certificate')
+        log('verifying remote certificate of %s connection', connection.direction)
         this.metrics[isServer ? 'server' : 'client'].events?.increment({
           secure: true
         })

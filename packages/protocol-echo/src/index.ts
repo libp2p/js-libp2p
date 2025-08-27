@@ -43,8 +43,8 @@
  */
 
 import { Echo as EchoClass } from './echo.js'
-import type { AbortOptions, PeerId } from '@libp2p/interface'
-import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { PeerId } from '@libp2p/interface'
+import type { ConnectionManager, OpenConnectionOptions, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface EchoInit {
@@ -62,7 +62,7 @@ export interface EchoComponents {
 
 export interface Echo {
   protocol: string
-  echo(peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: AbortOptions): Promise<Uint8Array>
+  echo(peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: OpenConnectionOptions): Promise<Uint8Array>
 }
 
 export function echo (init: EchoInit = {}): (components: EchoComponents) => Echo {

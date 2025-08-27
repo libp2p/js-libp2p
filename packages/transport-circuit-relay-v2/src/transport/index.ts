@@ -182,8 +182,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       options.onProgress?.(new CustomProgressEvent('circuit-relay:open-hop-stream'))
       stream = await relayConnection.newStream(RELAY_V2_HOP_CODEC, options)
 
-      const pbstr = pbStream(stream)
-      const hopstr = pbstr.pb(HopMessage)
+      const hopstr = pbStream(stream).pb(HopMessage)
 
       options.onProgress?.(new CustomProgressEvent('circuit-relay:write-connect-message'))
       await hopstr.write({
@@ -204,12 +203,12 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       const limits = new LimitTracker(status.limit)
 
       const maConn = streamToMaConnection({
-        stream: pbstr.unwrap(),
+        stream: hopstr.unwrap().unwrap(),
         remoteAddr: ma,
         localAddr: relayAddr.encapsulate(`/p2p-circuit/p2p/${this.components.peerId.toString()}`),
         onDataRead: limits.onData,
         onDataWrite: limits.onData,
-        log: stream.log.newScope('circuit-relay:relayed')
+        log: stream.log.newScope('circuit-relay:connection')
       })
 
       const conn = await this.components.upgrader.upgradeOutbound(maConn, {
@@ -280,8 +279,8 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         }
       }
 
-      const pbstr = pbStream(stream).pb(StopMessage)
-      const request = await pbstr.read({
+      const stopStream = pbStream(stream).pb(StopMessage)
+      const request = await stopStream.read({
         signal
       })
 
@@ -289,10 +288,10 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       if (request?.type === undefined) {
         this.log.error('type was missing from circuit v2 stop protocol request from %s', connection.remotePeer)
-        await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
+        await stopStream.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
           signal
         })
-        await stream.closeWrite({
+        await stream.close({
           signal
         })
         return
@@ -301,10 +300,10 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       // Validate the STOP request has the required input
       if (request.type !== StopMessage.Type.CONNECT) {
         this.log.error('invalid stop connect request via peer %p', connection.remotePeer)
-        await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
+        await stopStream.write({ type: StopMessage.Type.STATUS, status: Status.UNEXPECTED_MESSAGE }, {
           signal
         })
-        await stream.closeWrite({
+        await stream.close({
           signal
         })
         return
@@ -312,10 +311,10 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       if (!isValidStop(request)) {
         this.log.error('invalid stop connect request via peer %p', connection.remotePeer)
-        await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
+        await stopStream.write({ type: StopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, {
           signal
         })
-        await stream.closeWrite({
+        await stream.close({
           signal
         })
         return
@@ -325,17 +324,17 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       if ((await this.components.connectionGater.denyInboundRelayedConnection?.(connection.remotePeer, remotePeerId)) === true) {
         this.log.error('connection gater denied inbound relayed connection from %p', connection.remotePeer)
-        await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
+        await stopStream.write({ type: StopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, {
           signal
         })
-        await stream.closeWrite({
+        await stream.close({
           signal
         })
         return
       }
 
       this.log.trace('sending success response to %p', connection.remotePeer)
-      await pbstr.write({ type: StopMessage.Type.STATUS, status: Status.OK }, {
+      await stopStream.write({ type: StopMessage.Type.STATUS, status: Status.OK }, {
         signal
       })
 
@@ -343,12 +342,12 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       const remoteAddr = connection.remoteAddr.encapsulate(`/p2p-circuit/p2p/${remotePeerId.toString()}`)
       const localAddr = this.components.addressManager.getAddresses()[0]
       const maConn = streamToMaConnection({
-        stream: pbstr.unwrap().unwrap(),
+        stream: stopStream.unwrap().unwrap(),
         remoteAddr,
         localAddr,
         onDataRead: limits.onData,
         onDataWrite: limits.onData,
-        log: stream.log.newScope('circuit-relay:relayed')
+        log: stream.log.newScope('circuit-relay:connection')
       })
 
       await this.components.upgrader.upgradeInbound(maConn, {

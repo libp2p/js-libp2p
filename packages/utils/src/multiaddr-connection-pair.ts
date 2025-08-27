@@ -5,6 +5,7 @@ import { raceSignal } from 'race-signal'
 import { AbstractMultiaddrConnection } from './abstract-multiaddr-connection.ts'
 import { MessageQueue } from './message-queue.ts'
 import type { SendResult } from './abstract-message-stream.ts'
+import type { AbstractMultiaddrConnectionInit } from './abstract-multiaddr-connection.ts'
 import type { MessageQueueInit } from './message-queue.ts'
 import type { AbortOptions, Logger, MultiaddrConnection, MessageStreamDirection, TypedEventTarget } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -18,13 +19,13 @@ interface MockMultiaddrConnectionMessages {
   resume: Event
 }
 
-interface MockMultiaddrConnectionInit {
+export interface MockMultiaddrConnectionInit extends AbstractMultiaddrConnectionInit {
   id: string,
   log: Logger,
   direction: MessageStreamDirection
   local: MessageQueue<MockMultiaddrConnectionMessages>
   remote: TypedEventTarget<MockMultiaddrConnectionMessages>
-  remoteAddr?: Multiaddr
+  remoteAddr: Multiaddr
 }
 
 let multiaddrConnectionId = 0
@@ -34,10 +35,7 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
   private remote: TypedEventTarget<MockMultiaddrConnectionMessages>
 
   constructor (init: MockMultiaddrConnectionInit) {
-    super({
-      ...init,
-      remoteAddr: init.remoteAddr ?? multiaddr(`/ip4/127.0.0.1/tcp/${init.id}`)
-    })
+    super(init)
 
     this.local = init.local
     this.remote = init.remote
@@ -61,7 +59,7 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
       this.onRemoteReset()
     })
     this.remote.addEventListener('close', (evt) => {
-      this.onRemoteCloseWrite()
+      this.onTransportClosed()
     })
     this.remote.addEventListener('pause', (evt) => {
       this.local.pause()
@@ -84,15 +82,11 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
     this.local.send(new Event('reset'))
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+  async sendClose (options?: AbortOptions): Promise<void> {
     return raceSignal(new Promise<void>((resolve, reject) => {
       this.local.send(new Event('close'))
       this.local.onIdle().then(resolve, reject)
     }), options?.signal)
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
-    options?.signal?.throwIfAborted()
   }
 
   sendPause (): void {
@@ -105,8 +99,8 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
 }
 
 export interface MultiaddrConnectionPairOptions extends MessageQueueInit {
-  outboundRemoteAddr?: Multiaddr
-  inboundRemoteAddr?: Multiaddr
+  outbound?: Partial<MockMultiaddrConnectionInit>
+  inbound?: Partial<MockMultiaddrConnectionInit>
 }
 
 export function multiaddrConnectionPair (opts: MultiaddrConnectionPairOptions = {}): [MultiaddrConnection, MultiaddrConnection] {
@@ -127,19 +121,21 @@ export function multiaddrConnectionPair (opts: MultiaddrConnectionPairOptions = 
 
   return [
     new MockMultiaddrConnection({
-      id: inboundId,
+      ...opts.outbound,
+      id: outboundId,
       direction: 'outbound',
       local: targetA,
       remote: targetB,
-      remoteAddr: opts?.outboundRemoteAddr,
+      remoteAddr: opts?.outbound?.remoteAddr ?? multiaddr(`/ip4/127.0.0.1/tcp/${outboundId}`),
       log: outboundLog
     }),
     new MockMultiaddrConnection({
-      id: outboundId,
+      ...opts.inbound,
+      id: inboundId,
       direction: 'inbound',
       local: targetB,
       remote: targetA,
-      remoteAddr: opts?.inboundRemoteAddr,
+      remoteAddr: opts?.inbound?.remoteAddr ?? multiaddr(`/ip4/127.0.0.1/tcp/${inboundId}`),
       log: inboundLog
     })
   ]

@@ -5,7 +5,6 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { echo, streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import all from 'it-all'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -15,7 +14,7 @@ import { createClient } from '../src/index.js'
 import type { DaemonClient } from '../src/index.js'
 import type { GossipSub } from '@chainsafe/libp2p-gossipsub'
 import type { Libp2pServer } from '@libp2p/daemon-server'
-import type { Connection, Libp2p, PeerStore } from '@libp2p/interface'
+import type { Connection, Libp2p, PeerStore, StreamMessageEvent } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -55,7 +54,10 @@ describe('daemon stream client', function () {
     })
 
     // echo all bytes back to the sender
-    void echo(inboundStream)
+    echo(inboundStream)
+      .catch(err => {
+        inboundStream.abort(err)
+      })
 
     const peerB = peerIdFromString('12D3KooWJKCJW8Y26pRFNv78TCMGLNTfyN8oKaFswMRYXTzSbSsb')
 
@@ -68,18 +70,18 @@ describe('daemon stream client', function () {
     libp2p.dial.withArgs(peerB).resolves(peerAToPeerB)
 
     const stream = await client.openStream(peerB, protocol)
-    const dataPromise = all(stream)
+    const messageEventPromise = pEvent<'message', StreamMessageEvent>(stream, 'message')
 
     stream.send(uint8ArrayFromString('hello world'))
 
+    // wait for message to round-trip
+    const messageEvent = await messageEventPromise
+
     await Promise.all([
       pEvent(inboundStream, 'close'),
-      stream.closeWrite()
+      stream.close()
     ])
 
-    const data = await dataPromise
-
-    expect(data).to.have.lengthOf(1)
-    expect(uint8ArrayToString(data[0].subarray())).to.equal('hello world')
+    expect(uint8ArrayToString(messageEvent.data.subarray())).to.equal('hello world')
   })
 })

@@ -78,7 +78,7 @@ export class Ping implements Startable, PingInterface {
       log('ping from %p complete in %dms', connection.remotePeer, Date.now() - start)
     }
 
-    await stream.closeWrite({
+    await stream.close({
       signal
     })
   }
@@ -120,7 +120,7 @@ export class Ping implements Startable, PingInterface {
 
       const ms = Date.now() - start
 
-      stream.closeWrite()
+      stream.close()
 
       if (!uint8ArrayEquals(data, result.subarray())) {
         throw new ProtocolError(`Received wrong ping ack after ${ms}ms`)
@@ -136,7 +136,7 @@ export class Ping implements Startable, PingInterface {
 
       throw err
     } finally {
-      stream?.closeWrite()
+      stream?.close()
     }
   }
 }

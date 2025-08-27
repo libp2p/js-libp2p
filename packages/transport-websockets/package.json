@@ -77,7 +77,6 @@
     "main-event": "^1.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",
-    "race-event": "^1.5.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0",
     "ws": "^8.18.2"

@@ -204,6 +204,9 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
         limit: this.reservationStore.get(connection.remotePeer)?.limit
       }, options)
       this.log('sent confirmation response to %s', connection.remotePeer)
+
+      // close writable end of stream
+      await hopstr.unwrap().unwrap().close(options)
     } catch (err) {
       this.log.error('failed to send confirmation response to %p - %e', connection.remotePeer, err)
       this.reservationStore.removeReservation(connection.remotePeer)
@@ -331,12 +334,11 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
       status: Status.OK,
       limit: reservation?.limit
     }, options)
-    const sourceStream = stream.unwrap()
 
     this.log('connection from %p to %p established - merging streams', connection.remotePeer, dstPeer)
 
     // Short circuit the two streams to create the relayed connection
-    createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, reservation, {
+    createLimitedRelay(stream.unwrap(), destinationStream, this.shutdownController.signal, reservation, {
       log: this.log
     })
   }
@@ -364,7 +366,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
 
     if (response == null) {
       this.log.error('could not read response from %p', connection.remotePeer)
-      await stream.closeWrite(options)
+      await stream.close(options)
       return
     }
 
@@ -374,7 +376,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
     }
 
     this.log('stop request failed with code %d', response.status)
-    await stream.closeWrite(options)
+    await stream.close(options)
   }
 
   get reservations (): PeerMap<RelayReservation> {

@@ -2,7 +2,7 @@ import { StreamCloseEvent, StreamMessageEvent } from '@libp2p/interface'
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { isValidTick } from '../is-valid-tick.ts'
 import type { TestSetup } from '../index.ts'
@@ -28,7 +28,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       listener = listenerFactory.createStreamMuxer(inboundConnection)
 
       streams = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 
@@ -61,7 +61,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('outbound stream sends data', async () => {
-      const messageEventPromise = raceEvent<StreamMessageEvent>(inboundStream, 'message')
+      const messageEventPromise = pEvent<'message', StreamMessageEvent>(inboundStream, 'message')
       const data = Uint8Array.from([0, 1, 2, 3, 4])
 
       outboundStream.send(data)
@@ -71,7 +71,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     })
 
     it('inbound stream sends data', async () => {
-      const messageEventPromise = raceEvent<StreamMessageEvent>(outboundStream, 'message')
+      const messageEventPromise = pEvent<'message', StreamMessageEvent>(outboundStream, 'message')
       const data = Uint8Array.from([0, 1, 2, 3, 4])
 
       inboundStream.send(data)
@@ -83,20 +83,24 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     it('closes', async () => {
       const signal = AbortSignal.timeout(1_000)
 
-      void outboundStream.closeWrite({
+      void outboundStream.close({
         signal
       })
-      void inboundStream.closeWrite({
+      void inboundStream.close({
         signal
       })
 
       expect(outboundStream).to.have.property('status', 'open')
-      expect(outboundStream).to.have.property('readStatus', 'closed')
+      expect(outboundStream).to.have.property('readStatus', 'readable')
       expect(outboundStream).to.have.property('writeStatus', 'closing')
 
       await Promise.all([
-        raceEvent(outboundStream, 'close', signal),
-        raceEvent(inboundStream, 'close', signal)
+        pEvent(outboundStream, 'close', {
+          signal
+        }),
+        pEvent(inboundStream, 'close', {
+          signal
+        })
       ])
 
       streams.forEach(stream => {
@@ -106,7 +110,6 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
         expect(isValidTick(stream.timeline.open)).to.equal(true, `${stream.direction} stream timeline.open was incorrect`)
         expect(isValidTick(stream.timeline.close)).to.equal(true, `${stream.direction} stream timeline.close was incorrect`)
-        expect(isValidTick(stream.timeline.closeWrite)).to.equal(true, `${stream.direction} stream timeline.closeWrite was incorrect`)
 
         expect(stream).to.not.have.nested.property('timeline.reset', `${stream.direction} stream timeline.reset was incorrect`)
         expect(stream).to.not.have.nested.property('timeline.abort', `${stream.direction} stream timeline.abort was incorrect`)
@@ -116,12 +119,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     it('closes for writing', async () => {
       const signal = AbortSignal.timeout(1_000)
 
-      const eventPromises = Promise.all([
-        raceEvent(outboundStream, 'closeWrite'),
-        raceEvent(inboundStream, 'remoteCloseWrite')
-      ])
+      const eventPromise = pEvent(inboundStream, 'remoteCloseWrite')
 
-      void outboundStream.closeWrite({
+      void outboundStream.close({
         signal
       })
 
@@ -129,9 +129,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       await delay(100)
 
-      expect(inboundStream).to.have.property('readStatus', 'closed')
+      expect(inboundStream).to.have.property('readStatus', 'readable')
 
-      await eventPromises
+      await eventPromise
 
       streams.forEach(stream => {
         expect(stream).to.have.property('status', 'open', `${stream.direction} stream status was incorrect`)
@@ -147,18 +147,15 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(outboundStream).to.have.property('readStatus', 'readable', 'inbound stream readStatus was incorrect')
 
       expect(outboundStream).to.not.have.nested.property('timeline.closeRead', 'inbound stream timeline.closeRead was incorrect')
-      expect(isValidTick(outboundStream.timeline.closeWrite)).to.equal(true, 'inbound stream timeline.closeWrite was incorrect')
 
       expect(inboundStream).to.have.property('writeStatus', 'writable', 'inbound stream writeStatus was incorrect')
-      expect(inboundStream).to.have.property('readStatus', 'closed', 'inbound stream readStatus was incorrect')
-
-      expect(inboundStream).to.not.have.nested.property('timeline.closeWrite', 'inbound stream timeline.closeWrite was incorrect')
+      expect(inboundStream).to.have.property('readStatus', 'readable', 'inbound stream readStatus was incorrect')
     })
 
     it('aborts', async () => {
       const eventPromises = Promise.all([
-        raceEvent<StreamCloseEvent>(outboundStream, 'close'),
-        raceEvent<StreamCloseEvent>(inboundStream, 'close')
+        pEvent<'close', StreamCloseEvent>(outboundStream, 'close'),
+        pEvent<'close', StreamCloseEvent>(inboundStream, 'close')
       ])
 
       const err = new Error('Urk!')
@@ -176,18 +173,16 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       })
 
       expect(outboundStream).to.have.property('status', 'aborted', 'outbound stream status was incorrect')
-      expect(isValidTick(outboundStream.timeline.abort)).to.equal(true, 'outbound stream timeline.abort was incorrect')
-      expect(outboundStream).to.not.have.nested.property('timeline.reset', 'outbound stream timeline.reset was incorrect')
+      expect(isValidTick(outboundStream.timeline.close)).to.equal(true, 'outbound stream timeline.abort was incorrect')
 
       expect(inboundStream).to.have.property('status', 'reset', 'inbound stream status was incorrect')
-      expect(inboundStream).to.not.have.nested.property('timeline.abort', 'outbound stream timeline.abort was incorrect')
-      expect(isValidTick(inboundStream.timeline.reset)).to.equal(true, 'inbound stream timeline.reset was incorrect')
+      expect(isValidTick(inboundStream.timeline.close)).to.equal(true, 'inbound stream timeline.reset was incorrect')
 
       expect(() => outboundStream.send(Uint8Array.from([0, 1, 2, 3]))).to.throw()
-        .with.property('name', 'StreamAbortedError', 'could still write to aborted stream')
+        .with.property('name', 'StreamStateError', 'could still write to aborted stream')
 
       expect(() => inboundStream.send(Uint8Array.from([0, 1, 2, 3]))).to.throw()
-        .with.property('name', 'StreamResetError', 'could still write to reset stream')
+        .with.property('name', 'StreamStateError', 'could still write to reset stream')
 
       expect(outboundEvent).to.have.property('error', err)
       expect(inboundEvent).to.have.nested.property('error.name', 'StreamResetError')
@@ -198,8 +193,8 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const sendCloseReadSpy = Sinon.spy(outboundStream, 'sendCloseRead')
 
       await Promise.all([
-        raceEvent(outboundStream, 'remoteCloseWrite'),
-        inboundStream.closeWrite()
+        pEvent(outboundStream, 'remoteCloseWrite'),
+        inboundStream.close()
       ])
 
       await delay(100)
@@ -214,13 +209,13 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       const sendCloseWriteSpy = Sinon.spy(outboundStream, 'sendCloseWrite')
 
       await Promise.all([
-        raceEvent(outboundStream, 'close'),
+        pEvent(outboundStream, 'close'),
         inboundStream.abort(new Error('Urk!'))
       ])
 
       await delay(100)
 
-      await outboundStream.closeWrite()
+      await outboundStream.close()
 
       await delay(100)
 
@@ -257,7 +252,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(outboundStream.writeStatus).to.equal('paused')
 
       // close gracefully
-      await outboundStream.closeWrite()
+      await outboundStream.close()
 
       await expect(receivedAll.promise).to.eventually.be.true('did not receive all data')
     })
@@ -291,22 +286,28 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(outboundStream.writeStatus).to.equal('paused')
 
       // close gracefully
-      await outboundStream.closeWrite()
+      await outboundStream.close()
 
       await expect(receivedAll.promise).to.eventually.be.true('did not receive all data')
     })
 
     it('should abort close due to timeout with slow sender', async () => {
+      const chunkSize = 1024
+
+      // make the 'drain' event slow to fire
       // @ts-expect-error private fields
       outboundConnection.local.delay = 100
 
       inboundStream = streams[0]
       outboundStream = streams[1]
 
+      // ensure there are bytes left in the write queue
+      // @ts-expect-error private fields
+      outboundStream.maxChunkSize = chunkSize - 1
+
       // fill the send buffer
       while (true) {
-        const length = 1024
-        const sendMore = outboundStream.send(new Uint8Array(length))
+        const sendMore = outboundStream.send(new Uint8Array(chunkSize))
 
         if (sendMore === false) {
           break
@@ -315,11 +316,11 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       expect(outboundStream.writeStatus).to.equal('paused')
 
-      // close stream, should be aborted
-      await expect(outboundStream.closeWrite({
+      // close stream, should be aborted as drain event will not have fired
+      await expect(outboundStream.close({
         signal: AbortSignal.timeout(10)
       })).to.eventually.be.rejected
-        .with.property('name', 'AbortError')
+        .with.property('name', 'TimeoutError')
     })
   })
 }

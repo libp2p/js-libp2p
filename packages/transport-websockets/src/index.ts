@@ -25,8 +25,8 @@
 
 import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@libp2p/interface'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
+import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
-import { raceEvent } from 'race-event'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { socketToMaConn } from './websocket-to-conn.js'
@@ -125,7 +125,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       remoteAddr: ma,
       metrics: this.metrics?.dialerEvents,
       direction: 'outbound',
-      log: this.components.logger.forComponent('libp2p:websockets:connection:outbound')
+      log: this.components.logger.forComponent('libp2p:websockets:connection')
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 
@@ -143,13 +143,11 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
 
     try {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
-      await raceEvent(websocket, 'open', options.signal, {
-        errorEvent: 'error',
-        error: new ConnectionFailedError(`Could not connect to ${uri}`)
-      })
+      await pEvent(websocket, 'open', options)
     } catch (err: any) {
       if (options.signal?.aborted) {
         this.metrics?.dialerEvents.increment({ abort: true })
+        throw new ConnectionFailedError(`Could not connect to ${uri}`)
       } else {
         this.metrics?.dialerEvents.increment({ error: true })
       }

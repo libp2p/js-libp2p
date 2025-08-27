@@ -1,6 +1,6 @@
 import { multiaddrConnectionPair, byteStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { TestSetup } from '../index.js'
 import type { Stream, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
@@ -51,7 +51,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         listenerStream,
         dialerStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 
@@ -76,10 +76,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         dialerInboundStream,
         listenerOutboundStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream(),
 
-        raceEvent<CustomEvent<Stream>>(dialer, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(dialer, 'stream').then(evt => evt.detail),
         listener.createStream()
       ])
 
@@ -109,7 +109,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         listenerStream,
         dialerStream
       ] = await Promise.all([
-        raceEvent<CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
         dialer.createStream()
       ])
 

@@ -53,51 +53,46 @@ import type { MessageStream } from '@libp2p/interface'
 export async function select <Stream extends MessageStream> (stream: Stream, protocols: string | string[], options: MultistreamSelectInit = {}): Promise<string> {
   protocols = Array.isArray(protocols) ? [...protocols] : [protocols]
 
-  const log = stream.log.newScope('mss:select')
+  if (protocols.length === 0) {
+    throw new Error('At least one protocol must be specified')
+  }
 
+  const log = stream.log.newScope('mss:select')
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH,
     stopPropagation: true
   })
-  const protocol = protocols.shift()
 
-  if (protocol == null) {
-    throw new Error('At least one protocol must be specified')
-  }
+  for (let i = 0; i < protocols.length; i++) {
+    const protocol = protocols[i]
+    let response: string
 
-  log.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol)
-  const p1 = uint8ArrayFromString(`${PROTOCOL_ID}\n`)
-  const p2 = uint8ArrayFromString(`${protocol}\n`)
-  await lp.writeV([p1, p2], options)
+    if (i === 0) {
+      // Write the multistream-select header along with the first protocol
+      log.trace('write ["%s", "%s"]', PROTOCOL_ID, protocol)
+      const p1 = uint8ArrayFromString(`${PROTOCOL_ID}\n`)
+      const p2 = uint8ArrayFromString(`${protocol}\n`)
+      await lp.writeV([p1, p2], options)
 
-  log.trace('reading multistream-select header')
-  let response = await readString(lp, options)
-  log.trace('read "%s"', response)
+      log.trace('reading multistream-select header')
+      response = await readString(lp, options)
+      log.trace('read "%s"', response)
 
-  // Read the protocol response if we got the protocolId in return
-  if (response === PROTOCOL_ID) {
+      // Read the protocol response if we got the protocolId in return
+      if (response !== PROTOCOL_ID) {
+        log.error('did not read multistream-select header from response')
+        break
+      }
+    } else {
+      // We haven't gotten a valid ack, try the other protocols
+      log.trace('write "%s"', protocol)
+      await lp.write(uint8ArrayFromString(`${protocol}\n`), options)
+    }
+
     log.trace('reading protocol response')
     response = await readString(lp, options)
     log.trace('read "%s"', response)
-  }
-
-  // We're done
-  if (response === protocol) {
-    log.trace('selected "%s" as first offer', response)
-    lp.unwrap()
-
-    return protocol
-  }
-
-  // We haven't gotten a valid ack, try the other protocols
-  for (const protocol of protocols) {
-    log.trace('write "%s"', protocol)
-    await lp.write(uint8ArrayFromString(`${protocol}\n`), options)
-
-    log.trace('reading protocol response')
-    const response = await readString(lp, options)
-    log.trace('read "%s" for "%s"', response, protocol)
 
     if (response === protocol) {
       log.trace('selected "%s" after negotiation', response)
@@ -107,5 +102,5 @@ export async function select <Stream extends MessageStream> (stream: Stream, pro
     }
   }
 
-  throw new UnsupportedProtocolError('protocol selection failed')
+  throw new UnsupportedProtocolError(`Protocol selection failed - could not negotiate ${protocols}`)
 }

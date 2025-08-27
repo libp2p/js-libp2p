@@ -2,7 +2,7 @@
 
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { INVALID_PSK } from '../src/errors.js'
 import { preSharedKey, generateKey } from '../src/index.js'
@@ -47,8 +47,8 @@ describe('private network', () => {
     outbound.send(uint8ArrayFromString('doo dah'))
 
     await Promise.all([
-      raceEvent(inbound, 'remoteCloseWrite'),
-      outbound.closeWrite()
+      pEvent(inbound, 'close'),
+      outbound.close()
     ])
 
     expect(output).to.deep.equal([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
@@ -83,8 +83,8 @@ describe('private network', () => {
     outbound.send(uint8ArrayFromString('doo dah'))
 
     await Promise.all([
-      outbound.closeWrite(),
-      inbound.closeWrite()
+      outbound.close(),
+      inbound.close()
     ])
 
     expect(output).to.not.eql([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])

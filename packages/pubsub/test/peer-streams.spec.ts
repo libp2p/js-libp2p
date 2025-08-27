@@ -1,68 +1,87 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
+import all from 'it-all'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PeerStreams } from '../src/peer-streams.js'
-import { connectionPair } from './utils/index.js'
+import type { PeerStreamsComponents } from '../src/peer-streams.js'
 import type { PeerId } from '@libp2p/interface'
 
 describe('peer-streams', () => {
-  let localPeerId: PeerId
   let remotePeerId: PeerId
+  let components: PeerStreamsComponents
 
   beforeEach(async () => {
-    localPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    components = { logger: defaultLogger() }
   })
 
   it('should receive messages larger than internal MAX_DATA_LENGTH when maxDataLength is set', async () => {
     const messageSize = 6 * 1024 * 1024 // 6MB
     const largeMessage = new Uint8ArrayList(new Uint8Array(messageSize).fill(65)) // Fill with "A"
 
-    // Get both ends of the duplex stream
-    const [connA, connB] = await connectionPair(localPeerId, remotePeerId)
-
-    // Use connB as the inbound (reading) side
-    const inboundStream = await connB.newStream(['a-protocol'])
-    // Use connA as the outbound (writing) side
-    const outboundStream = await connA.newStream(['a-protocol'])
+    // Get both ends of the duplex stream (have to increase max read buffer
+    // length to much larger than message size as the mock muxer base64 encodes
+    // the data which makes it larger than the byte array
+    const [outbound, inbound] = await streamPair({
+      outbound: {
+        maxReadBufferLength: messageSize * 2
+      },
+      outboundConnection: {
+        maxReadBufferLength: messageSize * 2
+      },
+      inbound: {
+        maxReadBufferLength: messageSize * 2
+      },
+      inboundConnection: {
+        maxReadBufferLength: messageSize * 2
+      }
+    })
 
     // Create PeerStreams with increased maxDataLength
-    const peer = new PeerStreams(
-      { logger: defaultLogger() },
-      { id: remotePeerId, protocol: 'a-protocol' }
-    )
+    const peer = new PeerStreams(components, {
+      id: remotePeerId,
+      protocol: 'a-protocol'
+    })
 
-    // Attach the inbound stream on the reading end
-    const inbound = peer.attachInboundStream(inboundStream, { maxDataLength: messageSize })
+    const [
+      receivedMessages
+    ] = await Promise.all([
+      // Attach the inbound stream on the reading end and collect received
+      // messages
+      all(peer.attachInboundStream(inbound, {
+        maxDataLength: messageSize
+      })),
 
-    // Simulate sending data from the outbound side
-    await pipe(
-      [largeMessage],
-      (source) => lp.encode(source, { maxDataLength: messageSize }),
-      async (source) => {
-        for (const buf of source) {
-          const sendMore = outboundStream.send(buf)
+      // Simulate sending data from the outbound side
+      pipe(
+        [largeMessage],
+        (source) => lp.encode(source, {
+          maxDataLength: messageSize
+        }),
+        async (source) => {
+          for (const buf of source) {
+            const sendMore = outbound.send(buf)
 
-          if (sendMore === false) {
-            await raceEvent(outboundStream, 'drain')
+            if (sendMore === false) {
+              await pEvent(outbound, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
+            }
           }
+
+          // Close the outbound writer so the reader knows no more data is coming
+          await outbound.close()
         }
-      }
-    )
-
-    // Close the outbound writer so the reader knows no more data is coming
-    await outboundStream.closeWrite()
-
-    // Collect received messages
-    const receivedMessages: Uint8ArrayList[] = []
-    for await (const msg of inbound) {
-      receivedMessages.push(msg)
-    }
+      )
+    ])
 
     // Check if received correctly
     expect(receivedMessages).to.have.lengthOf(1)

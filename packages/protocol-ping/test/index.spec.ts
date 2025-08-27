@@ -4,7 +4,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { streamPair, byteStream } from '@libp2p/utils'
+import { streamPair, byteStream, echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import Sinon from 'sinon'
@@ -47,7 +47,7 @@ describe('ping', () => {
           incomingStream.send(buf)
         }
 
-        incomingStream.closeWrite()
+        incomingStream.close()
       })
 
     const connection = stubInterface<Connection>({
@@ -69,14 +69,7 @@ describe('ping', () => {
       delay: 1_000
     })
 
-    void Promise.resolve()
-      .then(async () => {
-        for await (const buf of incomingStream) {
-          incomingStream.send(buf)
-        }
-
-        incomingStream.closeWrite()
-      })
+    void echo(incomingStream)
 
     const connection = stubInterface<Connection>({
       log: defaultLogger().forComponent('connection')
@@ -93,7 +86,7 @@ describe('ping', () => {
     await expect(ping.ping(remotePeer, {
       signal
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
 
     // should have aborted stream
     expect(outgoingStreamAbortSpy).to.have.property('called', true)
@@ -126,7 +119,7 @@ describe('ping', () => {
     })
     expect(output2.subarray()).to.equalBytes(input2)
 
-    await outgoingStream.closeWrite()
+    await outgoingStream.close()
   })
 
   it('should throw if sending stalls', async () => {
@@ -154,6 +147,6 @@ describe('ping', () => {
     // remaining 29 bytes
     await delay(200)
 
-    await expect(errorPromise.promise).to.eventually.have.property('name', 'AbortError')
+    await expect(errorPromise.promise).to.eventually.have.property('name', 'TimeoutError')
   })
 })

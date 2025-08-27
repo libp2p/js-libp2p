@@ -159,7 +159,7 @@ describe('identify', () => {
     await expect(identify.identify(connection, {
       signal: AbortSignal.timeout(timeout)
     }))
-      .to.eventually.be.rejected.with.property('name', 'AbortError')
+      .to.eventually.be.rejected.with.property('name', 'TimeoutError')
 
     // should have aborted stream
     expect(outgoingStream).to.have.property('status', 'aborted')

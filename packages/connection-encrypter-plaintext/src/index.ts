@@ -27,7 +27,7 @@ import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { pbStream } from '@libp2p/utils'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { Exchange, KeyType } from './pb/proto.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, ConnectionEncrypter, SecuredConnection, PrivateKey, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
+import type { ComponentLogger, Logger, ConnectionEncrypter, SecuredConnection, PrivateKey, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
 
 const PROTOCOL = '/plaintext/2.0.0'
 
@@ -52,18 +52,18 @@ class Plaintext implements ConnectionEncrypter {
     '@libp2p/connection-encryption'
   ]
 
-  async secureInbound<Stream extends MessageStream = MultiaddrConnection>(connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+  async secureInbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     return this._encrypt(connection, options)
   }
 
-  async secureOutbound<Stream extends MessageStream = MultiaddrConnection>(connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+  async secureOutbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     return this._encrypt(connection, options)
   }
 
   /**
    * Encrypt connection
    */
-  async _encrypt<Stream extends MessageStream = MultiaddrConnection>(connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
+  async _encrypt (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection> {
     const log = connection.log?.newScope('plaintext') ?? this.log
     const pb = pbStream(connection).pb(Exchange)
 

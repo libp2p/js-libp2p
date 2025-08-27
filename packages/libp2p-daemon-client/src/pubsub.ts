@@ -33,7 +33,7 @@ export class Pubsub {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'Pubsub get topics failed')
@@ -69,7 +69,7 @@ export class Pubsub {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'Pubsub publish failed')
@@ -108,7 +108,7 @@ export class Pubsub {
       },
       async cancel () {
         subscribed = false
-        await sh.unwrap().closeWrite()
+        await sh.unwrap().close()
       }
     }
 
@@ -130,7 +130,7 @@ export class Pubsub {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'Pubsub get subscribers failed')

@@ -3,6 +3,7 @@ import * as mss from '@libp2p/multistream-select'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
 import { CONNECTION_CLOSE_TIMEOUT, PROTOCOL_NEGOTIATION_TIMEOUT } from './connection-manager/constants.defaults.ts'
+import { isDirect } from './connection-manager/utils.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
 import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
@@ -39,9 +40,9 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   public readonly remotePeer: PeerId
   public direction: MessageStreamDirection
   public timeline: MultiaddrConnectionTimeline
+  public direct: boolean
   public multiplexer?: string
   public encryption?: string
-  public status: ConnectionStatus
   public limits?: ConnectionLimits
   public readonly log: Logger
 
@@ -61,7 +62,6 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     this.remoteAddr = init.maConn.remoteAddr
     this.remotePeer = init.remotePeer
     this.direction = init.direction ?? 'outbound'
-    this.status = 'open'
     this.timeline = init.maConn.timeline
     this.encryption = init.cryptoProtocol
     this.limits = init.limits
@@ -70,6 +70,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     this.outboundStreamProtocolNegotiationTimeout = init.outboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.closeTimeout = init.closeTimeout ?? CONNECTION_CLOSE_TIMEOUT
+    this.direct = isDirect(init.maConn.remoteAddr)
 
     this.onIncomingStream = this.onIncomingStream.bind(this)
 
@@ -94,6 +95,10 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
   get streams (): Stream[] {
     return this.muxer?.streams ?? []
+  }
+
+  get status (): ConnectionStatus {
+    return this.maConn.status
   }
 
   /**
@@ -147,7 +152,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
         muxedStream.log('negotiated protocol %s', muxedStream.protocol)
       } else {
-        muxedStream.log('pre-negotiated protocol %s', muxedStream.protocol)
+        muxedStream.log('pre-negotiated protocol %s', new Error('wat'))
       }
 
       const outgoingLimit = findOutgoingStreamLimit(muxedStream.protocol, this.components.registrar, options)
@@ -181,13 +186,12 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   }
 
   private async onIncomingStream (evt: CustomEvent<Stream>): Promise<void> {
-    this.log('new incoming stream %s', evt.detail.id)
     const muxedStream = evt.detail
 
     const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
     setMaxListeners(Infinity, signal)
 
-    this.log('start protocol negotiation %s', evt.detail.id)
+    muxedStream.log('start protocol negotiation, timing out after %dms', this.inboundStreamProtocolNegotiationTimeout)
 
     try {
       if (muxedStream.protocol === '') {
@@ -237,12 +241,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
    * Close the connection
    */
   async close (options: AbortOptions = {}): Promise<void> {
-    if (this.status !== 'open') {
-      return
-    }
-
     this.log('closing connection to %a', this.remoteAddr)
-    this.status = 'closing'
 
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.closeTimeout)
@@ -254,24 +253,12 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
       }
     }
 
-    try {
-      this.log.trace('closing underlying transport')
-      await this.maConn.closeWrite(options)
-      this.status = 'closed'
-    } catch (err: any) {
-      this.log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
-      this.abort(err)
-    }
+    await this.muxer?.close(options)
+    await this.maConn.close(options)
   }
 
   abort (err: Error): void {
-    if (this.status !== 'open') {
-      return
-    }
-
-    this.status = 'aborted'
-
-    // abort the underlying transport
+    this.muxer?.abort(err)
     this.maConn.abort(err)
   }
 }

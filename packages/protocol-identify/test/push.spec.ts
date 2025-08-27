@@ -166,7 +166,7 @@ describe('identify (push)', () => {
     components.peerStore.patch.reset()
 
     await expect(identify.handleProtocol(incomingStream, connection)).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
 
     expect(components.peerStore.patch.callCount).to.equal(0, 'patched peer when push timed out')
   })

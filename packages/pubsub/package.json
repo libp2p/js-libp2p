@@ -84,8 +84,8 @@
     "it-pushable": "^3.2.3",
     "main-event": "^1.0.1",
     "multiformats": "^13.3.6",
+    "p-event": "^6.0.1",
     "p-queue": "^8.1.0",
-    "race-event": "^1.6.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
@@ -94,6 +94,7 @@
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.14",
     "delay": "^6.0.0",
+    "it-all": "^3.0.9",
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.1",

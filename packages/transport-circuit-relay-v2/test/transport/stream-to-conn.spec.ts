@@ -6,6 +6,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { pEvent } from 'p-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { streamToMaConnection } from '../../src/transport/stream-to-conn.js'
 
@@ -29,8 +30,8 @@ describe('Convert stream into a multiaddr connection', () => {
 
     await Promise.all([
       pEvent(maConn, 'close'),
-      incoming.closeWrite(),
-      maConn.closeWrite()
+      incoming.close(),
+      maConn.close()
     ])
 
     expect(maConn).to.have.property('status', 'closed')
@@ -53,11 +54,11 @@ describe('Convert stream into a multiaddr connection', () => {
     const [streamData] = await Promise.all([
       streamDataPromise,
       pEvent(maConn, 'close'),
-      incoming.closeWrite(),
-      maConn.closeWrite()
+      incoming.close(),
+      maConn.close()
     ])
 
-    expect(streamData).to.deep.equal([data])
+    expect(new Uint8ArrayList(...streamData).subarray()).to.equalBytes(data)
     // underlying stream end closes the connection
     expect(maConn).to.have.property('status', 'closed')
   })

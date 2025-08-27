@@ -63,21 +63,21 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     }
 
     try {
-      const listenAddresses = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+      const listenAddresses = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
       const peerRecord = new PeerRecord({
-        peerId: this.peerId,
+        peerId: this.components.peerId,
         multiaddrs: listenAddresses
       })
-      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.privateKey)
-      const supportedProtocols = this.registrar.getProtocols()
-      const peer = await this.peerStore.get(this.peerId)
+      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.components.privateKey)
+      const supportedProtocols = this.components.registrar.getProtocols()
+      const peer = await this.components.peerStore.get(this.components.peerId)
       const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
       const protocolVersion = uint8ArrayToString(peer.metadata.get('ProtocolVersion') ?? uint8ArrayFromString(this.host.protocolVersion))
       const self = this
 
       async function * pushToConnections (): AsyncGenerator<() => Promise<void>> {
         for (const connection of self.connectionManager.getConnections()) {
-          const peer = await self.peerStore.get(connection.remotePeer)
+          const peer = await self.components.peerStore.get(connection.remotePeer)
 
           if (!peer.protocols.includes(self.protocol)) {
             continue
@@ -109,7 +109,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
                 signal
               })
 
-              await stream.closeWrite({
+              await stream.close({
                 signal
               })
             } catch (err: any) {
@@ -136,7 +136,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
   async handleProtocol (stream: Stream, connection: Connection): Promise<void> {
     const log = stream.log.newScope('identify-push')
 
-    if (this.peerId.equals(connection.remotePeer)) {
+    if (this.components.peerId.equals(connection.remotePeer)) {
       throw new Error('received push from ourselves?')
     }
 
@@ -149,9 +149,9 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     }).pb(IdentifyMessage)
 
     const message = await pb.read(options)
-    await stream.closeWrite(options)
+    await stream.close(options)
 
-    await consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
+    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, message)
 
     log.trace('handled push from %p', connection.remotePeer)
   }

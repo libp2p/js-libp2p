@@ -24,22 +24,24 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
   constructor (init: StreamMultiaddrConnectionInit) {
     super({
       ...init,
-      direction: init.stream.direction,
-      log: init.log.newScope('stream-to-maconn')
+      direction: init.stream.direction
     })
 
     this.init = init
     this.stream = init.stream
 
     this.stream.addEventListener('close', (evt) => {
-      if (evt.error) {
-        this.abort(evt.error)
-      } else {
-        this.closeWrite()
-          .catch(err => {
-            this.abort(err)
-          })
-      }
+      this.onTransportClosed(evt.error)
+    })
+
+    this.stream.addEventListener('remoteCloseWrite', (evt) => {
+      this.onRemoteCloseWrite()
+
+      // close our end when the remote closes
+      this.close()
+        .catch(err => {
+          this.abort(err)
+        })
     })
 
     // count incoming bytes
@@ -47,25 +49,6 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
       init.onDataRead?.(evt.data)
       this.onData(evt.data)
     })
-
-    this.stream.addEventListener('closeWrite', () => {
-      this.closeWrite()
-        .catch(err => {
-          this.abort(err)
-        })
-    })
-
-    this.stream.addEventListener('remoteCloseWrite', () => {
-      this.onRemoteCloseWrite()
-    })
-
-    this.stream.addEventListener('remoteCloseRead', () => {
-      this.onRemoteCloseRead()
-    })
-  }
-
-  async sendClose (options?: AbortOptions): Promise<void> {
-    await this.stream.closeWrite(options)
   }
 
   sendData (data: Uint8ArrayList): SendResult {
@@ -77,16 +60,12 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
     }
   }
 
+  async sendClose (options?: AbortOptions): Promise<void> {
+    await this.stream.close(options)
+  }
+
   sendReset (): void {
     this.stream.abort(new Error('An error occurred'))
-  }
-
-  sendCloseWrite (options?: AbortOptions): Promise<void> {
-    return this.stream.closeWrite(options)
-  }
-
-  sendCloseRead (options?: AbortOptions): Promise<void> {
-    return this.stream.closeRead(options)
   }
 
   sendPause (): void {

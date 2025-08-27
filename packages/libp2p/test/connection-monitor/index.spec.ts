@@ -90,7 +90,10 @@ describe('connection monitor', () => {
 
   it('should abort a connection that times out', async () => {
     monitor = new ConnectionMonitor(components, {
-      pingInterval: 50
+      pingInterval: 50,
+      pingTimeout: {
+        maxTimeout: 50
+      }
     })
 
     await start(monitor)

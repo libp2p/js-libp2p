@@ -1,5 +1,5 @@
 import { pushable } from 'it-pushable'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_LIMITED_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
 import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
@@ -84,11 +84,15 @@ export class Perf implements Startable, PerfInterface {
         const sendMore = stream.send(buf)
 
         if (!sendMore) {
-          await raceEvent(stream, 'drain')
+          await pEvent(stream, 'drain', {
+            rejectionEvents: [
+              'close'
+            ]
+          })
         }
       }
 
-      await stream.closeWrite()
+      await stream.close()
     } catch (err: any) {
       stream.abort(err)
     }
@@ -135,7 +139,11 @@ export class Perf implements Startable, PerfInterface {
         const sendMore = stream.send(uint8Buf.subarray(0, 8))
 
         if (!sendMore) {
-          await raceEvent(stream, 'drain')
+          await pEvent(stream, 'drain', {
+            rejectionEvents: [
+              'close'
+            ]
+          })
         }
 
         while (sendBytes > 0) {
@@ -148,7 +156,11 @@ export class Perf implements Startable, PerfInterface {
           const sendMore = stream.send(uint8Buf.subarray(0, toSend))
 
           if (!sendMore) {
-            await raceEvent(stream, 'drain')
+            await pEvent(stream, 'drain', {
+              rejectionEvents: [
+                'close'
+              ]
+            })
           }
 
           sendBytes -= toSend
@@ -181,7 +193,7 @@ export class Perf implements Startable, PerfInterface {
 
       log('upload complete after %d ms', Date.now() - uploadStart)
 
-      await stream.closeWrite(options)
+      await stream.close(options)
 
       // Read the received bytes
       let lastAmountOfBytesReceived = 0

@@ -128,6 +128,7 @@ export function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirect
     bidiStream,
     id: streamId,
     direction,
-    log: log.newScope(`${direction}:${streamId}`)
+    log: log.newScope(`${direction}:${streamId}`),
+    protocol: ''
   })
 }

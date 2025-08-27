@@ -1,8 +1,8 @@
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
 import client from 'prom-client'
-import { raceEvent } from 'race-event'
 import { prometheusMetrics } from '../src/index.js'
 
 describe('streams', () => {
@@ -21,9 +21,9 @@ describe('streams', () => {
     outbound.send(data)
 
     await Promise.all([
-      raceEvent(inbound, 'close'),
-      outbound.closeWrite(),
-      inbound.closeWrite()
+      pEvent(inbound, 'close'),
+      outbound.close(),
+      inbound.close()
     ])
 
     const scrapedMetrics = await client.register.metrics()
@@ -45,9 +45,9 @@ describe('streams', () => {
     inbound.send(data)
 
     await Promise.all([
-      raceEvent(inbound, 'close'),
-      outbound.closeWrite(),
-      inbound.closeWrite()
+      pEvent(inbound, 'close'),
+      outbound.close(),
+      inbound.close()
     ])
 
     const scrapedMetrics = await client.register.metrics()
@@ -69,9 +69,9 @@ describe('streams', () => {
     outbound.send(data)
 
     await Promise.all([
-      raceEvent(inbound, 'close'),
-      outbound.closeWrite(),
-      inbound.closeWrite()
+      pEvent(inbound, 'close'),
+      outbound.close(),
+      inbound.close()
     ])
 
     const scrapedMetrics = await client.register.metrics()
@@ -93,9 +93,9 @@ describe('streams', () => {
     inbound.send(data)
 
     await Promise.all([
-      raceEvent(inbound, 'close'),
-      outbound.closeWrite(),
-      inbound.closeWrite()
+      pEvent(inbound, 'close'),
+      outbound.close(),
+      inbound.close()
     ])
 
     const scrapedMetrics = await client.register.metrics()

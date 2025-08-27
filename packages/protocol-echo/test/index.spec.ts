@@ -56,7 +56,7 @@ describe('echo', () => {
     const input = Uint8Array.from([0, 1, 2, 3])
 
     outgoingStream.send(input)
-    outgoingStream.closeWrite()
+    outgoingStream.close()
 
     expect(new Uint8ArrayList(...(await output)).subarray()).to.equalBytes(input)
   })
@@ -71,9 +71,7 @@ describe('echo', () => {
 
     const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
 
-    components.connectionManager.openConnection.withArgs(ma).resolves(stubInterface<Connection>({
-      newStream: async () => outgoingStream
-    }))
+    components.connectionManager.openStream.withArgs(ma).resolves(outgoingStream)
 
     const input = Uint8Array.from([0, 1, 2, 3])
 

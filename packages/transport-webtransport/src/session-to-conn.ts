@@ -27,12 +27,8 @@ class WebTransportSessionMultiaddrConnection extends AbstractMultiaddrConnection
     this.cleanUpWTSession('abort')
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+  async sendClose (options?: AbortOptions): Promise<void> {
     this.cleanUpWTSession('close')
-    options?.signal?.throwIfAborted()
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
     options?.signal?.throwIfAborted()
   }
 

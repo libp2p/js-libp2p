@@ -121,6 +121,7 @@ export function createStream (options: Options): MplexStream {
     direction,
     maxDataSize: maxMsgSize,
     muxer,
-    log: options.log.newScope(`${direction}:${id}`)
+    log: options.log.newScope(`${direction}:${id}`),
+    protocol: ''
   })
 }

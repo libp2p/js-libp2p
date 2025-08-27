@@ -14,7 +14,7 @@ import type { ICryptoInterface } from './crypto.js'
 import type { NoiseComponents } from './index.js'
 import type { MetricsRegistry } from './metrics.js'
 import type { HandshakeResult, ICrypto, INoiseConnection, INoiseExtensions, KeyPair } from './types.js'
-import type { MultiaddrConnection, SecuredConnection, PrivateKey, PublicKey, StreamMuxerFactory, SecureConnectionOptions, Logger, MessageStream } from '@libp2p/interface'
+import type { SecuredConnection, PrivateKey, PublicKey, StreamMuxerFactory, SecureConnectionOptions, Logger, MessageStream } from '@libp2p/interface'
 import type { LengthPrefixedStream } from '@libp2p/utils'
 
 export interface NoiseExtensions {
@@ -80,7 +80,7 @@ export class Noise implements INoiseConnection {
    * @param options.remotePeer - PeerId of the remote peer. Used to validate the integrity of the remote peer
    * @param options.signal - Used to abort the operation
    */
-  async secureOutbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<INoiseExtensions>> {
+  async secureOutbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection<INoiseExtensions>> {
     const log = connection.log?.newScope('noise') ?? this.log
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,
@@ -135,7 +135,7 @@ export class Noise implements INoiseConnection {
    * @param options.remotePeer - PeerId of the remote peer. Used to validate the integrity of the remote peer
    * @param options.signal - Used to abort the operation
    */
-  async secureInbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<INoiseExtensions>> {
+  async secureInbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection<INoiseExtensions>> {
     const log = connection.log?.newScope('noise') ?? this.log
     const wrappedConnection = lpStream(connection, {
       lengthEncoder: uint16BEEncode,

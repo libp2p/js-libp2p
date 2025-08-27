@@ -64,13 +64,10 @@ export class YamuxStream extends AbstractStream {
     this.getRTT = init.getRTT
     this.sendFrame = init.sendFrame
 
-    this.addEventListener('message', () => {
-      this.sendWindowUpdate()
-    })
-
-    this.addEventListener('close', () => {
+    const setStateToFinishedOnCloseListener = (): void => {
       this.state = StreamState.Finished
-    })
+    }
+    this.addEventListener('close', setStateToFinishedOnCloseListener)
   }
 
   /**
@@ -108,6 +105,7 @@ export class YamuxStream extends AbstractStream {
 
       if (!muxerSendMore) {
         canSendMore = muxerSendMore
+        this.log('sent %d/%d bytes, wait for muxer to have more send capacity', sentBytes, totalBytes)
         break
       }
     }
@@ -172,7 +170,6 @@ export class YamuxStream extends AbstractStream {
    * handleWindowUpdate is called when the stream receives a window update frame
    */
   handleWindowUpdate (frame: Frame): void {
-    this.log?.trace('stream received window update')
     this.processFlags(frame.header.flag)
 
     // increase send window
@@ -181,6 +178,7 @@ export class YamuxStream extends AbstractStream {
 
     // if the update increments a 0 availability, notify the stream that sending can resume
     if (available === 0 && frame.header.length > 0) {
+      this.log?.trace('window update of %d bytes allows more data to be sent', frame.header.length)
       this.safeDispatchEvent('drain')
     }
   }
@@ -193,7 +191,6 @@ export class YamuxStream extends AbstractStream {
       throw new InvalidFrameError('Frame was not data frame')
     }
 
-    this.log?.trace('stream received data')
     this.processFlags(frame.header.flag)
 
     // check that our recv window is not exceeded
@@ -204,6 +201,8 @@ export class YamuxStream extends AbstractStream {
     this.recvWindowCapacity -= frame.header.length
 
     this.onData(frame.data)
+
+    this.sendWindowUpdate()
   }
 
   /**

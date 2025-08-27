@@ -265,7 +265,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     onProgress?.(new CustomProgressEvent('webtransport:close-authentication-stream'))
 
     // We're done with this authentication stream
-    await messages.closeWrite({
+    await messages.close({
       signal
     })
 

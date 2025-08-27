@@ -16,7 +16,7 @@ import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { Libp2p } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 
-const DHT_PROTOCOL = '/integration-test/circuit-relay/1.0.0'
+const DHT_PROTOCOL = '/integration-test/circuit-relay/dht/1.0.0'
 
 describe('circuit-relay discovery', () => {
   let local: Libp2p
@@ -175,9 +175,9 @@ describe('circuit-relay discovery', () => {
     expect(remoteRelayPeerId.toString()).to.equal(relay.peerId.toString())
 
     const relayedAddr = getRelayAddress(remote)
+
     // Dial from remote through the relayed address
     const conn = await local.dial(relayedAddr)
-
-    expect(conn).to.exist()
+    expect(conn.remotePeer).to.deep.equal(remote.peerId)
   })
 })

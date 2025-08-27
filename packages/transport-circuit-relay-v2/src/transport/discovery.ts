@@ -203,7 +203,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
   }
 
   onPeer (evt: CustomEvent<PeerInfo>): void {
-    this.log.trace('maybe dialing discovered peer %p - %e', evt.detail.id)
+    this.log.trace('maybe dialing discovered peer %p', evt.detail.id)
 
     this.maybeDialPeer(evt)
       .catch(err => {

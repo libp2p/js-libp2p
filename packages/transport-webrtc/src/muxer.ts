@@ -1,5 +1,5 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { MUXER_PROTOCOL } from './constants.js'
 import { createStream, WebRTCStream } from './stream.js'
 import type { DataChannelOptions } from './index.js'
@@ -72,7 +72,6 @@ export interface DataChannelMuxerComponents {
 export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implements StreamMuxer<WebRTCStream> {
   private readonly peerConnection: RTCPeerConnection
   private readonly dataChannelOptions: DataChannelOptions
-  private readonly metrics?: CounterGroup
 
   constructor (maConn: MultiaddrConnection, init: DataChannelMuxerInit) {
     super(maConn, {
@@ -82,7 +81,6 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
 
     this.peerConnection = init.peerConnection
     this.protocol = init.protocol ?? MUXER_PROTOCOL
-    this.metrics = init.metrics
     this.dataChannelOptions = init.dataChannelOptions ?? {}
 
     /**
@@ -123,7 +121,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
 
     if (channel.readyState !== 'open') {
       this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', channel.readyState)
-      await raceEvent(channel, 'open', options?.signal)
+      await pEvent(channel, 'open', options)
 
       this.log('channel state is now "%s", sending data', channel.readyState)
     }
@@ -135,8 +133,6 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       direction: 'outbound',
       log: this.log
     })
-    this.streams.push(stream)
-    this.metrics?.increment({ outgoing_stream: true })
 
     return stream
   }

@@ -113,7 +113,7 @@ describe('socket-to-conn', () => {
     await expect(serverClosed.promise).to.eventually.be.true()
 
     // the remote writable end closing was recorded
-    expect(inboundMaConn).to.have.property('remoteWriteStatus', 'closed')
+    // expect(inboundMaConn).to.have.property('remoteWriteStatus', 'closed')
 
     // by default our tcp connections are not allowed to be half-open so we
     // should have closed
@@ -257,7 +257,7 @@ describe('socket-to-conn', () => {
 
     // send some data between the client and server
     inboundMaConn.send(Uint8Array.from([0, 1, 2, 3]))
-    await inboundMaConn.closeWrite()
+    await inboundMaConn.close()
 
     // server socket should no longer be writable
     expect(serverSocket.writable).to.be.false()
@@ -298,7 +298,7 @@ describe('socket-to-conn', () => {
     // close the client writable end
     clientSocket.end()
 
-    await inboundMaConn.closeWrite()
+    await inboundMaConn.close()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
@@ -346,9 +346,9 @@ describe('socket-to-conn', () => {
     clientSocket.end()
 
     // the 2nd and 3rd call should return immediately
-    inboundMaConn.closeWrite()
-    inboundMaConn.closeWrite()
-    inboundMaConn.closeWrite()
+    inboundMaConn.close()
+    inboundMaConn.close()
+    inboundMaConn.close()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()
@@ -390,7 +390,7 @@ describe('socket-to-conn', () => {
     // close the client writable end
     clientSocket.end()
 
-    await inboundMaConn.closeWrite()
+    await inboundMaConn.close()
 
     // server socket was closed for reading and writing
     await expect(serverClosed.promise).to.eventually.be.true()

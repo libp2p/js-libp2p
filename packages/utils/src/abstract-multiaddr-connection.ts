@@ -1,7 +1,8 @@
+import { pEvent } from 'p-event'
 import { AbstractMessageStream } from './abstract-message-stream.ts'
 import type { MessageStreamInit } from './abstract-message-stream.ts'
 import type { CounterGroup, Logger, MultiaddrConnection, MessageStreamDirection } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
 
 export interface AbstractMultiaddrConnectionInit extends Omit<MessageStreamInit, 'log'> {
   remoteAddr: Multiaddr
@@ -44,4 +45,35 @@ export abstract class AbstractMultiaddrConnection extends AbstractMessageStream 
       }
     })
   }
+
+  async close (options?: AbortOptions): Promise<void> {
+    if (this.status !== 'open') {
+      return
+    }
+
+    this.status = 'closing'
+    this.writeStatus = 'closing'
+    this.remoteWriteStatus = 'closing'
+    this.remoteReadStatus = 'closing'
+
+    if (this.writeBuffer.byteLength > 0) {
+      this.log.trace('waiting for write queue to become idle before closing stream, %d unsent bytes', this.writeBuffer.byteLength)
+      await pEvent(this, 'idle', {
+        ...options,
+        rejectionEvents: [
+          'close'
+        ]
+      })
+    }
+
+    await this.sendClose(options)
+
+    this.onTransportClosed()
+  }
+
+  /**
+   * Wait for any unsent data to be written to the underlying resource, then
+   * close the resource and resolve the returned promise
+   */
+  abstract sendClose (options?: AbortOptions): Promise<void>
 }

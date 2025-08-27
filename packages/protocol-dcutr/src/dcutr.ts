@@ -212,7 +212,7 @@ export class DefaultDCUtRService implements Startable {
         }
       } finally {
         if (stream != null) {
-          await stream.closeWrite(options)
+          await stream.close(options)
         }
       }
     }
@@ -343,7 +343,7 @@ export class DefaultDCUtRService implements Startable {
 
     this.log('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
     await relayedConnection.close(options)
-    await stream.closeWrite(options)
+    await stream.close(options)
   }
 
   /**

@@ -5,7 +5,7 @@ import { echo, multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import randomBytes from 'iso-random-stream/src/random.js'
 import { pushable } from 'it-pushable'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import randomInt from 'random-int'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
@@ -89,8 +89,8 @@ describe('stream', () => {
     pair.initiatorStream.send(Uint8Array.from([0, 1, 2, 3, 4]))
 
     await Promise.all([
-      pair.receiverStream.closeWrite(),
-      pair.initiatorStream.closeWrite()
+      pair.receiverStream.close(),
+      pair.initiatorStream.close()
     ])
 
     const msgs = await pair.initiatorMessages()
@@ -105,7 +105,7 @@ describe('stream', () => {
     const pair = await streamPair()
 
     const [evt] = await Promise.all([
-      raceEvent<StreamCloseEvent>(pair.initiatorStream, 'close'),
+      pEvent<'close', StreamCloseEvent>(pair.initiatorStream, 'close'),
       pair.initiatorStream.abort(error)
     ])
 
@@ -114,7 +114,7 @@ describe('stream', () => {
 
   it('should end a stream when it is reset', async () => {
     const pair = await streamPair()
-    const evtPromise = raceEvent<StreamCloseEvent>(pair.initiatorStream, 'close')
+    const evtPromise = pEvent<'close', StreamCloseEvent>(pair.initiatorStream, 'close')
     pair.initiatorStream.onRemoteReset()
 
     await expect(evtPromise).to.eventually.have.nested.property('error.name', 'StreamResetError')
@@ -125,18 +125,24 @@ describe('stream', () => {
     const input = randomInput()
 
     for (const buf of input) {
+      if (pair.initiatorStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMore = pair.initiatorStream.send(buf)
 
       if (!sendMore) {
-        await pair.initiatorStream.onDrain
+        await pEvent(pair.initiatorStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      raceEvent(pair.receiverStream, 'close'),
-      raceEvent(pair.initiatorStream, 'close'),
-      pair.receiverStream.closeWrite(),
-      pair.initiatorStream.closeWrite()
+      pEvent(pair.receiverStream, 'close'),
+      pEvent(pair.initiatorStream, 'close'),
+      pair.receiverStream.close(),
+      pair.initiatorStream.close()
     ])
 
     // First and last should be NEW_STREAM and CLOSE
@@ -156,17 +162,23 @@ describe('stream', () => {
     const input = randomInput()
 
     for (const buf of input) {
+      if (pair.receiverStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await pair.receiverStream.onDrain
+        await pEvent(pair.receiverStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      pair.receiverStream.closeWrite(),
-      pair.initiatorStream.closeWrite(),
-      raceEvent(pair.initiatorStream, 'close')
+      pair.receiverStream.close(),
+      pair.initiatorStream.close(),
+      pEvent(pair.initiatorStream, 'close')
     ])
 
     // Last should be CLOSE
@@ -189,13 +201,15 @@ describe('stream', () => {
       const sendMore = pair.initiatorStream.send(buf)
 
       if (!sendMore) {
-        await pair.initiatorStream.onDrain
+        await pEvent(pair.initiatorStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      raceEvent(pair.receiverStream, 'remoteCloseWrite'),
-      pair.initiatorStream.closeWrite()
+      pEvent(pair.receiverStream, 'remoteCloseWrite'),
+      pair.initiatorStream.close()
     ])
 
     const msgs = await pair.initiatorMessages()
@@ -210,16 +224,22 @@ describe('stream', () => {
     const input = randomInput()
 
     for (const buf of input) {
+      if (pair.receiverStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await pair.receiverStream.onDrain
+        await pEvent(pair.receiverStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'remoteCloseWrite'),
-      pair.receiverStream.closeWrite()
+      pEvent(pair.initiatorStream, 'remoteCloseWrite'),
+      pair.receiverStream.close()
     ])
 
     const msgs = await pair.receiverMessages()
@@ -233,17 +253,23 @@ describe('stream', () => {
     const pair = await streamPair()
 
     for (const buf of randomInput()) {
+      if (pair.receiverStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await pair.receiverStream.onDrain
+        await pEvent(pair.receiverStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     const error = new Error(`Boom ${Date.now()}`)
 
     await Promise.all([
-      raceEvent(pair.receiverStream, 'close'),
+      pEvent(pair.receiverStream, 'close'),
       pair.initiatorStream.abort(error)
     ])
 
@@ -258,17 +284,23 @@ describe('stream', () => {
     const pair = await streamPair()
 
     for (const buf of randomInput()) {
+      if (pair.receiverStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMore = pair.receiverStream.send(buf)
 
       if (!sendMore) {
-        await pair.receiverStream.onDrain
+        await pEvent(pair.receiverStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     const error = new Error(`Boom ${Date.now()}`)
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'close'),
+      pEvent(pair.initiatorStream, 'close'),
       pair.receiverStream.abort(error)
     ])
 
@@ -286,16 +318,22 @@ describe('stream', () => {
     void echo(pair.receiverStream)
 
     for (const buf of randomInput(dataLength, dataLength)) {
+      if (pair.initiatorStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await pair.initiatorStream.onDrain
+        await pEvent(pair.initiatorStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'close'),
-      pair.initiatorStream.closeWrite()
+      pEvent(pair.initiatorStream, 'close'),
+      pair.initiatorStream.close()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
@@ -318,22 +356,34 @@ describe('stream', () => {
     const pair = await streamPair()
 
     for (const buf of randomInput(dataLength, dataLength)) {
+      if (pair.initiatorStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await pair.initiatorStream.onDrain
+        await pEvent(pair.initiatorStream, 'drain', {
+          rejectionEvents: ['close']
+        })
+      }
+
+      if (pair.receiverStream.writeStatus !== 'writable') {
+        break
       }
 
       const sendMoreReceiver = pair.receiverStream.send(buf)
 
       if (!sendMoreReceiver) {
-        await pair.receiverStream.onDrain
+        await pEvent(pair.receiverStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'remoteCloseWrite'),
-      pair.receiverStream.closeWrite()
+      pEvent(pair.initiatorStream, 'remoteCloseWrite'),
+      pair.receiverStream.close()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()
@@ -365,21 +415,33 @@ describe('stream', () => {
     const pair = await streamPair()
 
     for (const buf of randomInput(dataLength, dataLength)) {
+      if (pair.initiatorStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await pair.initiatorStream.onDrain
+        await pEvent(pair.initiatorStream, 'drain', {
+          rejectionEvents: ['close']
+        })
+      }
+
+      if (pair.receiverStream.writeStatus !== 'writable') {
+        break
       }
 
       const sendMoreReceiver = pair.receiverStream.send(buf)
 
       if (!sendMoreReceiver) {
-        await pair.receiverStream.onDrain
+        await pEvent(pair.receiverStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      raceEvent(pair.receiverStream, 'close'),
+      pEvent(pair.receiverStream, 'close'),
       pair.initiatorStream.abort(new Error('wat'))
     ])
 
@@ -404,21 +466,33 @@ describe('stream', () => {
     const pair = await streamPair()
 
     for (const buf of randomInput(dataLength, dataLength)) {
+      if (pair.initiatorStream.writeStatus !== 'writable') {
+        break
+      }
+
       const sendMoreInitiator = pair.initiatorStream.send(buf)
 
       if (!sendMoreInitiator) {
-        await pair.initiatorStream.onDrain
+        await pEvent(pair.initiatorStream, 'drain', {
+          rejectionEvents: ['close']
+        })
+      }
+
+      if (pair.receiverStream.writeStatus !== 'writable') {
+        break
       }
 
       const sendMoreReceiver = pair.receiverStream.send(buf)
 
       if (!sendMoreReceiver) {
-        await pair.receiverStream.onDrain
+        await pEvent(pair.receiverStream, 'drain', {
+          rejectionEvents: ['close']
+        })
       }
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'close'),
+      pEvent(pair.initiatorStream, 'close'),
       pair.receiverStream.abort(new Error('wat'))
     ])
 
@@ -444,14 +518,16 @@ describe('stream', () => {
     const buf = new Uint8Array(MAX_MSG_SIZE * 2)
 
     if (!pair.initiatorStream.send(buf)) {
-      await pair.initiatorStream.onDrain
+      await pEvent(pair.initiatorStream, 'drain', {
+        rejectionEvents: ['close']
+      })
     }
 
     await Promise.all([
-      raceEvent(pair.initiatorStream, 'close'),
-      raceEvent(pair.receiverStream, 'close'),
-      pair.initiatorStream.closeWrite(),
-      pair.receiverStream.closeWrite()
+      pEvent(pair.initiatorStream, 'close'),
+      pEvent(pair.receiverStream, 'close'),
+      pair.initiatorStream.close(),
+      pair.receiverStream.close()
     ])
 
     const initiatorSentMessages = await pair.initiatorMessages()

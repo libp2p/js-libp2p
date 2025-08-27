@@ -1,4 +1,4 @@
-import type { AbortOptions, StreamMuxerFactory, MultiaddrConnection, PeerId, MessageStream } from './index.js'
+import type { AbortOptions, StreamMuxerFactory, PeerId, MessageStream } from './index.js'
 
 /**
  * If the remote PeerId is known and passed as an option, the securing operation
@@ -29,14 +29,14 @@ export interface ConnectionEncrypter<Extension = unknown> {
    * pass it for extra verification, otherwise it will be determined during
    * the handshake.
    */
-  secureOutbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
+  secureOutbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
 
   /**
    * Decrypt incoming data. If the remote PeerId is known,
    * pass it for extra verification, otherwise it will be determined during
    * the handshake
    */
-  secureInbound <Stream extends MessageStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
+  secureInbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
 }
 
 export interface SecuredConnection<Extension = unknown> {

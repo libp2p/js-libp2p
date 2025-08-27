@@ -60,6 +60,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     context.keepAlive = context.keepAlive ?? true
     context.noDelay = context.noDelay ?? true
+    context.allowHalfOpen = context.allowHalfOpen ?? false
 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
@@ -167,7 +168,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         metricPrefix: `${this.addr} `,
         direction: 'inbound',
         localAddr: this.status.listeningAddr,
-        log: this.context.logger.forComponent('libp2p:tcp:connection:inbound')
+        log: this.context.logger.forComponent('libp2p:tcp:connection')
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)

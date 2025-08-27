@@ -257,7 +257,7 @@ export class AutoNATv2Client implements Startable {
         status: DialBackResponse.DialBackStatus.OK
       }, DialBackResponse)
 
-      await stream.closeWrite({
+      await stream.close({
         signal
       })
     } catch (err: any) {
@@ -471,7 +471,7 @@ export class AutoNATv2Client implements Startable {
         }
       }, options)
 
-      while (true) {
+      for (let i = 0; i < unverifiedAddresses.length; i++) {
         let response = await messages.read(options)
 
         if (response.dialDataRequest != null) {
@@ -571,7 +571,7 @@ export class AutoNATv2Client implements Startable {
       }
     } finally {
       try {
-        await stream.closeWrite(options)
+        await stream.close(options)
       } catch (err: any) {
         stream.abort(err)
       }

@@ -20,6 +20,7 @@ import {
   LAST_DIAL_SUCCESS_KEY
 } from './constants.js'
 import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
+import { findExistingConnection } from './utils.ts'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
 import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
@@ -136,30 +137,14 @@ export class DialQueue {
   async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
-    // make sure we don't have an existing non-limited connection to any of the
-    // addresses we are about to dial
-    const existingConnection = Array.from(this.connections.values()).flat().find(conn => {
-      if (options.force === true) {
-        return false
+    if (peerId != null && options.force !== true) {
+      const existingConnection = findExistingConnection(peerId, this.connections.get(peerId), multiaddrs)
+
+      if (existingConnection != null) {
+        this.log('already connected to %a', existingConnection.remoteAddr)
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+        return existingConnection
       }
-
-      if (conn.limits != null) {
-        return false
-      }
-
-      if (conn.remotePeer.equals(peerId)) {
-        return true
-      }
-
-      return multiaddrs.find(addr => {
-        return addr.equals(conn.remoteAddr)
-      })
-    })
-
-    if (existingConnection?.status === 'open') {
-      this.log('already connected to %a', existingConnection.remoteAddr)
-      options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-      return existingConnection
     }
 
     // ready to dial, all async work finished - make sure we don't have any

@@ -1,6 +1,6 @@
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { MessageQueue } from '../src/message-queue.ts'
 
 export interface Events {
@@ -13,7 +13,7 @@ describe('message-queue', () => {
     const queue = new MessageQueue({
       log: defaultLogger().forComponent('message-queue')
     })
-    const eventPromise = raceEvent(queue, 'event')
+    const eventPromise = pEvent(queue, 'event')
     queue.send(event)
 
     await expect(eventPromise).to.eventually.equal(event)
@@ -27,7 +27,7 @@ describe('message-queue', () => {
     })
     queue.send(event)
 
-    const sent = await raceEvent(queue, 'event')
+    const sent = await pEvent(queue, 'event')
 
     expect(sent).to.equal(event)
   })
@@ -58,7 +58,7 @@ describe('message-queue', () => {
     expect(queue.send(sent[3])).to.be.true()
     expect(queue.send(sent[4])).to.be.false()
 
-    await raceEvent(queue, 'drain')
+    await pEvent(queue, 'drain')
 
     expect(received).to.deep.equal(sent)
   })

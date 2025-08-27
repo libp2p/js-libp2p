@@ -100,12 +100,14 @@ class Client implements DaemonClient {
 
     const response = await sh.read(Response)
 
+    log('%s response %s', Request.Type.CONNECT, response.type)
+
     if (response.type !== Response.Type.OK) {
       const errResponse = response.error ?? { msg: 'unspecified' }
       throw new OperationFailedError(errResponse.msg ?? 'unspecified')
     }
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
   }
 
   /**
@@ -124,6 +126,8 @@ class Client implements DaemonClient {
 
     const response = await sh.read(Response)
 
+    log('%s response %s', Request.Type.IDENTIFY, response.type)
+
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'Identify failed')
     }
@@ -135,7 +139,7 @@ class Client implements DaemonClient {
     const peerId = peerIdFromMultihash(Digest.decode(response.identify?.id))
     const addrs = response.identify.addrs.map((a) => multiaddr(a))
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     return ({ peerId, addrs })
   }
@@ -150,11 +154,13 @@ class Client implements DaemonClient {
 
     const response = await sh.read(Response)
 
+    log('%s response %s', Request.Type.LIST_PEERS, response.type)
+
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'List peers failed')
     }
 
-    await sh.unwrap().closeWrite()
+    await sh.unwrap().close()
 
     return response.peers.map((peer) => peerIdFromMultihash(Digest.decode(peer.id)))
   }
@@ -180,6 +186,8 @@ class Client implements DaemonClient {
     })
 
     const response = await sh.read(Response)
+
+    log('%s response %s', Request.Type.STREAM_OPEN, response.type)
 
     if (response.type !== Response.Type.OK) {
       const err = new OperationFailedError(response.error?.msg ?? 'Open stream failed')
@@ -221,7 +229,9 @@ class Client implements DaemonClient {
 
     const response = await sh.read(Response)
 
-    await sh.unwrap().closeWrite()
+    log('%s response %s', Request.Type.STREAM_HANDLER, response.type)
+
+    await sh.unwrap().close()
 
     if (response.type !== Response.Type.OK) {
       throw new OperationFailedError(response.error?.msg ?? 'Register stream handler failed')
@@ -253,7 +263,7 @@ class Client implements DaemonClient {
         connection.abort(err)
       })
       .finally(() => {
-        connection.closeWrite()
+        connection.close()
           .catch(err => {
             log.error(err)
           })

@@ -10,7 +10,7 @@ import { NoiseHandshakePayload } from './proto/payload.js'
 import type { MetricsRegistry } from './metrics.ts'
 import type { NoiseExtensions } from './proto/payload.js'
 import type { HandshakeResult } from './types.ts'
-import type { AbortOptions, MessageStream, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { AbortOptions, MessageStream, PrivateKey, PublicKey, StreamCloseEvent } from '@libp2p/interface'
 import type { SendResult } from '@libp2p/utils'
 
 export async function createHandshakePayload (
@@ -78,7 +78,7 @@ class EncryptedMessageStream extends AbstractMessageStream {
     super({
       log: stream.log,
       inactivityTimeout: stream.inactivityTimeout,
-      maxPauseBufferLength: stream.maxPauseBufferLength,
+      maxReadBufferLength: stream.maxReadBufferLength,
       direction: stream.direction
     })
 
@@ -90,18 +90,18 @@ class EncryptedMessageStream extends AbstractMessageStream {
       encodingLength: () => 2
     })
 
-    this.stream.addEventListener('message', (evt) => {
+    const noiseOnMessageDecrypt = (evt: StreamMessageEvent): void => {
       try {
         for (const buf of this.decoder.decode(evt.data)) {
-          const decrypted = this.decrypt(buf)
-          this.dispatchEvent(new StreamMessageEvent(decrypted))
+          this.onData(this.decrypt(buf))
         }
       } catch (err: any) {
         this.abort(err)
       }
-    })
+    }
+    this.stream.addEventListener('message', noiseOnMessageDecrypt)
 
-    this.stream.addEventListener('close', (evt) => {
+    const noiseOnClose = (evt: StreamCloseEvent): void => {
       if (evt.error != null) {
         if (evt.local === true) {
           this.abort(evt.error)
@@ -111,19 +111,18 @@ class EncryptedMessageStream extends AbstractMessageStream {
       } else {
         this.onTransportClosed()
       }
-    })
+    }
+    this.stream.addEventListener('close', noiseOnClose)
 
-    this.stream.addEventListener('drain', () => {
+    const noiseOnDrain = (): void => {
       this.safeDispatchEvent('drain')
-    })
+    }
+    this.stream.addEventListener('drain', noiseOnDrain)
 
-    this.stream.addEventListener('remoteCloseWrite', () => {
+    const noiseOnRemoteCloseWrite = (): void => {
       this.onRemoteCloseWrite()
-    })
-
-    this.stream.addEventListener('remoteCloseRead', () => {
-      this.onRemoteCloseRead()
-    })
+    }
+    this.stream.addEventListener('remoteCloseWrite', noiseOnRemoteCloseWrite)
   }
 
   encrypt (chunk: Uint8Array | Uint8ArrayList): Uint8ArrayList {
@@ -192,20 +191,16 @@ class EncryptedMessageStream extends AbstractMessageStream {
     return output
   }
 
+  close (options?: AbortOptions): Promise<void> {
+    return this.stream.close(options)
+  }
+
   sendPause (): void {
     this.stream.pause()
   }
 
   sendResume (): void {
     this.stream.resume()
-  }
-
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    return this.stream.closeWrite(options)
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
-    return this.stream.closeRead(options)
   }
 
   sendReset (err: Error): void {

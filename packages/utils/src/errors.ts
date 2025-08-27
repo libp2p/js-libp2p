@@ -32,3 +32,8 @@ export class UnexpectedEOFError extends Error {
   static name = 'UnexpectedEOFError'
   name = 'UnexpectedEOFError'
 }
+
+export class MaxEarlyStreamsError extends Error {
+  static name = 'MaxEarlyStreamsError'
+  name = 'MaxEarlyStreamsError'
+}

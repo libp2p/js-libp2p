@@ -173,7 +173,7 @@ describe('connection', () => {
     expect(connection.streams).to.include(stream)
 
     // Close stream
-    await stream.closeWrite()
+    await stream.close()
     stream.dispatchEvent(new StreamCloseEvent())
 
     expect(connection.streams).to.not.include(stream)

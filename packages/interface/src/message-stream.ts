@@ -36,36 +36,6 @@ export interface MessageStreamTimeline {
    * writing by both ends of the stream
    */
   close?: number
-
-  /**
-   * A timestamp of when the message stream was reset
-   */
-  reset?: number
-
-  /**
-   * A timestamp of when the message stream was aborted
-   */
-  abort?: number
-
-  /**
-   * A timestamp of when the stream was closed for reading
-   */
-  closeRead?: number
-
-  /**
-   * A timestamp of when the stream was closed for writing
-   */
-  closeWrite?: number
-
-  /**
-   * A timestamp of when the remote stream was closed for reading
-   */
-  remoteCloseRead?: number
-
-  /**
-   * A timestamp of when the remote stream was closed for writing
-   */
-  remoteCloseWrite?: number
 }
 
 export interface MessageStreamEvents {
@@ -75,48 +45,48 @@ export interface MessageStreamEvents {
   message: StreamMessageEvent
 
   /**
-   * The local send buffer can now accept new data
+   * The local send buffer has emptied and the stream may be written to once
+   * more, unless it is currently closing.
    */
   drain: Event
 
   /**
-   * Both ends of the closed their writable ends.
+   * The underlying resource is closed - no further events will be emitted and
+   * the stream cannot be used to send or receive any more data.
    *
-   * The `local` property of the `StreamCloseEvent` can be used to detect
-   * whether the close event was initiated locally or remotely, and the `error`
-   * property can be used to tell if the stream closed gracefully or not.
-   *
-   * No further events will be emitted and the stream cannot be used to send or
-   * receive any more data.
+   * When the `.error` field is set, the `local` property of the event will be
+   * `true` value if the `.abort` was invoked, otherwise it means a remote error
+   * occurred and the peer sent a reset signal.
    */
   close: StreamCloseEvent
 
   /**
-   * The readable end of the stream closed gracefully
-   */
-  closeRead: Event
-
-  /**
-   * The writable end of the stream closed gracefully
-   */
-  closeWrite: Event
-
-  /**
-   * The remote closed it's readable end of the stream
-   */
-  remoteCloseRead: Event
-
-  /**
-   * The remote closed it's writable end of the stream
+   * Where the stream implementation supports half-closing, it may emit this
+   * event when the remote end of the stream closes it's writable end.
+   *
+   * After this event is received no further 'message' events will be emitted
+   * though the stream can still be written to, if it has not been closed at
+   * this end.
    */
   remoteCloseWrite: Event
+
+  /**
+   * The outgoing write queue emptied - there are no more bytes queued for
+   * sending to the remote end of the stream.
+   */
+  idle: Event
 }
 
-export interface MessageStream<Events extends MessageStreamEvents = MessageStreamEvents> extends TypedEventTarget<Events>, AsyncIterable<Uint8Array | Uint8ArrayList> {
+export interface MessageStream<Timeline extends MessageStreamTimeline = MessageStreamTimeline> extends TypedEventTarget<MessageStreamEvents>, AsyncIterable<Uint8Array | Uint8ArrayList> {
+  /**
+   * The current status of the message stream
+   */
+  status: MessageStreamStatus
+
   /**
    * Timestamps of when stream events occurred
    */
-  timeline: MessageStreamTimeline
+  timeline: Timeline
 
   /**
    * A logging implementation that can be used to log stream-specific messages
@@ -129,52 +99,17 @@ export interface MessageStream<Events extends MessageStreamEvents = MessageStrea
   direction: MessageStreamDirection
 
   /**
-   * The current status of the message stream
-   */
-  status: MessageStreamStatus
-
-  /**
-   * The current status of the readable end of the stream
-   */
-  readStatus: MessageStreamReadStatus
-
-  /**
-   * The current status of the writable end of the stream
-   */
-  writeStatus: MessageStreamWriteStatus
-
-  /**
-   * The current status of the readable end of the stream
-   */
-  remoteReadStatus: MessageStreamReadStatus
-
-  /**
-   * The current status of the writable end of the stream
-   */
-  remoteWriteStatus: MessageStreamWriteStatus
-
-  /**
    * The maximum number of bytes to store when paused. If receipt of more bytes
    * from the remote end of the stream causes the buffer size to exceed this
    * value the stream will be reset and an 'error' event emitted.
    */
-  maxPauseBufferLength: number
+  maxReadBufferLength: number
 
   /**
    * If no data is transmitted over the stream in this many ms, the stream will
    * be aborted with an InactivityTimeoutError
    */
   inactivityTimeout: number
-
-  /**
-   * If the `send` method has returned false, this is a promise that will
-   * resolve once the underlying resource can accept more data, or reject if the
-   * stream is reset or aborts before that happens.
-   *
-   * If the internal buffer is not full, this is a resolved promise that is safe
-   * to await.
-   */
-  onDrain: Promise<void>
 
   /**
    * Write data to the stream. If the method returns false it means the
@@ -188,33 +123,20 @@ export interface MessageStream<Events extends MessageStreamEvents = MessageStrea
   send (data: Uint8Array | Uint8ArrayList): boolean
 
   /**
-   * Immediately close the stream for reading and writing, discard any
-   * unsent/unread data, and emit a 'close' event with the 'error' property set
-   * to the passed error.
+   * Stop accepting new data to send and return a promise that resolves when any
+   * unsent data has been written into the underlying resource.
+   */
+  close (options?: AbortOptions): Promise<void>
+
+  /**
+   * Stop accepting new data to send, discard any unsent/unread data, and emit a
+   * 'close' event with the 'error' property set to the passed error.
    */
   abort (err: Error): void
 
   /**
-   * If this is supported by the underlying resource, send a message to the
-   * remote informing them that we will not read any more data from the stream.
-   *
-   * If the writable end of the stream is already closed, a 'close' event will
-   * be emitted on the stream.
-   */
-  closeRead (options?: AbortOptions): Promise<void>
-
-  /**
-   * Gracefully close the stream for writing - any outstanding data will be sent
-   * to the remote and any further calls to `.send` will throw.
-   *
-   * If the readable end of the stream is already closed, a 'close' event will
-   * be emitted on the stream once any buffered data has been sent.
-   */
-  closeWrite (options?: AbortOptions): Promise<void>
-
-  /**
    * Stop emitting further 'message' events. Any received data will be stored in
-   * an internal buffer. If the buffer size reaches `maxPauseBufferLength`, the
+   * an internal buffer. If the buffer size reaches `maxReadBufferLength`, the
    * stream will be reset and a StreamAbortEvent emitted.
    *
    * If the underlying resource supports it, the remote peer will be instructed

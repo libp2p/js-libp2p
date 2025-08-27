@@ -99,11 +99,11 @@
     "it-parallel": "^3.0.11",
     "main-event": "^1.0.1",
     "multiformats": "^13.3.6",
+    "p-event": "^6.0.1",
     "p-defer": "^4.0.1",
     "p-retry": "^6.2.1",
     "progress-events": "^1.0.1",
-    "race-event": "^1.6.0",
-    "race-signal": "^1.1.3",
+    "race-signal": "^2.0.0",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
@@ -114,7 +114,6 @@
     "it-length-prefixed": "^10.0.1",
     "it-map": "^3.1.3",
     "it-take": "^3.0.8",
-    "p-event": "^6.0.1",
     "p-wait-for": "^5.0.2",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",

@@ -46,7 +46,7 @@ describe('comparison benchmark', () => {
             }
           }
 
-          await stream.closeWrite()
+          await stream.close()
         }
       })
     }

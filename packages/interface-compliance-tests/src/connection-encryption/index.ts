@@ -78,7 +78,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
             }
           }
 
-          await outboundResult.connection.closeWrite()
+          await outboundResult.connection.close()
         })
       ])
 

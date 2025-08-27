@@ -1,10 +1,12 @@
 import { setMaxListeners } from '@libp2p/interface'
+import { UnexpectedEOFError } from '@libp2p/utils'
 import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/multiaddr-matcher'
 import { fmt, code, and } from '@multiformats/multiaddr-matcher/utils'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { pEvent } from 'p-event'
 import { DurationLimitError, TransferLimitError } from './errors.js'
 import type { RelayReservation } from './index.js'
 import type { Limit } from './pb/index.js'
@@ -54,7 +56,14 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
   }
 
   const onAbort = (): void => {
-    const err = new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`)
+    let err: Error
+
+    if (abortSignal.aborted) {
+      err = abortSignal.reason
+    } else {
+      err = new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`)
+    }
+
     dst.abort(err)
     src.abort(err)
   }
@@ -64,6 +73,22 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
     countStreamBytes(dst, dataLimit, options)
     countStreamBytes(src, dataLimit, options)
   }
+
+  // close the stream fully when the remote closes
+  src.addEventListener('remoteCloseWrite', () => {
+    src.close()
+      .catch(err => {
+        src.abort(err)
+      })
+  })
+
+  // close the stream fully when the remote closes
+  dst.addEventListener('remoteCloseWrite', () => {
+    dst.close()
+      .catch(err => {
+        dst.abort(err)
+      })
+  })
 
   src.addEventListener('close', (evt) => {
     if (evt.error != null) {
@@ -76,6 +101,11 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
     if (dstSrcFinished) {
       signal.removeEventListener('abort', onAbort)
       signal.clear()
+    } else {
+      dst.close()
+        .catch(err => {
+          dst.abort(err)
+        })
     }
   })
 
@@ -90,6 +120,60 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
     if (srcDstFinished) {
       signal.removeEventListener('abort', onAbort)
       signal.clear()
+    } else {
+      src.close()
+        .catch(err => {
+          dst.abort(err)
+        })
+    }
+  })
+
+  // join the streams together
+  src.addEventListener('message', (evt) => {
+    if (dst.status !== 'open') {
+      abortStreams(new UnexpectedEOFError('Relay destination stream went away'))
+      return
+    }
+
+    if (!dst.send(evt.data)) {
+      options.log('pausing src -> dst')
+      src.pause()
+
+      pEvent(dst, 'drain', {
+        rejectionEvents: [
+          'close'
+        ]
+      })
+        .then(() => {
+          options.log('resuming src -> dst')
+          src.resume()
+        }, err => {
+          abortStreams(err)
+        })
+    }
+  })
+
+  dst.addEventListener('message', (evt) => {
+    if (src.status !== 'open') {
+      abortStreams(new UnexpectedEOFError('Relay source stream went away'))
+      return
+    }
+
+    if (!src.send(evt.data)) {
+      options.log('pausing dst -> src')
+      dst.pause()
+
+      pEvent(src, 'drain', {
+        rejectionEvents: [
+          'close'
+        ]
+      })
+        .then(() => {
+          options.log('resuming dst -> src')
+          dst.resume()
+        }, err => {
+          abortStreams(err)
+        })
     }
   })
 }

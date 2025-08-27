@@ -3,7 +3,7 @@ import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities } fr
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
-import { CODE_IP6, CODE_IP6ZONE, protocols } from '@multiformats/multiaddr'
+import { CODE_IP6, CODE_IP6ZONE, CODE_P2P } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
 import {
@@ -63,13 +63,17 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         runOnLimitedConnection: this.runOnLimitedConnection
       })
 
+      const log = stream.log.newScope('identify')
+
       const pb = pbStream(stream, {
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
+      log('read response')
       const message = await pb.read(options)
 
-      await stream.closeWrite(options)
+      log('close write')
+      await stream.close(options)
 
       return message
     } catch (err: any) {
@@ -97,7 +101,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       throw new InvalidMessageError('Identified peer does not match the expected peer')
     }
 
-    if (this.peerId.equals(id)) {
+    if (this.components.peerId.equals(id)) {
       throw new InvalidMessageError('Identified peer is our own peer id?')
     }
 
@@ -107,7 +111,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
     this.log('completed for peer %p and protocols %o', id, protocols)
 
-    return consumeIdentifyMessage(this.peerStore, this.events, this.log, connection, message)
+    return consumeIdentifyMessage(this.components.peerStore, this.components.events, this.log, connection, message)
   }
 
   private maybeAddObservedAddress (observedAddr: Uint8Array | undefined): void {
@@ -139,7 +143,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     }
 
     this.log.trace('storing the observed address')
-    this.addressManager.addObservedAddr(cleanObservedAddr)
+    this.components.addressManager.addObservedAddr(cleanObservedAddr)
   }
 
   /**
@@ -147,20 +151,26 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
    * to the requesting peer over the given `connection`
    */
   async handleProtocol (stream: Stream, connection: Connection): Promise<void> {
+    const log = stream.log.newScope('identify')
+
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    const peerData = await this.peerStore.get(this.peerId)
-    const multiaddrs = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+    const peerData = await this.components.peerStore.get(this.components.peerId, {
+      signal
+    })
+    const multiaddrs = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
     let signedPeerRecord = peerData.peerRecordEnvelope
 
     if (multiaddrs.length > 0 && signedPeerRecord == null) {
       const peerRecord = new PeerRecord({
-        peerId: this.peerId,
+        peerId: this.components.peerId,
         multiaddrs
       })
 
-      const envelope = await RecordEnvelope.seal(peerRecord, this.privateKey)
+      const envelope = await RecordEnvelope.seal(peerRecord, this.components.privateKey, {
+        signal
+      })
       signedPeerRecord = envelope.marshal().subarray()
     }
 
@@ -172,10 +182,11 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
     const pb = pbStream(stream).pb(IdentifyMessage)
 
+    log('send response')
     await pb.write({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
-      publicKey: publicKeyToProtobuf(this.privateKey.publicKey),
+      publicKey: publicKeyToProtobuf(this.components.privateKey.publicKey),
       listenAddrs: multiaddrs.map(addr => addr.bytes),
       signedPeerRecord,
       observedAddr,
@@ -184,7 +195,8 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       signal
     })
 
-    await stream.closeWrite({
+    log('close write')
+    await pb.unwrap().unwrap().close({
       signal
     })
   }

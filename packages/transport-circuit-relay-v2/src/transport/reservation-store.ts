@@ -411,11 +411,11 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       throw err
     } finally {
       if (stream.status !== 'closed') {
-        await stream.closeWrite(options)
+        await stream.close(options)
       }
     }
 
-    this.log.trace('read response %o', response)
+    this.log.trace('read response %s', response.status)
 
     if (response.status === Status.OK && response.reservation != null) {
       // check that the returned relay has the relay address - this can be

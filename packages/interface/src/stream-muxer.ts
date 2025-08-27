@@ -9,6 +9,29 @@ export interface StreamMuxerOptions {
    * Configuration options for each outgoing/incoming stream
    */
   streamOptions?: StreamOptions
+
+  /**
+   * libp2p is notified of incoming streams via the muxer's 'stream' event.
+   *
+   * During connection establishment there may be a small window where a muxer
+   * starts to process incoming stream data before a listener has been added for
+   * the 'stream' event.
+   *
+   * If no handler is registered for this event incoming streams can be missed
+   * so when this is the case muxers queue streams internally as "early
+   * streams", and will defer emitting the 'stream' event until after a listener
+   * has been registered.
+   *
+   * Allowing an unlimited amount of early streams can cause excessive memory
+   * consumption so this setting controls how many early streams to store when
+   * no 'stream' listener has been registered.
+   *
+   * If more streams than this are opened before a listener is added the muxed
+   * connection will be reset.
+   *
+   * @default 10
+   */
+  maxEarlyStreams?: number
 }
 
 /**
@@ -29,7 +52,7 @@ export interface StreamOptions {
    *
    * If the internal buffer overflows this value the stream will be reset.
    */
-  maxPauseBufferLength?: number
+  maxReadBufferLength?: number
 }
 
 export interface StreamMuxerFactory<Muxer extends StreamMuxer = StreamMuxer> {

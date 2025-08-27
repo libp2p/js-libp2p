@@ -52,8 +52,10 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
     this.queue.addEventListener('idle', () => {
       if (this.needsDrain) {
         this.log('network send queue drained')
-        this.safeDispatchEvent('drain')
         this.needsDrain = false
+        this.safeDispatchEvent('drain')
+      } else {
+        this.log('network send queue idle')
       }
     })
   }

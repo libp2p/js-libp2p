@@ -379,8 +379,12 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     this.log.trace('received GoAway reason=%s', GoAwayCode[reason] ?? 'unknown')
     this.remoteGoAway = reason
 
-    // reset any streams that are still open and close the muxer
-    this.abort(new Error('Remote sent GoAway'))
+    if (reason === GoAwayCode.NormalTermination) {
+      this.onTransportClosed()
+    } else {
+      // reset any streams that are still open and close the muxer
+      this.abort(new Error('Remote sent GoAway'))
+    }
   }
 
   private handleStreamMessage (frame: Frame): void {
@@ -443,23 +447,29 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
 
     // allocate a new stream
     const stream = this._newStream(id, StreamState.SYNReceived, 'inbound')
-    this.onRemoteStream(stream)
 
     this.numInboundStreams++
+
     // the stream should now be tracked
+    this.onRemoteStream(stream)
   }
 
   private sendFrame (header: FrameHeader, data?: Uint8ArrayList): boolean {
-    this.log.trace('sending frame %o', debugFrame(header))
+    let encoded: Uint8Array | Uint8ArrayList
+
     if (header.type === FrameType.Data) {
       if (data === undefined) {
         throw new InvalidFrameError('Invalid frame')
       }
 
-      return this.send(new Uint8ArrayList(encodeHeader(header), data))
+      encoded = new Uint8ArrayList(encodeHeader(header), data)
     } else {
-      return this.send(encodeHeader(header))
+      encoded = encodeHeader(header)
     }
+
+    this.log.trace('sending frame %o - %d bytes', debugFrame(header), encoded.byteLength)
+
+    return this.send(encoded)
   }
 
   private sendPing (pingId: number, flag: Flag = Flag.SYN): void {

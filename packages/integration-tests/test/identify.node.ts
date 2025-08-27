@@ -156,7 +156,7 @@ describe('identify', () => {
     expect(clientPeer.addresses[0].multiaddr.toString()).to.equal(announceAddrs[0].toString())
     expect(clientPeer.addresses[1].multiaddr.toString()).to.equal(announceAddrs[1].toString())
 
-    await stream.closeWrite()
+    await stream.close()
     await connection.close()
     await receiver.stop()
     await sender.stop()

@@ -1,7 +1,11 @@
-import { byteStream } from '@libp2p/utils'
+import { ProtocolError } from '@libp2p/interface'
+import { UnexpectedEOFError } from '@libp2p/utils'
+import { pEvent } from 'p-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import type { Echo as EchoInterface, EchoComponents, EchoInit } from './index.js'
-import type { AbortOptions, PeerId, Startable } from '@libp2p/interface'
+import type { PeerId, Startable } from '@libp2p/interface'
+import type { OpenConnectionOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -33,12 +37,22 @@ export class Echo implements Startable, EchoInterface {
 
       for await (const buf of stream) {
         bytes += buf.byteLength
-        stream.send(buf)
+
+        if (stream.status !== 'open') {
+          log('stream status changed to %s', stream.status)
+          break
+        }
+
+        if (!stream.send(buf)) {
+          log('waiting for stream to drain')
+          await pEvent(stream, 'drain')
+          log('stream drained')
+        }
       }
 
       log('echoed %d bytes in %dms', bytes, Date.now() - start)
 
-      await stream.closeWrite({
+      await stream.close({
         signal
       })
     }, {
@@ -58,26 +72,42 @@ export class Echo implements Startable, EchoInterface {
     return this.started
   }
 
-  async echo (peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
-    const conn = await this.components.connectionManager.openConnection(peer, options)
-    const stream = await conn.newStream(this.protocol, {
+  async echo (peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: OpenConnectionOptions): Promise<Uint8Array> {
+    const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
       ...this.init,
       ...options
     })
-    const bytes = byteStream(stream, {
-      maxBufferSize: buf.byteLength
+
+    const log = stream.log.newScope('echo')
+
+    const received = new Uint8ArrayList()
+    const output = Promise.withResolvers<Uint8Array>()
+
+    stream.addEventListener('message', (evt) => {
+      received.append(evt.data)
+      log('received %d/%d bytes', received.byteLength, buf.byteLength)
     })
 
-    const [, output] = await Promise.all([
-      bytes.write(buf, options),
-      bytes.read({
-        ...options,
-        bytes: buf.byteLength
-      })
-    ])
+    stream.addEventListener('close', (evt) => {
+      if (evt.error != null) {
+        output.reject(evt.error)
+      }
 
-    await stream.closeWrite(options)
+      if (received.byteLength > buf.byteLength) {
+        output.reject(new ProtocolError(`Overread: ${received.byteLength}/${buf.byteLength} bytes`))
+      }
 
-    return output.subarray()
+      if (received.byteLength < buf.byteLength) {
+        output.reject(new UnexpectedEOFError(`Underread: ${received.byteLength}/${buf.byteLength} bytes`))
+      }
+
+      output.resolve(received.subarray())
+    })
+
+    log('sending %d bytes', buf.byteLength)
+    stream.send(buf)
+    await stream.close(options)
+
+    return output.promise
   }
 }

@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { StreamCloseEvent } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -20,17 +21,22 @@ describe('messageStreamToDuplex', () => {
 
     const it = messageStreamToDuplex(incoming)
 
-    Promise.resolve().then(async () => {
-      for (const buf of input) {
-        if (!outgoing.send(buf)) {
-          await pEvent(outgoing, 'drain')
+    const [
+      output
+    ] = await Promise.all([
+      all(it.source),
+      (async () => {
+        for (const buf of input) {
+          if (!outgoing.send(buf)) {
+            await pEvent(outgoing, 'drain')
+          }
         }
-      }
 
-      await outgoing.closeWrite()
-    })
+        await outgoing.close()
+      })()
+    ])
 
-    await expect(all(it.source)).to.eventually.deep.equal(input)
+    expect(new Uint8ArrayList(...output).subarray()).to.equalBytes(new Uint8ArrayList(...input).subarray())
   })
 
   it('should sink all writes', async () => {
@@ -54,7 +60,7 @@ describe('messageStreamToDuplex', () => {
 
     await pEvent(incoming, 'remoteCloseWrite')
 
-    expect(output).to.deep.equal(input)
+    expect(new Uint8ArrayList(...output).subarray()).to.equalBytes(new Uint8ArrayList(...input).subarray())
   })
 
   it('should throw from sink and source if stream is reset', async () => {
@@ -89,7 +95,8 @@ describe('echo', () => {
       return Uint8Array.from([0, 1, 2, 3, index])
     })
 
-    const [, output] = await Promise.all([
+    const [output] = await Promise.all([
+      all(outgoing),
       Promise.resolve().then(async () => {
         for (const buf of input) {
           if (!outgoing.send(buf)) {
@@ -97,12 +104,11 @@ describe('echo', () => {
           }
         }
 
-        await outgoing.closeWrite()
-      }),
-      all(outgoing)
+        await outgoing.close()
+      })
     ])
 
-    expect(output).to.deep.equal(input)
+    expect(new Uint8ArrayList(...output).subarray()).to.equalBytes(new Uint8ArrayList(...input).subarray())
   })
 })
 
@@ -118,7 +124,7 @@ describe('pipe', () => {
       Uint8Array.from([8, 9, 0, 1])
     ]
 
-    const vals = await pipe(
+    const output = await pipe(
       input,
       function * (source) {
         for (const buf of source) {
@@ -131,11 +137,11 @@ describe('pipe', () => {
       (source) => all(source)
     )
 
-    expect(vals).to.deep.equal([
+    expect(new Uint8ArrayList(...output).subarray()).to.equalBytes(new Uint8ArrayList(
       Uint8Array.from([1, 2, 3, 4]),
       Uint8Array.from([5, 6, 7, 8]),
       Uint8Array.from([9, 10, 1, 2])
-    ])
+    ).subarray())
   })
 })
 
@@ -186,7 +192,7 @@ describe('stream-pair', () => {
       all(incoming),
       Promise.resolve().then(async () => {
         outgoing.send(data)
-        await outgoing.closeWrite()
+        await outgoing.close()
       })
     ])
 
@@ -210,36 +216,46 @@ describe('stream-pair', () => {
 
     const data = Uint8Array.from([0, 1, 2, 3, 4])
 
-    outgoing.send(data)
-    await outgoing.closeWrite()
-
-    await delay(100)
+    const [
+      bufs
+    ] = await Promise.all([
+      all(incoming),
+      (async () => {
+        outgoing.send(data)
+        await outgoing.close()
+      })()
+    ])
 
     expect(dispatchSpy.called).to.be.false()
     expect(safeDispatchSpy.called).to.be.false()
 
-    const bufs = await all(incoming)
     expect(bufs).to.have.lengthOf(1)
     expect(bufs[0].subarray()).to.equalBytes(data)
   })
 
   it('should reset if no listeners are added and the read buffer fills up', async () => {
+    const maxReadBufferLength = 1
     const [outgoing, incoming] = await streamPair({
       inbound: {
-        maxPauseBufferLength: 1
+        maxReadBufferLength
       }
     })
 
     expect(incoming.listenerCount('message')).to.equal(0, 'had listeners')
 
-    const data = Uint8Array.from([0, 1, 2, 3, 4])
+    const [outgoingCloseEvent, incomingCloseEvent] = await Promise.all([
+      pEvent<'close', StreamCloseEvent>(outgoing, 'close'),
+      pEvent<'close', StreamCloseEvent>(incoming, 'close'),
+      (async () => {
+        outgoing.send(new Uint8Array(maxReadBufferLength + 1))
+        await outgoing.close()
+        await delay(100)
+      })()
+    ])
 
-    outgoing.send(data)
-    await outgoing.closeWrite()
-
-    await delay(100)
-
-    expect(incoming.status).to.equal('aborted')
-    expect(outgoing.status).to.equal('reset')
+    expect(outgoingCloseEvent.local).to.be.false()
+    expect(outgoingCloseEvent.error).to.be.ok()
+    expect(incomingCloseEvent.local).to.be.true()
+    expect(incomingCloseEvent.error).to.be.ok()
   })
 })

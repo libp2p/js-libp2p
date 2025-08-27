@@ -192,11 +192,11 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     try {
       maConn = socketToMaConn({
         websocket: toWebSocket(socket),
-        remoteAddr: toMultiaddr(req.socket.remoteAddress ?? '0.0.0.0', req.socket.remotePort ?? 0),
+        remoteAddr: toMultiaddr(req.socket.remoteAddress ?? '0.0.0.0', req.socket.remotePort ?? 0).encapsulate('/ws'),
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
         direction: 'inbound',
-        log: this.components.logger.forComponent('libp2p:websockets:connection:inbound')
+        log: this.components.logger.forComponent('libp2p:websockets:connection')
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)
@@ -214,7 +214,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
         this.log.error('inbound connection failed to upgrade - %e', err)
         this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
 
-        maConn.closeWrite()
+        maConn.close()
       })
   }
 

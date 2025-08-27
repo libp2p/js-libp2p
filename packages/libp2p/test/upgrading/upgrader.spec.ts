@@ -26,6 +26,7 @@ describe('upgrader', () => {
   const handshake = [
     lp.encode.single(uint8ArrayFromString('/multistream/1.0.0\n')),
     lp.encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)),
+    lp.encode.single(uint8ArrayFromString('/multistream/1.0.0\n')),
     lp.encode.single(uint8ArrayFromString(`${muxerProtocol}\n`))
   ]
 
@@ -405,7 +406,7 @@ describe('upgrader', () => {
     await expect(conn.newStream('/echo/1.0.0', {
       signal: AbortSignal.timeout(100)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('should abort stream when protocol negotiation fails on outbound stream', async () => {

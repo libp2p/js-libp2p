@@ -134,6 +134,8 @@ export class MuxerClosedError extends Error {
 
 /**
  * Thrown when a protocol stream is closed during an operation
+ *
+ * @deprecated delete if unused
  */
 export class StreamClosedError extends Error {
   static name = 'StreamClosedError'
@@ -146,6 +148,8 @@ export class StreamClosedError extends Error {
 
 /**
  * Thrown when a protocol stream is closing during an operation
+ *
+ * @deprecated delete if unused
  */
 export class StreamClosingError extends Error {
   static name = 'StreamClosingError'

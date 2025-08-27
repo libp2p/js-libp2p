@@ -1,5 +1,4 @@
-import { StreamMessageEvent } from '@libp2p/interface'
-import { AbstractMessageStream } from '@libp2p/utils'
+import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import xsalsa20 from 'xsalsa20'
@@ -16,13 +15,17 @@ export interface BoxMessageStreamInit extends MessageStreamInit {
   psk: Uint8Array
 }
 
-export class BoxMessageStream extends AbstractMessageStream {
+export class BoxMessageStream extends AbstractMultiaddrConnection {
   private maConn: MultiaddrConnection
   private inboundXor: xsalsa20.Xor
   private outboundXor: xsalsa20.Xor
 
   constructor (init: BoxMessageStreamInit) {
-    super(init)
+    super({
+      ...init,
+      remoteAddr: init.maConn.remoteAddr,
+      direction: init.maConn.direction
+    })
 
     this.inboundXor = xsalsa20(init.remoteNonce, init.psk)
     this.outboundXor = xsalsa20(init.localNonce, init.psk)
@@ -32,50 +35,29 @@ export class BoxMessageStream extends AbstractMessageStream {
       const data = evt.data
 
       if (data instanceof Uint8Array) {
-        this.dispatchEvent(new StreamMessageEvent(this.inboundXor.update(data)))
+        this.onData(this.inboundXor.update(data))
       } else {
         for (const buf of data) {
-          this.dispatchEvent(new StreamMessageEvent(this.inboundXor.update(buf)))
+          this.onData(this.inboundXor.update(buf))
         }
       }
     })
 
     this.maConn.addEventListener('close', (evt) => {
-      if (evt.local) {
-        if (evt.error != null) {
+      if (evt.error != null) {
+        if (evt.local) {
           this.abort(evt.error)
         } else {
-          this.onTransportClosed()
+          this.onRemoteReset()
         }
       } else {
-        if (evt.error != null) {
-          this.onRemoteReset()
-        } else {
-          this.onRemoteCloseWrite()
-        }
+        this.onTransportClosed()
       }
     })
-
-    this.maConn.addEventListener('remoteCloseWrite', () => {
-      this.safeDispatchEvent('remoteCloseWrite')
-    })
-    this.maConn.addEventListener('remoteCloseRead', () => {
-      this.safeDispatchEvent('remoteCloseRead')
-    })
-    this.maConn.addEventListener('closeWrite', () => {
-      this.safeDispatchEvent('closeWrite')
-    })
-    this.maConn.addEventListener('closeRead', () => {
-      this.safeDispatchEvent('closeRead')
-    })
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    await this.maConn.closeWrite(options)
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
-    options?.signal?.throwIfAborted()
+  async sendClose (options?: AbortOptions): Promise<void> {
+    await this.maConn.close(options)
   }
 
   sendData (data: Uint8ArrayList): SendResult {

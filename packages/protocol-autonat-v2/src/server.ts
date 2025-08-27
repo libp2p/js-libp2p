@@ -146,7 +146,7 @@ export class AutoNATv2Server implements Startable {
       }
     }
 
-    await stream.closeWrite({
+    await stream.close({
       signal
     })
   }

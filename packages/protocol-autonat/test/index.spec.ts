@@ -118,7 +118,7 @@ describe('autonat', () => {
 
       incomingStream.addEventListener('message', async (evt) => {
         incomingStream.send(lp.encode.single(response))
-        await incomingStream.closeWrite()
+        await incomingStream.close()
       })
 
       return connection
@@ -517,7 +517,7 @@ describe('autonat', () => {
         outgoingStream.send(lp.encode.single(buf))
       }
 
-      outgoingStream.closeWrite()
+      outgoingStream.close()
 
       const messagesPromise = pipe(
         outgoingStream,

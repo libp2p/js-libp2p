@@ -108,7 +108,7 @@ export class RPC {
     while (true) {
       // the remote will not send any more data
       if (stream.readStatus !== 'readable') {
-        await stream.closeWrite({
+        await stream.close({
           signal
         })
 

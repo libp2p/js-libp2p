@@ -1,4 +1,4 @@
-import { NotStartedError, start, stop } from '@libp2p/interface'
+import { NotStartedError, start, stop, TimeoutError } from '@libp2p/interface'
 import { repeatingTask } from '@libp2p/utils'
 import pDefer from 'p-defer'
 import { raceSignal } from 'race-signal'
@@ -79,7 +79,9 @@ class ExternalAddressChecker implements ExternalAddress, Startable {
     this.lastPublicIpPromise = pDefer()
 
     return raceSignal(this.lastPublicIpPromise.promise, options?.signal, {
-      errorMessage: 'Requesting the public IP from the network gateway timed out - UPnP may not be enabled'
+      translateError: () => {
+        return new TimeoutError('Requesting the public IP from the network gateway timed out - UPnP may not be enabled')
+      }
     })
   }
 

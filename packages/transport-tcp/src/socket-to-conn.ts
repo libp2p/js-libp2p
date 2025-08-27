@@ -1,9 +1,9 @@
 import { InvalidParametersError, TimeoutError } from '@libp2p/interface'
-import { AbstractMultiaddrConnection, socketWriter, ipPortToMultiaddr } from '@libp2p/utils'
+import { AbstractMultiaddrConnection, ipPortToMultiaddr } from '@libp2p/utils'
 import { Unix } from '@multiformats/multiaddr-matcher'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionInit, SendResult, SocketWriter } from '@libp2p/utils'
+import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket } from 'net'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -15,7 +15,6 @@ export interface TCPSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddr
 
 class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   private socket: Socket
-  private writer: SocketWriter
 
   constructor (init: TCPSocketMultiaddrConnectionInit) {
     let remoteAddr = init.remoteAddr
@@ -47,6 +46,8 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
     // handle socket errors
     this.socket.on('error', err => {
+      this.log('tcp error', remoteAddr, err)
+
       this.abort(err)
     })
 
@@ -55,33 +56,41 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     this.socket.setTimeout(init.inactivityTimeout ?? (2 * 60 * 1_000))
 
     this.socket.once('timeout', () => {
+      this.log('tcp timeout', remoteAddr)
       // if the socket times out due to inactivity we must manually close the connection
       // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-timeout
       this.abort(new TimeoutError())
     })
 
     this.socket.once('end', () => {
+      this.log('tcp end', remoteAddr)
+
       // the remote sent a FIN packet which means no more data will be sent
       // https://nodejs.org/dist/latest-v16.x/docs/api/net.html#event-end
-      this.onRemoteCloseWrite()
+      // half open TCP sockets are disabled by default so Node.js should send a
+      // FIN in response to this event and then emit a 'close' event, during
+      // which we tear down the MultiaddrConnection so there is nothing to do
+      // until that occurs
+      this.onTransportClosed()
     })
 
     this.socket.once('close', hadError => {
+      this.log('tcp close', remoteAddr)
+
       if (hadError) {
         this.abort(new Error('TCP transmission error'))
         return
       }
 
-      this.onRemoteCloseWrite()
-      this.onClosed()
+      this.onTransportClosed()
     })
 
     // the socket can accept more data
     this.socket.on('drain', () => {
+      this.log('tcp drain')
+
       this.safeDispatchEvent('drain')
     })
-
-    this.writer = socketWriter(this.socket)
   }
 
   sendData (data: Uint8ArrayList): SendResult {
@@ -90,7 +99,7 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
     for (const buf of data) {
       sentBytes += buf.byteLength
-      canSendMore = this.writer.write(buf)
+      canSendMore = this.socket.write(buf)
 
       if (!canSendMore) {
         break
@@ -103,18 +112,14 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     }
   }
 
-  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+  async sendClose (options?: AbortOptions): Promise<void> {
     if (this.socket.destroyed) {
       return
     }
 
-    this.socket.end()
+    this.socket.destroySoon()
 
-    await raceEvent(this.socket, 'close', options?.signal)
-  }
-
-  async sendCloseRead (options?: AbortOptions): Promise<void> {
-    options?.signal?.throwIfAborted()
+    await pEvent(this.socket, 'close', options)
   }
 
   sendReset (): void {

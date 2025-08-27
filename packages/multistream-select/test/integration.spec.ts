@@ -33,7 +33,7 @@ describe('Dialer and Listener integration', () => {
           }
         }
 
-        await outgoingStream.closeWrite()
+        await outgoingStream.close()
 
         return all(outgoingStream)
       }()),
@@ -44,7 +44,7 @@ describe('Dialer and Listener integration', () => {
           }
         }
 
-        await incomingStream.closeWrite()
+        await incomingStream.close()
       }())
     ])
 
@@ -72,7 +72,7 @@ describe('Dialer and Listener integration', () => {
           outgoingStream.send(buf)
         }
 
-        await outgoingStream.closeWrite()
+        await outgoingStream.close()
 
         return all(outgoingStream)
       }()),
@@ -81,7 +81,7 @@ describe('Dialer and Listener integration', () => {
           incomingStream.send(buf)
         }
 
-        incomingStream.closeWrite()
+        incomingStream.close()
       }())
     ])
     expect(new Uint8ArrayList(...output[0]).slice()).to.deep.equal(new Uint8ArrayList(...input).slice())
@@ -108,7 +108,7 @@ describe('Dialer and Listener integration', () => {
           outgoingStream.send(buf)
         }
 
-        outgoingStream.closeWrite()
+        outgoingStream.close()
 
         return all(outgoingStream)
       }()),
@@ -117,7 +117,7 @@ describe('Dialer and Listener integration', () => {
           incomingStream.send(buf)
         }
 
-        incomingStream.closeWrite()
+        incomingStream.close()
       }())
     ])
     expect(new Uint8ArrayList(...output[0]).slice()).to.deep.equal(new Uint8ArrayList(...input).slice())
@@ -140,7 +140,7 @@ describe('Dialer and Listener integration', () => {
         outgoingStream.send(buf)
       }
 
-      outgoingStream.closeWrite()
+      outgoingStream.close()
 
       return all(outgoingStream)
     }())
@@ -153,7 +153,7 @@ describe('Dialer and Listener integration', () => {
         incomingStream.send(buf)
       }
 
-      incomingStream.closeWrite()
+      incomingStream.close()
     }())
 
     const dialerOut = await dialerOutPromise
@@ -180,7 +180,7 @@ describe('Dialer and Listener integration', () => {
         outgoingStream.send(buf)
       }
 
-      outgoingStream.closeWrite()
+      outgoingStream.close()
 
       return all(outgoingStream)
     }())

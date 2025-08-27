@@ -41,7 +41,7 @@ describe('circuit-relay utils', () => {
     localStream.send(uint8arrayFromString('0123'))
     localStream.send(uint8arrayFromString('4567'))
     localStream.send(uint8arrayFromString('8912'))
-    await localStream.closeWrite()
+    await localStream.close()
 
     const received = await all(remoteStream)
 
@@ -68,7 +68,7 @@ describe('circuit-relay utils', () => {
 
     localStream.send(uint8arrayFromString('0123'))
     localStream.send(uint8arrayFromString('4567'))
-    await localStream.closeWrite()
+    await localStream.close()
 
     const received: Array<Uint8Array | Uint8ArrayList> = []
 
@@ -101,11 +101,11 @@ describe('circuit-relay utils', () => {
 
     localStream.send(uint8arrayFromString('0123'))
     localStream.send(uint8arrayFromString('4567'))
-    await localStream.closeWrite()
+    await localStream.close()
 
     remoteStream.send(uint8arrayFromString('8912'))
     remoteStream.send(uint8arrayFromString('3456'))
-    await localStream.closeWrite()
+    await localStream.close()
 
     const received: Array<Uint8Array | Uint8ArrayList> = []
 
@@ -157,8 +157,8 @@ describe('circuit-relay utils', () => {
 
     await Promise.all([
       pEvent(remoteStream, 'close'),
-      remoteStream.closeWrite(),
-      localStream.closeWrite()
+      remoteStream.close(),
+      localStream.close()
     ])
 
     expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 4)

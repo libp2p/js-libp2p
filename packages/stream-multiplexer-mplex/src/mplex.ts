@@ -71,14 +71,14 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
 
     const id = this._streamId++
 
-    return this._newStream(id, 'outbound')
+    return this._newStream(id, 'outbound', options)
   }
 
-  _newStream (id: number, direction: MessageStreamDirection): MplexStream {
+  _newStream (id: number, direction: MessageStreamDirection, options?: CreateStreamOptions): MplexStream {
     this.log('new %s stream %s', direction, id)
 
     const stream = createStream({
-      ...this.streamOptions,
+      ...options,
       id,
       direction,
       maxMsgSize: this.maxMessageSize,
@@ -106,7 +106,7 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
         return
       }
 
-      const stream = this._newStream(message.id, 'inbound')
+      const stream = this._newStream(message.id, 'inbound', this.streamOptions)
       this.onRemoteStream(stream)
 
       return

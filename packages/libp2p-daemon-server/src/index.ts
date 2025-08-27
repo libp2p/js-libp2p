@@ -177,7 +177,7 @@ export class Server implements Libp2pServer {
         })
         .finally(() => {
           if (conn != null) {
-            conn.closeWrite()
+            conn.close()
               .catch(err => {
                 log.error(err)
               })
@@ -518,7 +518,14 @@ export class Server implements Libp2pServer {
         log.error(err)
 
         // recreate pb stream in case the original was unwrapped already
-        pb = pbStream(pb.unwrap(), {
+        const conn = pb.unwrap()
+
+        if (conn.status !== 'open') {
+          // cannot write error message as connection is closed
+          return
+        }
+
+        pb = pbStream(conn, {
           maxDataLength: LIMIT
         })
 
@@ -530,7 +537,7 @@ export class Server implements Libp2pServer {
           peers: []
         }, Response)
       } finally {
-        await pb.unwrap().closeWrite()
+        await pb.unwrap().close()
       }
     })
       .catch(err => {
