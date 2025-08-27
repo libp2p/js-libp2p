@@ -14,7 +14,7 @@ export function receiveFinAck (channel: RTCDataChannel): void {
 }
 
 /**
- * simulates receiving a FIN_ACK on the passed datachannel
+ * simulates receiving a FIN on the passed datachannel
  */
 export function receiveRemoteCloseWrite (channel: RTCDataChannel): void {
   const msgBuf = Message.encode({ flag: Message.Flag.FIN })

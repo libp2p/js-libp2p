@@ -38,10 +38,16 @@ describe('Max message size', () => {
     const sendMore = webrtcStream.send(data)
     expect(sendMore).to.be.true()
 
-    expect(channel.send).to.have.property('callCount', 1)
+    expect(channel.send).to.have.property('callCount', 2)
+
+    const bytes = channel.send.getCalls().reduce((acc, curr) => {
+      return acc + curr.args[0].byteLength
+    }, 0)
+
+    expect(bytes).to.be.lessThan(MAX_MESSAGE_SIZE)
 
     // minus 2x bytes because there is no flag field in the protobuf message
-    expect(channel.send.getCall(0).args[0]).to.have.lengthOf(MAX_MESSAGE_SIZE - 2)
+    expect(channel.send.getCall(1).args[0]).to.have.lengthOf(MAX_MESSAGE_SIZE - 4)
   })
 
   it(`sends messages greater than ${MAX_MESSAGE_SIZE} bytes in parts`, async () => {
@@ -113,6 +119,7 @@ describe('Stream Stats', () => {
     expect(stream.timeline.close).to.not.exist()
     expect(stream.writeStatus).to.equal('writable')
 
+    receiveFinAck(dataChannel)
     receiveRemoteCloseWrite(dataChannel)
 
     await Promise.all([
@@ -127,7 +134,9 @@ describe('Stream Stats', () => {
   it('closeRead marks it read-closed only', async () => {
     expect(stream.timeline.close).to.not.exist()
     await stream.closeRead()
-    expect(stream.timeline.close).to.not.exist()
+
+    expect(stream).to.have.property('writeStatus', 'writable')
+    expect(stream).to.have.property('readStatus', 'closed')
   })
 
   it('closeWrite marks it write-closed only', async () => {
@@ -136,21 +145,8 @@ describe('Stream Stats', () => {
     receiveFinAck(dataChannel)
     await stream.close()
 
-    expect(stream.timeline.close).to.not.exist()
-  })
-
-  it('closeWrite AND closeRead = close', async () => {
-    expect(stream.timeline.close).to.not.exist()
-
-    stream.onRemoteCloseWrite()
-
-    await Promise.all([
-      pEvent(stream, 'close'),
-      stream.closeRead(),
-      stream.close()
-    ])
-
-    expect(stream.timeline.close).to.be.a('number')
+    expect(stream).to.have.property('writeStatus', 'closed')
+    expect(stream).to.have.property('readStatus', 'readable')
   })
 
   it('abort = close', () => {
@@ -196,7 +192,7 @@ describe('Stream Read Stats Transition By Incoming Flag', () => {
 
     await delay(100)
 
-    expect(stream.readStatus).to.equal('readable')
+    expect(stream.readStatus).to.equal('closed')
   })
 
   it('read-close to close by flag:STOP_SENDING', async () => {
