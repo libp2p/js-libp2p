@@ -102,6 +102,8 @@ export class WebTransportStream extends AbstractStream {
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
+    await this.writer.ready
+
     this.log('sendCloseWrite closing writer')
     await raceSignal(this.writer.close(), options?.signal)
     this.log('sendCloseWrite closed writer')
