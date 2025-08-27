@@ -2,7 +2,6 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start } from '@libp2p/interface'
-import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { streamPair, byteStream, echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
@@ -50,12 +49,7 @@ describe('ping', () => {
         incomingStream.close()
       })
 
-    const connection = stubInterface<Connection>({
-      log: defaultLogger().forComponent('connection')
-    })
-    components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
-
-    connection.newStream.withArgs(PING_PROTOCOL).resolves(outgoingStream)
+    components.connectionManager.openStream.withArgs(remotePeer, PING_PROTOCOL).resolves(outgoingStream)
 
     // Run ping
     await expect(ping.ping(remotePeer)).to.eventually.be.gte(0)
@@ -71,12 +65,7 @@ describe('ping', () => {
 
     void echo(incomingStream)
 
-    const connection = stubInterface<Connection>({
-      log: defaultLogger().forComponent('connection')
-    })
-    components.connectionManager.openConnection.withArgs(remotePeer).resolves(connection)
-
-    connection.newStream.withArgs(PING_PROTOCOL).resolves(outgoingStream)
+    components.connectionManager.openStream.withArgs(remotePeer, PING_PROTOCOL).resolves(outgoingStream)
 
     // 10 ms timeout
     const signal = AbortSignal.timeout(timeout)

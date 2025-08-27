@@ -1,4 +1,4 @@
-import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents, Stream } from '@libp2p/interface'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents, Stream, NewStreamOptions } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
@@ -96,7 +96,7 @@ export interface ConnectionManager {
    * @param options - Optional parameters for connection handling.
    * @returns A promise that resolves to a `Connection` object.
    */
-  openStream(peer: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options?: OpenConnectionOptions): Promise<Stream>
+  openStream(peer: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options?: OpenConnectionOptions & NewStreamOptions): Promise<Stream>
 
   /**
    * Close our connections to a peer

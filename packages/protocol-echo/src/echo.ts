@@ -1,4 +1,4 @@
-import { ProtocolError } from '@libp2p/interface'
+import { ProtocolError, setMaxListeners } from '@libp2p/interface'
 import { UnexpectedEOFError } from '@libp2p/utils'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -33,6 +33,7 @@ export class Echo implements Startable, EchoInterface {
       const log = stream.log.newScope('echo')
       const start = Date.now()
       const signal = AbortSignal.timeout(this.timeout)
+      setMaxListeners(Infinity, signal)
       let bytes = 0
 
       for await (const buf of stream) {
@@ -44,9 +45,11 @@ export class Echo implements Startable, EchoInterface {
         }
 
         if (!stream.send(buf)) {
-          log('waiting for stream to drain')
-          await pEvent(stream, 'drain')
-          log('stream drained')
+          await pEvent(stream, 'drain', {
+            rejectionEvents: [
+              'close'
+            ]
+          })
         }
       }
 

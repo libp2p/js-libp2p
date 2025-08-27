@@ -1,7 +1,8 @@
 import { randomBytes } from '@libp2p/crypto'
-import { ProtocolError, serviceCapabilities } from '@libp2p/interface'
-import { byteStream } from '@libp2p/utils'
-import { setMaxListeners } from 'main-event'
+import { ProtocolError, serviceCapabilities, setMaxListeners, TimeoutError } from '@libp2p/interface'
+import { pEvent } from 'p-event'
+import { raceSignal } from 'race-signal'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { PingComponents, PingInit, Ping as PingInterface } from './index.js'
@@ -59,24 +60,31 @@ export class Ping implements Startable, PingInterface {
   async handlePing (stream: Stream, connection: Connection): Promise<void> {
     const log = stream.log.newScope('ping')
     log.trace('ping from %p', connection.remotePeer)
-
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
-
+    signal.addEventListener('abort', () => {
+      stream.abort(new TimeoutError('Ping timed out'))
+    })
     const start = Date.now()
-    const bytes = byteStream(stream)
 
-    while (stream.readStatus === 'readable') {
-      const buf = await bytes.read({
-        bytes: PING_LENGTH,
-        signal
-      })
-      await bytes.write(buf, {
-        signal
-      })
+    for await (const buf of stream) {
+      if (stream.status !== 'open') {
+        log('stream status changed to %s', stream.status)
+        break
+      }
 
-      log('ping from %p complete in %dms', connection.remotePeer, Date.now() - start)
+      if (!stream.send(buf)) {
+        log('waiting for stream to drain')
+        await pEvent(stream, 'drain', {
+          rejectionEvents: [
+            'close'
+          ]
+        })
+        log('stream drained')
+      }
     }
+
+    log('ping from %p complete in %dms', connection.remotePeer, Date.now() - start)
 
     await stream.close({
       signal
@@ -87,50 +95,38 @@ export class Ping implements Startable, PingInterface {
    * Ping a given peer and wait for its response, getting the operation latency.
    */
   async ping (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<number> {
-    const start = Date.now()
     const data = randomBytes(PING_LENGTH)
-    const connection = await this.components.connectionManager.openConnection(peer, options)
-    const log = connection.log.newScope('ping')
-    let stream: Stream | undefined
-
-    if (options.signal == null) {
-      const signal = AbortSignal.timeout(this.timeout)
-
-      options = {
-        ...options,
-        signal
-      }
-    }
+    const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
+      runOnLimitedConnection: this.runOnLimitedConnection,
+      ...options
+    })
+    const log = stream.log.newScope('ping')
 
     try {
-      stream = await connection.newStream(this.protocol, {
-        ...options,
-        runOnLimitedConnection: this.runOnLimitedConnection
+      const start = Date.now()
+      const finished = Promise.withResolvers<number>()
+      const received = new Uint8ArrayList()
+
+      stream.addEventListener('message', (evt) => {
+        received.append(evt.data)
+
+        if (received.byteLength === PING_LENGTH) {
+          const rtt = Date.now() - start
+
+          if (!uint8ArrayEquals(data, received.subarray())) {
+            finished.reject(new ProtocolError(`Received wrong ping ack after ${rtt}ms`))
+          } else {
+            finished.resolve(rtt)
+          }
+        }
       })
 
-      const bytes = byteStream(stream)
+      stream.send(data)
+      await stream.close(options)
 
-      const [, result] = await Promise.all([
-        bytes.write(data, options),
-        bytes.read({
-          ...options,
-          bytes: PING_LENGTH
-        })
-      ])
-
-      const ms = Date.now() - start
-
-      stream.close()
-
-      if (!uint8ArrayEquals(data, result.subarray())) {
-        throw new ProtocolError(`Received wrong ping ack after ${ms}ms`)
-      }
-
-      log('ping %p complete in %dms', connection.remotePeer, ms)
-
-      return ms
+      return await raceSignal(finished.promise, options.signal)
     } catch (err: any) {
-      log.error('error while pinging %p', connection.remotePeer, err)
+      log.error('error while pinging %o - %e', peer, err)
 
       stream?.abort(err)
 
