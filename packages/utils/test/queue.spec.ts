@@ -195,7 +195,7 @@ describe('queue', () => {
     await expect(queue.onEmpty({
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('.onIdle()', async () => {
@@ -237,7 +237,7 @@ describe('queue', () => {
     await expect(queue.onIdle({
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('.onSizeLessThan()', async () => {
@@ -281,7 +281,7 @@ describe('queue', () => {
     await expect(queue.onSizeLessThan(1, {
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('.onIdle() - no pending', async () => {

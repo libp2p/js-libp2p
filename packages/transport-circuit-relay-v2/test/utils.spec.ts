@@ -28,22 +28,30 @@ describe('circuit-relay utils', () => {
 
   it('should create relay', async () => {
     const controller = new AbortController()
-    const [localStream, remoteStream] = await streamPair({
+    const [localToServer, serverToLocal] = await streamPair({
       delay: 10
     })
-    const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
-    const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
+    const [serverToRemote, remoteToServer] = await streamPair({
+      delay: 10
+    })
+    const localStreamAbortSpy = Sinon.spy(serverToLocal, 'abort')
+    const remoteStreamAbortSpy = Sinon.spy(serverToRemote, 'abort')
 
-    createLimitedRelay(localStream, remoteStream, controller.signal, createReservation(), {
+    createLimitedRelay(serverToLocal, serverToRemote, controller.signal, createReservation(), {
       log: stubInterface<Logger>()
     })
 
-    localStream.send(uint8arrayFromString('0123'))
-    localStream.send(uint8arrayFromString('4567'))
-    localStream.send(uint8arrayFromString('8912'))
-    await localStream.close()
-
-    const received = await all(remoteStream)
+    const [
+      received
+    ] = await Promise.all([
+      all(remoteToServer),
+      (async () => {
+        localToServer.send(uint8arrayFromString('0123'))
+        localToServer.send(uint8arrayFromString('4567'))
+        localToServer.send(uint8arrayFromString('8912'))
+        await localToServer.close()
+      })()
+    ])
 
     expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 12)
     expect(localStreamAbortSpy).to.have.property('called', false)
@@ -51,75 +59,85 @@ describe('circuit-relay utils', () => {
   })
 
   it('should create data limited relay', async () => {
-    const [localStream, remoteStream] = await streamPair({
-      delay: 10
-    })
     const controller = new AbortController()
     const limit = {
       data: 5n
     }
 
-    const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
-    const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
+    const [localToServer, serverToLocal] = await streamPair({
+      delay: 10
+    })
+    const [serverToRemote, remoteToServer] = await streamPair({
+      delay: 10
+    })
+    const localStreamAbortSpy = Sinon.spy(serverToLocal, 'abort')
+    const remoteStreamAbortSpy = Sinon.spy(serverToRemote, 'abort')
 
-    createLimitedRelay(localStream, remoteStream, controller.signal, createReservation(limit), {
+    createLimitedRelay(serverToLocal, serverToRemote, controller.signal, createReservation(limit), {
       log: stubInterface<Logger>()
     })
 
-    localStream.send(uint8arrayFromString('0123'))
-    localStream.send(uint8arrayFromString('4567'))
-    await localStream.close()
-
     const received: Array<Uint8Array | Uint8ArrayList> = []
 
-    remoteStream.addEventListener('message', (evt) => {
+    remoteToServer.addEventListener('message', (evt) => {
       received.push(evt.data)
     })
 
-    await pEvent(remoteStream, 'close')
+    localToServer.send(uint8arrayFromString('0123'))
+    localToServer.send(uint8arrayFromString('4567'))
 
-    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 8)
+    await Promise.all([
+      pEvent(remoteToServer, 'close'),
+      localToServer.close()
+    ])
+
+    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 4)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })
 
   it('should create data limited relay that limits data in both directions', async () => {
-    const [localStream, remoteStream] = await streamPair({
-      delay: 10
-    })
     const controller = new AbortController()
     const limit = {
       data: 5n
     }
 
-    const localStreamAbortSpy = Sinon.spy(localStream, 'abort')
-    const remoteStreamAbortSpy = Sinon.spy(remoteStream, 'abort')
+    const [localToServer, serverToLocal] = await streamPair({
+      delay: 10
+    })
+    const [serverToRemote, remoteToServer] = await streamPair({
+      delay: 10
+    })
+    const localStreamAbortSpy = Sinon.spy(serverToLocal, 'abort')
+    const remoteStreamAbortSpy = Sinon.spy(serverToRemote, 'abort')
 
-    createLimitedRelay(localStream, remoteStream, controller.signal, createReservation(limit), {
+    createLimitedRelay(serverToLocal, serverToRemote, controller.signal, createReservation(limit), {
       log: stubInterface<Logger>()
     })
 
-    localStream.send(uint8arrayFromString('0123'))
-    localStream.send(uint8arrayFromString('4567'))
-    await localStream.close()
-
-    remoteStream.send(uint8arrayFromString('8912'))
-    remoteStream.send(uint8arrayFromString('3456'))
-    await localStream.close()
-
     const received: Array<Uint8Array | Uint8ArrayList> = []
 
-    remoteStream.addEventListener('message', (evt) => {
+    remoteToServer.addEventListener('message', (evt) => {
       received.push(evt.data)
     })
 
-    localStream.addEventListener('message', (evt) => {
+    localToServer.addEventListener('message', (evt) => {
       received.push(evt.data)
     })
 
-    await pEvent(remoteStream, 'close')
+    localToServer.send(uint8arrayFromString('0123'))
+    localToServer.send(uint8arrayFromString('4567'))
 
-    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 8)
+    remoteToServer.send(uint8arrayFromString('8912'))
+    remoteToServer.send(uint8arrayFromString('3456'))
+
+    await Promise.all([
+      pEvent(remoteToServer, 'close'),
+      localToServer.close(),
+      remoteToServer.close()
+    ])
+
+    expect(new Uint8ArrayList(...received)).to.have.property('byteLength', 4)
     expect(localStreamAbortSpy).to.have.property('called', true)
     expect(remoteStreamAbortSpy).to.have.property('called', true)
   })
