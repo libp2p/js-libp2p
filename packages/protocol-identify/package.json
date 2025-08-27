@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/identify",
-  "version": "3.0.38",
+  "version": "3.0.39",
   "description": "Implementation of the Identify Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-identify#readme",
@@ -45,12 +45,12 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.7",
-    "@libp2p/interface": "^2.10.5",
-    "@libp2p/interface-internal": "^2.3.18",
-    "@libp2p/peer-id": "^5.1.8",
-    "@libp2p/peer-record": "^8.0.34",
-    "@libp2p/utils": "^6.7.1",
+    "@libp2p/crypto": "^5.1.8",
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/interface-internal": "^2.3.19",
+    "@libp2p/peer-id": "^5.1.9",
+    "@libp2p/peer-record": "^8.0.35",
+    "@libp2p/utils": "^6.7.2",
     "@multiformats/multiaddr": "^12.4.4",
     "@multiformats/multiaddr-matcher": "^2.0.0",
     "it-drain": "^3.0.9",
@@ -61,7 +61,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.21",
+    "@libp2p/logger": "^5.2.0",
     "aegir": "^47.0.14",
     "delay": "^6.0.0",
     "it-length-prefixed": "^10.0.1",

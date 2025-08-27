@@ -76,6 +76,27 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.39](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.38...identify-v3.0.39) (2025-08-19)
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/interface-internal bumped from ^2.3.18 to ^2.3.19
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-record bumped from ^8.0.34 to ^8.0.35
+    * @libp2p/utils bumped from ^6.7.1 to ^6.7.2
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+
 ## [3.0.38](https://github.com/libp2p/js-libp2p/compare/identify-v3.0.37...identify-v3.0.38) (2025-07-07)
 
 
