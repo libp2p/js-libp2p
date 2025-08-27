@@ -66,10 +66,11 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
   const messageStream = pbStream(stream).pb(Message)
   const peerConnection = new RTCPeerConnection(rtcConfiguration)
+
+  // make sure C++ peer connection is garbage collected
+  // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
   peerConnection.addEventListener('connectionstatechange', () => {
     switch (peerConnection.connectionState) {
-      case 'failed':
-      case 'disconnected':
       case 'closed':
         peerConnection.close()
         break

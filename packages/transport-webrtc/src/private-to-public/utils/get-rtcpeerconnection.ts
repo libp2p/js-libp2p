@@ -1,6 +1,6 @@
+import { Crypto } from '@peculiar/webcrypto'
 import { PeerConnection } from 'node-datachannel'
 import { RTCPeerConnection } from 'node-datachannel/polyfill'
-import { Crypto } from '@peculiar/webcrypto'
 import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.js'
 import { generateTransportCertificate } from './generate-certificates.js'
 import type { TransportCertificate } from '../../index.js'
@@ -24,10 +24,9 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
     this.ufrag = init.ufrag
 
     // make sure C++ peer connection is garbage collected
+    // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
     this.addEventListener('connectionstatechange', () => {
       switch (this.connectionState) {
-        case 'failed':
-        case 'disconnected':
         case 'closed':
           this.peerConnection.close()
           break
