@@ -129,7 +129,7 @@ export function findExistingConnection (peerId?: PeerId, connections?: Connectio
     return existingConnection
   }
 
-  // we have an indirect, but unlimted connection - test the dial addresses to
+  // we have an indirect, but unlimited connection - test the dial addresses to
   // see if any of them would result in a direct connection, in which case allow
   // the attempt to upgrade to a direct connection
   const wouldUpgradeToDirect = dialAddresses.some(ma => isDirect(ma))
