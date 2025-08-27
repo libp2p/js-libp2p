@@ -252,7 +252,7 @@ describe('upgrader', () => {
         })
       })()
     ])).to.eventually.be.rejected
-      .with.property('message').that.include('aborted')
+      .with.property('name', 'MuxerUnavailableError')
   })
 
   it('should not abort if inbound upgrade is successful', async () => {

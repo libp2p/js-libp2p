@@ -474,7 +474,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
       encoded = encodeHeader(header)
     }
 
-    this.log.trace('sending frame %o - %d bytes', debugFrame(header), encoded.byteLength)
+    this.log.trace('sending frame %o', debugFrame(header))
 
     return this.send(encoded)
   }
