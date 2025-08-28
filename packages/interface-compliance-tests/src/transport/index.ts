@@ -99,13 +99,17 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const input = Uint8Array.from([0, 1, 2, 3, 4])
 
-      await expect(dialer.services.echo.echo(dialAddrs[0], input, {
-        signal: AbortSignal.timeout(5000)
-      })).to.eventually.deep.equal(input)
+      const output1 = await dialer.services.echo.echo(dialAddrs[0], input, {
+        signal: AbortSignal.timeout(5000),
+        force: true
+      })
+      expect(output1.subarray()).to.equalBytes(input)
 
-      await expect(dialer.services.echo.echo(dialAddrs[1], input, {
-        signal: AbortSignal.timeout(5000)
-      })).to.eventually.deep.equal(input)
+      const output2 = await dialer.services.echo.echo(dialAddrs[1], input, {
+        signal: AbortSignal.timeout(5000),
+        force: true
+      })
+      expect(output2.subarray()).to.equalBytes(input)
     })
 
     it('can close connections', async () => {
