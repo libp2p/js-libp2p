@@ -91,7 +91,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         signal: AbortSignal.timeout(5000)
       })
 
-      expect(output).to.equalBytes(input)
+      expect(output.subarray()).to.equalBytes(input)
     })
 
     it('should listen on multiple addresses', async () => {
@@ -250,7 +250,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         signal: AbortSignal.timeout(timeout)
       })
 
-      expect(output).to.equalBytes(input)
+      expect(output.subarray()).to.equalBytes(input)
       expect(connection.streams.filter(s => s.protocol === dialer.services.echo.protocol)).to.be.empty()
     })
 
@@ -266,7 +266,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         signal: AbortSignal.timeout(timeout)
       })
 
-      expect(output).to.equalBytes(input)
+      expect(output.subarray()).to.equalBytes(input)
       expect(connection.streams.filter(s => s.protocol === dialer.services.echo.protocol)).to.be.empty()
     })
 
@@ -284,7 +284,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
           signal: AbortSignal.timeout(timeout)
         })
 
-        expect(output).to.equalBytes(input)
+        expect(output.subarray()).to.equalBytes(input)
         expect(connection.streams.filter(s => s.protocol === echoProtocol)).to.be.empty()
       }
     })
