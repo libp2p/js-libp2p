@@ -46,6 +46,7 @@ import { Echo as EchoClass } from './echo.js'
 import type { PeerId } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface EchoInit {
   protocolPrefix?: string
@@ -62,7 +63,7 @@ export interface EchoComponents {
 
 export interface Echo {
   protocol: string
-  echo(peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: OpenConnectionOptions): Promise<Uint8Array>
+  echo(peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array | Uint8ArrayList, options?: OpenConnectionOptions): Promise<Uint8ArrayList>
 }
 
 export function echo (init: EchoInit = {}): (components: EchoComponents) => Echo {

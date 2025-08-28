@@ -4,16 +4,16 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { ping } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import map from 'it-map'
-import toBuffer from 'it-to-buffer'
+import all from 'it-all'
 import { createLibp2p } from 'libp2p'
-import pWaitFor from 'p-wait-for'
+import { pEvent } from 'p-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { webTransport } from '../src/index.js'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Libp2p } from 'libp2p'
 
 describe('libp2p-webtransport', () => {
-  let node: Libp2p<{ ping: PingService }>
+  let node: Libp2p<{ ping: Ping }>
 
   beforeEach(async () => {
     node = await createLibp2p({
@@ -110,29 +110,27 @@ describe('libp2p-webtransport', () => {
     expect(stream.timeline.close).to.be.undefined()
 
     // send and receive data
-    const [, output] = await Promise.all([
+    const [output] = await Promise.all([
+      all(stream),
       Promise.resolve().then(async () => {
         for await (const buf of gen()) {
-          stream.send(buf)
+          if (!stream.send(buf)) {
+            await pEvent(stream, 'drain', {
+              rejectionEvents: [
+                'close'
+              ]
+            })
+          }
         }
 
         await stream.close()
-      }),
-      toBuffer(map(stream, buf => buf.subarray()))
+      })
     ])
 
-    // closing takes a little bit of time
-    await pWaitFor(() => {
-      return stream.writeStatus === 'closed'
-    }, {
-      interval: 100
-    })
-
     expect(stream.writeStatus).to.equal('closed')
-    expect(stream.timeline.close).to.be.greaterThan(0)
 
     // should have read all of the bytes
-    expect(output).to.equalBytes(toBuffer(data))
+    expect(new Uint8ArrayList(...output).subarray()).to.equalBytes(new Uint8ArrayList(...data).subarray())
 
     // should have set timeline events
     expect(stream.timeline.close).to.be.greaterThan(0)

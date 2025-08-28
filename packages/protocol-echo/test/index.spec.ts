@@ -77,6 +77,6 @@ describe('echo', () => {
 
     const output = await echo.echo(ma, input)
 
-    expect(output).to.equalBytes(output)
+    expect(output.subarray()).to.equalBytes(input)
   })
 })

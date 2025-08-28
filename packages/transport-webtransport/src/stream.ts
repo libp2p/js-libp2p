@@ -5,7 +5,7 @@ import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface WebTransportStreamInit extends AbstractStreamInit {
-  bidiStream: WebTransportBidirectionalStream
+  stream: WebTransportBidirectionalStream
 }
 
 export class WebTransportStream extends AbstractStream {
@@ -15,18 +15,23 @@ export class WebTransportStream extends AbstractStream {
   constructor (init: WebTransportStreamInit) {
     super(init)
 
-    this.writer = init.bidiStream.writable.getWriter()
-    this.reader = init.bidiStream.readable.getReader()
+    this.writer = init.stream.writable.getWriter()
+    this.reader = init.stream.readable.getReader()
 
     void this.writer.closed
       .then(() => {
         this.log('writer closed')
       })
       .catch((err) => {
-        this.log('writer close promise rejected - %e', err)
-      })
-      .finally(() => {
-        this.onRemoteCloseRead()
+        this.log('writer close error')
+        // chrome/ff send different messages
+        if (err.message.includes('STOP_SENDING') || err.message.includes('StopSending')) {
+          this.onRemoteCloseRead()
+        } else if (err.message.includes('RESET_STREAM') || err.message.includes('Reset')) {
+          this.onRemoteReset()
+        } else {
+          this.log('writer close promise rejected - %e', err)
+        }
       })
 
     this.readData()
@@ -64,23 +69,16 @@ export class WebTransportStream extends AbstractStream {
   sendData (data: Uint8ArrayList): SendResult {
     // the streams spec recommends not waiting for data to be sent
     // https://streams.spec.whatwg.org/#example-manual-write-dont-await
-    this.writer.ready
-      .then(() => {
-        for (const buf of data) {
-          this.writer.write(buf)
-        }
-      })
-      .catch(err => {
-        this.log.error('error sending stream data - %e', err)
-      })
+    for (const buf of data) {
+      this.writer.write(buf)
+        .catch(err => {
+          this.abort(err)
+        })
+    }
 
-    // The desiredSize read-only property of the WritableStreamDefaultWriter
-    // interface returns the desired size required to fill the stream's internal
-    // queue.
-    //
-    // the value will be null if the stream cannot be successfully written to
-    // (due to either being errored, or having an abort queued up), and zero if
-    // the stream is closed. It can be negative if the queue is over-full
+    this.log.trace('desired size after sending %d bytes is %d bytes', data.byteLength, this.writer.desiredSize)
+
+    // null means the stream has errored - https://streams.spec.whatwg.org/#writable-stream-default-writer-get-desired-size
     if (this.writer.desiredSize == null) {
       return {
         sentBytes: data.byteLength,
@@ -88,9 +86,19 @@ export class WebTransportStream extends AbstractStream {
       }
     }
 
+    const canSendMore = this.writer.desiredSize > 0
+
+    if (!canSendMore) {
+      this.writer.ready.then(() => {
+        this.safeDispatchEvent('drain')
+      }, (err) => {
+        this.abort(err)
+      })
+    }
+
     return {
       sentBytes: data.byteLength,
-      canSendMore: this.writer.desiredSize > 0
+      canSendMore
     }
   }
 
@@ -102,10 +110,8 @@ export class WebTransportStream extends AbstractStream {
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    await this.writer.ready
-
     this.log('sendCloseWrite closing writer')
-    await raceSignal(this.writer.close(), options?.signal)
+    await raceSignal(this.writer.close().catch(() => {}), options?.signal)
     this.log('sendCloseWrite closed writer')
   }
 
@@ -124,10 +130,10 @@ export class WebTransportStream extends AbstractStream {
   }
 }
 
-export function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: MessageStreamDirection, log: Logger, options?: StreamOptions): WebTransportStream {
+export function webtransportBiDiStreamToStream (stream: WebTransportBidirectionalStream, streamId: string, direction: MessageStreamDirection, log: Logger, options?: StreamOptions): WebTransportStream {
   return new WebTransportStream({
     ...options,
-    bidiStream,
+    stream,
     id: streamId,
     direction,
     log: log.newScope(`${direction}:${streamId}`),

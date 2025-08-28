@@ -1,5 +1,5 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities } from '@libp2p/interface'
+import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
@@ -13,7 +13,7 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
-import type { IdentifyResult, AbortOptions, Connection, Stream, Startable } from '@libp2p/interface'
+import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger } from '@libp2p/interface'
 
 export class Identify extends AbstractIdentify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -28,14 +28,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
         this.identify(connection)
-          .catch(err => {
-            if (err.name === UnsupportedProtocolError.name) {
-              // the remote did not support identify, ignore the error
-              return
-            }
-
-            this.log.error('error during identify trigged by connection:open', err)
-          })
+          .catch(() => {})
       })
     }
   }
@@ -46,6 +39,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyMessage> {
     let stream: Stream | undefined
+    let log: Logger | undefined
 
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.timeout)
@@ -62,8 +56,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         ...options,
         runOnLimitedConnection: this.runOnLimitedConnection
       })
-
-      const log = stream.log.newScope('identify')
+      log = stream.log.newScope('identify')
 
       const pb = pbStream(stream, {
         maxDataLength: this.maxMessageSize
@@ -73,10 +66,11 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       const message = await pb.read(options)
 
       log('close write')
-      await stream.close(options)
+      await pb.unwrap().unwrap().close(options)
 
       return message
     } catch (err: any) {
+      log?.error('error during identify - %e', err)
       stream?.abort(err)
       throw err
     }

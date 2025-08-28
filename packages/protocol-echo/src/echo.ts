@@ -75,7 +75,7 @@ export class Echo implements Startable, EchoInterface {
     return this.started
   }
 
-  async echo (peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: OpenConnectionOptions): Promise<Uint8Array> {
+  async echo (peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array | Uint8ArrayList, options?: OpenConnectionOptions): Promise<Uint8ArrayList> {
     const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
       ...this.init,
       ...options
@@ -84,7 +84,7 @@ export class Echo implements Startable, EchoInterface {
     const log = stream.log.newScope('echo')
 
     const received = new Uint8ArrayList()
-    const output = Promise.withResolvers<Uint8Array>()
+    const output = Promise.withResolvers<Uint8ArrayList>()
 
     stream.addEventListener('message', (evt) => {
       received.append(evt.data)
@@ -104,7 +104,7 @@ export class Echo implements Startable, EchoInterface {
         output.reject(new UnexpectedEOFError(`Underread: ${received.byteLength}/${buf.byteLength} bytes`))
       }
 
-      output.resolve(received.subarray())
+      output.resolve(received)
     })
 
     log('sending %d bytes', buf.byteLength)
