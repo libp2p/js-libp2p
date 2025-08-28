@@ -1,6 +1,5 @@
 import { ConnectionFailedError, InvalidMessageError, InvalidMultiaddrError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import pDefer from 'p-defer'
 import { CustomProgressEvent } from 'progress-events'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
