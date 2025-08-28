@@ -19,7 +19,7 @@ export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions, Prog
 
 export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream: MessageStream<Message, Stream>, options: ReadCandidatesOptions): Promise<void> => {
   try {
-    const connectedPromise: DeferredPromise<void> = pDefer()
+    const connectedPromise = Promise.withResolvers<void>()
     resolveOnConnected(pc, connectedPromise)
 
     // read candidates until we are connected or we reach the end of the stream

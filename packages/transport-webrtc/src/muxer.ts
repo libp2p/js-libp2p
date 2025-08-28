@@ -90,7 +90,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
      * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/datachannel_event}
      */
     this.peerConnection.ondatachannel = ({ channel }) => {
-      this.log.trace('incoming datachannel with channel id %d', channel.id)
+      this.log.trace('incoming %s datachannel with channel id %d and status', channel.protocol, channel.id, channel.readyState)
 
       // 'init' channel is only used during connection establishment
       if (channel.label === 'init') {
@@ -114,16 +114,18 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
 
   async onCreateStream (options?: CreateStreamOptions): Promise<WebRTCStream> {
     // The spec says the label MUST be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
-    const channel = this.peerConnection.createDataChannel('', {
+    const channel = this.peerConnection.createDataChannel('wtf', {
       // TODO: pre-negotiate stream protocol
-      // protocol: options?.protocol
+      protocol: options?.protocol
     })
 
+    this.log('open channel %d for protocol %s', channel.id, options?.protocol)
+
     if (channel.readyState !== 'open') {
-      this.log('channel state is "%s" and not "open", waiting for "open" event before sending data', channel.readyState)
+      this.log('channel %d state is "%s" and not "open", waiting for "open" event before sending data', channel.id, channel.readyState)
       await pEvent(channel, 'open', options)
 
-      this.log('channel state is now "%s", sending data', channel.readyState)
+      this.log('channel %d state is now "%s", sending data', channel.id, channel.readyState)
     }
 
     const stream = createStream({

@@ -1,4 +1,5 @@
 import { pbStream } from '@libp2p/utils'
+import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { SIGNALING_PROTOCOL } from '../constants.js'
 import { SDPHandshakeFailedError } from '../error.js'
@@ -168,7 +169,15 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       onProgress
     })
 
-    log.trace('initiator connected, closing init channel')
+    log.trace('initiator connected')
+
+    if (channel.readyState !== 'open') {
+      log.trace('wait for init channel to open')
+      await pEvent(channel, 'open')
+    }
+
+    log.trace('closing init channel, starting status')
+
     channel.close()
 
     onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'))

@@ -384,10 +384,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     while (this.writeBuffer.byteLength > 0) {
       const toSend = this.writeBuffer.sublist(0, Math.min(this.maxMessageSize ?? this.writeBuffer.byteLength, this.writeBuffer.byteLength))
+      const sendCount = toSend.byteLength
       const sendResult = this.sendData(toSend)
       canSendMore = sendResult.canSendMore
 
-      this.log('send %d/%d bytes, can send more: %o', sendResult.sentBytes, toSend.byteLength, canSendMore)
+      this.log('send %d/%d bytes, can send more: %o', sendResult.sentBytes, sendCount, canSendMore)
 
       this.writeBuffer.consume(sendResult.sentBytes)
 

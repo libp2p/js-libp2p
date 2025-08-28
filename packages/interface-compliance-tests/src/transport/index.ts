@@ -55,16 +55,22 @@ async function getSetup (common: TestSetup<TransportTestFixtures>): Promise<{ di
     listener = await createPeer(setup.listener)
   }
 
-  const dialAddrs = listener?.getMultiaddrs() ?? setup.dialAddrs
+  let dialAddrs = listener?.getMultiaddrs() ?? setup.dialAddrs
 
   if (dialAddrs == null) {
     throw new Error('Listener config or dial addresses must be specified')
   }
 
+  dialAddrs = dialAddrs.filter(ma => setup.dialMultiaddrMatcher.exactMatch(ma))
+
+  if (dialAddrs.length === 0) {
+    throw new Error('Listener was not listening on any addresses that the dialMultiaddrMatcher matched')
+  }
+
   return {
     dialer,
     listener,
-    dialAddrs: dialAddrs.filter(ma => setup.dialMultiaddrMatcher.exactMatch(ma)),
+    dialAddrs,
     dialMultiaddrMatcher: setup.dialMultiaddrMatcher,
     listenMultiaddrMatcher: setup.listenMultiaddrMatcher
   }
@@ -334,17 +340,22 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       expect(new Uint8ArrayList(...output).byteLength).to.equal(bytes)
     })
 
-    it('can close local stream for writing and reading while a remote stream is writing', async function () {
+    it('can close local stream while a remote stream is writing', async function () {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       if (listener == null) {
         return this.skip()
       }
 
+      // 1. remote stream close read
+      // 2. local stream close write
+      // 3. remote stream close write
+
       /**
        * NodeA             NodeB
        * |   <--- STOP_SENDING |
        * | FIN --->            |
+       * |           <--- DATA |
        * |            <--- FIN |
        * | FIN_ACK --->        |
        * |        <--- FIN_ACK |
@@ -363,24 +374,31 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      // open a stream on the echo protocol
-      const stream = await connection.newStream(protocol, {
-        runOnLimitedConnection: true
-      })
+      const [
+        localStream,
+        remoteStream
+      ] = await Promise.all([
+        // open a stream on the echo protocol
+        connection.newStream(protocol, {
+          runOnLimitedConnection: true
+        }),
+        getRemoteStream.promise
+      ])
 
-      // close the write end immediately
-      const p = stream.close()
+      // ignore incoming data
+      void drain(localStream)
 
-      const remoteStream = await getRemoteStream.promise
+      // close the remote readable end
+      await remoteStream.closeRead()
 
-      // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
+      // send data from the remote to the local
       const remoteInputStream = pushable<Uint8Array>()
       Promise.resolve().then(async () => {
         for await (const buf of remoteInputStream) {
           const sendMore = remoteStream.send(buf)
 
           if (sendMore === false) {
-            await pEvent(stream, 'drain', {
+            await pEvent(remoteStream, 'drain', {
               rejectionEvents: [
                 'close'
               ]
@@ -388,23 +406,20 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
           }
         }
 
+        // close the remote writable end
         await remoteStream.close()
       })
 
-      // wait for remote to receive local close-write
-      await pRetry(() => {
-        //        if (remoteStream.readStatus !== 'closed') {
-        //          throw new Error('Remote stream read status ' + remoteStream.readStatus)
-        //        }
-      }, {
-        minTimeout: 100
-      })
+      await Promise.all([
+        // wait for remote to receive local FIN
+        pEvent(remoteStream, 'remoteCloseWrite'),
 
-      // remote closes write
+        // wait to receive FIN_ACK
+        localStream.close()
+      ])
+
+      // stop sending remote -> local
       remoteInputStream.end()
-
-      // wait to receive FIN_ACK
-      await p
 
       // wait for remote to notice closure
       await pRetry(() => {
@@ -413,11 +428,12 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         }
       })
 
-      assertStreamClosed(stream)
+      // both ends should be closed
+      assertStreamClosed(localStream)
       assertStreamClosed(remoteStream)
     })
 
-    it('can close local stream for writing and reading while a remote stream is reading and writing', async function () {
+    it('can close local stream for writing while a remote stream is reading', async function () {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       if (listener == null) {
@@ -426,6 +442,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       /**
        * NodeA             NodeB
+       * | DATA --->           |
        * | FIN --->            |
        * |            <--- FIN |
        * | FIN_ACK --->        |
@@ -445,36 +462,60 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      // open a stream on the echo protocol
-      const stream = await connection.newStream(protocol, {
-        runOnLimitedConnection: true
+      const [
+        localStream,
+        remoteStream
+      ] = await Promise.all([
+        // open a stream on the echo protocol
+        connection.newStream(protocol, {
+          runOnLimitedConnection: true
+        }),
+        getRemoteStream.promise
+      ])
+
+      // ignore incoming data
+      void drain(remoteStream)
+
+      // close the remote stream writable end when the local sends a FIN
+      remoteStream.addEventListener('remoteCloseWrite', () => {
+        remoteStream.close()
+          .catch(err => {
+            remoteStream.abort(err)
+          })
       })
 
-      // keep the remote write end open, this should delay the FIN_ACK reply to the local stream
-      const p = stream.close()
+      // send data to the remote then close the stream
+      const data = [
+        Uint8Array.from([0, 1, 2, 3]),
+        Uint8Array.from([4, 5, 6, 7]),
+        Uint8Array.from([8, 9, 0, 1])
+      ]
 
-      const remoteStream = await getRemoteStream.promise
+      const [
+        remoteCloseEvent,
+        localCloseEvent
+      ] = await Promise.all([
+        // wait for the remote to close
+        pEvent(remoteStream, 'close'),
+        pEvent(localStream, 'close'),
+        (async () => {
+          for (const buf of data) {
+            if (!localStream.send(buf)) {
+              await pEvent(localStream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
+            }
+          }
 
-      // readable end should finish
-      await drain(remoteStream)
+          // close the local writable end
+          await localStream.close()
+        })()
+      ])
 
-      // wait for remote to receive local close-write
-      await pRetry(() => {
-        // if (remoteStream.readStatus !== 'closed') {
-        //   throw new Error('Remote stream read status ' + remoteStream.readStatus)
-        //        }
-      }, {
-        minTimeout: 100
-      })
-
-      // remote closes write
-      await remoteStream.close()
-
-      // wait to receive FIN_ACK
-      await p
-
-      // readable end should finish
-      await drain(stream)
+      expect(remoteCloseEvent).to.not.have.property('error', 'remote stream did not close cleanly')
+      expect(localCloseEvent).to.not.have.property('error', 'local stream did not close cleanly')
 
       // wait for remote to notice closure
       await pRetry(() => {
@@ -483,7 +524,8 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         }
       })
 
-      assertStreamClosed(stream)
+      // both ends should be closed
+      assertStreamClosed(localStream)
       assertStreamClosed(remoteStream)
     })
   })
