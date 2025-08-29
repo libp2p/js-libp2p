@@ -271,7 +271,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = new Uint8Array(1024 * 1024 * 10).fill(5)
+      // TODO: this used to be 1024 * 1024 * 10, now it's the max stream write
+      // buffer size
+      const input = new Uint8Array(4_194_304).fill(5)
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
