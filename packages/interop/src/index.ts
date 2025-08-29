@@ -98,7 +98,7 @@ export {
 
 /**
  * Some tests allow skipping certain configurations. When this is necessary,
- * `DaemonFactory.spawn` should thow an instance of this error.
+ * `DaemonFactory.spawn` should throw an instance of this error.
  */
 export class UnsupportedError extends Error {
   constructor (message = 'Unsupported test configuration') {
