@@ -143,10 +143,6 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     this.writeBuffer.append(data)
 
-    if (this.writeBuffer.byteLength > this.maxWriteBufferLength) {
-      this.abort(new StreamBufferError(`Write buffer length of ${this.writeBuffer.byteLength} exceeded limit of ${this.maxWriteBufferLength}, write status is ${this.writeStatus}`))
-    }
-
     if (this.writeStatus === 'writable') {
       return this.processSendQueue()
     }
@@ -384,6 +380,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }
 
     if (this.writeStatus === 'paused') {
+      this.checkWriteBufferLength()
+
       return false
     }
 
@@ -399,6 +397,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       if (!canSendMore) {
         this.log.trace('pausing sending because underlying stream is full')
         this.writeStatus = 'paused'
+        this.checkWriteBufferLength()
         break
       }
     }
@@ -453,6 +452,12 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   private checkReadBufferLength (): void {
     if (this.readBuffer.byteLength > this.maxReadBufferLength) {
       this.abort(new StreamBufferError(`Read buffer length of ${this.readBuffer.byteLength} exceeded limit of ${this.maxReadBufferLength}, read status is ${this.readStatus}`))
+    }
+  }
+
+  private checkWriteBufferLength (): void {
+    if (this.writeBuffer.byteLength > this.maxWriteBufferLength) {
+      this.abort(new StreamBufferError(`Write buffer length of ${this.writeBuffer.byteLength} exceeded limit of ${this.maxWriteBufferLength}, write status is ${this.writeStatus}`))
     }
   }
 
