@@ -140,6 +140,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     const uri = toUri(ma)
     this.log('create websocket connection to %s', uri)
     const websocket = new WebSocket(uri)
+    websocket.binaryType = 'arraybuffer'
 
     try {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))

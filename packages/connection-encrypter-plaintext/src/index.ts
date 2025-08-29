@@ -71,20 +71,17 @@ class Plaintext implements ConnectionEncrypter {
 
     const publicKey = this.privateKey.publicKey
 
-    const [
-      , response
-    ] = await Promise.all([
-      // Encode the public key and write it to the remote peer
-      pb.write({
-        id: publicKey.toMultihash().bytes,
-        pubkey: {
-          Type: KeyType[publicKey.type],
-          Data: publicKey.raw
-        }
-      }, options),
-      // Get the Exchange message
-      pb.read(options)
-    ])
+    // Encode the public key and write it to the remote peer
+    await pb.write({
+      id: publicKey.toMultihash().bytes,
+      pubkey: {
+        Type: KeyType[publicKey.type],
+        Data: publicKey.raw
+      }
+    }, options)
+
+    // Get the Exchange message
+    const response = await pb.read(options)
 
     let peerId
     try {

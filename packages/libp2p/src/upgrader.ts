@@ -9,7 +9,7 @@ import { raceSignal } from 'race-signal'
 import { PROTOCOL_NEGOTIATION_TIMEOUT, INBOUND_UPGRADE_TIMEOUT, CONNECTION_CLOSE_TIMEOUT } from './connection-manager/constants.js'
 import { createConnection } from './connection.js'
 import { ConnectionDeniedError, ConnectionInterceptedError, EncryptionFailedError, MuxerUnavailableError } from './errors.js'
-import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, ConnectionProtector, ConnectionEncrypter, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, CounterGroup, ClearableSignal, MessageStream, SecuredConnection, StreamMuxer, UpgraderWithoutEncryptionOptions } from '@libp2p/interface'
+import type { Libp2pEvents, AbortOptions, ComponentLogger, MultiaddrConnection, Connection, ConnectionProtector, ConnectionEncrypter, ConnectionGater, Metrics, PeerId, PeerStore, StreamMuxerFactory, Upgrader as UpgraderInterface, UpgraderOptions, ConnectionLimits, CounterGroup, ClearableSignal, MessageStream, SecuredConnection, StreamMuxer, UpgraderWithoutEncryptionOptions, SecureConnectionOptions } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
 
@@ -284,6 +284,13 @@ export class Upgrader implements UpgraderInterface {
         cryptoProtocol = 'native'
         remotePeer = opts.remotePeer
       } else {
+        const peerIdString = maConn.remoteAddr.getPeerId()
+        let remotePeerFromMultiaddr: PeerId | undefined
+
+        if (peerIdString != null) {
+          remotePeerFromMultiaddr = peerIdFromString(peerIdString)
+        }
+
         opts?.onProgress?.(new CustomProgressEvent(`upgrader:encrypt-${direction}-connection`));
 
         ({
@@ -292,8 +299,14 @@ export class Upgrader implements UpgraderInterface {
           protocol: cryptoProtocol,
           streamMuxer: muxerFactory
         } = await (direction === 'inbound'
-          ? this._encryptInbound(stream, opts)
-          : this._encryptOutbound(stream, opts)
+          ? this._encryptInbound(stream, {
+            ...opts,
+            remotePeer: remotePeerFromMultiaddr
+          })
+          : this._encryptOutbound(stream, {
+            ...opts,
+            remotePeer: remotePeerFromMultiaddr
+          })
         ))
       }
 
@@ -305,9 +318,9 @@ export class Upgrader implements UpgraderInterface {
         throw err
       }
 
-      stream.pause()
+      // stream.pause()
       await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundEncryptedConnection' : 'denyOutboundEncryptedConnection', remotePeer, maConn)
-      stream.resume()
+      // stream.resume()
 
       if (opts?.muxerFactory != null) {
         muxerFactory = opts.muxerFactory
@@ -330,7 +343,7 @@ export class Upgrader implements UpgraderInterface {
       muxer = muxerFactory.createStreamMuxer(stream)
     }
 
-    stream.pause()
+    // stream.pause()
     await this.shouldBlockConnection(direction === 'inbound' ? 'denyInboundUpgradedConnection' : 'denyOutboundUpgradedConnection', remotePeer, maConn)
 
     const conn = this._createConnection({
@@ -347,7 +360,7 @@ export class Upgrader implements UpgraderInterface {
 
     conn.log('successfully upgraded connection')
 
-    stream.resume()
+    // stream.resume()
 
     return conn
   }
@@ -379,7 +392,7 @@ export class Upgrader implements UpgraderInterface {
   /**
    * Attempts to encrypt the incoming `connection` with the provided `cryptos`
    */
-  async _encryptInbound (connection: MessageStream, options?: AbortOptions): Promise<EncryptedConnection> {
+  async _encryptInbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<EncryptedConnection> {
     const protocols = Array.from(this.connectionEncrypters.keys())
 
     try {
@@ -405,7 +418,7 @@ export class Upgrader implements UpgraderInterface {
    * Attempts to encrypt the given `connection` with the provided connection encrypters.
    * The first `ConnectionEncrypter` module to succeed will be used
    */
-  async _encryptOutbound (connection: MessageStream, options?: AbortOptions): Promise<EncryptedConnection> {
+  async _encryptOutbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<EncryptedConnection> {
     const protocols = Array.from(this.connectionEncrypters.keys())
 
     try {

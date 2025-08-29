@@ -28,25 +28,25 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
     }, { once: true })
 
     this.websocket.addEventListener('message', (evt) => {
-      this.onMessage(evt)
-        .catch(err => {
-          this.log.error('error receiving data - %e', err)
-        })
+      try {
+        let buf: Uint8Array
+
+        if (typeof evt.data === 'string') {
+          buf = uint8ArrayFromString(evt.data)
+        } else if (evt.data instanceof ArrayBuffer) {
+          buf = new Uint8Array(evt.data, 0, evt.data.byteLength)
+        } else {
+          this.abort(new Error('Incorrect binary type'))
+          return
+        }
+
+        this.log('incoming data', buf)
+
+        this.onData(buf)
+      } catch (err: any) {
+        this.log.error('error receiving data - %e', err)
+      }
     })
-  }
-
-  private async onMessage (evt: MessageEvent<string | Blob | ArrayBuffer>): Promise<void> {
-    let buf: Uint8Array
-
-    if (evt.data instanceof Blob) {
-      buf = new Uint8Array(await evt.data.arrayBuffer())
-    } else if (typeof evt.data === 'string') {
-      buf = uint8ArrayFromString(evt.data)
-    } else {
-      buf = new Uint8Array(evt.data, 0, evt.data.byteLength)
-    }
-
-    this.onData(buf)
   }
 
   sendData (data: Uint8ArrayList): SendResult {

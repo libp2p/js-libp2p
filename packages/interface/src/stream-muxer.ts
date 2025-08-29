@@ -77,6 +77,14 @@ export interface StreamOptions {
    * If the internal buffer overflows this value the stream will be reset.
    */
   maxReadBufferLength?: number
+
+  /**
+   * The maximum number of bytes to store when the remote end of the stream is
+   * applying backpressure, or when it is slow to accept new bytes.
+   *
+   * If the internal buffer overflows this value the stream will be reset.
+   */
+  maxWriteBufferLength?: number
 }
 
 export interface StreamMuxerFactory<Muxer extends StreamMuxer = StreamMuxer> {

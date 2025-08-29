@@ -6,6 +6,9 @@ import type { AbortOptions, StreamMuxerFactory, PeerId, MessageStream } from './
  * corresponds to the public key the remote PeerId is derived from.
  */
 export interface SecureConnectionOptions extends AbortOptions {
+  /**
+   * This will be set if the remote peer is known in advance
+   */
   remotePeer?: PeerId
 
   /**

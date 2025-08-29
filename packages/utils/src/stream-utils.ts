@@ -68,7 +68,7 @@ export interface ReadBytesOptions extends AbortOptions {
   bytes: number
 }
 
-export interface ByteStream<S = Stream> {
+export interface ByteStream<S extends MessageStream> {
   /**
    * Read bytes from the stream.
    *
@@ -121,9 +121,10 @@ function isValid (obj?: any): obj is ByteStreamReadable {
   return obj?.addEventListener != null && obj?.removeEventListener != null && obj?.send != null && obj?.push != null && obj?.log != null
 }
 
-export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?: ByteStreamOpts): ByteStream<T> {
+export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStreamOpts): ByteStream<T> {
   const maxBufferSize = opts?.maxBufferSize ?? DEFAULT_MAX_BUFFER_SIZE
   const readBuffer = new Uint8ArrayList()
+
   let hasBytes = Promise.withResolvers<void>()
   let unwrapped = false
 
@@ -133,7 +134,7 @@ export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?:
 
   const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
     if (opts?.stopPropagation === true) {
-      evt.stopImmediatePropagation()
+      // evt.stopImmediatePropagation()
     }
 
     readBuffer.append(evt.data)
@@ -162,7 +163,9 @@ export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?:
   }
   stream.addEventListener('remoteCloseWrite', byteStreamOnRemoteCloseWrite)
 
-  const byteStream: ByteStream<any> = {
+  const byteStream: ByteStream<T> = {
+    readBuffer,
+
     // @ts-expect-error options type prevents type inference
     async read (options?: ReadBytesOptions) {
       if (unwrapped === true) {
@@ -224,9 +227,7 @@ export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?:
         throw new UnwrappedError('Stream was unwrapped')
       }
 
-      const sendMore = stream.send(data)
-
-      if (sendMore === false) {
+      if (!stream.send(data)) {
         await pEvent(stream, 'drain', {
           signal: options?.signal,
           rejectionEvents: ['close']
@@ -247,7 +248,7 @@ export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?:
 
       // emit any unread data
       if (readBuffer.byteLength > 0) {
-        stream.log.trace('stream unwrapped with %d unread bytes', readBuffer.byteLength)
+        stream.log('stream unwrapped with %d unread bytes', readBuffer.byteLength)
         stream.push(readBuffer)
       }
 
@@ -258,7 +259,7 @@ export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?:
   return byteStream
 }
 
-export interface LengthPrefixedStream<Stream = MessageStream> {
+export interface LengthPrefixedStream<S extends MessageStream = MessageStream> {
   /**
    * Read the next length-prefixed number of bytes from the stream
    */
@@ -277,7 +278,7 @@ export interface LengthPrefixedStream<Stream = MessageStream> {
   /**
    * Returns the underlying stream
    */
-  unwrap(): Stream
+  unwrap(): S
 }
 
 export interface LengthPrefixedStreamOpts extends ByteStreamOpts {
@@ -305,6 +306,7 @@ export function lpStream <T extends MessageStream> (stream: T, opts: Partial<Len
       const lengthBuffer = new Uint8ArrayList()
 
       while (true) {
+        // read one byte at a time until we can decode a varint
         const buf = await bytes.read({
           ...options,
           bytes: 1
@@ -315,7 +317,7 @@ export function lpStream <T extends MessageStream> (stream: T, opts: Partial<Len
           break
         }
 
-        // read one byte at a time until we can decode a varint
+        // append byte and try to decode
         lengthBuffer.append(buf)
 
         try {
@@ -397,7 +399,7 @@ export interface ProtobufEncoder<T> {
 /**
  * Convenience methods for working with protobuf streams
  */
-export interface ProtobufStream<S = Stream> {
+export interface ProtobufStream<S extends MessageStream = MessageStream> {
   /**
    * Read the next length-prefixed byte array from the stream and decode it as the passed protobuf format
    */
@@ -427,7 +429,7 @@ export interface ProtobufStream<S = Stream> {
 /**
  * A message reader/writer that only uses one type of message
  */
-export interface ProtobufMessageStream <T, S = Stream> {
+export interface ProtobufMessageStream <T, S extends MessageStream = MessageStream> {
   /**
    * Read a message from the stream
    */
@@ -456,7 +458,7 @@ export interface ProtobufStreamOpts extends LengthPrefixedStreamOpts {
 export function pbStream <T extends MessageStream = Stream> (stream: T, opts?: Partial<ProtobufStreamOpts>): ProtobufStream<T> {
   const lp = lpStream(stream, opts)
 
-  const pbStream: ProtobufStream<any> = {
+  const pbStream: ProtobufStream<T> = {
     read: async (proto, options?: AbortOptions) => {
       // readLP, decode
       const value = await lp.read(options)

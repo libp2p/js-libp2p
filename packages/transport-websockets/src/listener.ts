@@ -169,6 +169,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
 
   onWsServerConnection (socket: ws.WebSocket, req: http.IncomingMessage): void {
     let addr: string | ws.AddressInfo | null
+    socket.binaryType = 'arraybuffer'
 
     try {
       addr = this.server.address()

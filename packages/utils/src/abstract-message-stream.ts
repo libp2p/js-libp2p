@@ -4,7 +4,8 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOptions, MessageStreamTimeline, MessageStreamDirection, EventHandler, StreamOptions, MessageStreamReadStatus, MessageStreamWriteStatus } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 
-const DEFAULT_MAX_PAUSE_BUFFER_LENGTH = Math.pow(2, 20) * 4 // 4MB
+const DEFAULT_MAX_READ_BUFFER_LENGTH = Math.pow(2, 20) * 4 // 4MB
+const DEFAULT_MAX_WRITE_BUFFER_LENGTH = Math.pow(2, 20) * 4 // 4MB
 
 export interface MessageStreamInit extends StreamOptions {
   /**
@@ -42,6 +43,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   public readonly timeline: Timeline
   public inactivityTimeout: number
   public maxReadBufferLength: number
+  public maxWriteBufferLength: number
   public readonly log: Logger
   public direction: MessageStreamDirection
   public maxMessageSize?: number
@@ -66,7 +68,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.log = init.log
     this.direction = init.direction ?? 'outbound'
     this.inactivityTimeout = init.inactivityTimeout ?? 120_000
-    this.maxReadBufferLength = init.maxReadBufferLength ?? DEFAULT_MAX_PAUSE_BUFFER_LENGTH
+    this.maxReadBufferLength = init.maxReadBufferLength ?? DEFAULT_MAX_READ_BUFFER_LENGTH
+    this.maxWriteBufferLength = init.maxWriteBufferLength ?? DEFAULT_MAX_WRITE_BUFFER_LENGTH
     this.maxMessageSize = init.maxMessageSize
     this.readBuffer = new Uint8ArrayList()
     this.writeBuffer = new Uint8ArrayList()
@@ -139,6 +142,10 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }
 
     this.writeBuffer.append(data)
+
+    if (this.writeBuffer.byteLength > this.maxWriteBufferLength) {
+      this.abort(new StreamBufferError(`Write buffer length of ${this.writeBuffer.byteLength} exceeded limit of ${this.maxWriteBufferLength}, write status is ${this.writeStatus}`))
+    }
 
     if (this.writeStatus === 'writable') {
       return this.processSendQueue()
