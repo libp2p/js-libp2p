@@ -21,7 +21,7 @@ describe('peer-streams', () => {
     components = { logger: defaultLogger() }
   })
 
-  it('should receive messages larger than internal MAX_DATA_LENGTH when maxDataLength is set', async () => {
+  it.only('should receive messages larger than internal MAX_DATA_LENGTH when maxDataLength is set', async () => {
     const messageSize = 6 * 1024 * 1024 // 6MB
     const largeMessage = new Uint8ArrayList(new Uint8Array(messageSize).fill(65)) // Fill with "A"
 
@@ -30,16 +30,20 @@ describe('peer-streams', () => {
     // the data which makes it larger than the byte array
     const [outbound, inbound] = await streamPair({
       outbound: {
-        maxReadBufferLength: messageSize * 2
+        maxReadBufferLength: messageSize * 2,
+        maxWriteBufferLength: messageSize * 2
       },
       outboundConnection: {
-        maxReadBufferLength: messageSize * 2
+        maxReadBufferLength: messageSize * 2,
+        maxWriteBufferLength: messageSize * 2
       },
       inbound: {
-        maxReadBufferLength: messageSize * 2
+        maxReadBufferLength: messageSize * 2,
+        maxWriteBufferLength: messageSize * 2
       },
       inboundConnection: {
-        maxReadBufferLength: messageSize * 2
+        maxReadBufferLength: messageSize * 2,
+        maxWriteBufferLength: messageSize * 2
       }
     })
 
