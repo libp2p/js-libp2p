@@ -83,7 +83,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
         listen: isDialer ? [] : [`/ip4/${IP}/tcp/0/wss`]
       }
       break
-    // TODO: re-enable after v3 release
+    // TODO: re-enable quic after v3 release
     // case 'quic-v1':
     //   options.transports = [quic()]
     //   options.addresses = {
@@ -99,10 +99,11 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
   switch (TRANSPORT) {
     case 'webtransport':
     case 'webrtc-direct':
+    // TODO: re-enable quic after v3 release
     // case 'quic-v1':
-    //   skipSecureChannel = true
-    //   skipMuxer = true
-    //   break
+    //    skipSecureChannel = true
+    //    skipMuxer = true
+      break
     case 'webrtc':
       skipSecureChannel = true
       skipMuxer = true
