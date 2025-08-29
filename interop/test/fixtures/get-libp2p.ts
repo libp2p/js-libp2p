@@ -1,7 +1,7 @@
 /* eslint-disable complexity */
 
 import { noise } from '@chainsafe/libp2p-noise'
-import { quic } from '@chainsafe/libp2p-quic'
+// import { quic } from '@chainsafe/libp2p-quic'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
@@ -83,12 +83,13 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
         listen: isDialer ? [] : [`/ip4/${IP}/tcp/0/wss`]
       }
       break
-    case 'quic-v1':
-      options.transports = [quic()]
-      options.addresses = {
-        listen: isDialer ? [] : [`/ip4/${IP}/udp/0/quic-v1`]
-      }
-      break
+    // TODO: re-enable after v3 release
+    // case 'quic-v1':
+    //   options.transports = [quic()]
+    //   options.addresses = {
+    //     listen: isDialer ? [] : [`/ip4/${IP}/udp/0/quic-v1`]
+    //   }
+    //   break
     default:
       throw new Error(`Unknown transport: ${TRANSPORT ?? '???'}`)
   }
@@ -98,10 +99,10 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
   switch (TRANSPORT) {
     case 'webtransport':
     case 'webrtc-direct':
-    case 'quic-v1':
-      skipSecureChannel = true
-      skipMuxer = true
-      break
+    // case 'quic-v1':
+    //   skipSecureChannel = true
+    //   skipMuxer = true
+    //   break
     case 'webrtc':
       skipSecureChannel = true
       skipMuxer = true
