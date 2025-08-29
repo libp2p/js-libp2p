@@ -21,7 +21,7 @@ describe('peer-streams', () => {
     components = { logger: defaultLogger() }
   })
 
-  it.only('should receive messages larger than internal MAX_DATA_LENGTH when maxDataLength is set', async () => {
+  it('should receive messages larger than internal MAX_DATA_LENGTH when maxDataLength is set', async () => {
     const messageSize = 6 * 1024 * 1024 // 6MB
     const largeMessage = new Uint8ArrayList(new Uint8Array(messageSize).fill(65)) // Fill with "A"
 
