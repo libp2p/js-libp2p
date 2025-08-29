@@ -195,24 +195,28 @@ function formatAsPem (str: string): string {
 
 export function toNodeDuplex (stream: MessageStream): Duplex {
   function sendAndCallback (chunk: Uint8Array | Uint8ArrayList, callback: (err?: Error | null) => void): void {
-    const sendMore = stream.send(chunk)
+    try {
+      const sendMore = stream.send(chunk)
 
-    if (sendMore) {
-      callback()
-      return
-    }
-
-    socket.pause()
-
-    pEvent(stream, 'drain', {
-      rejectionEvents: ['close']
-    })
-      .then(() => {
-        socket.resume()
+      if (sendMore) {
         callback()
-      }, (err) => {
-        callback(err)
+        return
+      }
+
+      socket.pause()
+
+      pEvent(stream, 'drain', {
+        rejectionEvents: ['close']
       })
+        .then(() => {
+          socket.resume()
+          callback()
+        }, (err) => {
+          callback(err)
+        })
+    } catch (err: any) {
+      callback(err)
+    }
   }
 
   // pause incoming messages until pulled from duplex

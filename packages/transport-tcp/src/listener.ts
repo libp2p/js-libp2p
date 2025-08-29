@@ -1,4 +1,4 @@
-import net from 'net'
+import net from 'node:net'
 import { AlreadyStartedError, InvalidParametersError, NotStartedError } from '@libp2p/interface'
 import { getThinWaistAddresses } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -210,6 +210,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
           this.context.closeServerOnMaxConnections != null &&
           this.sockets.size >= this.context.closeServerOnMaxConnections.closeAbove
         ) {
+          this.log('pausing incoming connections as limit is exceeded - %d/%d', this.sockets.size, this.context.closeServerOnMaxConnections.closeAbove)
           this.pause()
         }
       })
@@ -320,7 +321,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       return
     }
 
-    this.log('closing server on %s', this.server.address())
+    this.log('%s server on %s', permanent ? 'closing' : 'pausing', this.server.address())
 
     // NodeJS implementation tracks listening status with `this._handle` property.
     // - Server.close() sets this._handle to null immediately. If this._handle is null, NotStartedError is thrown

@@ -1,5 +1,4 @@
 import { Request, Response, StreamInfo } from '@libp2p/daemon-protocol'
-import { StreamHandler } from '@libp2p/daemon-protocol/stream-handler'
 import { PassThroughUpgrader } from '@libp2p/daemon-protocol/upgrader'
 import { InvalidParametersError, isPeerId } from '@libp2p/interface'
 import { defaultLogger, logger } from '@libp2p/logger'
@@ -241,23 +240,15 @@ class Client implements DaemonClient {
   private onConnection (protocol: string, listener: Listener, handler: StreamHandlerFunction, connection: MultiaddrConnection): void {
     Promise.resolve()
       .then(async () => {
-        const sh = new StreamHandler({
-          stream: connection
-        })
-        const message = await sh.read()
+        const pb = pbStream(connection).pb(StreamInfo)
+        const message = await pb.read()
 
-        if (message == null) {
-          throw new OperationFailedError('Could not read open stream response')
-        }
-
-        const response = StreamInfo.decode(message)
-
-        if (response.proto !== protocol) {
+        if (message.proto !== protocol) {
           throw new OperationFailedError('Incorrect protocol')
         }
 
         // @ts-expect-error because we are using a passthrough upgrader, this is a MultiaddrConnection
-        await handler(sh.rest())
+        await handler(pb.unwrap().unwrap())
       })
       .catch(err => {
         connection.abort(err)

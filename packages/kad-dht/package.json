@@ -96,7 +96,7 @@
     "it-length-prefixed": "^10.0.1",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "p-retry": "^6.2.1",
+    "p-retry": "^7.0.0",
     "protons": "^7.6.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",

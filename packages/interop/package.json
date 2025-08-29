@@ -1,39 +1,25 @@
 {
-  "name": "@libp2p/daemon-protocol",
-  "version": "7.0.6",
-  "description": "Communication protocol between libp2p daemons and clients",
-  "author": "",
+  "name": "@libp2p/interop",
+  "version": "13.0.2",
+  "description": "Interoperability Tests for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p-daemon/tree/main/packages/libp2p-daemon-protocol#readme",
+  "homepage": "https://github.com/libp2p/interop#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p-daemon.git"
+    "url": "git+https://github.com/libp2p/interop.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p-daemon/issues"
+    "url": "https://github.com/libp2p/interop/issues"
   },
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
+  "keywords": [
+    "libp2p"
+  ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
-  "typesVersions": {
-    "*": {
-      "*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ],
-      "src/*": [
-        "*",
-        "dist/*",
-        "dist/src/*",
-        "dist/src/*/index"
-      ]
-    }
-  },
   "files": [
     "src",
     "dist",
@@ -44,14 +30,6 @@
     ".": {
       "types": "./src/index.d.ts",
       "import": "./dist/src/index.js"
-    },
-    "./stream-handler": {
-      "types": "./dist/src/stream-handler.d.ts",
-      "import": "./dist/src/stream-handler.js"
-    },
-    "./upgrader": {
-      "types": "./dist/src/upgrader.d.ts",
-      "import": "./dist/src/upgrader.js"
     }
   },
   "release": {
@@ -148,21 +126,35 @@
     ]
   },
   "scripts": {
+    "generate": "protons ./src/relay/pb/index.proto",
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "generate": "protons ./src/index.proto",
-    "build": "aegir build",
     "dep-check": "aegir dep-check",
-    "release": "aegir release"
+    "build": "aegir build --bundle false",
+    "postbuild": "cp src/resources/keys/*.key dist/src/resources/keys",
+    "release": "aegir release",
+    "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.10.5",
-    "any-signal": "^4.1.1",
-    "protons-runtime": "^5.6.0",
-    "uint8arraylist": "^2.4.8"
+    "@libp2p/daemon-client": "^9.0.0",
+    "@libp2p/interface": "^2.0.0",
+    "@libp2p/utils": "^6.7.2",
+    "@multiformats/multiaddr": "^12.0.0",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.1",
+    "it-first": "^3.0.1",
+    "multiformats": "^13.0.0",
+    "p-retry": "^7.0.0",
+    "p-wait-for": "^5.0.0",
+    "protons-runtime": "^5.0.0",
+    "uint8arraylist": "^2.4.3",
+    "uint8arrays": "^5.0.0"
   },
   "devDependencies": {
     "aegir": "^47.0.21",
-    "protons": "^7.7.0"
+    "protons": "^7.0.2"
+  },
+  "peerDependencies": {
+    "aegir": "*"
   }
 }

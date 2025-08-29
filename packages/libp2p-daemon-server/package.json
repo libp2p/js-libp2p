@@ -149,6 +149,7 @@
     "it-drain": "^3.0.10",
     "it-length-prefixed": "^10.0.1",
     "it-pushable": "^3.2.3",
+    "p-event": "^6.0.1",
     "multiformats": "^13.4.0",
     "uint8arrays": "^5.1.0"
   },

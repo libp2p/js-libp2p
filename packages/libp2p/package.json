@@ -101,7 +101,7 @@
     "multiformats": "^13.3.6",
     "p-event": "^6.0.1",
     "p-defer": "^4.0.1",
-    "p-retry": "^6.2.1",
+    "p-retry": "^7.0.0",
     "progress-events": "^1.0.1",
     "race-signal": "^2.0.0",
     "uint8arrays": "^5.1.0"

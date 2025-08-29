@@ -208,7 +208,7 @@ export function byteStream <T = Stream | MultiaddrConnection> (stream: T, opts?:
 
       if (readBuffer.byteLength < toRead) {
         if (isEOF(stream)) {
-          throw new UnexpectedEOFError(`Unexpected EOF - stream closed before ${toRead} bytes were read`)
+          throw new UnexpectedEOFError(`Unexpected EOF - stream closed while reading ${readBuffer.byteLength}/${toRead} bytes`)
         }
 
         return byteStream.read(options)

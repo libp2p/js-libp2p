@@ -305,7 +305,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
    * buffer may still be read
    */
   onTransportClosed (err?: Error): void {
-    this.log('transport closed', this.status)
+    this.log('transport closed')
 
     if (this.readStatus === 'readable' && this.readBuffer.byteLength === 0) {
       this.readStatus = 'closed'
@@ -384,16 +384,13 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     while (this.writeBuffer.byteLength > 0) {
       const toSend = this.writeBuffer.sublist(0, Math.min(this.maxMessageSize ?? this.writeBuffer.byteLength, this.writeBuffer.byteLength))
-      const sendCount = toSend.byteLength
       const sendResult = this.sendData(toSend)
       canSendMore = sendResult.canSendMore
-
-      this.log('send %d/%d bytes, can send more: %o', sendResult.sentBytes, sendCount, canSendMore)
 
       this.writeBuffer.consume(sendResult.sentBytes)
 
       if (!canSendMore) {
-        this.log('pausing sending because underlying stream is full')
+        this.log.trace('pausing sending because underlying stream is full')
         this.writeStatus = 'paused'
         break
       }
@@ -401,7 +398,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     // we processed all bytes in the queue, resolve the write queue idle promise
     if (this.writeBuffer.byteLength === 0) {
-      this.log('write queue became idle')
+      this.log.trace('write queue became idle')
       this.safeDispatchEvent('idle')
     }
 

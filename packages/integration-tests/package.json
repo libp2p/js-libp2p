@@ -72,7 +72,7 @@
     "multiformats": "^13.3.6",
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
-    "p-retry": "^6.2.1",
+    "p-retry": "^7.0.0",
     "p-wait-for": "^5.0.2",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",

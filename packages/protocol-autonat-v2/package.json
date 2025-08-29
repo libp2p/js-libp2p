@@ -65,7 +65,7 @@
     "it-all": "^3.0.8",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
-    "p-retry": "^6.2.1",
+    "p-retry": "^7.0.0",
     "protons": "^7.6.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"

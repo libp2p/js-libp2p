@@ -17,6 +17,7 @@ import { multiaddr, protocols } from '@multiformats/multiaddr'
 import * as lp from 'it-length-prefixed'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
+import { pEvent } from 'p-event'
 import { DHTOperations } from './dht.js'
 import { PubSubOperations } from './pubsub.js'
 import { ErrorResponse, OkResponse } from './responses.js'
@@ -138,51 +139,56 @@ export class Server implements Libp2pServer {
     const addr = multiaddr(request.streamHandler.addr)
     let conn: MultiaddrConnection
 
-    log('registerStreamHandler - handle %s', protocols)
-    await this.libp2p.handle(protocols, (stream, connection) => {
-      Promise.resolve()
-        .then(async () => {
-          // Connect the client socket with the libp2p connection
-          // @ts-expect-error because we use a passthrough upgrader,
-          // this is actually a MultiaddrConnection and not a Connection
-          conn = await this.tcp.dial(addr, {
-            upgrader: new PassThroughUpgrader(),
-            signal: AbortSignal.timeout(10_000)
+    log('registerStreamHandler - handle %s at %a', protocols, addr)
+    await this.libp2p.handle(protocols, async (stream, connection) => {
+      try {
+        log('open stream for protocol %o to %a', protocols, addr)
+
+        const signal = AbortSignal.timeout(10_000)
+
+        // Connect the client socket with the libp2p connection
+        // @ts-expect-error because we use a passthrough upgrader,
+        // this is actually a MultiaddrConnection and not a Connection
+        conn = await this.tcp.dial(addr, {
+          upgrader: new PassThroughUpgrader(),
+          signal
+        })
+
+        const message = StreamInfo.encode({
+          peer: connection.remotePeer.toMultihash().bytes,
+          addr: connection.remoteAddr.bytes,
+          proto: stream.protocol ?? ''
+        })
+        const encodedMessage = lp.encode.single(message)
+
+        // Tell the client about the new connection
+        if (!conn.send(encodedMessage)) {
+          await pEvent(conn, 'drain', {
+            rejectionEvents: [
+              'close'
+            ],
+            signal
           })
+        }
 
-          const message = StreamInfo.encode({
-            peer: connection.remotePeer.toMultihash().bytes,
-            addr: connection.remoteAddr.bytes,
-            proto: stream.protocol ?? ''
-          })
-          const encodedMessage = lp.encode.single(message)
+        // And then begin piping the client and peer connection
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        await pipe(
+          stream,
+          conn,
+          stream
+        )
+      } catch (err: any) {
+        log.error(err)
 
-          // Tell the client about the new connection
-          stream.send(encodedMessage)
-
-          // And then begin piping the client and peer connection
-          // eslint-disable-next-line @typescript-eslint/await-thenable
-          await pipe(
-            stream,
-            conn,
-            stream
-          )
-        })
-        .catch(async err => {
-          log.error(err)
-
-          if (conn != null) {
-            conn.abort(err)
-          }
-        })
-        .finally(() => {
-          if (conn != null) {
-            conn.close()
-              .catch(err => {
-                log.error(err)
-              })
-          }
-        })
+        conn?.abort(err)
+      } finally {
+        try {
+          await conn?.close()
+        } catch (err: any) {
+          conn?.abort(err)
+        }
+      }
     }, {
       runOnLimitedConnection: true
     })
