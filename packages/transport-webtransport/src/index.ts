@@ -202,7 +202,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
         remoteAddr: ma,
         cleanUpWTSession,
         direction: 'outbound',
-        log: this.components.logger.forComponent('libp2p:webtransport:connection:outbound')
+        log: this.components.logger.forComponent('libp2p:webtransport:connection')
       })
 
       authenticated = await this.authenticateWebTransport({

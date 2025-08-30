@@ -20,12 +20,13 @@ export class WebTransportStream extends AbstractStream {
 
     void this.writer.closed
       .then(() => {
-        this.log('writer closed')
+        this.log('writer closed gracefully')
       })
       .catch((err) => {
-        this.log('writer close error')
         // chrome/ff send different messages
         if (err.message.includes('STOP_SENDING') || err.message.includes('StopSending')) {
+          // err.code === 0 so we may be able to use this to detect remote close
+          // read instead?
           this.onRemoteCloseRead()
         } else if (err.message.includes('RESET_STREAM') || err.message.includes('Reset')) {
           this.onRemoteReset()
@@ -43,14 +44,14 @@ export class WebTransportStream extends AbstractStream {
         while (true) {
           const result = await this.reader.read()
 
+          if (result.value != null) {
+            this.onData(result.value)
+          }
+
           if (result.done) {
             this.log('remote closed write')
             this.onRemoteCloseWrite()
             return
-          }
-
-          if (result.value != null) {
-            this.onData(result.value)
           }
 
           if (this.readStatus === 'paused') {

@@ -75,6 +75,8 @@ export interface StreamOptions {
    * event handler is added.
    *
    * If the internal buffer overflows this value the stream will be reset.
+   *
+   * @default 4_194_304
    */
   maxReadBufferLength?: number
 
@@ -83,6 +85,8 @@ export interface StreamOptions {
    * applying backpressure, or when it is slow to accept new bytes.
    *
    * If the internal buffer overflows this value the stream will be reset.
+   *
+   * @default Infinity
    */
   maxWriteBufferLength?: number
 }

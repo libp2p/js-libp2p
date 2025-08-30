@@ -70,7 +70,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
       return message
     } catch (err: any) {
-      log?.error('error during identify - %e', err)
+      log?.error('identify failed - %e', err)
       stream?.abort(err)
       throw err
     }
