@@ -2,7 +2,7 @@ import { randomBytes } from '@libp2p/crypto'
 import { anySignal } from 'any-signal'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import pDefer from 'p-defer'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions, ComponentLogger, Logger, PeerInfo, PeerRouting, Startable } from '@libp2p/interface'
 import type { RandomWalk as RandomWalkInterface } from '@libp2p/interface-internal'
@@ -68,12 +68,22 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
         this.needNext = pDefer()
 
         // wait for a walk:peer or walk:error event
-        const event = await raceEvent<CustomEvent<PeerInfo>>(this, 'walk:peer', signal, {
-          errorEvent: 'walk:error'
+        const event = await pEvent<'walk:peer', CustomEvent<PeerInfo>>(this, 'walk:peer', {
+          signal,
+          rejectionEvents: [
+            'walk:error'
+          ]
         })
 
         yield event.detail
       }
+    } catch (err: any) {
+      // test for walk:error event
+      if (err.detail != null) {
+        throw err.detail
+      }
+
+      throw err
     } finally {
       signal.clear()
       this.walkers--

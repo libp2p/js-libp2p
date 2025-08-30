@@ -1,6 +1,5 @@
 import { start, stop } from '@libp2p/interface'
-import { AdaptiveTimeout } from '@libp2p/utils/adaptive-timeout'
-import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { AdaptiveTimeout, PeerQueue } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import parallel from 'it-parallel'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
@@ -11,7 +10,7 @@ import type { Bucket, GetClosestPeersOptions, LeafBucket, Peer } from './k-bucke
 import type { Network } from '../network.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
-import type { AdaptiveTimeoutInit } from '@libp2p/utils/adaptive-timeout'
+import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 
 export const KBUCKET_SIZE = 20
 export const PREFIX_LENGTH = 6

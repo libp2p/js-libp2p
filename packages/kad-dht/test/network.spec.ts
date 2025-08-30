@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import * as lp from 'it-length-prefixed'
@@ -8,14 +8,12 @@ import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MessageType } from '../src/message/dht.js'
 import { TestDHT } from './utils/test-dht.js'
-import type { KadDHT } from '../src/kad-dht.js'
-import type { Connection, PeerId } from '@libp2p/interface'
+import type { KadDHTPeer } from './utils/test-dht.js'
+import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Sink, Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 describe('Network', () => {
-  let dht: KadDHT
+  let dht: KadDHTPeer
   let testDHT: TestDHT
 
   before(async function () {
@@ -35,7 +33,7 @@ describe('Network', () => {
         key: uint8ArrayFromString('hello')
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+      const events = await all(dht.dht.network.sendRequest(dht.components.peerId, msg, {
         path: {
           index: -1,
           queued: 0,
@@ -64,40 +62,29 @@ describe('Network', () => {
       }
 
       // mock it
-      dht.components.connectionManager.openConnection = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
-        // @ts-expect-error incomplete implementation
-        const connection: Connection = {
-          newStream: async (protocols: string | string[]) => {
-            const protocol = Array.isArray(protocols) ? protocols[0] : protocols
-            const msg: Partial<Message> = {
-              type: MessageType.FIND_NODE,
-              key: uint8ArrayFromString('world')
-            }
+      dht.dht.components.connectionManager.openStream = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
+        const [outboundStream, inboundStream] = await streamPair()
 
-            const source = (async function * () {
-              yield lp.encode.single(Message.encode(msg))
-            })()
-
-            const sink: Sink<Source<Uint8ArrayList | Uint8Array>, Promise<void>> = async source => {
-              for await (const buf of lp.decode(source)) {
-                expect(Message.decode(buf).type).to.eql(MessageType.PING)
-                finish()
-              }
-            }
-
-            const stream = mockStream({ source, sink })
-
-            return {
-              ...stream,
-              protocol
-            }
+        inboundStream.addEventListener('message', (evt) => {
+          for (const buf of lp.decode([evt.data])) {
+            expect(Message.decode(buf).type).to.eql(MessageType.PING)
+            finish()
           }
-        }
+        })
 
-        return connection
+        queueMicrotask(() => {
+          const msg: Partial<Message> = {
+            type: MessageType.FIND_NODE,
+            key: uint8ArrayFromString('world')
+          }
+
+          inboundStream.send(lp.encode.single(Message.encode(msg)))
+        })
+
+        return outboundStream
       }
 
-      const events = await all(dht.network.sendRequest(dht.components.peerId, msg, {
+      const events = await all(dht.dht.network.sendRequest(dht.components.peerId, msg, {
         path: {
           index: -1,
           queued: 0,

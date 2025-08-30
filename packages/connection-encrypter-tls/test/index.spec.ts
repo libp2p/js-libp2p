@@ -3,30 +3,43 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { duplexPair } from 'it-pair/duplex'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tls } from '../src/index.js'
-import type { StreamMuxerFactory, ConnectionEncrypter, PeerId, Upgrader, MultiaddrConnection } from '@libp2p/interface'
+import type { StreamMuxerFactory, ConnectionEncrypter, PeerId, Upgrader } from '@libp2p/interface'
 
 describe('tls', () => {
   let localPeer: PeerId
   let remotePeer: PeerId
   let wrongPeer: PeerId
-  let encrypter: ConnectionEncrypter
+  let localEncrypter: ConnectionEncrypter
+  let remoteEncrypter: ConnectionEncrypter
 
   beforeEach(async () => {
-    [remotePeer, wrongPeer] = await Promise.all([
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    ])
+    wrongPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     const localKeyPair = await generateKeyPair('Ed25519')
     localPeer = peerIdFromPrivateKey(localKeyPair)
 
-    encrypter = tls()({
+    localEncrypter = tls()({
       privateKey: localKeyPair,
+      logger: defaultLogger(),
+      upgrader: stubInterface<Upgrader>({
+        getStreamMuxers () {
+          return new Map([['/test/muxer', stubInterface<StreamMuxerFactory>({
+            protocol: '/test/muxer'
+          })]])
+        }
+      })
+    })
+
+    const remoteKeyPair = await generateKeyPair('Ed25519')
+    remotePeer = peerIdFromPrivateKey(remoteKeyPair)
+
+    remoteEncrypter = tls()({
+      privateKey: remoteKeyPair,
       logger: defaultLogger(),
       upgrader: stubInterface<Upgrader>({
         getStreamMuxers () {
@@ -43,25 +56,20 @@ describe('tls', () => {
   })
 
   it('should verify the public key and id match', async () => {
-    const [inbound, outbound] = duplexPair<any>()
+    const [outbound, inbound] = multiaddrConnectionPair()
 
-    await Promise.all([
-      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound,
-        log: defaultLogger().forComponent('inbound')
-      }), {
-        remotePeer
-      }),
-      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound,
-        log: defaultLogger().forComponent('outbound')
-      }), {
+    const [outboundErr] = await Promise.all([
+      localEncrypter.secureOutbound(outbound, {
         remotePeer: wrongPeer
       })
-    ]).then(() => expect.fail('should have failed'), (err) => {
-      expect(err).to.exist()
-      expect(err).to.have.property('name', 'UnexpectedPeerError')
-    })
+        .catch(err => err),
+      remoteEncrypter.secureInbound(inbound, {
+        remotePeer: localPeer
+      })
+        .catch(err => err)
+    ])
+
+    expect(outboundErr).to.have.property('name', 'UnexpectedPeerError')
   })
 
   it('should fail if the peer does not provide its public key', async () => {
@@ -69,7 +77,7 @@ describe('tls', () => {
     const peer = peerIdFromPrivateKey(keyPair)
     remotePeer = peerIdFromMultihash(peer.toMultihash())
 
-    encrypter = tls()({
+    localEncrypter = tls()({
       privateKey: keyPair,
       logger: defaultLogger(),
       upgrader: stubInterface<Upgrader>({
@@ -79,39 +87,31 @@ describe('tls', () => {
       })
     })
 
-    const [inbound, outbound] = duplexPair<any>()
+    const [inbound, outbound] = await streamPair()
 
-    await expect(Promise.all([
-      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound,
-        log: defaultLogger().forComponent('inbound')
-      }), {
+    const [inboundErr, outboundErr] = await Promise.all([
+      localEncrypter.secureInbound(inbound, {
         remotePeer
-      }),
-      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound,
-        log: defaultLogger().forComponent('outbound')
-      }), {
+      })
+        .catch(err => err),
+      remoteEncrypter.secureOutbound(outbound, {
         remotePeer: localPeer
       })
-    ]))
-      .to.eventually.be.rejected.with.property('name', 'UnexpectedPeerError')
+        .catch(err => err)
+    ])
+
+    expect(inboundErr).to.have.property('name', 'StreamResetError')
+    expect(outboundErr).to.have.property('name', 'UnexpectedPeerError')
   })
 
   it('should select an early muxer', async () => {
-    const [inbound, outbound] = duplexPair<any>()
+    const [outbound, inbound] = await streamPair()
 
     const result = await Promise.all([
-      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound,
-        log: defaultLogger().forComponent('inbound')
-      }), {
-        remotePeer: localPeer
+      localEncrypter.secureOutbound(outbound, {
+        remotePeer
       }),
-      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound,
-        log: defaultLogger().forComponent('outbound')
-      }), {
+      remoteEncrypter.secureInbound(inbound, {
         remotePeer: localPeer
       })
     ])
@@ -121,20 +121,14 @@ describe('tls', () => {
   })
 
   it('should not select an early muxer when it is skipped', async () => {
-    const [inbound, outbound] = duplexPair<any>()
+    const [outbound, inbound] = await streamPair()
 
     const result = await Promise.all([
-      encrypter.secureInbound(stubInterface<MultiaddrConnection>({
-        ...inbound,
-        log: defaultLogger().forComponent('inbound')
-      }), {
-        remotePeer: localPeer,
+      localEncrypter.secureOutbound(outbound, {
+        remotePeer,
         skipStreamMuxerNegotiation: true
       }),
-      encrypter.secureOutbound(stubInterface<MultiaddrConnection>({
-        ...outbound,
-        log: defaultLogger().forComponent('outbound')
-      }), {
+      remoteEncrypter.secureInbound(inbound, {
         remotePeer: localPeer,
         skipStreamMuxerNegotiation: true
       })

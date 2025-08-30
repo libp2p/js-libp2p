@@ -1,13 +1,11 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { streamPair } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { detect } from 'detect-browser'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-protobuf-stream'
 import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
@@ -54,18 +52,7 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
   const initiatorPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   const receiverPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   const receiverMultiaddr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${relayPeerId}/p2p-circuit/webrtc/p2p/${receiverPeerId}`)
-  const [initiatorToReceiver, receiverToInitiator] = duplexPair<any>()
-  const [initiatorStream, receiverStream] = streamPair({
-    duplex: initiatorToReceiver,
-    init: {
-      protocol: SIGNALING_PROTOCOL
-    }
-  }, {
-    duplex: receiverToInitiator,
-    init: {
-      protocol: SIGNALING_PROTOCOL
-    }
-  })
+  const [initiatorStream, receiverStream] = await streamPair()
 
   const recipientAbortController = new AbortController()
 
@@ -118,7 +105,7 @@ describe('webrtc basic', () => {
     ;[{ peerConnection: initiatorPeerConnection }] = await expect(
       Promise.all([
         initiateConnection(initiator),
-        handleIncomingStream(recipient)
+        handleIncomingStream(recipient.stream, recipient.connection, recipient)
       ])
     ).to.eventually.be.fulfilled()
 
@@ -157,7 +144,7 @@ describe('webrtc basic', () => {
         ...initiator,
         signal: abortController.signal
       }),
-      handleIncomingStream(recipient)
+      handleIncomingStream(recipient.stream, recipient.connection, recipient)
     ]))
       .to.eventually.be.rejected.with.property('message').that.matches(/Oh noes!/)
   })
@@ -173,7 +160,7 @@ describe('webrtc receiver', () => {
 
   it('should fail receiving on invalid sdp offer', async () => {
     ({ initiator, recipient } = await getComponents())
-    const receiverPeerConnectionPromise = handleIncomingStream(recipient)
+    const receiverPeerConnectionPromise = handleIncomingStream(recipient.stream, recipient.connection, recipient)
     const stream = pbStream(initiator.stream).pb(Message)
 
     await stream.write({ type: Message.Type.SDP_OFFER, data: 'bad' })

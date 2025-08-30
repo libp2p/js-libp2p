@@ -3,24 +3,29 @@ import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
+import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import delay from 'delay'
-import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-protobuf-stream'
-import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Identify } from '../src/identify.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { identifyConnection, identifyStream } from './fixtures/index.js'
-import type { StubbedIdentifyComponents } from './fixtures/index.js'
-import type { Libp2pEvents, PeerStore, Connection, Stream } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { Libp2pEvents, PeerStore, Connection, PeerId, PrivateKey, TypedEventTarget, ComponentLogger, NodeInfo } from '@libp2p/interface'
+import type { AddressManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
+
+interface StubbedIdentifyComponents {
+  peerId: PeerId
+  privateKey: PrivateKey
+  peerStore: StubbedInstance<PeerStore>
+  registrar: StubbedInstance<Registrar>
+  addressManager: StubbedInstance<AddressManager>
+  events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
+  nodeInfo: NodeInfo
+}
 
 describe('identify', () => {
   let components: StubbedIdentifyComponents
@@ -34,7 +39,6 @@ describe('identify', () => {
       peerId,
       privateKey,
       peerStore: stubInterface<PeerStore>(),
-      connectionManager: stubInterface<ConnectionManager>(),
       registrar: stubInterface<Registrar>(),
       addressManager: stubInterface<AddressManager>(),
       events: new TypedEventEmitter<Libp2pEvents>(),
@@ -76,7 +80,12 @@ describe('identify', () => {
       publicKey: publicKeyToProtobuf(remotePeer.publicKey)
     }
 
-    const connection = identifyConnection(remotePeer, message)
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // run identify
     const response = await identify.identify(connection)
@@ -94,11 +103,16 @@ describe('identify', () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    const connection = identifyConnection(remotePeer, {
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode({
       listenAddrs: [],
       protocols: [],
       publicKey: publicKeyToProtobuf(otherPeer.publicKey)
+    })))
+    const connection = stubInterface<Connection>({
+      remotePeer
     })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // run identify
     await expect(identify.identify(connection))
@@ -132,21 +146,23 @@ describe('identify', () => {
     await start(identify)
 
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const { connection, stream } = identifyStream(remotePeer)
 
-    // eslint-disable-next-line require-yield
-    stream.source = (async function * () {
-      await delay(timeout * 10)
-    })()
+    const [outgoingStream] = await streamPair({
+      delay: 1_000
+    })
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // run identify with timeout
     await expect(identify.identify(connection, {
       signal: AbortSignal.timeout(timeout)
     }))
-      .to.eventually.be.rejected.with.property('name', 'AbortError')
+      .to.eventually.be.rejected.with.property('name', 'TimeoutError')
 
     // should have aborted stream
-    expect(stream.abort.called).to.be.true()
+    expect(outgoingStream).to.have.property('status', 'aborted')
   })
 
   it('should limit incoming identify message sizes', async () => {
@@ -159,22 +175,19 @@ describe('identify', () => {
     await start(identify)
 
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-
-    const { connection, stream } = identifyStream(remotePeer)
-
-    const input = stream.source = pushable<Uint8ArrayList>()
-    stream.sink.callsFake(async (source) => {
-      await drain(source)
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(new Uint8Array(maxMessageSize + 1)))
+    const connection = stubInterface<Connection>({
+      remotePeer
     })
-
-    void input.push(lp.encode.single(new Uint8Array(maxMessageSize + 1)))
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // run identify
-    await expect(identify.identify(connection))
-      .to.eventually.be.rejected.with.property('name', 'InvalidDataLengthError')
+    await expect(identify.identify(connection)).to.eventually.be.rejected()
+      .with.property('name', 'InvalidDataLengthError')
 
     // should have aborted stream
-    expect(stream.abort.called).to.be.true()
+    expect(outgoingStream).to.have.property('status', 'aborted')
   })
 
   it('should retain existing peer metadata when updating agent/protocol version', async () => {
@@ -184,13 +197,18 @@ describe('identify', () => {
 
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    const connection = identifyConnection(remotePeer, {
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode({
       listenAddrs: [],
       protocols: [],
       publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       agentVersion: 'secret-agent',
       protocolVersion: '9000'
+    })))
+    const connection = stubInterface<Connection>({
+      remotePeer
     })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // peer exists in peer store
     components.peerStore.get.withArgs(remotePeer).resolves({
@@ -233,12 +251,17 @@ describe('identify', () => {
       seqNumber: BigInt(1n)
     }), remotePrivateKey)
 
-    const connection = identifyConnection(remotePeer, {
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode({
       listenAddrs: [],
       protocols: [],
       publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       signedPeerRecord: oldPeerRecord.marshal()
+    })))
+    const connection = stubInterface<Connection>({
+      remotePeer
     })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // peer exists in peer store with existing signed peer record
     const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
@@ -284,7 +307,12 @@ describe('identify', () => {
       publicKey: publicKeyToProtobuf(remotePeer.publicKey)
     }
 
-    const connection = identifyConnection(remotePeer, message)
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // run identify
     await identify.identify(connection)
@@ -327,7 +355,12 @@ describe('identify', () => {
       signedPeerRecord: peerRecordEnvelope
     }
 
-    const connection = identifyConnection(remotePeer, message)
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // run identify
     await identify.identify(connection)
@@ -348,10 +381,6 @@ describe('identify', () => {
 
     await start(identify)
 
-    const duplex = duplexPair<any>()
-    const incomingStream = stubInterface<Stream>(duplex[0])
-    const outgoingStream = stubInterface<Stream>(duplex[1])
-
     components.addressManager.getAddresses.returns([])
 
     // local peer data
@@ -363,14 +392,20 @@ describe('identify', () => {
       tags: new Map()
     })
 
-    // handle identify
-    void identify.handleProtocol({
-      stream: incomingStream,
-      connection: stubInterface<Connection>({
-        remoteAddr: multiaddr('/webrtc/p2p/QmR5VwgsL7jyfZHAGyp66tguVrQhCRQuRc3NokocsCZ3fA'),
-        log: defaultLogger().forComponent('connection')
-      })
+    const message: IdentifyMessage = {
+      listenAddrs: [],
+      protocols: []
+    }
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remoteAddr: multiaddr('/webrtc/p2p/QmR5VwgsL7jyfZHAGyp66tguVrQhCRQuRc3NokocsCZ3fA')
     })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    // handle identify
+    void identify.handleProtocol(incomingStream, connection)
 
     const pb = pbStream(outgoingStream)
     const result = await pb.read(IdentifyMessage)
@@ -394,7 +429,12 @@ describe('identify', () => {
       observedAddr: multiaddr('/ip6zone/en/ip6/fe80::2892:aef3:af04:735a').bytes
     }
 
-    const connection = identifyConnection(remotePeer, message)
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
     // run identify
     await identify.identify(connection)

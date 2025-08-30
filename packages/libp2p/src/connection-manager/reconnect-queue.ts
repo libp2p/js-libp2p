@@ -1,5 +1,5 @@
 import { KEEP_ALIVE } from '@libp2p/interface'
-import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { PeerQueue } from '@libp2p/utils'
 import pRetry from 'p-retry'
 import { MAX_PARALLEL_RECONNECTS } from './constants.js'
 import type { ComponentLogger, Libp2pEvents, Logger, Metrics, Peer, PeerId, PeerStore, Startable } from '@libp2p/interface'

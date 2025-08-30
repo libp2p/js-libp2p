@@ -2,7 +2,7 @@ import { trackedPeerMap } from '@libp2p/peer-collections'
 import { retimeableSignal } from 'retimeable-signal'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
 import { Status } from '../pb/index.js'
-import type { RelayReservation } from '../index.js'
+import type { RelayReservation, ServerReservationStoreInit } from '../index.js'
 import type { Limit } from '../pb/index.js'
 import type { ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
@@ -15,46 +15,6 @@ export interface ReservationStoreComponents {
   metrics?: Metrics
 }
 
-export interface ReservationStoreInit {
-  /**
-   * maximum number of reservations allowed
-   *
-   * @default 15
-   */
-  maxReservations?: number
-
-  /**
-   * interval after which stale reservations are cleared
-   *
-   * @default 300000
-   */
-  reservationClearInterval?: number
-
-  /**
-   * apply default relay limits to a new reservation
-   *
-   * @default true
-   */
-  applyDefaultLimit?: boolean
-
-  /**
-   * reservation ttl
-   *
-   * @default 7200000
-   */
-  reservationTtl?: number
-
-  /**
-   * The maximum time a relayed connection can be open for
-   */
-  defaultDurationLimit?: number
-
-  /**
-   * The maximum amount of data allowed to be transferred over a relayed connection
-   */
-  defaultDataLimit?: bigint
-}
-
 export class ReservationStore {
   public readonly reservations: PeerMap<RelayReservation>
   private readonly maxReservations: number
@@ -64,7 +24,7 @@ export class ReservationStore {
   private readonly defaultDataLimit: bigint
   private readonly log: Logger
 
-  constructor (components: ReservationStoreComponents, init: ReservationStoreInit = {}) {
+  constructor (components: ReservationStoreComponents, init: ServerReservationStoreInit = {}) {
     this.log = components.logger.forComponent('libp2p:circuit-relay:server:reservation-store')
     this.maxReservations = init.maxReservations ?? DEFAULT_MAX_RESERVATION_STORE_SIZE
     this.applyDefaultLimit = init.applyDefaultLimit !== false

@@ -1,12 +1,14 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 6] */
 
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
+import { stop } from '@libp2p/interface'
+import { prefixLogger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
+import { yamux } from '@libp2p/yamux'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
@@ -21,6 +23,7 @@ describe('circuit-relay', () => {
   beforeEach(async () => {
     [local, remote] = await Promise.all([
       createLibp2p({
+        logger: prefixLogger('local'),
         transports: [
           webSockets(),
           circuitRelayTransport()
@@ -40,6 +43,7 @@ describe('circuit-relay', () => {
         }
       }),
       createLibp2p({
+        logger: prefixLogger('remote'),
         addresses: {
           listen: [
             `${process.env.RELAY_MULTIADDR}/p2p-circuit`
@@ -81,13 +85,13 @@ describe('circuit-relay', () => {
     // dial remote through relay
     await local.dial(remote.getMultiaddrs().filter(ma => Circuit.matches(ma)))
 
-    const eventPromise = pEvent<'peer:disconnect', CustomEvent<PeerId>>(local, 'peer:disconnect')
+    const [event] = await Promise.all([
+      // wait for event
+      pEvent<'peer:disconnect', CustomEvent<PeerId>>(local, 'peer:disconnect'),
 
-    // shut down remote
-    await remote.stop()
-
-    // wait for event
-    const event = await eventPromise
+      // shut down remote
+      stop(remote)
+    ])
 
     // should have received peer:disconnect from remote peer
     expect(event.detail.toString()).to.equal(remote.peerId.toString())

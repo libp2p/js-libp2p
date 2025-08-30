@@ -27,3 +27,13 @@ export class QueueFullError extends Error {
     this.name = 'QueueFullError'
   }
 }
+
+export class UnexpectedEOFError extends Error {
+  static name = 'UnexpectedEOFError'
+  name = 'UnexpectedEOFError'
+}
+
+export class MaxEarlyStreamsError extends Error {
+  static name = 'MaxEarlyStreamsError'
+  name = 'MaxEarlyStreamsError'
+}

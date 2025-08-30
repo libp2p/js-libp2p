@@ -44,13 +44,13 @@
     "@libp2p/crypto": "^5.1.8",
     "@libp2p/interface": "^2.11.0",
     "@libp2p/peer-id": "^5.1.9",
+    "@libp2p/utils": "^6.7.2",
     "@peculiar/asn1-schema": "^2.3.15",
     "@peculiar/asn1-x509": "^2.3.15",
     "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^1.12.3",
     "asn1js": "^3.0.6",
-    "it-queueless-pushable": "^2.0.1",
-    "it-stream-types": "^2.0.2",
+    "p-event": "^6.0.1",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
@@ -58,9 +58,8 @@
   "devDependencies": {
     "@libp2p/logger": "^5.2.0",
     "aegir": "^47.0.14",
-    "it-pair": "^2.0.6",
     "protons": "^7.6.1",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

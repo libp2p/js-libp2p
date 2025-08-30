@@ -32,7 +32,7 @@ export class MemoryTransport implements Transport {
       throw new ConnectionFailedError(`No memory listener found at ${ma}`)
     }
 
-    const maConn = await memoryConnection.dial(this.components.peerId, options.signal)
+    const maConn = await memoryConnection.dial(this.components.peerId, this.components.logger.forComponent('libp2p:memory'), options.signal)
 
     try {
       options.signal.throwIfAborted()

@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import tests from '@libp2p/interface-compliance-tests/transport'
+import { noise } from '@libp2p/noise'
 import { webSockets } from '@libp2p/websockets'
+import { yamux } from '@libp2p/yamux'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets } from '@multiformats/multiaddr-matcher'
 import { isElectronMain, isNode } from 'wherearewe'

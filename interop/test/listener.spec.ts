@@ -5,7 +5,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { getLibp2p } from './fixtures/get-libp2p.js'
 import { redisProxy } from './fixtures/redis-proxy.js'
 import type { Libp2p } from '@libp2p/interface'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const isDialer: boolean = process.env.is_dialer === 'true'
@@ -18,7 +18,7 @@ describe('ping test (listener)', function () {
 
   // make the default timeout longer than the listener timeout
   this.timeout(timeoutMs + 30_000)
-  let node: Libp2p<{ ping: PingService }>
+  let node: Libp2p<{ ping: Ping }>
 
   beforeEach(async () => {
     node = await getLibp2p()

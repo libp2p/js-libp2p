@@ -1,8 +1,4 @@
-import type { MultiaddrConnection } from './connection.js'
-import type { AbortOptions, Logger, StreamMuxerFactory } from './index.js'
-import type { PeerId } from './peer-id.js'
-import type { Duplex } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { AbortOptions, StreamMuxerFactory, PeerId, MessageStream } from './index.js'
 
 /**
  * If the remote PeerId is known and passed as an option, the securing operation
@@ -10,6 +6,9 @@ import type { Uint8ArrayList } from 'uint8arraylist'
  * corresponds to the public key the remote PeerId is derived from.
  */
 export interface SecureConnectionOptions extends AbortOptions {
+  /**
+   * This will be set if the remote peer is known in advance
+   */
   remotePeer?: PeerId
 
   /**
@@ -19,13 +18,6 @@ export interface SecureConnectionOptions extends AbortOptions {
    * unless `false` is passed here.
    */
   skipStreamMuxerNegotiation?: boolean
-}
-
-/**
- * A stream with an optional logger
- */
-export interface SecurableStream extends Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
-  log?: Logger
 }
 
 /**
@@ -40,19 +32,30 @@ export interface ConnectionEncrypter<Extension = unknown> {
    * pass it for extra verification, otherwise it will be determined during
    * the handshake.
    */
-  secureOutbound <Stream extends SecurableStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
+  secureOutbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
 
   /**
    * Decrypt incoming data. If the remote PeerId is known,
    * pass it for extra verification, otherwise it will be determined during
    * the handshake
    */
-  secureInbound <Stream extends SecurableStream = MultiaddrConnection> (connection: Stream, options?: SecureConnectionOptions): Promise<SecuredConnection<Stream, Extension>>
+  secureInbound (connection: MessageStream, options?: SecureConnectionOptions): Promise<SecuredConnection<Extension>>
 }
 
-export interface SecuredConnection<Stream = any, Extension = unknown> {
-  conn: Stream
+export interface SecuredConnection<Extension = unknown> {
+  /**
+   * The decrypted data stream
+   */
+  connection: MessageStream
+
+  /**
+   * Any extension data transferred as part of the encryption handshake
+   */
   remoteExtensions?: Extension
+
+  /**
+   * The identifier of the remote peer
+   */
   remotePeer: PeerId
 
   /**

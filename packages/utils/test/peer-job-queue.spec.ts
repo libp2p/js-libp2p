@@ -5,7 +5,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { PeerQueue } from '../src/peer-queue.js'
 import type { PeerQueueJobOptions } from '../src/peer-queue.js'
 import type { QueueJobFailure, QueueJobSuccess } from '../src/queue/index.js'
@@ -143,7 +143,7 @@ describe('peer queue', () => {
       peerId: peerIdA
     }).catch(() => {})
 
-    const event = await raceEvent<CustomEvent<QueueJobSuccess<string, PeerQueueJobOptions>>>(queue, 'success')
+    const event = await pEvent<'success', CustomEvent<QueueJobSuccess<string, PeerQueueJobOptions>>>(queue, 'success')
 
     expect(event.detail.job.options.peerId).to.equal(peerIdA)
     expect(event.detail.result).to.equal(value)
@@ -165,7 +165,9 @@ describe('peer queue', () => {
       peerId: peerIdA
     }).catch(() => {})
 
-    const event = await raceEvent<CustomEvent<QueueJobFailure<string, PeerQueueJobOptions>>>(queue, 'failure', AbortSignal.timeout(10_000))
+    const event = await pEvent<'failure', CustomEvent<QueueJobFailure<string, PeerQueueJobOptions>>>(queue, 'failure', {
+      signal: AbortSignal.timeout(10_000)
+    })
 
     expect(event.detail.job.options.peerId).to.equal(peerIdA)
     expect(event.detail.error).to.equal(err)

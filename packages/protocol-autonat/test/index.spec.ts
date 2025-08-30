@@ -5,13 +5,13 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import all from 'it-all'
-import drain from 'it-drain'
 import * as lp from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
-import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import sinon from 'sinon'
@@ -21,7 +21,7 @@ import { AutoNATService } from '../src/autonat.js'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../src/constants.js'
 import { Message } from '../src/pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from '../src/index.js'
-import type { Connection, Stream, PeerId, Transport, Libp2pEvents, PeerStore, Peer } from '@libp2p/interface'
+import type { Connection, PeerId, Transport, Libp2pEvents, PeerStore, Peer } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
@@ -105,24 +105,20 @@ describe('autonat', () => {
       connection.remotePeer = peer.id
       connectionManager.openConnection.withArgs(peer.id).resolves(connection)
 
-      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).callsFake(async () => {
-        // stub autonat response
-        const response = Message.encode({
-          type: Message.MessageType.DIAL_RESPONSE,
-          dialResponse
-        })
+      const [outgoingStream, incomingStream] = await streamPair()
 
-        // stub autonat protocol stream
-        const stream = stubInterface<Stream>({
-          source: (async function * () {
-            yield lp.encode.single(response)
-          }()),
-          sink: async (source) => {
-            await drain(source)
-          }
-        })
+      // stub autonat protocol stream
+      connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`).resolves(outgoingStream)
 
-        return stream
+      // stub autonat response
+      const response = Message.encode({
+        type: Message.MessageType.DIAL_RESPONSE,
+        dialResponse
+      })
+
+      incomingStream.addEventListener('message', async (evt) => {
+        incomingStream.send(lp.encode.single(response))
+        await incomingStream.close()
       })
 
       return connection
@@ -155,6 +151,7 @@ describe('autonat', () => {
 
       for (const conn of connections) {
         await service.verifyExternalAddresses(conn)
+        await delay(100)
       }
 
       await pRetry(() => {
@@ -192,6 +189,7 @@ describe('autonat', () => {
 
       for (const conn of connections) {
         await service.verifyExternalAddresses(conn)
+        await delay(100)
       }
 
       await pRetry(() => {
@@ -241,6 +239,7 @@ describe('autonat', () => {
 
       for (const conn of connections) {
         await service.verifyExternalAddresses(conn)
+        await delay(100)
       }
 
       await pRetry(() => {
@@ -287,6 +286,7 @@ describe('autonat', () => {
 
       for (const conn of connections) {
         await service.verifyExternalAddresses(conn)
+        await delay(100)
       }
 
       await pRetry(() => {
@@ -348,6 +348,7 @@ describe('autonat', () => {
 
       for (const conn of connections) {
         await service.verifyExternalAddresses(conn)
+        await delay(100)
       }
 
       await pRetry(() => {
@@ -411,6 +412,7 @@ describe('autonat', () => {
 
       for (const conn of connections) {
         await service.verifyExternalAddresses(conn)
+        await delay(100)
       }
 
       await pRetry(() => {
@@ -448,6 +450,7 @@ describe('autonat', () => {
 
       for (const conn of connections) {
         await service.verifyExternalAddresses(conn)
+        await delay(100)
       }
 
       expect(addressManager.addObservedAddr.called)
@@ -469,29 +472,11 @@ describe('autonat', () => {
       const remotePeer = opts.remotePeer ?? requestingPeer
       const observedAddress = opts.observedAddress ?? multiaddr('/ip4/124.124.124.124/tcp/28319')
       const remoteAddr = opts.remoteAddr ?? observedAddress.encapsulate(`/p2p/${remotePeer.toString()}`)
-      const source = pushable<Uint8ArrayList>()
-      const sink = pushable<Uint8ArrayList>()
-      const stream: Stream = {
-        ...stubInterface<Stream>(),
-        source,
-        sink: async (stream) => {
-          for await (const buf of stream) {
-            sink.push(new Uint8ArrayList(buf))
-          }
-          sink.end()
-        },
-        abort: (err) => {
-          void stream.source.throw(err)
-        },
-        close: async () => {
-          sink.end()
-        }
-      }
-      const connection = {
-        ...stubInterface<Connection>(),
+      const connection = stubInterface<Connection>({
         remotePeer,
         remoteAddr
-      }
+      })
+      const [outgoingStream, incomingStream] = await streamPair()
 
       // we might support this transport
       transportManager.dialTransportForMultiaddr.withArgs(observedAddress)
@@ -508,7 +493,7 @@ describe('autonat', () => {
         connectionManager.openConnection.resolves(newConnection)
       }
 
-      let buf: Uint8Array | undefined
+      let buf: Uint8Array | Uint8ArrayList | undefined
 
       if (opts.message instanceof Uint8Array) {
         buf = opts.message
@@ -529,21 +514,20 @@ describe('autonat', () => {
       }
 
       if (buf != null) {
-        source.push(lp.encode.single(buf))
+        outgoingStream.send(lp.encode.single(buf))
       }
 
-      source.end()
+      outgoingStream.close()
 
-      await service.handleIncomingAutonatStream({
-        stream,
-        connection
-      })
-
-      const slice = await pipe(
-        sink,
+      const messagesPromise = pipe(
+        outgoingStream,
         (source) => lp.decode(source),
         async source => all(source)
       )
+
+      await service.handleIncomingAutonatStream(incomingStream, connection)
+
+      const slice = await messagesPromise
 
       if (slice.length !== 1) {
         throw new Error('Response was not length encoded')

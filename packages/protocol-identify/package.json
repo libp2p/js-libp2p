@@ -55,7 +55,6 @@
     "@multiformats/multiaddr-matcher": "^2.0.0",
     "it-drain": "^3.0.9",
     "it-parallel": "^3.0.11",
-    "it-protobuf-stream": "^2.0.2",
     "main-event": "^1.0.1",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8",
@@ -66,8 +65,6 @@
     "aegir": "^47.0.14",
     "delay": "^6.0.0",
     "it-length-prefixed": "^10.0.1",
-    "it-pair": "^2.0.6",
-    "it-pushable": "^3.2.3",
     "protons": "^7.6.1",
     "sinon-ts": "^2.0.0"
   },

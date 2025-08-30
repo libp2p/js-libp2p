@@ -13,6 +13,15 @@ export function receiveFinAck (channel: RTCDataChannel): void {
   channel.onmessage?.(new MessageEvent<Uint8Array>('message', { data }))
 }
 
+/**
+ * simulates receiving a FIN on the passed datachannel
+ */
+export function receiveRemoteCloseWrite (channel: RTCDataChannel): void {
+  const msgBuf = Message.encode({ flag: Message.Flag.FIN })
+  const data = lengthPrefixed.encode.single(msgBuf).subarray()
+  channel.onmessage?.(new MessageEvent<Uint8Array>('message', { data }))
+}
+
 let mockDataChannelId = 0
 
 export const mockDataChannel = (opts: { send(bytes: Uint8Array): void, bufferedAmount?: number }): RTCDataChannel => {

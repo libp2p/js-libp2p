@@ -1,8 +1,9 @@
-import { closeSource } from '@libp2p/utils/close-source'
+import { AbortError } from '@libp2p/interface'
+import { pipe } from '@libp2p/utils'
 import * as lp from 'it-length-prefixed'
-import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import type { ComponentLogger, Logger, Stream, PeerId, PeerStreamEvents } from '@libp2p/interface'
 import type { DecoderOptions as LpDecoderOptions } from 'it-length-prefixed'
@@ -93,7 +94,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
    */
   attachInboundStream (stream: Stream, decoderOptions?: DecoderOptions): AsyncIterable<Uint8ArrayList> {
     const abortListener = (): void => {
-      closeSource(stream.source, this.log)
+      stream.abort(new AbortError())
     }
 
     this._inboundAbortController.signal.addEventListener('abort', abortListener, {
@@ -129,7 +130,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
     this.outboundStream = pushable<Uint8ArrayList>({
       onEnd: (shouldEmit) => {
         // close writable side of the stream if it exists
-        this._rawOutboundStream?.closeWrite()
+        this._rawOutboundStream?.close()
           .catch(err => {
             this.log('error closing outbound stream', err)
           })
@@ -145,7 +146,19 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
     pipe(
       this.outboundStream,
       (source) => lp.encode(source),
-      this._rawOutboundStream
+      async (source) => {
+        for await (const buf of source) {
+          const sendMore = stream.send(buf)
+
+          if (sendMore === false) {
+            await pEvent(stream, 'drain', {
+              rejectionEvents: [
+                'close'
+              ]
+            })
+          }
+        }
+      }
     ).catch((err: Error) => {
       this.log.error(err)
     })

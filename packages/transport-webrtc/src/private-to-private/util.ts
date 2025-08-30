@@ -1,12 +1,13 @@
-import { ConnectionFailedError, InvalidMessageError } from '@libp2p/interface'
-import pDefer from 'p-defer'
+import { ConnectionFailedError, InvalidMessageError, InvalidMultiaddrError } from '@libp2p/interface'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { CustomProgressEvent } from 'progress-events'
 import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import type { WebRTCDialEvents } from './transport.js'
 import type { RTCPeerConnection } from '../webrtc/index.js'
-import type { AbortOptions, LoggerOptions, Stream } from '@libp2p/interface'
+import type { AbortOptions, LoggerOptions, PeerId, Stream } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MessageStream } from 'it-protobuf-stream'
 import type { DeferredPromise } from 'p-defer'
 import type { ProgressOptions } from 'progress-events'
@@ -17,7 +18,7 @@ export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions, Prog
 
 export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream: MessageStream<Message, Stream>, options: ReadCandidatesOptions): Promise<void> => {
   try {
-    const connectedPromise: DeferredPromise<void> = pDefer()
+    const connectedPromise = Promise.withResolvers<void>()
     resolveOnConnected(pc, connectedPromise)
 
     // read candidates until we are connected or we reach the end of the stream
@@ -93,4 +94,20 @@ function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<voi
         break
     }
   }
+}
+
+export function getRemotePeer (ma: Multiaddr): PeerId {
+  let remotePeer: PeerId | undefined
+
+  for (const component of ma.getComponents()) {
+    if (component.name === 'p2p') {
+      remotePeer = peerIdFromString(component.value ?? '')
+    }
+  }
+
+  if (remotePeer == null) {
+    throw new InvalidMultiaddrError('Remote peerId must be present in multiaddr')
+  }
+
+  return remotePeer
 }

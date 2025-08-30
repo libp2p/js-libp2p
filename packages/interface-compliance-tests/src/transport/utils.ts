@@ -3,8 +3,8 @@
 import { echo } from '@libp2p/echo'
 import { memory } from '@libp2p/memory'
 import { plaintext } from '@libp2p/plaintext'
+import { mockMuxer } from '@libp2p/utils'
 import { createLibp2p } from 'libp2p'
-import { mockMuxer } from '../mocks/muxer.js'
 import type { Echo } from '@libp2p/echo'
 import type { Libp2p, Upgrader } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
@@ -28,7 +28,7 @@ export async function createPeer (config: Partial<Libp2pOptions> = {}): Promise<
     services: {
       ...config.services,
       echo: echo({
-        maxInboundStreams: 5
+        maxInboundStreams: 5_000
       })
     }
   })

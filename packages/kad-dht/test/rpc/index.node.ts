@@ -1,15 +1,12 @@
 /* eslint-env mocha */
 
 import { start } from '@libp2p/interface'
-import { mockStream } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import all from 'it-all'
 import * as lp from 'it-length-prefixed'
-import map from 'it-map'
-import { pipe } from 'it-pipe'
 import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import Sinon from 'sinon'
@@ -29,7 +26,6 @@ import type { PeerAndKey } from '../utils/create-peer-id.js'
 import type { Libp2pEvents, Connection, PeerStore } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Datastore } from 'interface-datastore'
-import type { Duplex, Source } from 'it-stream-types'
 import type { SinonStubbedInstance } from 'sinon'
 
 describe('rpc', () => {
@@ -92,31 +88,26 @@ describe('rpc', () => {
 
     peerRouting.getClosestPeersOffline.resolves([])
 
-    const source = pipe(
-      [Message.encode(msg)],
-      (source) => lp.encode(source),
-      source => map(source, arr => new Uint8ArrayList(arr)),
-      (source) => all(source)
-    )
+    const [outboundStream, incomingStream] = await streamPair()
 
-    const duplexStream: Duplex<AsyncGenerator<Uint8ArrayList>, Source<Uint8ArrayList | Uint8Array>, Promise<void>> = {
-      source: (async function * () {
-        yield * source
-      })(),
-      sink: async (source) => {
-        const res = await pipe(
-          source,
-          (source) => lp.decode(source),
-          async (source) => all(source)
-        )
-        validateMessage(res)
+    outboundStream.addEventListener('message', (evt) => {
+      const res: Uint8ArrayList[] = []
+
+      for (const buf of lp.decode([evt.data])) {
+        res.push(buf)
       }
-    }
 
-    rpc.onIncomingStream({
-      stream: mockStream(duplexStream),
-      connection: stubInterface<Connection>()
+      validateMessage(res)
     })
+
+    queueMicrotask(() => {
+      outboundStream.send(lp.encode.single(Message.encode(msg)))
+    })
+
+    rpc.onIncomingStream(
+      incomingStream,
+      stubInterface<Connection>()
+    )
 
     await defer.promise
   })

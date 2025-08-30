@@ -13,9 +13,9 @@ import type { Message, NewStreamMessage } from '../src/message-types.js'
 
 describe('coder', () => {
   it('should encode header', async () => {
-    const source: Message[] = [{ id: 17, type: 0, data: new Uint8ArrayList(uint8ArrayFromString('17')) }]
+    const source: Message = { id: 17, type: 0, data: new Uint8ArrayList(uint8ArrayFromString('17')) }
 
-    const data = new Uint8ArrayList(...await all(encode(source))).subarray()
+    const data = new Uint8ArrayList(...all(encode(source))).subarray()
 
     const expectedHeader = uint8ArrayFromString('880102', 'base16')
     expect(data.slice(0, expectedHeader.length)).to.equalBytes(expectedHeader)
@@ -28,35 +28,23 @@ describe('coder', () => {
     }
   })
 
-  it('should encode several msgs into buffer', async () => {
-    const source: Message[] = [
-      { id: 17, type: 0, data: new Uint8ArrayList(uint8ArrayFromString('17')) },
-      { id: 19, type: 0, data: new Uint8ArrayList(uint8ArrayFromString('19')) },
-      { id: 21, type: 0, data: new Uint8ArrayList(uint8ArrayFromString('21')) }
-    ]
-
-    const data = new Uint8ArrayList(...await all(encode(source))).subarray()
-
-    expect(data).to.equalBytes(uint8ArrayFromString('88010231379801023139a801023231', 'base16'))
-  })
-
   it('should encode from Uint8ArrayList', async () => {
-    const source: NewStreamMessage[] = [{
+    const source: NewStreamMessage = {
       id: 17,
       type: 0,
       data: new Uint8ArrayList(
         uint8ArrayFromString(Math.random().toString()),
         uint8ArrayFromString(Math.random().toString())
       )
-    }]
+    }
 
-    const data = new Uint8ArrayList(...await all(encode(source))).subarray()
+    const data = new Uint8ArrayList(...all(encode(source))).subarray()
 
     expect(data).to.equalBytes(
       uint8ArrayConcat([
         uint8ArrayFromString('8801', 'base16'),
-        Uint8Array.from([source[0].data.length]),
-        source[0].data instanceof Uint8Array ? source[0].data : source[0].data.slice()
+        Uint8Array.from([source.data.length]),
+        source.data.subarray()
       ])
     )
   })
@@ -77,9 +65,9 @@ describe('coder', () => {
   })
 
   it('should encode zero length body msg', async () => {
-    const source: Message[] = [{ id: 17, type: 0, data: new Uint8ArrayList() }]
+    const source: Message = { id: 17, type: 0, data: new Uint8ArrayList() }
 
-    const data = new Uint8ArrayList(...await all(encode(source))).subarray()
+    const data = new Uint8ArrayList(...all(encode(source))).subarray()
 
     expect(data).to.equalBytes(uint8ArrayFromString('880100', 'base16'))
   })

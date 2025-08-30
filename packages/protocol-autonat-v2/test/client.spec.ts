@@ -4,10 +4,10 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import * as lp from 'it-length-prefixed'
-import { pushable } from 'it-pushable'
+import delay from 'delay'
 import pRetry from 'p-retry'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -15,7 +15,7 @@ import { AutoNATv2Service } from '../src/autonat.ts'
 import { PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from '../src/constants.ts'
 import { DialResponse, DialStatus, Message } from '../src/pb/index.ts'
 import type { AutoNATv2Components, AutoNATv2ServiceInit } from '../src/index.ts'
-import type { Connection, Stream, PeerId, PeerStore, Peer } from '@libp2p/interface'
+import type { Connection, PeerId, PeerStore, Peer } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -101,67 +101,49 @@ describe('autonat v2 - client', () => {
     connection.remotePeer = peer.id
     connectionManager.openConnection.withArgs(peer.id).resolves(connection)
 
-    connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/dial-request`).callsFake(async () => {
-      const incomingMessages = pushable<Message>({
-        objectMode: true
-      })
+    const [outgoingStream, incomingStream] = await streamPair()
 
-      // stub autonat protocol stream
-      const stream = stubInterface<Stream>({
-        source: (async function * () {
-          const { done, value } = await incomingMessages.next()
+    connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/dial-request`).resolves(outgoingStream)
 
-          if (done) {
-            return
-          }
+    const messages = pbStream(incomingStream).pb(Message)
 
-          if (value.dialRequest == null) {
-            throw new Error('Unexpected message')
-          }
+    Promise.resolve().then(async () => {
+      const message = await messages.read()
 
-          for (const addr of value.dialRequest.addrs.map(buf => multiaddr(buf))) {
-            let responses = data.messages[addr.toString()]
+      if (message.dialRequest == null) {
+        throw new Error('Unexpected message')
+      }
 
-            if (responses == null) {
-              throw new Error(`No response defined for address ${addr}`)
-            }
+      for (const addr of message.dialRequest.addrs.map(buf => multiaddr(buf))) {
+        let responses = data.messages[addr.toString()]
 
-            if (!Array.isArray(responses)) {
-              responses = [responses]
-            }
-
-            for (const response of responses) {
-              yield lp.encode.single(Message.encode(response))
-
-              if (response.dialDataRequest != null) {
-                // read data requests
-                for (let read = 0; read < response.dialDataRequest.numBytes;) {
-                  const { done, value } = await incomingMessages.next()
-
-                  if (done) {
-                    return
-                  }
-
-                  if (value.dialDataResponse == null) {
-                    throw new Error('Incorrect message type')
-                  }
-
-                  read += value.dialDataResponse.data.byteLength
-                }
-              }
-            }
-          }
-        }()),
-        sink: async (source) => {
-          for await (const buf of lp.decode(source)) {
-            incomingMessages.push(Message.decode(buf))
-          }
-
-          incomingMessages.end()
+        if (responses == null) {
+          throw new Error(`No response defined for address ${addr}`)
         }
-      })
 
-      return stream
+        if (!Array.isArray(responses)) {
+          responses = [responses]
+        }
+
+        for (const response of responses) {
+          await messages.write(response)
+
+          if (response.dialDataRequest != null) {
+            // read data requests
+            for (let read = 0; read < response.dialDataRequest.numBytes;) {
+              const message = await messages.read()
+
+              if (message.dialDataResponse == null) {
+                throw new Error('Incorrect message type')
+              }
+
+              read += message.dialDataResponse.data.byteLength
+            }
+          }
+        }
+      }
+
+      await incomingStream.close()
     })
 
     return connection
@@ -230,6 +212,7 @@ describe('autonat v2 - client', () => {
 
     for (const conn of connections) {
       await service.client.verifyExternalAddresses(conn)
+      await delay(100)
     }
 
     await pRetry(() => {
@@ -303,6 +286,7 @@ describe('autonat v2 - client', () => {
 
     for (const conn of connections) {
       await service.client.verifyExternalAddresses(conn)
+      await delay(100)
     }
 
     await pRetry(() => {
@@ -424,6 +408,7 @@ describe('autonat v2 - client', () => {
 
     for (const conn of connections) {
       await service.client.verifyExternalAddresses(conn)
+      await delay(100)
     }
 
     await pRetry(() => {
@@ -545,6 +530,7 @@ describe('autonat v2 - client', () => {
 
     for (const conn of connections) {
       await service.client.verifyExternalAddresses(conn)
+      await delay(100)
     }
 
     await pRetry(() => {
@@ -738,6 +724,7 @@ describe('autonat v2 - client', () => {
 
     for (const conn of connections) {
       await service.client.verifyExternalAddresses(conn)
+      await delay(100)
     }
 
     await pRetry(() => {
@@ -913,6 +900,7 @@ describe('autonat v2 - client', () => {
 
     for (const conn of connections) {
       await service.client.verifyExternalAddresses(conn)
+      await delay(100)
     }
 
     await pRetry(() => {
@@ -986,6 +974,7 @@ describe('autonat v2 - client', () => {
 
     for (const conn of connections) {
       await service.client.verifyExternalAddresses(conn)
+      await delay(100)
     }
 
     expect(addressManager.addObservedAddr.called)

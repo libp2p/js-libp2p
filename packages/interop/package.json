@@ -1,0 +1,160 @@
+{
+  "name": "@libp2p/interop",
+  "version": "13.0.2",
+  "description": "Interoperability Tests for libp2p",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/interop#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/interop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/interop/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "libp2p"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "CHANGELOG.md",
+            "package.json"
+          ]
+        }
+      ]
+    ]
+  },
+  "scripts": {
+    "generate": "protons ./src/relay/pb/index.proto",
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build --bundle false",
+    "postbuild": "cp src/resources/keys/*.key dist/src/resources/keys",
+    "release": "aegir release",
+    "docs": "aegir docs"
+  },
+  "dependencies": {
+    "@libp2p/daemon-client": "^9.0.0",
+    "@libp2p/interface": "^2.0.0",
+    "@libp2p/utils": "^6.7.2",
+    "@multiformats/multiaddr": "^12.0.0",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.1",
+    "it-first": "^3.0.1",
+    "multiformats": "^13.0.0",
+    "p-retry": "^7.0.0",
+    "p-wait-for": "^5.0.0",
+    "protons-runtime": "^5.0.0",
+    "uint8arraylist": "^2.4.3",
+    "uint8arrays": "^5.0.0"
+  },
+  "devDependencies": {
+    "aegir": "^47.0.21",
+    "protons": "^7.0.2"
+  },
+  "peerDependencies": {
+    "aegir": "*"
+  }
+}

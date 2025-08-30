@@ -1,20 +1,19 @@
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
-import { pbStream } from 'it-protobuf-stream'
 import { SDPHandshakeFailedError } from '../error.js'
 import { RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import { getConnectionState, readCandidatesUntilConnected } from './util.js'
+import { getConnectionState, getRemotePeer, readCandidatesUntilConnected } from './util.js'
 import type { RTCPeerConnection } from '../webrtc/index.js'
-import type { Logger, IncomingStreamData } from '@libp2p/interface'
+import type { AbortOptions, Connection, Logger, PeerId, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-export interface IncomingStreamOpts extends IncomingStreamData {
+export interface IncomingStreamOptions extends AbortOptions {
   peerConnection: RTCPeerConnection
-  signal: AbortSignal
   log: Logger
 }
 
-export async function handleIncomingStream ({ peerConnection, stream, signal, connection, log }: IncomingStreamOpts): Promise<{ remoteAddress: Multiaddr }> {
+export async function handleIncomingStream (stream: Stream, connection: Connection, { peerConnection, signal, log }: IncomingStreamOptions): Promise<{ remoteAddress: Multiaddr, remotePeer: PeerId }> {
   log.trace('new inbound signaling stream')
 
   const messageStream = pbStream(stream).pb(Message)
@@ -101,9 +100,13 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     }
   }
 
-  const remoteAddress = multiaddr(`/webrtc/p2p/${connection.remoteAddr.getPeerId()}`)
+  const remotePeer = getRemotePeer(connection.remoteAddr)
+  const remoteAddress = multiaddr(`/webrtc/p2p/${remotePeer}`)
 
   log.trace('recipient connected to remote address %s', remoteAddress)
 
-  return { remoteAddress }
+  return {
+    remoteAddress,
+    remotePeer
+  }
 }

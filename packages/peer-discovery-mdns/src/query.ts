@@ -1,5 +1,5 @@
 import { peerIdFromString } from '@libp2p/peer-id'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
+import { isPrivate } from '@libp2p/utils'
 import { multiaddr, protocols } from '@multiformats/multiaddr'
 import type { LoggerOptions, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'

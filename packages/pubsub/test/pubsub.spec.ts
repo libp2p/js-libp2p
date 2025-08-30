@@ -1,5 +1,6 @@
 /* eslint max-nested-callbacks: ["error", 6] */
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -13,9 +14,8 @@ import { PeerStreams } from '../src/peer-streams.js'
 import { noSignMsgId } from '../src/utils.js'
 import {
   MockRegistrar,
-  ConnectionPair,
-  PubsubImplementation,
-  mockIncomingStreamEvent
+  connectionPair,
+  PubsubImplementation
 } from './utils/index.js'
 import type { PeerId, Message, PubSubRPC } from '@libp2p/interface'
 
@@ -161,14 +161,10 @@ describe('pubsub base implementation', () => {
         }, {
           multicodecs: [protocol]
         })
-      })
 
-      // start pubsub and connect nodes
-      beforeEach(async () => {
-        await Promise.all([
-          pubsubA.start(),
-          pubsubB.start()
-        ])
+        // start pubsub and connect nodes
+        await start(pubsubA, pubsubB)
+
         const topologyA = registrarA.getTopologies(protocol)[0]
         const handlerB = registrarB.getHandler(protocol)
 
@@ -177,17 +173,14 @@ describe('pubsub base implementation', () => {
         }
 
         // Notify peers of connection
-        const [c0, c1] = ConnectionPair()
+        const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
         topologyA.onConnect?.(peerIdB, c0)
-        handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        await handlerB.handler(await c1.newStream(protocol), c1)
       })
 
       afterEach(async () => {
-        await Promise.all([
-          pubsubA.stop(),
-          pubsubB.stop()
-        ])
+        await stop(pubsubA, pubsubB)
       })
 
       it('should send subscribe message to connected peers', async () => {
@@ -198,7 +191,7 @@ describe('pubsub base implementation', () => {
 
         // Should send subscriptions to a peer
         // @ts-expect-error .callCount is a added by sinon
-        expect(pubsubA.send.callCount).to.eql(1)
+        expect(pubsubA.send.callCount).to.equal(1)
 
         // Other peer should receive subscription message
         await pWaitFor(() => {
@@ -208,7 +201,7 @@ describe('pubsub base implementation', () => {
         })
 
         // @ts-expect-error .callCount is a added by sinon
-        expect(pubsubB.processRpcSubOpt.callCount).to.eql(1)
+        expect(pubsubB.processRpcSubOpt.callCount).to.equal(1)
       })
     })
   })
@@ -295,10 +288,10 @@ describe('pubsub base implementation', () => {
         }
 
         // Notify peers of connection
-        const [c0, c1] = ConnectionPair()
+        const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
         topologyA.onConnect?.(peerIdB, c0)
-        handlerB.handler(await mockIncomingStreamEvent(protocol, c1, peerIdA))
+        await handlerB.handler(await c1.newStream(protocol), c1)
       })
 
       afterEach(async () => {

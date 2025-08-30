@@ -42,9 +42,7 @@
   "dependencies": {
     "@libp2p/interface": "^2.11.0",
     "@libp2p/utils": "^6.7.2",
-    "@opentelemetry/api": "^1.9.0",
-    "it-foreach": "^2.1.3",
-    "it-stream-types": "^2.0.2"
+    "@opentelemetry/api": "^1.9.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.2.0",

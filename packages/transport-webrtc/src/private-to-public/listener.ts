@@ -1,6 +1,6 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { InvalidParametersError } from '@libp2p/interface'
-import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
+import { getThinWaistAddresses } from '@libp2p/utils'
 import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import getPort from 'get-port'
@@ -205,7 +205,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         metrics: this.components.metrics,
         events: this.metrics?.listenerEvents,
         signal,
-        remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}`),
+        remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}/webrtc-direct`),
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,
         peerId: this.components.peerId,

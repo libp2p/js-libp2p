@@ -75,6 +75,7 @@ export class TCP implements Transport<TCPDialEvents> {
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true
     options.noDelay = options.noDelay ?? true
+    options.allowHalfOpen = options.allowHalfOpen ?? false
 
     // options.signal destroys the socket before 'connect' event
     const socket = await this._connect(ma, options)
@@ -82,13 +83,13 @@ export class TCP implements Transport<TCPDialEvents> {
     let maConn: MultiaddrConnection
 
     try {
-      maConn = toMultiaddrConnection(socket, {
-        remoteAddr: ma,
-        socketInactivityTimeout: this.opts.outboundSocketInactivityTimeout,
-        socketCloseTimeout: this.opts.socketCloseTimeout,
+      maConn = toMultiaddrConnection({
+        socket,
+        inactivityTimeout: this.opts.outboundSocketInactivityTimeout,
         metrics: this.metrics?.events,
-        logger: this.components.logger,
-        direction: 'outbound'
+        direction: 'outbound',
+        remoteAddr: ma,
+        log: this.log.newScope('connection')
       })
     } catch (err: any) {
       this.metrics?.errors.increment({ outbound_to_connection: true })
@@ -120,7 +121,7 @@ export class TCP implements Transport<TCPDialEvents> {
         ...options
       }) as (IpcSocketConnectOpts & TcpSocketConnectOpts)
 
-      this.log('dialing %a', ma)
+      this.log('dialing %a with opts %o', ma, cOpts)
       rawSocket = net.connect(cOpts)
 
       const onError = (err: Error): void => {
@@ -192,8 +193,7 @@ export class TCP implements Transport<TCPDialEvents> {
       maxConnections: this.opts.maxConnections,
       backlog: this.opts.backlog,
       closeServerOnMaxConnections: this.opts.closeServerOnMaxConnections,
-      socketInactivityTimeout: this.opts.inboundSocketInactivityTimeout,
-      socketCloseTimeout: this.opts.socketCloseTimeout,
+      inactivityTimeout: this.opts.inboundSocketInactivityTimeout,
       metrics: this.components.metrics,
       logger: this.components.logger
     })
