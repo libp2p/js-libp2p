@@ -32,6 +32,13 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
     dst.abort(err)
   }
 
+  async function closeStreams (): Promise<void> {
+    await Promise.all([
+      src.close(),
+      dst.close()
+    ])
+  }
+
   // combine shutdown signal and reservation expiry signal
   const signals = [abortSignal, reservation.signal]
 
@@ -96,16 +103,16 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
       abortStreams(evt.error)
     } else {
       srcDstFinished = true
+
+      dst.close()
+        .catch(err => {
+          abortStreams(err)
+        })
     }
 
     if (dstSrcFinished) {
       signal.removeEventListener('abort', onAbort)
       signal.clear()
-    } else {
-      dst.close()
-        .catch(err => {
-          dst.abort(err)
-        })
     }
   })
 
@@ -115,31 +122,22 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
       abortStreams(evt.error)
     } else {
       dstSrcFinished = true
+
+      src.close()
+        .catch(err => {
+          abortStreams(err)
+        })
     }
 
     if (srcDstFinished) {
       signal.removeEventListener('abort', onAbort)
       signal.clear()
-    } else {
-      src.close()
-        .catch(err => {
-          dst.abort(err)
-        })
     }
   })
 
   // join the streams together
   src.addEventListener('message', (evt) => {
     if (dst.writeStatus !== 'writable') {
-      if (dst.status === 'closed') {
-        src.close()
-          .catch(err => {
-            src.abort(err)
-          })
-      } else {
-        abortStreams(new UnexpectedEOFError(`Relay destination stream went away - status was ${dst.status}, write status was ${dst.writeStatus}, read status was ${dst.readStatus}`))
-      }
-
       return
     }
 
@@ -163,15 +161,6 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   dst.addEventListener('message', (evt) => {
     if (src.writeStatus !== 'writable') {
-      if (src.status === 'closed') {
-        dst.close()
-          .catch(err => {
-            dst.abort(err)
-          })
-      } else {
-        abortStreams(new UnexpectedEOFError(`Relay source stream went away - status was ${src.status}, write status was ${src.writeStatus}, read status was ${src.readStatus}`))
-      }
-
       return
     }
 

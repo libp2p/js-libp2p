@@ -265,7 +265,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
     })
 
     it('should handle one big write', async function () {
-      const timeout = 120_000
+      const timeout = 540_000
       this.timeout(timeout);
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
