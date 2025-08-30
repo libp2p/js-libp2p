@@ -101,19 +101,15 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
     case 'webrtc-direct':
     // TODO: re-enable quic after v3 release
     // case 'quic-v1':
-    //    skipSecureChannel = true
-    //    skipMuxer = true
-      break
+        skipSecureChannel = true
+        skipMuxer = true
+        break
     case 'webrtc':
       skipSecureChannel = true
       skipMuxer = true
       // Setup yamux and noise to connect to the relay node
       options.streamMuxers = [yamux()]
       options.connectionEncrypters = [noise()]
-      break
-    case 'webrtc-direct':
-      skipSecureChannel = true
-      skipMuxer = true
       break
     default:
       // Do nothing
