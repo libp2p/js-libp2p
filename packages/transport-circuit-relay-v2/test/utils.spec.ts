@@ -145,12 +145,12 @@ describe('circuit-relay utils', () => {
   it('should create time limited relay', async () => {
     const abortController = new AbortController()
     const [localStream, remoteStream] = await streamPair({
-      delay: 500
+      delay: 1_000
     })
 
     const controller = new AbortController()
     const limit = {
-      duration: 1000
+      duration: 1_500
     }
 
     localStream.abort = () => {
