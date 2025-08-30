@@ -124,7 +124,7 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
         options.connectionEncrypters = [tls()]
         break
       default:
-        throw new Error(`Unknown secure channel: ${SECURE_CHANNEL ?? ''}`)
+        // Do nothing
     }
   }
 
