@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 6] */
 
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { RELAY_V2_HOP_CODEC, circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
@@ -9,6 +8,7 @@ import { PeerSet } from '@libp2p/peer-collections'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { echo } from '@libp2p/utils'
+import { yamux } from '@libp2p/yamux'
 import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'

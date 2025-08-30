@@ -41,7 +41,7 @@ export class Yamux implements StreamMuxerFactory {
     this._init = init
   }
 
-  readonly [Symbol.toStringTag] = '@chainsafe/libp2p-yamux'
+  readonly [Symbol.toStringTag] = '@libp2p/yamux'
 
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/stream-multiplexing'

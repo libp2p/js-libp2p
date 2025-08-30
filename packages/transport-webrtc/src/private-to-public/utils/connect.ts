@@ -1,4 +1,4 @@
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 import { pEvent } from 'p-event'
 import { WebRTCTransportError } from '../../error.js'
 import { DataChannelMuxerFactory } from '../../muxer.js'

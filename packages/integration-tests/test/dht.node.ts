@@ -1,12 +1,12 @@
 /* eslint-env mocha */
 
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { identify } from '@libp2p/identify'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { mplex } from '@libp2p/mplex'
 import { ping } from '@libp2p/ping'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
+import { yamux } from '@libp2p/yamux'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'

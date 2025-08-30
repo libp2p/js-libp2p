@@ -1,5 +1,5 @@
 {
-  "name": "@chainsafe/libp2p-noise",
+  "name": "@libp2p/noise",
   "version": "16.1.4",
   "description": "Noise libp2p handshake for js-libp2p",
   "author": "ChainSafe <info@chainsafe.io>",
@@ -161,7 +161,7 @@
     "wherearewe": "^2.0.1"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-yamux": "^7.0.0",
+    "@libp2p/yamux": "^7.0.0",
     "@libp2p/daemon-client": "^9.0.0",
     "@libp2p/daemon-server": "^8.0.0",
     "@libp2p/interface-compliance-tests": "^6.0.0",

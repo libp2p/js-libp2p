@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'

@@ -65,11 +65,11 @@ export class Noise implements INoiseConnection {
     this.prologue = prologueBytes ?? uint8ArrayAlloc(0)
   }
 
-  readonly [Symbol.toStringTag] = '@chainsafe/libp2p-noise'
+  readonly [Symbol.toStringTag] = '@libp2p/noise'
 
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/connection-encryption',
-    '@chainsafe/libp2p-noise'
+    '@libp2p/noise'
   ]
 
   /**

@@ -41,7 +41,7 @@ Example of using default noise configuration and passing it to the libp2p config
 
 ```ts
 import {createLibp2p} from "libp2p"
-import {noise} from "@chainsafe/libp2p-noise"
+import {noise} from "@libp2p/noise"
 
 //custom noise configuration, pass it instead of `noise()`
 //x25519 private key

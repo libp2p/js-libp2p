@@ -7,7 +7,7 @@
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { yamux } from '@libp2p/yamux'
  *
  * const node = await createLibp2p({
  *   // ... other options
@@ -20,7 +20,7 @@
  * @example Using the low-level API
  *
  * ```js
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { yamux } from '@libp2p/yamux'
  * import { pipe } from 'it-pipe'
  * import { duplexPair } from 'it-pair/duplex'
  * import all from 'it-all'

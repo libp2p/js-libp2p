@@ -1,5 +1,5 @@
 {
-  "name": "@chainsafe/libp2p-yamux",
+  "name": "@libp2p/yamux",
   "version": "7.0.4",
   "description": "Yamux stream multiplexer for libp2p",
   "license": "Apache-2.0 OR MIT",

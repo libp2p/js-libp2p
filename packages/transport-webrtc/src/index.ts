@@ -26,8 +26,8 @@
  * WebRTC requires use of a relay to connect two nodes. The listener first discovers a relay server and makes a reservation, then the dialer can connect via the relayed address.
  *
  * ```TypeScript
- * import { noise } from '@chainsafe/libp2p-noise'
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { noise } from '@libp2p/noise'
+ * import { yamux } from '@libp2p/yamux'
  * import { echo } from '@libp2p/echo'
  * import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay-v2'
  * import { identify } from '@libp2p/identify'

@@ -1,4 +1,3 @@
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
@@ -7,6 +6,7 @@ import { tcp } from '@libp2p/tcp'
 import { mergeOptions } from '@libp2p/utils'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
+import { yamux } from '@libp2p/yamux'
 import type { ServiceMap } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
 

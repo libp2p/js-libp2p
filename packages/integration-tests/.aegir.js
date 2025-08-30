@@ -9,8 +9,8 @@ export default {
   test: {
     before: async () => {
       // use dynamic import because we only want to reference these files during the test run, e.g. after building
-      const { noise } = await import('@chainsafe/libp2p-noise')
-      const { yamux } = await import('@chainsafe/libp2p-yamux')
+      const { noise } = await import('@libp2p/noise')
+      const { yamux } = await import('@libp2p/yamux')
       const { WebSockets, WebRTCDirect } = await import('@multiformats/multiaddr-matcher')
       const { webSockets } = await import('@libp2p/websockets')
       const { mplex } = await import('@libp2p/mplex')
