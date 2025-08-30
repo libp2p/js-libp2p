@@ -256,24 +256,16 @@ describe('stream', () => {
     // don't let the server respond
     inboundConnection.pause()
 
-    const p = pushable()
     const c1 = await client.createStream()
 
-    pipe(p, c1)
-
     // send more data than the window size, will trigger a wait
-    p.push(new Uint8Array(defaultConfig.initialStreamWindowSize))
-    p.push(new Uint8Array(defaultConfig.initialStreamWindowSize))
-
-    await sleep(10)
+    c1.send(new Uint8Array(defaultConfig.initialStreamWindowSize))
+    c1.send(new Uint8Array(defaultConfig.initialStreamWindowSize))
 
     // the client should fail to close gracefully because there is unsent data
     // that will never be sent
     await expect(client.close({
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected()
-
-    p.end()
-    inboundConnection.resume()
   })
 })
