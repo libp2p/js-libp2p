@@ -131,7 +131,15 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
   // join the streams together
   src.addEventListener('message', (evt) => {
     if (dst.writeStatus !== 'writable') {
-      abortStreams(new UnexpectedEOFError('Relay destination stream went away'))
+      if (dst.status === 'closed') {
+        src.close()
+          .catch(err => {
+            src.abort(err)
+          })
+      } else {
+        abortStreams(new UnexpectedEOFError(`Relay destination stream went away - status was ${dst.status}, write status was ${dst.writeStatus}, read status was ${dst.readStatus}`))
+      }
+
       return
     }
 
@@ -155,7 +163,15 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   dst.addEventListener('message', (evt) => {
     if (src.writeStatus !== 'writable') {
-      abortStreams(new UnexpectedEOFError('Relay source stream went away'))
+      if (src.status === 'closed') {
+        dst.close()
+          .catch(err => {
+            dst.abort(err)
+          })
+      } else {
+        abortStreams(new UnexpectedEOFError(`Relay source stream went away - status was ${src.status}, write status was ${src.writeStatus}, read status was ${src.readStatus}`))
+      }
+
       return
     }
 
