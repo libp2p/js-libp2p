@@ -101,9 +101,9 @@ export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
     case 'webrtc-direct':
     // TODO: re-enable quic after v3 release
     // case 'quic-v1':
-        skipSecureChannel = true
-        skipMuxer = true
-        break
+      skipSecureChannel = true
+      skipMuxer = true
+      break
     case 'webrtc':
       skipSecureChannel = true
       skipMuxer = true
