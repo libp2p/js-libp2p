@@ -1,6 +1,5 @@
 import { execa } from 'execa'
 import pDefer from 'p-defer'
-import debug from 'weald'
 
 /** @type {import('aegir').PartialOptions} */
 export default {
@@ -164,8 +163,9 @@ async function createGoLibp2pRelay () {
   const { multiaddr } = await import('@multiformats/multiaddr')
   const { path: p2pd } = await import('go-libp2p')
   const { createClient } = await import('@libp2p/daemon-client')
+  const { defaultLogger } = await import('@libp2p/logger')
 
-  const log = debug('go-libp2p')
+  const log = defaultLogger().forComponent('go-libp2p')
   const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
   const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
   const deferred = pDefer()
