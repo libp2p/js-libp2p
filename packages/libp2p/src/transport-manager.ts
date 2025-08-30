@@ -318,7 +318,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
     throw new UnsupportedListenAddressesError(`Some configured addresses failed to be listened on, you may need to remove one or more listen addresses from your configuration or set \`transportManager.faultTolerance\` to NO_FATAL:\n${
       [...listenStats.errors.entries()].map(([addr, err]) => {
         return `
-  ${addr}: ${`${err.stack ?? err}`.split('\n').join('\n  ')}
+  ${addr}: ${`${getErrorMessage(err)}`.split('\n').join('\n  ')}
 `
       }).join('')
     }`)
@@ -375,4 +375,20 @@ export class DefaultTransportManager implements TransportManager, Startable {
 
     await Promise.all(tasks)
   }
+}
+
+/**
+ * Not every error has useful fields, browsers particularly often have an empty
+ * string for the "stack" so try a few different fields here.
+ */
+function getErrorMessage (err: Error): string {
+  if (err.stack != null && err.stack.trim() !== '') {
+    return err.stack
+  }
+
+  if (err.message != null) {
+    return err.message
+  }
+
+  return err.toString()
 }
