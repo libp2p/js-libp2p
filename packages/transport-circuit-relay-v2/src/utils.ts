@@ -1,5 +1,4 @@
 import { setMaxListeners } from '@libp2p/interface'
-import { UnexpectedEOFError } from '@libp2p/utils'
 import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/multiaddr-matcher'
 import { fmt, code, and } from '@multiformats/multiaddr-matcher/utils'
@@ -30,13 +29,6 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
   function abortStreams (err: Error): void {
     src.abort(err)
     dst.abort(err)
-  }
-
-  async function closeStreams (): Promise<void> {
-    await Promise.all([
-      src.close(),
-      dst.close()
-    ])
   }
 
   // combine shutdown signal and reservation expiry signal
