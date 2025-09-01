@@ -101,7 +101,11 @@ describe('utils', () => {
       sent += buf.byteLength
 
       if (sendMore === false) {
-        await pEvent(outboundSocket, 'drain')
+        await pEvent(outboundSocket, 'drain', {
+          rejectionEvents: [
+            'close'
+          ]
+        })
       }
     }
 

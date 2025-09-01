@@ -172,7 +172,7 @@ export class Server implements Libp2pServer {
         }
 
         // And then begin piping the client and peer connection
-        // eslint-disable-next-line @typescript-eslint/await-thenable
+
         await pipe(
           stream,
           conn,
@@ -454,7 +454,7 @@ export class Server implements Libp2pServer {
             const stream = pb.unwrap()
 
             // then pipe the connection to the client
-            // eslint-disable-next-line @typescript-eslint/await-thenable
+
             await pipe(
               stream,
               response.connection,

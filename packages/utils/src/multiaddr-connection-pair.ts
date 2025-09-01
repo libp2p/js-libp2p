@@ -1,6 +1,7 @@
 import { StreamMessageEvent } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
+import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { AbstractMultiaddrConnection } from './abstract-multiaddr-connection.ts'
 import { MessageQueue } from './message-queue.ts'
@@ -83,6 +84,12 @@ class MockMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   async sendClose (options?: AbortOptions): Promise<void> {
+    if (this.local.needsDrain) {
+      await pEvent(this.local, 'drain', {
+        signal: options?.signal
+      })
+    }
+
     return raceSignal(new Promise<void>((resolve, reject) => {
       this.local.send(new Event('close'))
       this.local.onIdle().then(resolve, reject)

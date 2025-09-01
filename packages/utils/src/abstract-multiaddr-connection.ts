@@ -56,7 +56,7 @@ export abstract class AbstractMultiaddrConnection extends AbstractMessageStream 
     this.remoteWriteStatus = 'closing'
     this.remoteReadStatus = 'closing'
 
-    if (this.writeBuffer.byteLength > 0) {
+    if (this.sendingData) {
       this.log.trace('waiting for write queue to become idle before closing stream, %d unsent bytes', this.writeBuffer.byteLength)
       await pEvent(this, 'idle', {
         ...options,

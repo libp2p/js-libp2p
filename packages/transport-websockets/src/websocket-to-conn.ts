@@ -1,23 +1,36 @@
-import { AbstractMultiaddrConnection } from '@libp2p/utils'
+import { AbstractMultiaddrConnection, repeatingTask } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
-import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
+import type { AbstractMultiaddrConnectionInit, RepeatingTask, SendResult } from '@libp2p/utils'
+
+const DEFAULT_MAX_BUFFERED_AMOUNT = 1024 * 1024 * 4
+const DEFAULT_BUFFERED_AMOUNT_POLL_INTERVAL = 500
 
 export interface WebSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name'> {
   websocket: WebSocket
+  maxBufferedAmount?: number
+  bufferedAmountPollInterval?: number
 }
 
 class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   private websocket: WebSocket
+  private maxBufferedAmount: number
+  private checkBufferedAmountTask: RepeatingTask
 
   constructor (init: WebSocketMultiaddrConnectionInit) {
     super(init)
 
     this.websocket = init.websocket
+    this.maxBufferedAmount = init.maxBufferedAmount ?? DEFAULT_MAX_BUFFERED_AMOUNT
+    this.checkBufferedAmountTask = repeatingTask(this.checkBufferedAmount.bind(this), init.bufferedAmountPollInterval ?? DEFAULT_BUFFERED_AMOUNT_POLL_INTERVAL, {
+      debounce: 100,
+      runImmediately: false
+    })
 
     this.websocket.addEventListener('close', (evt) => {
       this.log('closed - code %d, reason "%s", wasClean %s', evt.code, evt.reason, evt.wasClean)
+      this.checkBufferedAmountTask.stop()
 
       if (!evt.wasClean) {
         this.onRemoteReset()
@@ -40,8 +53,6 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
           return
         }
 
-        this.log('incoming data', buf)
-
         this.onData(buf)
       } catch (err: any) {
         this.log.error('error receiving data - %e', err)
@@ -54,9 +65,15 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       this.websocket.send(buf)
     }
 
+    const canSendMore = this.websocket.bufferedAmount < this.maxBufferedAmount
+
+    if (!canSendMore) {
+      this.checkBufferedAmountTask.start()
+    }
+
     return {
       sentBytes: data.byteLength,
-      canSendMore: true
+      canSendMore
     }
   }
 
@@ -76,10 +93,19 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   sendResume (): void {
     // read backpressure is not supported
   }
+
+  private checkBufferedAmount (): void {
+    this.log('check buffered amount %d', this.websocket.bufferedAmount)
+
+    if (this.websocket.bufferedAmount === 0) {
+      this.safeDispatchEvent('drain')
+      this.checkBufferedAmountTask.stop()
+    }
+  }
 }
 
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
-export function socketToMaConn (init: WebSocketMultiaddrConnectionInit): MultiaddrConnection {
+export function webSocketToMaConn (init: WebSocketMultiaddrConnectionInit): MultiaddrConnection {
   return new WebSocketMultiaddrConnection(init)
 }

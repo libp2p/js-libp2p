@@ -1,8 +1,7 @@
+import * as cborg from 'cborg'
 import * as lp from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { AbstractStreamMuxer } from './abstract-stream-muxer.ts'
 import { AbstractStream } from './abstract-stream.ts'
 import { Queue } from './queue/index.js'
@@ -12,12 +11,10 @@ import type { AbortOptions, MessageStreamDirection, CreateStreamOptions, StreamM
 import type { Pushable } from 'it-pushable'
 import type { SupportedEncodings } from 'uint8arrays/from-string'
 
-let streams = 0
-
 interface DataMessage {
   id: string
   type: 'data'
-  chunk: string
+  chunk: Uint8Array
 }
 
 interface ResetMessage {
@@ -85,7 +82,7 @@ class MockMuxedStream extends AbstractStream {
     const canSendMore = this.sendMessage({
       id: this.id,
       type: 'data',
-      chunk: uint8ArrayToString(data.subarray(), this.encoding)
+      chunk: data.subarray()
     })
 
     return {
@@ -161,11 +158,15 @@ interface MockMuxerInit extends StreamMuxerOptions {
   maxMessageSize?: number
 }
 
+// CBOR encoding of non-message data fields
+const MESSAGE_OVERHEAD = 30
+
 class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   private input: Pushable<Uint8Array | Uint8ArrayList>
   private maxInputQueueSize: number
   private encoding: SupportedEncodings
   private maxMessageSize: number
+  private nextStreamId: number
 
   constructor (maConn: MultiaddrConnection, init: MockMuxerInit) {
     super(maConn, {
@@ -175,17 +176,18 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     })
 
     this.maxInputQueueSize = init.maxInputQueueSize ?? 1024 * 1024 * 10
-    this.maxMessageSize = init.maxMessageSize ?? 1024 * 1024 * 10
+    this.maxMessageSize = (init.maxMessageSize ?? 1024 * 1024 * 4) + MESSAGE_OVERHEAD
     this.encoding = init.encoding ?? 'base64'
     this.input = pushable()
     this.sendMessage = this.sendMessage.bind(this)
+    this.nextStreamId = this.maConn.direction === 'outbound' ? 0 : 1
 
     Promise.resolve()
       .then(async () => {
         for await (const buf of lp.decode(this.input, {
           maxDataLength: this.maxMessageSize
         })) {
-          this.onMessage(JSON.parse(uint8ArrayToString(buf.subarray())))
+          this.onMessage(cborg.decode(buf.subarray()))
         }
       })
       .catch(err => {
@@ -203,10 +205,13 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   }
 
   sendMessage (message: StreamMessage): boolean {
-    this.log.trace('send message %o', message)
+    if (message.type === 'data') {
+      this.log.trace('send message %o', { ...message, chunk: `[ ${message.chunk.byteLength} bytes ]` })
+    } else {
+      this.log.trace('send message %o', message)
+    }
 
-    const json = JSON.stringify(message)
-    const buf = uint8ArrayFromString(json)
+    const buf = cborg.encode(message)
     const encoded = lp.encode.single(buf, {
       maxDataLength: this.maxMessageSize
     })
@@ -215,7 +220,12 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   }
 
   onMessage (message: StreamMessage): void {
-    this.log.trace('incoming message %o', message)
+    if (message.type === 'data') {
+      this.log.trace('incoming message %o', { ...message, chunk: `[ ${message.chunk.byteLength} bytes ]` })
+    } else {
+      this.log.trace('incoming message %o', message)
+    }
+
     let stream: MockMuxedStream | undefined = this.streams.find(s => s.id === message.id)
 
     if (message.type === 'create') {
@@ -237,7 +247,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     }
 
     if (message.type === 'data') {
-      stream.onData(uint8ArrayFromString(message.chunk, this.encoding))
+      stream.onData(message.chunk)
     } else if (message.type === 'reset') {
       stream.onRemoteReset()
     } else if (message.type === 'closeWrite') {
@@ -252,7 +262,9 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
   }
 
   onCreateStream (options: CreateStreamOptions): MockMuxedStream {
-    return this._createStream(`${streams++}`, 'outbound', options)
+    this.nextStreamId += 2
+
+    return this._createStream(`${this.nextStreamId}`, 'outbound', options)
   }
 
   _createStream (id: string, direction: MessageStreamDirection, options: CreateStreamOptions): MockMuxedStream {
@@ -265,7 +277,9 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
       direction,
       log: this.log.newScope(`stream:${direction}:${id}`),
       sendMessage: this.sendMessage,
-      encoding: this.encoding
+      encoding: this.encoding,
+      maxMessageSize: this.maxMessageSize - MESSAGE_OVERHEAD,
+      protocol: ''
     })
   }
 }

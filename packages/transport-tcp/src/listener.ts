@@ -8,7 +8,7 @@ import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { CloseServerOnMaxConnectionsOpts, TCPCreateListenerOptions } from './index.js'
 import type { NetConfig } from './utils.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 interface Context extends TCPCreateListenerOptions {
@@ -265,11 +265,11 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     }
   }
 
-  async close (): Promise<void> {
+  async close (options?: AbortOptions): Promise<void> {
     const events: Array<Promise<void>> = []
 
     if (this.server.listening) {
-      events.push(pEvent(this.server, 'close'))
+      events.push(pEvent(this.server, 'close', options))
     }
 
     // shut down the server socket, permanently
@@ -282,7 +282,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     // the server socket in case new sockets are opened during the shutdown
     this.sockets.forEach(socket => {
       if (socket.readable) {
-        events.push(pEvent(socket, 'close'))
+        events.push(pEvent(socket, 'close', options))
         socket.destroy()
       }
     })

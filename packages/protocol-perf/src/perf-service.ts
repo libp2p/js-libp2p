@@ -142,7 +142,8 @@ export class Perf implements Startable, PerfInterface {
           await pEvent(stream, 'drain', {
             rejectionEvents: [
               'close'
-            ]
+            ],
+            signal: options.signal
           })
         }
 
@@ -159,7 +160,8 @@ export class Perf implements Startable, PerfInterface {
             await pEvent(stream, 'drain', {
               rejectionEvents: [
                 'close'
-              ]
+              ],
+              signal: options.signal
             })
           }
 

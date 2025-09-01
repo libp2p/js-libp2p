@@ -58,8 +58,8 @@ describe('stream', () => {
     ])
 
     // the window capacities should have refilled via window updates as received data was consumed
-    expect(c1['sendWindowCapacity']).to.be.gte(defaultConfig.initialStreamWindowSize)
-    expect(s1['recvWindowCapacity']).to.be.gte(defaultConfig.initialStreamWindowSize)
+    expect(c1['sendWindowCapacity']).to.be.gte(defaultConfig.streamOptions.initialStreamWindowSize)
+    expect(s1['recvWindowCapacity']).to.be.gte(defaultConfig.streamOptions.initialStreamWindowSize)
   })
 
   it('test send data - large', async () => {
@@ -77,7 +77,7 @@ describe('stream', () => {
         // this will payload chunking and also waiting for window updates before
         // continuing to send
         for (let i = 0; i < 10; i++) {
-          const sendMore = c1.send(new Uint8Array(defaultConfig.initialStreamWindowSize))
+          const sendMore = c1.send(new Uint8Array(defaultConfig.streamOptions.initialStreamWindowSize))
 
           if (!sendMore) {
             await pEvent(c1, 'drain')
@@ -90,8 +90,8 @@ describe('stream', () => {
     ])
 
     // the window capacities should have refilled via window updates as received data was consumed
-    expect(c1['sendWindowCapacity']).to.be.gte(defaultConfig.initialStreamWindowSize)
-    expect(s1['recvWindowCapacity']).to.be.gte(defaultConfig.initialStreamWindowSize)
+    expect(c1['sendWindowCapacity']).to.be.gte(defaultConfig.streamOptions.initialStreamWindowSize)
+    expect(s1['recvWindowCapacity']).to.be.gte(defaultConfig.streamOptions.initialStreamWindowSize)
   })
 
   it('test send data - large with increasing recv window size', async () => {
@@ -110,7 +110,7 @@ describe('stream', () => {
         // this will payload chunking and also waiting for window updates before
         // continuing to send
         for (let i = 0; i < 10; i++) {
-          const sendMore = c1.send(new Uint8Array(defaultConfig.initialStreamWindowSize))
+          const sendMore = c1.send(new Uint8Array(defaultConfig.streamOptions.initialStreamWindowSize))
 
           if (!sendMore) {
             await pEvent(c1, 'drain')
@@ -122,8 +122,8 @@ describe('stream', () => {
     ])
 
     // the window capacities should have refilled via window updates as received data was consumed
-    expect(c1['sendWindowCapacity']).to.be.gte(defaultConfig.initialStreamWindowSize)
-    expect(s1['recvWindowCapacity']).to.be.gte(defaultConfig.initialStreamWindowSize)
+    expect(c1['sendWindowCapacity']).to.be.gte(defaultConfig.streamOptions.initialStreamWindowSize)
+    expect(s1['recvWindowCapacity']).to.be.gte(defaultConfig.streamOptions.initialStreamWindowSize)
   })
 
   it('test many streams', async () => {
@@ -253,14 +253,16 @@ describe('stream', () => {
   })
 
   it('test stream sink error', async () => {
-    // don't let the server respond
-    inboundConnection.pause()
+    // make the 'drain' event slow to fire
+    // @ts-expect-error private fields
+    inboundConnection.local.delay = 1000
 
     const c1 = await client.createStream()
 
     // send more data than the window size, will trigger a wait
-    c1.send(new Uint8Array(defaultConfig.initialStreamWindowSize))
-    c1.send(new Uint8Array(defaultConfig.initialStreamWindowSize))
+    while (c1.send(new Uint8Array(defaultConfig.streamOptions.initialStreamWindowSize))) {
+
+    }
 
     // the client should fail to close gracefully because there is unsent data
     // that will never be sent

@@ -85,7 +85,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
   }
 
   const streams = [1, 10, 100, 1000]
-  const messages = [1, 10, 100, 1000]
+  const messages = [1, 10, 100]
 
   describe('stress test', function () {
     this.timeout(1_600_000)

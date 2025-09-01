@@ -627,7 +627,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       connections.map(async connection => {
         try {
           await Promise.all([
-            pEvent(connection, 'close'),
+            pEvent(connection, 'close', options),
             connection.close(options)
           ])
         } catch (err: any) {

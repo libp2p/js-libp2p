@@ -59,6 +59,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
    */
   protected readonly readBuffer: Uint8ArrayList
   protected readonly writeBuffer: Uint8ArrayList
+  protected sendingData: boolean
 
   constructor (init: MessageStreamInit) {
     super()
@@ -77,6 +78,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.remoteReadStatus = 'readable'
     this.writeStatus = 'writable'
     this.remoteWriteStatus = 'writable'
+    this.sendingData = false
 
     // @ts-expect-error type could have required fields other than 'open'
     this.timeline = {
@@ -85,13 +87,14 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     this.processSendQueue = this.processSendQueue.bind(this)
 
-    this.addEventListener('drain', () => {
+    const continueSendingOnDrain = (): void => {
       if (this.writeStatus === 'paused') {
         this.writeStatus = 'writable'
       }
 
       this.processSendQueue()
-    })
+    }
+    this.addEventListener('drain', continueSendingOnDrain)
   }
 
   async * [Symbol.asyncIterator] (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
@@ -374,40 +377,72 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   protected processSendQueue (): boolean {
-    if (this.writeBuffer.byteLength === 0) {
-      return true
-    }
-
     if (this.writeStatus === 'paused') {
       this.checkWriteBufferLength()
 
       return false
     }
 
-    let canSendMore = true
+    if (this.writeBuffer.byteLength === 0) {
+      return true
+    }
 
-    while (this.writeBuffer.byteLength > 0) {
-      const toSend = this.writeBuffer.sublist(0, Math.min(this.maxMessageSize ?? this.writeBuffer.byteLength, this.writeBuffer.byteLength))
-      const sendResult = this.sendData(toSend)
-      canSendMore = sendResult.canSendMore
+    if (this.sendingData) {
+      return true
+    }
 
-      this.writeBuffer.consume(sendResult.sentBytes)
+    this.sendingData = true
+
+    try {
+      let canSendMore = true
+
+      while (this.writeBuffer.byteLength > 0) {
+        const end = Math.min(this.maxMessageSize ?? this.writeBuffer.byteLength, this.writeBuffer.byteLength)
+
+        // this can happen if a subclass changes the max message size dynamically
+        if (end === 0) {
+          canSendMore = false
+          break
+        }
+
+        // chunk to send to the remote end
+        const toSend = this.writeBuffer.sublist(0, end)
+
+        // copy toSend in case the extending class modifies the list
+        const willSend = new Uint8ArrayList(toSend)
+
+        this.writeBuffer.consume(toSend.byteLength)
+
+        const sendResult = this.sendData(toSend)
+        canSendMore = sendResult.canSendMore
+
+        if (sendResult.sentBytes !== willSend.byteLength) {
+          willSend.consume(sendResult.sentBytes)
+          this.writeBuffer.prepend(willSend)
+        }
+
+        this.log.trace('write buffer length now %d', this.writeBuffer.byteLength)
+
+        if (!canSendMore) {
+          break
+        }
+      }
 
       if (!canSendMore) {
         this.log.trace('pausing sending because underlying stream is full')
         this.writeStatus = 'paused'
         this.checkWriteBufferLength()
-        break
       }
-    }
 
-    // we processed all bytes in the queue, resolve the write queue idle promise
-    if (this.writeBuffer.byteLength === 0) {
-      this.log.trace('write queue became idle')
-      this.safeDispatchEvent('idle')
-    }
+      // we processed all bytes in the queue, resolve the write queue idle promise
+      if (this.writeBuffer.byteLength === 0) {
+        this.safeDispatchEvent('idle')
+      }
 
-    return canSendMore
+      return canSendMore
+    } finally {
+      this.sendingData = false
+    }
   }
 
   protected dispatchReadBuffer (): void {

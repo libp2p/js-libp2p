@@ -1,28 +1,29 @@
 import { setMaxListeners } from '@libp2p/interface'
+import { pipe } from '@libp2p/utils'
 import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/multiaddr-matcher'
 import { fmt, code, and } from '@multiformats/multiaddr-matcher/utils'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { pEvent } from 'p-event'
 import { DurationLimitError, TransferLimitError } from './errors.js'
 import type { RelayReservation } from './index.js'
 import type { Limit } from './pb/index.js'
-import type { ConnectionLimits, LoggerOptions, Stream, MessageStream } from '@libp2p/interface'
+import type { ConnectionLimits, LoggerOptions, Stream, MessageStream, StreamMessageEvent } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 function countStreamBytes (source: MessageStream, limit: { remaining: bigint }, options: LoggerOptions): void {
   const limitBytes = limit.remaining
 
-  source.addEventListener('message', (evt) => {
+  const abortIfStreamByteLimitExceeded = (evt: StreamMessageEvent): void => {
     const len = BigInt(evt.data.byteLength)
     limit.remaining -= len
 
     if (limit.remaining < 0) {
       source.abort(new TransferLimitError(`data limit of ${limitBytes} bytes exceeded`))
     }
-  })
+  }
+  source.addEventListener('message', abortIfStreamByteLimitExceeded)
 }
 
 export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: AbortSignal, reservation: RelayReservation, options: LoggerOptions): void {
@@ -42,9 +43,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
   }
 
   const signal = anySignal(signals)
-
-  let srcDstFinished = false
-  let dstSrcFinished = false
+  setMaxListeners(Infinity, signal)
 
   let dataLimit: { remaining: bigint } | undefined
 
@@ -63,8 +62,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
       err = new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`)
     }
 
-    dst.abort(err)
-    src.abort(err)
+    abortStreams(err)
   }
   signal.addEventListener('abort', onAbort, { once: true })
 
@@ -73,106 +71,16 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
     countStreamBytes(src, dataLimit, options)
   }
 
-  // close the stream fully when the remote closes
-  src.addEventListener('remoteCloseWrite', () => {
-    src.close()
-      .catch(err => {
-        src.abort(err)
-      })
-  })
-
-  // close the stream fully when the remote closes
-  dst.addEventListener('remoteCloseWrite', () => {
-    dst.close()
-      .catch(err => {
-        dst.abort(err)
-      })
-  })
-
-  src.addEventListener('close', (evt) => {
-    if (evt.error != null) {
-      options.log.error('error while relaying streams src -> dst - %e', evt.error)
-      abortStreams(evt.error)
-    } else {
-      srcDstFinished = true
-
-      dst.close()
-        .catch(err => {
-          abortStreams(err)
-        })
-    }
-
-    if (dstSrcFinished) {
-      signal.removeEventListener('abort', onAbort)
-      signal.clear()
-    }
-  })
-
-  dst.addEventListener('close', (evt) => {
-    if (evt.error != null) {
-      options.log.error('error while relaying streams dst -> src - %e', evt.error)
-      abortStreams(evt.error)
-    } else {
-      dstSrcFinished = true
-
-      src.close()
-        .catch(err => {
-          abortStreams(err)
-        })
-    }
-
-    if (srcDstFinished) {
-      signal.removeEventListener('abort', onAbort)
-      signal.clear()
-    }
-  })
-
   // join the streams together
-  src.addEventListener('message', (evt) => {
-    if (dst.writeStatus !== 'writable') {
-      return
-    }
-
-    if (!dst.send(evt.data)) {
-      options.log('pausing src -> dst')
-      src.pause()
-
-      pEvent(dst, 'drain', {
-        rejectionEvents: [
-          'close'
-        ]
-      })
-        .then(() => {
-          options.log('resuming src -> dst')
-          src.resume()
-        }, err => {
-          abortStreams(err)
-        })
-    }
-  })
-
-  dst.addEventListener('message', (evt) => {
-    if (src.writeStatus !== 'writable') {
-      return
-    }
-
-    if (!src.send(evt.data)) {
-      options.log('pausing dst -> src')
-      dst.pause()
-
-      pEvent(src, 'drain', {
-        rejectionEvents: [
-          'close'
-        ]
-      })
-        .then(() => {
-          options.log('resuming dst -> src')
-          dst.resume()
-        }, err => {
-          abortStreams(err)
-        })
-    }
-  })
+  pipe(
+    src, dst, src
+  )
+    .catch(err => {
+      abortStreams(err)
+    })
+    .finally(() => {
+      signal.clear()
+    })
 }
 
 /**

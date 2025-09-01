@@ -1,7 +1,8 @@
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
+import { raceSignal } from 'race-signal'
 import { Queue } from './queue/index.js'
-import type { Logger } from '@libp2p/interface'
+import type { AbortOptions, Logger } from '@libp2p/interface'
 
 export interface MessageQueueMessages {
   /**
@@ -26,16 +27,21 @@ export interface MessageQueueInit {
   capacity?: number
 }
 
+interface MessageQueueJobOptions extends AbortOptions {
+  evt: Event
+}
+
 /**
  * Accepts events to emit after a short delay, and with a configurable maximum
  * queue capacity after which the send method will return false to let us
  * simulate write backpressure.
  */
 export class MessageQueue<Messages> extends TypedEventEmitter<Messages & MessageQueueMessages> {
-  private queue: Queue
+  public needsDrain: boolean
+
+  private queue: Queue<void, MessageQueueJobOptions>
   private capacity: number
   private delay: number
-  private needsDrain: boolean
   private log: Logger
 
   constructor (init: MessageQueueInit & { log: Logger }) {
@@ -61,12 +67,14 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
   }
 
   send (evt: Event): boolean {
-    this.queue.add(async () => {
+    this.queue.add(async (opts) => {
       if (this.delay > 0) {
-        await delay(this.delay)
+        await raceSignal(delay(this.delay), opts.signal)
       }
 
-      this.dispatchEvent(evt)
+      this.dispatchEvent(opts.evt)
+    }, {
+      evt
     })
 
     if (this.queue.size >= this.capacity) {

@@ -29,7 +29,7 @@ import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
-import { socketToMaConn } from './websocket-to-conn.js'
+import { webSocketToMaConn } from './websocket-to-conn.js'
 import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { WebSocketOptions } from 'it-ws/client'
@@ -69,6 +69,25 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
    * @deprecated Use the `connectionManager.inboundUpgradeTimeout` libp2p config key instead
    */
   inboundConnectionUpgradeTimeout?: number
+
+  /**
+   * How large the outgoing [bufferedAmount](https://websockets.spec.whatwg.org/#dom-websocket-bufferedamount)
+   * property of incoming and outgoing websockets is allowed to get in bytes.
+   *
+   * If this limit is exceeded, backpressure will be applied to the writer.
+   *
+   * @default 4_194_304
+   */
+  maxBufferedAmount?: number
+
+  /**
+   * If the [bufferedAmount](https://websockets.spec.whatwg.org/#dom-websocket-bufferedamount)
+   * property of a WebSocket exceeds `maxBufferedAmount`, poll the field every
+   * this number of ms to see if the socket can accept new data.
+   *
+   * @default 500
+   */
+  bufferedAmountPollInterval?: number
 }
 
 export interface WebSocketsComponents {
@@ -120,12 +139,14 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     this.log('dialing %s', ma)
     options = options ?? {}
 
-    const maConn = socketToMaConn({
+    const maConn = webSocketToMaConn({
       websocket: await this._connect(ma, options),
       remoteAddr: ma,
       metrics: this.metrics?.dialerEvents,
       direction: 'outbound',
-      log: this.components.logger.forComponent('libp2p:websockets:connection')
+      log: this.components.logger.forComponent('libp2p:websockets:connection'),
+      maxBufferedAmount: this.init.maxBufferedAmount,
+      bufferedAmountPollInterval: this.init.bufferedAmountPollInterval
     })
     this.log('new outbound connection %s', maConn.remoteAddr)
 

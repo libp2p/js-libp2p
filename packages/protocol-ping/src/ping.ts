@@ -78,7 +78,8 @@ export class Ping implements Startable, PingInterface {
         await pEvent(stream, 'drain', {
           rejectionEvents: [
             'close'
-          ]
+          ],
+          signal
         })
         log('stream drained')
       }

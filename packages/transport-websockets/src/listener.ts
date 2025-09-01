@@ -8,7 +8,7 @@ import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
 import * as ws from 'ws'
 import { toWebSocket } from './utils.ts'
-import { socketToMaConn } from './websocket-to-conn.js'
+import { webSocketToMaConn } from './websocket-to-conn.js'
 import type { ComponentLogger, Logger, Listener, ListenerEvents, CreateListenerOptions, CounterGroup, MetricGroup, Metrics, TLSCertificate, Libp2pEvents, Upgrader, MultiaddrConnection } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -29,6 +29,8 @@ export interface WebSocketListenerInit extends CreateListenerOptions {
   key?: string
   http?: http.ServerOptions
   https?: http.ServerOptions
+  maxBufferedAmount?: number
+  bufferedAmountPollInterval?: number
 }
 
 export interface WebSocketListenerMetrics {
@@ -52,6 +54,8 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   private https?: https.Server
   private addr?: string
   private listeningMultiaddr?: Multiaddr
+  private maxBufferedAmount?: number
+  private bufferedAmountPollInterval?: number
 
   constructor (components: WebSocketListenerComponents, init: WebSocketListenerInit) {
     super()
@@ -61,6 +65,8 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     this.upgrader = init.upgrader
     this.httpOptions = init.http
     this.httpsOptions = init.https ?? init.http
+    this.maxBufferedAmount = init.maxBufferedAmount
+    this.bufferedAmountPollInterval = init.bufferedAmountPollInterval
     this.sockets = new Set()
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
@@ -191,13 +197,15 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     let maConn: MultiaddrConnection
 
     try {
-      maConn = socketToMaConn({
+      maConn = webSocketToMaConn({
         websocket: toWebSocket(socket),
         remoteAddr: toMultiaddr(req.socket.remoteAddress ?? '0.0.0.0', req.socket.remotePort ?? 0).encapsulate('/ws'),
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
         direction: 'inbound',
-        log: this.components.logger.forComponent('libp2p:websockets:connection')
+        log: this.components.logger.forComponent('libp2p:websockets:connection'),
+        maxBufferedAmount: this.maxBufferedAmount,
+        bufferedAmountPollInterval: this.bufferedAmountPollInterval
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)

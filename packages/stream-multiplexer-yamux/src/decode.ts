@@ -81,6 +81,7 @@ export class Decoder {
       return
     }
 
+    // TODO: use sublist?
     const header = decodeHeader(this.buffer.subarray(0, HEADER_LENGTH))
 
     if (header.type === FrameType.Data) {

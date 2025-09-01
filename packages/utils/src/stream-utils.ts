@@ -489,10 +489,10 @@ export function pbStream <T extends MessageStream = Stream> (stream: T, opts?: P
   return pbStream
 }
 
-export async function echo (stream: MessageStream): Promise<void> {
+export async function echo (stream: MessageStream, options?: AbortOptions): Promise<void> {
   const log = stream.log.newScope('echo')
   const start = Date.now()
-  const signal = AbortSignal.timeout(20_000)
+
   let bytes = 0
 
   try {
@@ -505,7 +505,8 @@ export async function echo (stream: MessageStream): Promise<void> {
         await pEvent(stream, 'drain', {
           rejectionEvents: [
             'close'
-          ]
+          ],
+          ...options
         })
 
         stream.resume()
@@ -514,9 +515,7 @@ export async function echo (stream: MessageStream): Promise<void> {
 
     log('echoed %d bytes in %dms', bytes, Date.now() - start)
 
-    await stream.close({
-      signal
-    })
+    await stream.close(options)
   } catch (err: any) {
     stream.abort(err)
   }
@@ -530,7 +529,7 @@ function isMessageStream (obj?: any): obj is Stream {
 
 export function messageStreamToDuplex (stream: Stream): Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Iterable<Uint8ArrayList | Uint8Array> | AsyncIterable<Uint8ArrayList | Uint8Array>, Promise<void>> {
   const source = pushable<Uint8ArrayList | Uint8Array>()
-  const onError = Promise.withResolvers<IteratorResult<Uint8ArrayList | Uint8Array>>()
+  let onError: PromiseWithResolvers<IteratorResult<Uint8ArrayList | Uint8Array>> | undefined
 
   const onMessage = (evt: StreamMessageEvent): void => {
     source.push(evt.data)
@@ -548,7 +547,7 @@ export function messageStreamToDuplex (stream: Stream): Duplex<AsyncGenerator<Ui
     source.end(evt.error)
 
     if (evt.error != null) {
-      onError.reject(evt.error)
+      onError?.reject(evt.error)
     }
 
     stream.removeEventListener('message', onMessage)
@@ -574,6 +573,8 @@ export function messageStreamToDuplex (stream: Stream): Duplex<AsyncGenerator<Ui
       const gen = toGenerator()
 
       while (true) {
+        onError = Promise.withResolvers<IteratorResult<Uint8ArrayList | Uint8Array>>()
+
         const { done, value } = await Promise.race([
           gen.next(),
           onError.promise
@@ -627,7 +628,7 @@ type PipeSink<A = any, B = any> =
 type PipeOutput<A> =
   A extends Sink<any> ? ReturnType<A> :
     A extends Duplex<any, any, any> ? ReturnType<A['sink']> :
-      A extends MessageStream ? AsyncGenerator<Uint8Array | Uint8ArrayList> :
+      A extends MessageStream ? Promise<void> :
         never
 
 // single item pipe output includes pipe source types

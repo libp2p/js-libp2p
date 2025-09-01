@@ -1,7 +1,6 @@
 import { AbstractStream } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { defaultConfig } from './config.js'
-import { INITIAL_STREAM_WINDOW } from './constants.js'
+import { INITIAL_STREAM_WINDOW, MAX_STREAM_WINDOW } from './constants.js'
 import { isDataFrame } from './decode.ts'
 import { InvalidFrameError, ReceiveWindowExceededError } from './errors.js'
 import { Flag, FrameType, HEADER_LENGTH } from './frame.js'
@@ -53,17 +52,19 @@ export class YamuxStream extends AbstractStream {
   private readonly sendFrame: (header: FrameHeader, body?: Uint8ArrayList) => boolean
 
   constructor (init: YamuxStreamInit) {
+    const initialWindowSize = init.initialStreamWindowSize ?? INITIAL_STREAM_WINDOW
+
     super({
       ...init,
-      maxMessageSize: (init.maxMessageSize ?? defaultConfig.maxMessageSize) - HEADER_LENGTH
+      maxMessageSize: initialWindowSize - HEADER_LENGTH
     })
 
     this.streamId = init.streamId
     this.state = init.state
-    this.sendWindowCapacity = INITIAL_STREAM_WINDOW
-    this.recvWindow = init.initialStreamWindowSize ?? defaultConfig.initialStreamWindowSize
+    this.sendWindowCapacity = initialWindowSize
+    this.recvWindow = initialWindowSize
     this.recvWindowCapacity = this.recvWindow
-    this.maxStreamWindowSize = init.maxStreamWindowSize ?? defaultConfig.maxStreamWindowSize
+    this.maxStreamWindowSize = init.maxStreamWindowSize ?? MAX_STREAM_WINDOW
     this.epochStart = Date.now()
     this.getRTT = init.getRTT
     this.sendFrame = init.sendFrame
@@ -83,7 +84,7 @@ export class YamuxStream extends AbstractStream {
     let canSendMore = true
 
     // send in chunks, waiting for window updates
-    while (buf.byteLength !== 0) {
+    while (buf.byteLength > 0) {
       // we exhausted the send window, sending will resume later
       if (this.sendWindowCapacity === 0) {
         canSendMore = false
@@ -92,20 +93,21 @@ export class YamuxStream extends AbstractStream {
       }
 
       // send as much as we can
-      const toSend = Math.min(this.sendWindowCapacity, buf.length)
+      const toSend = Math.min(this.sendWindowCapacity, buf.byteLength)
       const flags = this.getSendFlags()
+
+      const data = buf.sublist(0, toSend)
+      buf.consume(toSend)
 
       const muxerSendMore = this.sendFrame({
         type: FrameType.Data,
         flag: flags,
         streamID: this.streamId,
         length: toSend
-      }, buf.sublist(0, toSend))
+      }, data)
 
       this.sendWindowCapacity -= toSend
-
       sentBytes += toSend
-      buf.consume(toSend)
 
       if (!muxerSendMore) {
         canSendMore = muxerSendMore
@@ -177,12 +179,15 @@ export class YamuxStream extends AbstractStream {
     this.processFlags(frame.header.flag)
 
     // increase send window
-    const available = this.sendWindowCapacity
     this.sendWindowCapacity += frame.header.length
 
-    // if the update increments a 0 availability, notify the stream that sending can resume
-    if (available === 0 && frame.header.length > 0) {
-      this.log?.trace('window update of %d bytes allows more data to be sent', frame.header.length)
+    // change the chunk size the superclass uses
+    this.maxMessageSize = this.sendWindowCapacity - HEADER_LENGTH
+
+    // if writing is paused and the update increases our send window, notify
+    // writers that writing can resume
+    if (this.writeStatus === 'paused' && this.maxMessageSize > 0) {
+      this.log?.trace('window update of %d bytes allows more data to be sent, have %d bytes queued, sending data %s', frame.header.length, this.writeBuffer.byteLength, this.sendingData)
       this.safeDispatchEvent('drain')
     }
   }
@@ -252,6 +257,15 @@ export class YamuxStream extends AbstractStream {
    * place.
    */
   sendWindowUpdate (): void {
+    if (this.state === StreamState.Paused) {
+      // we don't want any more data from the remote right now - update the
+      // epoch start as otherwise when we unpause we'd be looking at the epoch
+      // start from before we were paused
+      this.epochStart = Date.now()
+
+      return
+    }
+
     // determine the flags if any
     const flags = this.getSendFlags()
 
@@ -260,18 +274,14 @@ export class YamuxStream extends AbstractStream {
     // then we (up to) double the recvWindow
     const now = Date.now()
     const rtt = this.getRTT()
-    if (flags === 0 && rtt > -1 && now - this.epochStart < rtt * 4) {
+
+    if (flags === 0 && rtt > -1 && (now - this.epochStart) <= (rtt * 4)) {
       // we've already validated that maxStreamWindowSize can't be more than MAX_UINT32
       this.recvWindow = Math.min(this.recvWindow * 2, this.maxStreamWindowSize)
     }
 
     if (this.recvWindowCapacity >= this.recvWindow && flags === 0) {
       // a window update isn't needed
-      return
-    }
-
-    if (this.state === StreamState.Paused) {
-      // we don't want any more data from the remote right now
       return
     }
 

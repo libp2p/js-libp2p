@@ -156,7 +156,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
         muxedStream.log('negotiated protocol %s', muxedStream.protocol)
       } else {
-        muxedStream.log('pre-negotiated protocol %s', new Error('wat'))
+        muxedStream.log('pre-negotiated protocol %s', muxedStream.protocol)
       }
 
       const outgoingLimit = findOutgoingStreamLimit(muxedStream.protocol, this.components.registrar, options)

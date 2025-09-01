@@ -2,8 +2,10 @@ import { StreamCloseEvent, StreamMessageEvent } from '@libp2p/interface'
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import all from 'it-all'
 import { pEvent } from 'p-event'
 import Sinon from 'sinon'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { isValidTick } from '../is-valid-tick.ts'
 import type { TestSetup } from '../index.ts'
 import type { MultiaddrConnection, Stream, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
@@ -114,6 +116,50 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         expect(stream).to.not.have.nested.property('timeline.reset', `${stream.direction} stream timeline.reset was incorrect`)
         expect(stream).to.not.have.nested.property('timeline.abort', `${stream.direction} stream timeline.abort was incorrect`)
       })
+    })
+
+    it('should send large amounts of data in both directions', async () => {
+      const sent = new Array(10)
+        .fill(0)
+        .map((val, index) => new Uint8Array(1024 * 1024).fill(index))
+
+      // send data in both directions simultaneously
+      const [
+        outboundReceived,
+        inboundReceived
+      ] = await Promise.all([
+        all(outboundStream),
+        all(inboundStream),
+        (async () => {
+          for (const buf of sent) {
+            if (!outboundStream.send(buf)) {
+              await pEvent(outboundStream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
+            }
+          }
+
+          await outboundStream.close()
+        })(),
+        (async () => {
+          for (const buf of sent) {
+            if (!inboundStream.send(buf)) {
+              await pEvent(inboundStream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
+            }
+          }
+
+          await inboundStream.close()
+        })()
+      ])
+
+      expect(new Uint8ArrayList(...outboundReceived)).to.have.property('byteLength', new Uint8ArrayList(...sent).byteLength)
+      expect(new Uint8ArrayList(...inboundReceived)).to.have.property('byteLength', new Uint8ArrayList(...sent).byteLength)
     })
 
     it('closes for writing', async () => {

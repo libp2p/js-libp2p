@@ -31,9 +31,21 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
       return
     }
 
+    const startingStatus = this.writeStatus
+
     this.writeStatus = 'closing'
 
-    if (this.writeBuffer.byteLength > 0) {
+    if (startingStatus === 'paused') {
+      this.log('waiting for write queue to become drain before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
+      await pEvent(this, 'drain', {
+        ...options,
+        rejectionEvents: [
+          'close'
+        ]
+      })
+    }
+
+    if (this.sendingData) {
       this.log('waiting for write queue to become idle before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
       await pEvent(this, 'idle', {
         ...options,

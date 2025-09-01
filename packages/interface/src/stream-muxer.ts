@@ -4,11 +4,11 @@ import type { AbortOptions } from '@multiformats/multiaddr'
 /**
  * User-facing message stream muxer options
  */
-export interface StreamMuxerOptions {
+export interface StreamMuxerOptions<MuxedStreamOptions extends StreamOptions = StreamOptions> {
   /**
    * Configuration options for each outgoing/incoming stream
    */
-  streamOptions?: StreamOptions
+  streamOptions?: MuxedStreamOptions
 
   /**
    * libp2p is notified of incoming streams via the muxer's 'stream' event.

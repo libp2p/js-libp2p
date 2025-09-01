@@ -449,7 +449,8 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
         flag: Flag.RST,
         streamID: id,
         length: 0
-      }); return
+      })
+      return
     }
 
     // allocate a new stream
@@ -465,7 +466,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     let encoded: Uint8Array | Uint8ArrayList
 
     if (header.type === FrameType.Data) {
-      if (data === undefined) {
+      if (data == null) {
         throw new InvalidFrameError('Invalid frame')
       }
 
