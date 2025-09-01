@@ -52,6 +52,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   public remoteReadStatus: MessageStreamReadStatus
   public remoteWriteStatus: MessageStreamWriteStatus
 
+  public writableNeedDrain: boolean
+
   /**
    * Any data stored here is emitted before any new incoming data.
    *
@@ -79,6 +81,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.writeStatus = 'writable'
     this.remoteWriteStatus = 'writable'
     this.sendingData = false
+    this.writableNeedDrain = false
 
     // @ts-expect-error type could have required fields other than 'open'
     this.timeline = {
@@ -88,10 +91,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.processSendQueue = this.processSendQueue.bind(this)
 
     const continueSendingOnDrain = (): void => {
-      if (this.writeStatus === 'paused') {
-        this.writeStatus = 'writable'
-      }
-
+      this.writableNeedDrain = false
       this.processSendQueue()
     }
     this.addEventListener('drain', continueSendingOnDrain)
@@ -137,20 +137,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       throw new StreamStateError(`Cannot write to a stream that is ${this.writeStatus}`)
     }
 
-    if (this.writeStatus !== 'writable' && this.writeStatus !== 'paused') {
-      // return true to make this a no-op otherwise callers might wait for a
-      // "drain" event that will never come
-      return true
-    }
-
     this.writeBuffer.append(data)
-
-    if (this.writeStatus === 'writable') {
-      return this.processSendQueue()
-    }
-
-    // accept the data but tell the caller to not send any more
-    return false
+    return this.processSendQueue()
   }
 
   /**
@@ -377,7 +365,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   protected processSendQueue (): boolean {
-    if (this.writeStatus === 'paused') {
+    if (this.writableNeedDrain) {
       this.checkWriteBufferLength()
 
       return false
@@ -421,8 +409,6 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
           this.writeBuffer.prepend(willSend)
         }
 
-        this.log.trace('write buffer length now %d', this.writeBuffer.byteLength)
-
         if (!canSendMore) {
           break
         }
@@ -430,7 +416,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
       if (!canSendMore) {
         this.log.trace('pausing sending because underlying stream is full')
-        this.writeStatus = 'paused'
+        this.writableNeedDrain = true
         this.checkWriteBufferLength()
       }
 

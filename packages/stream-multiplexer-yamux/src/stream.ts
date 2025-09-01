@@ -184,9 +184,17 @@ export class YamuxStream extends AbstractStream {
     // change the chunk size the superclass uses
     this.maxMessageSize = this.sendWindowCapacity - HEADER_LENGTH
 
+    if (this.maxMessageSize < 0) {
+      this.maxMessageSize = 0
+    }
+
+    if (this.maxMessageSize === 0) {
+      return
+    }
+
     // if writing is paused and the update increases our send window, notify
     // writers that writing can resume
-    if (this.writeStatus === 'paused' && this.maxMessageSize > 0) {
+    if (this.writeBuffer.byteLength > 0) {
       this.log?.trace('window update of %d bytes allows more data to be sent, have %d bytes queued, sending data %s', frame.header.length, this.writeBuffer.byteLength, this.sendingData)
       this.safeDispatchEvent('drain')
     }

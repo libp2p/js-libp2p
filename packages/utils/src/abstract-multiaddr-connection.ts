@@ -56,9 +56,23 @@ export abstract class AbstractMultiaddrConnection extends AbstractMessageStream 
     this.remoteWriteStatus = 'closing'
     this.remoteReadStatus = 'closing'
 
+    // if we are currently sending data, wait for all the data to be written
+    // into the underlying transport
     if (this.sendingData) {
-      this.log.trace('waiting for write queue to become idle before closing stream, %d unsent bytes', this.writeBuffer.byteLength)
+      this.log('waiting for write queue to become idle before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
       await pEvent(this, 'idle', {
+        ...options,
+        rejectionEvents: [
+          'close'
+        ]
+      })
+    }
+
+    // now that the underlying transport has all the data, if the buffer is full
+    // wait for it to be emptied
+    if (this.writableNeedDrain) {
+      this.log('waiting for write queue to drain before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
+      await pEvent(this, 'drain', {
         ...options,
         rejectionEvents: [
           'close'

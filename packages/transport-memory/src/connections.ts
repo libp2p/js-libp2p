@@ -1,47 +1,3 @@
-/**
- * @packageDocumentation
- *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/)
- * that operates in-memory only.
- *
- * This is intended for testing and can only be used to connect two libp2p nodes
- * that are running in the same process.
- *
- * @example
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { memory } from '@libp2p/memory'
- * import { multiaddr } from '@multiformats/multiaddr'
- *
- * const listener = await createLibp2p({
- *   addresses: {
- *     listen: [
- *       '/memory/node-a'
- *     ]
- *   },
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const dialer = await createLibp2p({
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const ma = multiaddr('/memory/node-a')
- *
- * // dial the listener, timing out after 10s
- * const connection = await dialer.dial(ma, {
- *   signal: AbortSignal.timeout(10_000)
- * })
- *
- * // use connection...
- * ```
- */
-
 import { ConnectionFailedError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
@@ -51,6 +7,7 @@ import { pushableToMaConn } from './pushable-to-conn.ts'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
 import type { Logger, MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
+import { DEFAULT_MAX_MESSAGE_SIZE } from './constants.ts'
 
 export const connections = new Map<string, MemoryConnection>()
 
@@ -114,7 +71,8 @@ export class MemoryConnection {
       direction: 'outbound',
       localPushable: dialerPushable,
       remotePushable: listenerPushable,
-      log: dialingPeerLog.newScope(`connection:${connectionId}`)
+      log: dialingPeerLog.newScope(`connection:${connectionId}`),
+      maxMessageSize: this.init.maxMessageSize ?? DEFAULT_MAX_MESSAGE_SIZE
     })
 
     const listener = pushableToMaConn({
@@ -123,7 +81,8 @@ export class MemoryConnection {
       direction: 'inbound',
       localPushable: listenerPushable,
       remotePushable: dialerPushable,
-      log: this.log.newScope(`connection:${connectionId}`)
+      log: this.log.newScope(`connection:${connectionId}`),
+      maxMessageSize: this.init.maxMessageSize ?? DEFAULT_MAX_MESSAGE_SIZE
     })
 
     this.connections.add(dialer)

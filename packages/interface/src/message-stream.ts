@@ -20,7 +20,7 @@ export type MessageStreamReadStatus = 'readable' | 'paused' | 'closing' | 'close
 /**
  * The states the writable end of a message stream can be in
  */
-export type MessageStreamWriteStatus = 'writable' | 'paused' | 'closing' | 'closed'
+export type MessageStreamWriteStatus = 'writable' | 'closing' | 'closed'
 
 /**
  * An object that records the times of various events
@@ -110,6 +110,15 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * be aborted with an InactivityTimeoutError
    */
   inactivityTimeout: number
+
+  /**
+   * If this property is `true`, the underlying transport has signalled that its
+   * write buffer is full and that `.send` should not be called again.
+   *
+   * A `drain` event will be emitted after which is its safe to call `.send`
+   * again to resume sending.
+   */
+  writableNeedDrain: boolean
 
   /**
    * Write data to the stream. If the method returns false it means the
