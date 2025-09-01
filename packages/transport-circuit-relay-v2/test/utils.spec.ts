@@ -73,9 +73,9 @@ describe('circuit-relay utils', () => {
       log: stubInterface<Logger>()
     })
 
-    const sent = new Array(10)
+    const sent = new Array(100)
       .fill(0)
-      .map((val, index) => new Uint8Array(1024 * 1024 * 100).fill(index))
+      .map((val, index) => new Uint8Array(1024 * 1024 * 10).fill(index))
 
     // send data in both directions simultaneously
     const [

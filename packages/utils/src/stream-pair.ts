@@ -25,17 +25,17 @@ export interface StreamPairOptions {
   protocol?: string
 
   /**
-   * Configuration options for the inbound stream
+   * Configuration options for the outbound stream
    */
   outbound?: StreamOptions
 
   /**
-   * Configuration options for underlying inbound connection
+   * Configuration options for underlying outbound connection
    */
   outboundConnection?: Partial<MockMultiaddrConnectionInit>
 
   /**
-   * Configuration options for the outbound stream
+   * Configuration options for the inbound stream
    */
   inbound?: StreamOptions
 
