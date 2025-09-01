@@ -192,7 +192,7 @@ export class AutoNATv2Server implements Startable {
         ...options
       })
     } catch (err: any) {
-      this.log.error('failed to open connection to %a - %e', err, ma)
+      this.log.error('failed to open connection to %a - %e', ma, err)
 
       return DialStatus.E_DIAL_ERROR
     }

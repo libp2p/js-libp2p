@@ -153,7 +153,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
               })
           }
         } catch (err: any) {
-          this.log.error('error processing datastore key %s - %e', entry.key, err.message)
+          this.log.error('error processing datastore key %s - %s', entry.key, err.message)
         }
       }
 

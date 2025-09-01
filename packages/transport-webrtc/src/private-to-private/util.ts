@@ -62,11 +62,11 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
         options.onProgress?.(new CustomProgressEvent<string>('webrtc:add-ice-candidate', candidate.candidate))
         await pc.addIceCandidate(candidate)
       } catch (err) {
-        options.log.error('%s bad candidate received', options.direction, candidateInit, err)
+        options.log.error('%s bad candidate received %o - %e', options.direction, candidateInit, err)
       }
     }
   } catch (err) {
-    options.log.error('%s error parsing ICE candidate', options.direction, err)
+    options.log.error('%s error parsing ICE candidate - %e', options.direction, err)
 
     if (options.signal?.aborted === true && getConnectionState(pc) !== 'connected') {
       throw err

@@ -375,7 +375,7 @@ export abstract class AbstractStream implements Stream {
 
     if (isPromise(res)) {
       res.catch((err) => {
-        this.log.error('error sending reset message', err)
+        this.log.error('error sending reset message - %e', err)
       })
     }
 

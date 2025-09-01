@@ -138,7 +138,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
         case 'disconnected':
         case 'closed':
           maConn.close().catch((err) => {
-            options.log.error('error closing connection', err)
+            options.log.error('error closing connection - %e', err)
             maConn.abort(err)
           })
           break

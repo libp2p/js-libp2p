@@ -365,14 +365,14 @@ export class Upgrader implements UpgraderInterface {
                 await connection.close()
               }
             } catch (err: any) {
-              connection.log.error('error closing connection after timeline close %e', err)
+              connection.log.error('error closing connection after timeline close - %e', err)
             } finally {
               this.events.safeDispatchEvent('connection:close', {
                 detail: connection
               })
             }
           })().catch(err => {
-            connection.log.error('error thrown while dispatching connection:close event %e', err)
+            connection.log.error('error thrown while dispatching connection:close event - %e', err)
           })
         }
 
@@ -425,7 +425,7 @@ export class Upgrader implements UpgraderInterface {
         protocol
       }
     } catch (err: any) {
-      connection.log.error('encrypting inbound connection from %a failed', connection.remoteAddr, err)
+      connection.log.error('encrypting inbound connection from %a failed - %e', connection.remoteAddr, err)
       throw new EncryptionFailedError(err.message)
     }
   }
@@ -458,7 +458,7 @@ export class Upgrader implements UpgraderInterface {
         protocol
       }
     } catch (err: any) {
-      connection.log.error('encrypting outbound connection to %a failed', connection.remoteAddr, err)
+      connection.log.error('encrypting outbound connection to %a failed - %e', connection.remoteAddr, err)
       throw new EncryptionFailedError(err.message)
     }
   }
@@ -487,7 +487,7 @@ export class Upgrader implements UpgraderInterface {
 
       return { stream, muxerFactory }
     } catch (err: any) {
-      connection.log.error('error multiplexing outbound connection', err)
+      connection.log.error('error multiplexing outbound connection - %e', err)
       throw new MuxerUnavailableError(String(err))
     }
   }
@@ -508,7 +508,7 @@ export class Upgrader implements UpgraderInterface {
 
       return { stream, muxerFactory }
     } catch (err: any) {
-      connection.log.error('error multiplexing inbound connection', err)
+      connection.log.error('error multiplexing inbound connection - %e', err)
       throw new MuxerUnavailableError(String(err))
     }
   }

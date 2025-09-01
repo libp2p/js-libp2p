@@ -247,14 +247,14 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
         const peer = this.addPeer(peerId, stream.protocol)
         await peer.attachOutboundStream(stream)
       } catch (err: any) {
-        this.log.error(err)
+        this.log.error('%e', err)
       }
 
       // Immediately send my own subscriptions to the newly established conn
       this.send(peerId, { subscriptions: Array.from(this.subscriptions).map(sub => sub.toString()), subscribe: true })
     })
       .catch(err => {
-        this.log.error(err)
+        this.log.error('%e', err)
       })
   }
 
@@ -413,7 +413,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
           await this.processMessage(from, msg)
         } catch (err: any) {
-          this.log.error(err)
+          this.log.error('%e', err)
         }
       }))
         .catch(err => { this.log(err) })

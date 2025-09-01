@@ -33,7 +33,7 @@ export function socketToMaConn (stream: DuplexWebSocket, remoteAddr: Multiaddr, 
         })())
       } catch (err: any) {
         if (err.type !== 'aborted') {
-          maConn.log.error(err)
+          maConn.log.error('%e', err)
         }
       }
     },

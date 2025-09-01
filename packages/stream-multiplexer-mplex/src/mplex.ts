@@ -369,7 +369,7 @@ export class MplexStreamMuxer implements StreamMuxer {
           this.log('unknown message type %s', type)
       }
     } catch (err: any) {
-      this.log.error('error while processing message', err)
+      this.log.error('error while processing message - %e', err)
       stream.abort(err)
     }
   }

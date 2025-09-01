@@ -8,7 +8,7 @@ export function closeSource (source: Source<unknown>, log: Logger): void {
 
   if (isPromise(res)) {
     res.catch(err => {
-      log.error('could not cause iterator to return', err)
+      log.error('could not cause iterator to return - %e', err)
     })
   }
 }

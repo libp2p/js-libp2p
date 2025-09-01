@@ -74,7 +74,7 @@ export class WebRTCStream extends AbstractStream {
             milliseconds: this.finAckTimeout
           })
         } catch (err) {
-          this.log.error('error receiving FIN_ACK', err)
+          this.log.error('error receiving FIN_ACK - %e', err)
         }
       })
         .then(() => {
@@ -85,7 +85,7 @@ export class WebRTCStream extends AbstractStream {
           originalOnEnd?.(err)
         })
         .catch(err => {
-          this.log.error('error ending stream', err)
+          this.log.error('error ending stream - %e', err)
         })
         .finally(() => {
           this.channel.close()
@@ -142,7 +142,7 @@ export class WebRTCStream extends AbstractStream {
       this.receiveFinAck.resolve()
 
       void this.close().catch(err => {
-        this.log.error('error closing stream after channel closed', err)
+        this.log.error('error closing stream after channel closed - %e', err)
       })
     }
 
@@ -180,7 +180,7 @@ export class WebRTCStream extends AbstractStream {
       }
     })
       .catch(err => {
-        this.log.error('error processing incoming data channel messages', err)
+        this.log.error('error processing incoming data channel messages - %e', err)
       })
   }
 
@@ -236,7 +236,7 @@ export class WebRTCStream extends AbstractStream {
       // send message without copying data
       this.channel.send(data.subarray())
     } catch (err: any) {
-      this.log.error('error while sending message', err)
+      this.log.error('error while sending message - %e', err)
     }
   }
 
@@ -286,7 +286,7 @@ export class WebRTCStream extends AbstractStream {
           errorName: 'FinAckNotReceivedError'
         })
       } catch (err) {
-        this.log.error('failed to await FIN_ACK', err)
+        this.log.error('failed to await FIN_ACK - %e', err)
       }
     } else {
       this.log.trace('sending FIN failed, not awaiting FIN_ACK')
@@ -320,7 +320,7 @@ export class WebRTCStream extends AbstractStream {
         this.log.trace('sending FIN_ACK')
         void this._sendFlag(Message.Flag.FIN_ACK)
           .catch(err => {
-            this.log.error('error sending FIN_ACK immediately', err)
+            this.log.error('error sending FIN_ACK immediately - %e', err)
           })
       }
 

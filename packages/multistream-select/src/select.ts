@@ -186,7 +186,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
           // read the negotiation response but don't block more sending
           negotiate()
             .catch(err => {
-              options.log.error('could not finish optimistic protocol negotiation of %s', protocol, err)
+              options.log.error('could not finish optimistic protocol negotiation of %s - %e', protocol, err)
             })
         } else {
           yield buf
@@ -298,7 +298,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       // this before closing the readable end of the stream
       if (!negotiated) {
         await negotiate().catch(err => {
-          options.log.error('could not negotiate protocol before close read', err)
+          options.log.error('could not negotiate protocol before close read - %e', err)
         })
       }
 
@@ -315,7 +315,7 @@ function optimisticSelect <Stream extends SelectStream> (stream: Stream, protoco
       // this before closing the writable end of the stream
       if (!negotiated) {
         await negotiate().catch(err => {
-          options.log.error('could not negotiate protocol before close write', err)
+          options.log.error('could not negotiate protocol before close write - %e', err)
         })
       }
 

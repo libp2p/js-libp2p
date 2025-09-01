@@ -139,13 +139,13 @@ export class ReconnectQueue implements Startable {
           keepAlivePeers.map(async peer => {
             await this.connectionManager.openConnection(peer.id)
               .catch(err => {
-                this.log.error(err)
+                this.log.error('%e', err)
               })
           })
         )
       })
       .catch(err => {
-        this.log.error(err)
+        this.log.error('%e', err)
       })
   }
 

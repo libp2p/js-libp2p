@@ -51,7 +51,7 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
           }
         })
         .catch(err => {
-          log.error('could not create a new stream', err)
+          log.error('could not create a new stream - %e', err)
         })
 
       const muxer: StreamMuxer = {
@@ -89,7 +89,7 @@ export function webtransportMuxer (wt: Pick<WebTransport, 'close' | 'createBidir
           try {
             wt.close()
           } catch (err: any) {
-            log.error('webtransport session threw error during close', err)
+            log.error('webtransport session threw error during close - %e', err)
           }
         },
 

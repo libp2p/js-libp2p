@@ -78,7 +78,7 @@ export class DefaultPeerRouting implements PeerRouting {
           try {
             yield await router.findPeer(id, options)
           } catch (err) {
-            self.log.error(err)
+            self.log.error('%e', err)
           }
         })())
     )
@@ -130,7 +130,7 @@ export class DefaultPeerRouting implements PeerRouting {
                   useCache: false
                 })
               } catch (err) {
-                self.log.error('could not find peer multiaddrs', err)
+                self.log.error('could not find peer multiaddrs - %e', err)
                 return
               }
             }

@@ -116,7 +116,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
               })
             } catch (err: any) {
               // Just log errors
-              log.error('could not push identify update to peer', err)
+              log.error('could not push identify update to peer - %e', err)
               stream?.abort(err)
             }
           }
@@ -156,7 +156,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
 
       await consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
     } catch (err: any) {
-      log.error('received invalid message', err)
+      log.error('received invalid message - %e', err)
       stream.abort(err)
       return
     }

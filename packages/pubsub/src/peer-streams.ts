@@ -147,7 +147,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
       (source) => lp.encode(source),
       this._rawOutboundStream
     ).catch((err: Error) => {
-      this.log.error(err)
+      this.log.error('%e', err)
     })
 
     // Only emit if the connection is new

@@ -250,7 +250,7 @@ export abstract class AbstractIdentify implements Startable {
 
     await this.registrar.handle(this.protocol, (data) => {
       void this.handleProtocol(data).catch(err => {
-        this.log.error(err)
+        this.log.error('%e', err)
       })
     }, {
       maxInboundStreams: this.maxInboundStreams,

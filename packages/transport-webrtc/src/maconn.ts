@@ -92,7 +92,7 @@ export class WebRTCMultiaddrConnection implements MultiaddrConnection {
   }
 
   abort (err: Error): void {
-    this.log.error('closing connection due to error', err)
+    this.log.error('closing connection due to error - %e', err)
 
     this.peerConnection.close()
     this.timeline.close = Date.now()

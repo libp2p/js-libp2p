@@ -199,7 +199,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         this.#checkReservationCount()
       })
       .catch(err => {
-        this.log.error(err)
+        this.log.error('%e', err)
       })
   }
 
@@ -484,7 +484,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     }
 
     const errMsg = `reservation failed with status ${response.status ?? 'undefined'}`
-    this.log.error(errMsg)
+    this.log.error('%s', errMsg)
 
     throw new Error(errMsg)
   }
