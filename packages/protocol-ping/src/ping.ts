@@ -157,7 +157,7 @@ export class Ping implements Startable, PingInterface {
 
       return ms
     } catch (err: any) {
-      log.error('error while pinging %p', connection.remotePeer, err)
+      log.error('error while pinging %p - %e', connection.remotePeer, err)
 
       stream?.abort(err)
 

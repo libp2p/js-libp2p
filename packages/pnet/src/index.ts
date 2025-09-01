@@ -156,7 +156,9 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
       // Decrypt all inbound traffic
       createUnboxStream(remoteNonce, this.psk),
       external
-    ).catch(this.log.error)
+    ).catch((err) => {
+      this.log.error('pipe error - %e', err)
+    })
 
     return {
       ...connection,

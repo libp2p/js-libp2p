@@ -146,7 +146,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       // information about what happened
       // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/error_event
       const err = new ConnectionFailedError(`Could not connect to ${ma.toString()}`)
-      this.log.error('connection error:', err)
+      this.log.error('connection error - %e', err)
       this.metrics?.dialerEvents.increment({ error: true })
       errorPromise.reject(err)
     })
@@ -161,7 +161,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
 
       rawSocket.close()
         .catch(err => {
-          this.log.error('error closing raw socket', err)
+          this.log.error('error closing raw socket - %e', err)
         })
 
       throw err

@@ -155,11 +155,11 @@ export function mockConnection (maConn: MultiaddrConnection, opts: MockConnectio
 
             await handler({ connection, stream: muxedStream })
           }).catch(err => {
-            log.error(err)
+            log.error('%e', err)
             muxedStream.abort(err)
           })
       } catch (err: any) {
-        log.error(err)
+        log.error('%e', err)
       }
     },
     onStreamEnd: (muxedStream) => {

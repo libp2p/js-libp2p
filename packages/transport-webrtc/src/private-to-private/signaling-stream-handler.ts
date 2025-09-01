@@ -37,7 +37,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
         signal
       })
         .catch(err => {
-          log.error('error sending ICE candidate', err)
+          log.error('error sending ICE candidate - %e', err)
         })
     }
 
@@ -60,13 +60,13 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     })
 
     await peerConnection.setRemoteDescription(offer).catch(err => {
-      log.error('could not execute setRemoteDescription', err)
+      log.error('could not execute setRemoteDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set remoteDescription')
     })
 
     // create and write an SDP answer
     const answer = await peerConnection.createAnswer().catch(err => {
-      log.error('could not execute createAnswer', err)
+      log.error('could not execute createAnswer - %e', err)
       throw new SDPHandshakeFailedError('Failed to create answer')
     })
 
@@ -78,7 +78,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     })
 
     await peerConnection.setLocalDescription(answer).catch(err => {
-      log.error('could not execute setLocalDescription', err)
+      log.error('could not execute setLocalDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set localDescription')
     })
 
@@ -92,7 +92,7 @@ export async function handleIncomingStream ({ peerConnection, stream, signal, co
     })
   } catch (err: any) {
     if (getConnectionState(peerConnection) !== 'connected') {
-      log.error('error while handling signaling stream from peer %a', connection.remoteAddr, err)
+      log.error('error while handling signaling stream from peer %a - %e', connection.remoteAddr, err)
 
       peerConnection.close()
       throw err

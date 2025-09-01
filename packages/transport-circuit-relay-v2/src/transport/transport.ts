@@ -89,7 +89,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       this.reservationStore.addRelay(evt.detail, 'discovered')
         .catch(err => {
           if (err.name !== 'HadEnoughRelaysError' && err.name !== 'RelayQueueFullError') {
-            this.log.error('could not add discovered relay %p', evt.detail, err)
+            this.log.error('could not add discovered relay %p - %e', evt.detail, err)
           }
         })
     })
@@ -137,7 +137,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       void this.onStop(data, signal)
         .catch(err => {
-          this.log.error('error while handling STOP protocol', err)
+          this.log.error('error while handling STOP protocol - %e', err)
           data.stream.abort(err)
         })
         .finally(() => {
@@ -168,7 +168,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
   async dial (ma: Multiaddr, options: DialTransportOptions<CircuitRelayDialEvents>): Promise<Connection> {
     if (ma.protoCodes().filter(code => code === CIRCUIT_PROTO_CODE).length !== 1) {
       const errMsg = 'Invalid circuit relay address'
-      this.log.error(errMsg, ma)
+      this.log.error('%s %a', errMsg, ma)
       throw new DialError(errMsg)
     }
 
@@ -180,9 +180,9 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     const destinationId = destinationAddr.getPeerId()
 
     if (relayId == null || destinationId == null) {
-      const errMsg = `ircuit relay dial to ${ma.toString()} failed as address did not have both relay and destination PeerIDs`
-      this.log.error(`c${errMsg}`)
-      throw new DialError(`C${errMsg}`)
+      const errMsg = `circuit relay dial to ${ma.toString()} faioed as address did not have both relay and destination PeerIDs`
+      this.log.error('%s ', errMsg)
+      throw new DialError(errMsg)
     }
 
     const relayPeer = peerIdFromString(relayId)
@@ -247,7 +247,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       return conn
     } catch (err: any) {
-      this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
+      this.log.error('circuit relay dial to destination %p via relay %p failed - %e', destinationPeer, relayPeer, err)
       stream?.abort(err)
 
       throw err
@@ -299,7 +299,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
         await this.transportManager.listen([connection.remoteAddr.encapsulate('/p2p-circuit')])
       } catch (err: any) {
         // failed to refresh our hitherto unknown relay reservation but allow the connection attempt anyway
-        this.log.error('failed to listen on a relay peer we were dialed via but did not have a reservation on', err)
+        this.log.error('failed to listen on a relay peer we were dialed via but did not have a reservation on - %e', err)
       }
     }
 

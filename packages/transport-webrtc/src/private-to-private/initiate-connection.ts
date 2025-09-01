@@ -97,16 +97,16 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
         signal
       })
         .catch(err => {
-          log.error('error sending ICE candidate', err)
+          log.error('error sending ICE candidate - %e', err)
         })
     }
     peerConnection.onicecandidateerror = (event) => {
-      log.error('initiator ICE candidate error', event)
+      log.error('initiator ICE candidate error - %e', event)
     }
 
     // create an offer
     const offerSdp = await peerConnection.createOffer().catch(err => {
-      log.error('could not execute createOffer', err)
+      log.error('could not execute createOffer - %e', err)
       throw new SDPHandshakeFailedError('Failed to set createOffer')
     })
 
@@ -121,7 +121,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     // set offer as local description
     await peerConnection.setLocalDescription(offerSdp).catch(err => {
-      log.error('could not execute setLocalDescription', err)
+      log.error('could not execute setLocalDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set localDescription')
     })
 
@@ -142,7 +142,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     const answerSdp = new RTCSessionDescription({ type: 'answer', sdp: answerMessage.data })
     await peerConnection.setRemoteDescription(answerSdp).catch(err => {
-      log.error('could not execute setRemoteDescription', err)
+      log.error('could not execute setRemoteDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set remoteDescription')
     })
 
@@ -175,7 +175,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       muxerFactory
     }
   } catch (err: any) {
-    log.error('outgoing signaling error', err)
+    log.error('outgoing signaling error - %e', err)
 
     peerConnection.close()
     stream.abort(err)

@@ -318,7 +318,7 @@ export class Connection implements ConnectionInterface {
       this.status = 'closed'
       this.timeline.close = Date.now()
     } catch (err: any) {
-      this.log.error('error encountered during graceful close of connection to %a', this.remoteAddr, err)
+      this.log.error('error encountered during graceful close of connection to %a - %e', this.remoteAddr, err)
       this.abort(err)
     }
   }
@@ -328,7 +328,7 @@ export class Connection implements ConnectionInterface {
       return
     }
 
-    this.log.error('aborting connection to %a due to error', this.remoteAddr, err)
+    this.log.error('aborting connection to %a due to error - %e', this.remoteAddr, err)
 
     this.status = 'closing'
 

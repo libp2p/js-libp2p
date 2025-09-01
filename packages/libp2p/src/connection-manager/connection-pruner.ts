@@ -48,7 +48,7 @@ export class ConnectionPruner {
   maybePruneConnections (): void {
     this._maybePruneConnections()
       .catch(err => {
-        this.log.error('error while pruning connections %e', err)
+        this.log.error('error while pruning connections - %e', err)
       })
   }
 
@@ -88,7 +88,7 @@ export class ConnectionPruner {
         }, 0))
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
-          this.log.error('error loading peer tags', err)
+          this.log.error('error loading peer tags - %e', err)
         }
       }
     }

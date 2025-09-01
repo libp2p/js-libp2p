@@ -27,7 +27,7 @@ async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, 
           yield buf.subarray(0, remaining)
         }
       } catch (err: any) {
-        options.log.error(err)
+        options.log.error('%e', err)
       }
 
       throw new TransferLimitError(`data limit of ${limitBytes} bytes exceeded`)
@@ -75,7 +75,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
     void dst.sink(dataLimit == null ? src.source : countStreamBytes(src.source, dataLimit, options))
       .catch(err => {
-        options.log.error('error while relaying streams src -> dst', err)
+        options.log.error('error while relaying streams src -> dst - %e', err)
         abortStreams(err)
       })
       .finally(() => {
@@ -98,7 +98,7 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
     void src.sink(dataLimit == null ? dst.source : countStreamBytes(dst.source, dataLimit, options))
       .catch(err => {
-        options.log.error('error while relaying streams dst -> src', err)
+        options.log.error('error while relaying streams dst -> src - %e', err)
         abortStreams(err)
       })
       .finally(() => {

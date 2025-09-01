@@ -107,16 +107,16 @@ export class RoutingTableRefresh {
               try {
                 await this._refreshCommonPrefixLength(n, lastRefresh, force, options)
               } catch (err: any) {
-                this.log.error(err)
+                this.log.error('%e', err)
               }
             }
           }
         } catch (err: any) {
-          this.log.error(err)
+          this.log.error('%e', err)
         }
       })
     ).catch(err => {
-      this.log.error(err)
+      this.log.error('%e', err)
     }).then(() => {
       this.refreshTimeoutId = setTimeout(this.refreshTable, this.refreshInterval)
 
@@ -124,7 +124,7 @@ export class RoutingTableRefresh {
         this.refreshTimeoutId.unref()
       }
     }).catch(err => {
-      this.log.error(err)
+      this.log.error('%e', err)
     })
   }
 

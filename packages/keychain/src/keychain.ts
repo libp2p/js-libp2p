@@ -171,7 +171,7 @@ export class Keychain implements KeychainInterface {
       return JSON.parse(uint8ArrayToString(res))
     } catch (err: any) {
       await randomDelay()
-      this.log.error(err)
+      this.log.error('%e', err)
       throw new NotFoundError(`Key '${name}' does not exist.`)
     }
   }

@@ -41,7 +41,7 @@ export class PutValueHandler implements DHTMessageHandler {
     if (msg.record == null) {
       const errMsg = `Empty record from: ${peerId.toString()}`
 
-      this.log.error(errMsg)
+      this.log.error('%s', errMsg)
       throw new InvalidMessageError(errMsg)
     }
 

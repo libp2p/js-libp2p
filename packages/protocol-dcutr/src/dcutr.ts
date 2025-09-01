@@ -86,14 +86,14 @@ export class DefaultDCUtRService implements Startable {
 
         this.upgradeInbound(connection)
           .catch(err => {
-            this.log.error('error during outgoing DCUtR attempt', err)
+            this.log.error('error during outgoing DCUtR attempt - %e', err)
           })
       }
     })
 
     await this.registrar.handle(multicodec, (data) => {
       void this.handleIncomingUpgrade(data.stream, data.connection).catch(err => {
-        this.log.error('error during incoming DCUtR attempt', err)
+        this.log.error('error during incoming DCUtR attempt - %e', err)
         data.stream.abort(err)
       })
     }, {
@@ -207,7 +207,7 @@ export class DefaultDCUtRService implements Startable {
 
         break
       } catch (err: any) {
-        this.log.error('error while attempting DCUtR on attempt %d of %d', i + 1, this.retries, err)
+        this.log.error('error while attempting DCUtR on attempt %d of %d - %e', i + 1, this.retries, err)
         stream?.abort(err)
 
         if (i === this.retries) {
@@ -273,7 +273,7 @@ export class DefaultDCUtRService implements Startable {
 
         return true
       } catch (err) {
-        this.log.error('unilateral connection upgrade to %p on addresses %a failed', relayedConnection.remotePeer, publicAddresses, err)
+        this.log.error('unilateral connection upgrade to %p on addresses %a failed - %e', relayedConnection.remotePeer, publicAddresses, err)
       }
     } else {
       this.log('peer %p has no public addresses, not attempting unilateral connection upgrade', relayedConnection.remotePeer)
@@ -348,7 +348,7 @@ export class DefaultDCUtRService implements Startable {
       this.log('DCUtR to %p succeeded via %a, closing relayed connection', relayedConnection.remotePeer, connection.remoteAddr)
       await relayedConnection.close(options)
     } catch (err: any) {
-      this.log.error('incoming DCUtR from %p failed', relayedConnection.remotePeer, err)
+      this.log.error('incoming DCUtR from %p failed - %e', relayedConnection.remotePeer, err)
       stream.abort(err)
     } finally {
       await stream.close(options)

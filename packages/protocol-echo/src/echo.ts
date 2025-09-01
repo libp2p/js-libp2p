@@ -29,7 +29,7 @@ export class Echo implements Startable, EchoInterface {
 
       void pipe(stream, stream)
         .catch((err: any) => {
-          log.error('error piping stream', err)
+          log.error('error piping stream - %e', err)
         })
     }, {
       maxInboundStreams: this.init.maxInboundStreams,

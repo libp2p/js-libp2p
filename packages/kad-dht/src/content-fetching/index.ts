@@ -106,7 +106,7 @@ export class ContentFetching {
           this.log(`Storing corrected record for key ${dsKey.toString()}`)
           await this.components.datastore.put(dsKey, fixupRec.subarray(), options)
         } catch (err: any) {
-          this.log.error('Failed error correcting self', err)
+          this.log.error('Failed error correcting self - %e', err)
         }
 
         continue

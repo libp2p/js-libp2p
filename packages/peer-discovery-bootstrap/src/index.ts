@@ -154,7 +154,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     this.timer = setTimeout(() => {
       void this._discoverBootstrapPeers()
         .catch(err => {
-          this.log.error(err)
+          this.log.error('%e', err)
         })
     }, this.timeout)
   }
@@ -186,7 +186,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       this.safeDispatchEvent('peer', { detail: peerData })
       this.components.connectionManager.openConnection(peerData.id)
         .catch(err => {
-          this.log.error('could not dial bootstrap peer %p', peerData.id, err)
+          this.log.error('could not dial bootstrap peer %p - %e', peerData.id, err)
         })
     }
   }

@@ -200,7 +200,7 @@ export class Registrar implements RegistrarInterface {
           return
         }
 
-        this.log.error('could not inform topologies of disconnecting peer %p', remotePeer, err)
+        this.log.error('could not inform topologies of disconnecting peer %p - %e', remotePeer, err)
       })
   }
 

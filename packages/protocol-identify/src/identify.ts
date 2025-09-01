@@ -36,7 +36,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
               return
             }
 
-            this.log.error('error during identify trigged by connection:open', err)
+            this.log.error('error during identify trigged by connection:open - %e', err)
           })
       })
     }
@@ -197,7 +197,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         signal
       })
     } catch (err: any) {
-      log.error('could not respond to identify request', err)
+      log.error('could not respond to identify request - %e', err)
       stream.abort(err)
     }
   }

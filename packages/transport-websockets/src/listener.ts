@@ -207,7 +207,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
         metricPrefix: `${this.addr} `
       })
     } catch (err: any) {
-      this.log.error('inbound connection failed', err)
+      this.log.error('inbound connection failed - %e', err)
       this.metrics.errors?.increment({ [`${this.addr} inbound_to_connection`]: true })
       socket.close()
       return
@@ -224,7 +224,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
 
         await maConn.close()
           .catch(err => {
-            this.log.error('inbound connection failed to close after upgrade failed', err)
+            this.log.error('inbound connection failed to close after upgrade failed - %e', err)
             this.metrics.errors?.increment({ [`${this.addr} inbound_closing_failed`]: true })
           })
       })

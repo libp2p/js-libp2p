@@ -34,7 +34,7 @@ class WebTransportStream extends AbstractStream {
         }
       })
       .catch(err => {
-        init.log.error('error reading from stream', err)
+        init.log.error('error reading from stream - %e', err)
         this.abort(err)
       })
       .finally(() => {
@@ -66,7 +66,7 @@ class WebTransportStream extends AbstractStream {
       // https://streams.spec.whatwg.org/#example-manual-write-dont-await
       this.writer.write(chunk)
         .catch(err => {
-          this.log.error('error sending stream data', err)
+          this.log.error('error sending stream data - %e', err)
         })
     }
   }

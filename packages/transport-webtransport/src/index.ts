@@ -160,7 +160,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           this.metrics?.dialerEvents.increment({ [metric]: true })
           wt.close()
         } catch (err) {
-          this.log.error('error closing wt session', err)
+          this.log.error('error closing wt session - %e', err)
         } finally {
           // This is how we specify the connection is closed and shouldn't be used.
           if (maConn != null) {
@@ -196,7 +196,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
       // this promise resolves/throws when the session is closed
       wt.closed.catch((err: Error) => {
-        this.log.error('error on remote wt session close', err)
+        this.log.error('error on remote wt session close - %e', err)
       })
         .finally(() => {
           cleanUpWTSession('remote_close')
@@ -235,7 +235,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
         skipProtection: true
       })
     } catch (err: any) {
-      this.log.error('caught wt session err', err)
+      this.log.error('caught wt session err - %e', err)
 
       if (authenticated) {
         cleanUpWTSession('upgrade_error')
@@ -282,7 +282,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           const buf = chunk instanceof Uint8Array ? chunk : chunk.subarray()
 
           writer.write(buf).catch(err => {
-            this.log.error('could not write chunk during authentication of WebTransport stream', err)
+            this.log.error('could not write chunk during authentication of WebTransport stream - %e', err)
           })
         }
       }
