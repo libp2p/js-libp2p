@@ -69,19 +69,18 @@ describe('messageStreamToDuplex', () => {
     const err = new Error('Urk!')
     const it = messageStreamToDuplex(outgoing)
 
-    outgoing.abort(err)
-
     async function * source (): AsyncGenerator<Uint8Array> {
       yield Uint8Array.from([0, 1, 2, 3])
     }
 
     const [sinkError, sourceError] = await Promise.all([
       it.sink(source()).catch(err => err),
-      drain(it.source).catch(err => err)
+      drain(it.source).catch(err => err),
+      outgoing.abort(err)
     ])
 
-    expect(sinkError).to.equal(err)
-    expect(sourceError).to.equal(err)
+    expect(sinkError).to.equal(err, 'did not throw from sink')
+    expect(sourceError).to.equal(err, 'did not throw from source')
   })
 })
 

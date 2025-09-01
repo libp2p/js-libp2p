@@ -23,7 +23,7 @@ export class Echo implements Startable, EchoInterface {
     this.components = components
     this.protocol = `/${[init.protocolPrefix, PROTOCOL_NAME, PROTOCOL_VERSION].filter(Boolean).join('/')}`
     this.init = init
-    this.timeout = init.timeout ?? 5_000
+    this.timeout = init.timeout ?? 20_000
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/echo'
