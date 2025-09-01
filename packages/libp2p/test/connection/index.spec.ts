@@ -48,7 +48,13 @@ describe('connection', () => {
     muxer = muxerFactory.createStreamMuxer(outgoing)
 
     // create remote muxer
-    muxerFactory.createStreamMuxer(incoming)
+    const remoteMuxer = muxerFactory.createStreamMuxer(incoming)
+    remoteMuxer.addEventListener('stream', (evt) => {
+      echo(evt.detail)
+        .catch(err => {
+          evt.detail.abort(err)
+        })
+    })
 
     init = {
       id: '',
