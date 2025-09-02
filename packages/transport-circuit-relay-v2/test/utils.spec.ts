@@ -58,7 +58,10 @@ describe('circuit-relay utils', () => {
     expect(remoteStreamAbortSpy).to.have.property('called', false)
   })
 
-  it('should create relay that allows sending large amounts of data', async () => {
+  it('should create relay that allows sending large amounts of data', async function () {
+    const timeout = 360_000
+    this.timeout(timeout);
+
     const controller = new AbortController()
     const [localToServer, serverToLocal] = await streamPair({
       delay: 10

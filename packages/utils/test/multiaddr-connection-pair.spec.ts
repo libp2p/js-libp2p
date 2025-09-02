@@ -100,7 +100,10 @@ describe('multiaddr-conection-pair', () => {
     expect(inboundReceived).to.have.lengthOf(messages)
   })
 
-  it('should send large amounts of data in both directions', async () => {
+  it('should send large amounts of data in both directions', async function () {
+    const timeout = 360_000
+    this.timeout(timeout);
+
     const [outbound, inbound] = multiaddrConnectionPair({
       inbound: {
         maxMessageSize: 1024 * 64

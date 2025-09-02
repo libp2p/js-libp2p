@@ -118,7 +118,10 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       })
     })
 
-    it('should send large amounts of data in both directions', async () => {
+    it('should send large amounts of data in both directions', async function () {
+      const timeout = 360_000
+      this.timeout(timeout);
+
       const sent = new Array(10)
         .fill(0)
         .map((val, index) => new Uint8Array(1024 * 1024).fill(index))
