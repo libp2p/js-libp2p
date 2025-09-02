@@ -63,12 +63,8 @@ describe('circuit-relay utils', () => {
     this.timeout(timeout)
 
     const controller = new AbortController()
-    const [localToServer, serverToLocal] = await streamPair({
-      delay: 10
-    })
-    const [serverToRemote, remoteToServer] = await streamPair({
-      delay: 10
-    })
+    const [localToServer, serverToLocal] = await streamPair()
+    const [serverToRemote, remoteToServer] = await streamPair()
     const localStreamAbortSpy = Sinon.spy(serverToLocal, 'abort')
     const remoteStreamAbortSpy = Sinon.spy(serverToRemote, 'abort')
 

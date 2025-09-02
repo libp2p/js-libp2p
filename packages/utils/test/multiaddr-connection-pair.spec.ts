@@ -104,14 +104,7 @@ describe('multiaddr-conection-pair', () => {
     const timeout = 360_000
     this.timeout(timeout)
 
-    const [outbound, inbound] = multiaddrConnectionPair({
-      inbound: {
-        maxMessageSize: 1024 * 64
-      },
-      outbound: {
-        maxMessageSize: 1024 * 64
-      }
-    })
+    const [outbound, inbound] = multiaddrConnectionPair()
     const chunks = 255
     const chunkSize = 1024 * 1024 * 5
     const dataLength = chunks * chunkSize
