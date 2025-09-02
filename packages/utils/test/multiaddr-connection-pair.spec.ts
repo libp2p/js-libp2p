@@ -102,7 +102,7 @@ describe('multiaddr-conection-pair', () => {
 
   it('should send large amounts of data in both directions', async function () {
     const timeout = 360_000
-    this.timeout(timeout);
+    this.timeout(timeout)
 
     const [outbound, inbound] = multiaddrConnectionPair({
       inbound: {

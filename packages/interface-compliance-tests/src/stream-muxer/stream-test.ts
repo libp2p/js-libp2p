@@ -120,7 +120,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
     it('should send large amounts of data in both directions', async function () {
       const timeout = 360_000
-      this.timeout(timeout);
+      this.timeout(timeout)
 
       const sent = new Array(10)
         .fill(0)

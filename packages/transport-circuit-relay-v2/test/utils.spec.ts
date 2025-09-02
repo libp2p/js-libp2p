@@ -60,7 +60,7 @@ describe('circuit-relay utils', () => {
 
   it('should create relay that allows sending large amounts of data', async function () {
     const timeout = 360_000
-    this.timeout(timeout);
+    this.timeout(timeout)
 
     const controller = new AbortController()
     const [localToServer, serverToLocal] = await streamPair({
