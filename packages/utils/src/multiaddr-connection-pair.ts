@@ -7,14 +7,12 @@ import { AbstractMultiaddrConnection } from './abstract-multiaddr-connection.ts'
 import { MessageQueue } from './message-queue.ts'
 import type { SendResult } from './abstract-message-stream.ts'
 import type { AbstractMultiaddrConnectionInit } from './abstract-multiaddr-connection.ts'
-import type { MessageQueueInit } from './message-queue.ts'
+import type { MessageQueueEvents, MessageQueueInit } from './message-queue.ts'
 import type { AbortOptions, Logger, MultiaddrConnection, MessageStreamDirection, TypedEventTarget } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-interface MockMultiaddrConnectionMessages {
-  message: MessageEvent
-  reset: Event
+interface MockMultiaddrConnectionMessages extends MessageQueueEvents {
   close: Event
   pause: Event
   resume: Event

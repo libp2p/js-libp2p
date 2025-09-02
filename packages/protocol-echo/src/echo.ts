@@ -124,16 +124,7 @@ export class Echo implements Startable, EchoInterface {
     })
 
     log('sending %d bytes', buf.byteLength)
-    const sendMore = stream.send(buf)
-
-    if (!sendMore) {
-      await pEvent(stream, 'drain', {
-        rejectionEvents: [
-          'close'
-        ],
-        signal: options?.signal
-      })
-    }
+    stream.send(buf)
 
     await stream.close(options)
 

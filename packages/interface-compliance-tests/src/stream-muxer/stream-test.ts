@@ -296,7 +296,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       }
 
       expect(outboundStream.writeStatus).to.equal('writable')
-      expect(outboundStream.writableNeedDrain).to.be.true()
+      expect(outboundStream.writableNeedsDrain).to.be.true()
 
       // close gracefully
       await outboundStream.close()
@@ -331,7 +331,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       }
 
       expect(outboundStream.writeStatus).to.equal('writable')
-      expect(outboundStream.writableNeedDrain).to.be.true()
+      expect(outboundStream.writableNeedsDrain).to.be.true()
 
       // close gracefully
       await outboundStream.close()
@@ -365,7 +365,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       }
 
       expect(outboundStream.writeStatus).to.equal('writable')
-      expect(outboundStream.writableNeedDrain).to.be.true()
+      expect(outboundStream.writableNeedsDrain).to.be.true()
 
       // close stream, should be aborted as drain event will not have fired
       await expect(outboundStream.close({

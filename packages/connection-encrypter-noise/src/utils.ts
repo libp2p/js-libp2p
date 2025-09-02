@@ -87,6 +87,7 @@ class EncryptedMessageStream extends AbstractMessageStream {
     this.metrics = metrics
     this.decoder = new LengthPrefixedDecoder({
       lengthDecoder: uint16BEDecode,
+      maxBufferSize: 16 * 1024 * 1024,
       encodingLength: () => 2
     })
 

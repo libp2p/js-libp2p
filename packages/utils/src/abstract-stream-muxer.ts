@@ -66,7 +66,7 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
       this.log('underlying stream drained, signal %d streams to continue writing', this.streams.length)
 
       this.streams.forEach(stream => {
-        stream.safeDispatchEvent('drain')
+        stream.onMuxerDrain()
       })
     }
     this.maConn.addEventListener('drain', muxerMaConnOnDrain)
@@ -79,7 +79,17 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
   }
 
   send (data: Uint8Array | Uint8ArrayList): boolean {
-    return this.maConn.send(data)
+    const result = this.maConn.send(data)
+
+    if (result === false) {
+      this.log('underlying stream saturated, signal %d streams to pause writing', this.streams.length)
+
+      this.streams.forEach(stream => {
+        stream.onMuxerNeedsDrain()
+      })
+    }
+
+    return result
   }
 
   async close (options?: AbortOptions): Promise<void> {

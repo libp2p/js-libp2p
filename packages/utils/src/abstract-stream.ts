@@ -35,7 +35,7 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
 
     // if we are currently sending data, wait for all the data to be written
     // into the underlying transport
-    if (this.sendingData) {
+    if (this.sendingData || this.writeBuffer.byteLength > 0) {
       this.log('waiting for write queue to become idle before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
       await pEvent(this, 'idle', {
         ...options,
@@ -47,14 +47,15 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
 
     // now that the underlying transport has all the data, if the buffer is full
     // wait for it to be emptied
-    if (this.writableNeedDrain) {
-      this.log('waiting for write queue to drain before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
+    if (this.writableNeedsDrain) {
+      this.log('waiting for write queue to drain before closing writable end of stream, %d unsent bytes, sending %s', this.writeBuffer.byteLength, this.sendingData)
       await pEvent(this, 'drain', {
         ...options,
         rejectionEvents: [
           'close'
         ]
       })
+      this.log('write queue drained, closing writable end of stream, %d unsent bytes, sending %s', this.writeBuffer.byteLength, this.sendingData)
     }
 
     await this.sendCloseWrite(options)

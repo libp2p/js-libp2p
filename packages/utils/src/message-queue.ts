@@ -1,14 +1,28 @@
+import { StreamMessageEvent } from '@libp2p/interface'
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
 import { raceSignal } from 'race-signal'
+import { isUint8ArrayList, Uint8ArrayList } from 'uint8arraylist'
 import { Queue } from './queue/index.js'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 
-export interface MessageQueueMessages {
+const DEFAULT_CHUNK_SIZE = 1024 * 64
+
+export interface MessageQueueEvents {
+  /**
+   * Message data
+   */
+  message: StreamMessageEvent
+
   /**
    * Emitted when the queue is empty
    */
   drain: Event
+
+  /**
+   * The remote closed the connection abruptly
+   */
+  reset: Event
 }
 
 export interface MessageQueueInit {
@@ -25,6 +39,15 @@ export interface MessageQueueInit {
    * the sender
    */
   capacity?: number
+
+  /**
+   * Data messages larger than this size will be chunked into smaller messages.
+   *
+   * Defaults to the maximum TCP package size.
+   *
+   * @default 65_536
+   */
+  chunkSize?: number
 }
 
 interface MessageQueueJobOptions extends AbortOptions {
@@ -36,13 +59,14 @@ interface MessageQueueJobOptions extends AbortOptions {
  * queue capacity after which the send method will return false to let us
  * simulate write backpressure.
  */
-export class MessageQueue<Messages> extends TypedEventEmitter<Messages & MessageQueueMessages> {
+export class MessageQueue<Events> extends TypedEventEmitter<Events & MessageQueueEvents> {
   public needsDrain: boolean
 
   private queue: Queue<void, MessageQueueJobOptions>
   private capacity: number
   private delay: number
   private log: Logger
+  private chunkSize: number
 
   constructor (init: MessageQueueInit & { log: Logger }) {
     super()
@@ -54,6 +78,7 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
     this.capacity = init.capacity ?? 5
     this.delay = init.delay ?? 0
     this.log = init.log
+    this.chunkSize = init.chunkSize ?? DEFAULT_CHUNK_SIZE
 
     this.queue.addEventListener('idle', () => {
       if (this.needsDrain) {
@@ -67,15 +92,38 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
   }
 
   send (evt: Event): boolean {
-    this.queue.add(async (opts) => {
-      if (this.delay > 0) {
-        await raceSignal(delay(this.delay), opts.signal)
-      }
+    if (isMessageEvent(evt)) {
+      // chunk outgoing messages to match TCP packet sizes
+      const data = new Uint8ArrayList(evt.data)
 
-      this.dispatchEvent(opts.evt)
-    }, {
-      evt
-    })
+      while (data.byteLength > 0) {
+        const end = Math.min(this.chunkSize, data.byteLength)
+        const chunk = data.sublist(0, end)
+        data.consume(chunk.byteLength)
+
+        const chunkEvent = new StreamMessageEvent(chunk)
+
+        this.queue.add(async (opts) => {
+          if (this.delay > 0) {
+            await raceSignal(delay(this.delay), opts.signal)
+          }
+
+          this.dispatchEvent(opts.evt)
+        }, {
+          evt: chunkEvent
+        })
+      }
+    } else {
+      this.queue.add(async (opts) => {
+        if (this.delay > 0) {
+          await raceSignal(delay(this.delay), opts.signal)
+        }
+
+        this.dispatchEvent(opts.evt)
+      }, {
+        evt
+      })
+    }
 
     if (this.queue.size >= this.capacity) {
       this.log('network send queue full')
@@ -101,4 +149,8 @@ export class MessageQueue<Messages> extends TypedEventEmitter<Messages & Message
   size (): number {
     return this.queue.size
   }
+}
+
+function isMessageEvent (evt?: any): evt is StreamMessageEvent {
+  return evt?.data instanceof Uint8Array || isUint8ArrayList(evt?.data)
 }

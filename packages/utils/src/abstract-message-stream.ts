@@ -52,7 +52,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   public remoteReadStatus: MessageStreamReadStatus
   public remoteWriteStatus: MessageStreamWriteStatus
 
-  public writableNeedDrain: boolean
+  public writableNeedsDrain: boolean
 
   /**
    * Any data stored here is emitted before any new incoming data.
@@ -81,7 +81,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.writeStatus = 'writable'
     this.remoteWriteStatus = 'writable'
     this.sendingData = false
-    this.writableNeedDrain = false
+    this.writableNeedsDrain = false
 
     // @ts-expect-error type could have required fields other than 'open'
     this.timeline = {
@@ -91,7 +91,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.processSendQueue = this.processSendQueue.bind(this)
 
     const continueSendingOnDrain = (): void => {
-      this.writableNeedDrain = false
+      this.log.trace('drain event received, continue sending data')
+      this.writableNeedsDrain = false
       this.processSendQueue()
     }
     this.addEventListener('drain', continueSendingOnDrain)
@@ -137,7 +138,9 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       throw new StreamStateError(`Cannot write to a stream that is ${this.writeStatus}`)
     }
 
+    this.log.trace('append %d bytes to write buffer', data.byteLength)
     this.writeBuffer.append(data)
+
     return this.processSendQueue()
   }
 
@@ -365,25 +368,37 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   protected processSendQueue (): boolean {
-    if (this.writableNeedDrain) {
+    // bail if the underlying transport is full
+    if (this.writableNeedsDrain) {
+      this.log.trace('not processing send queue as drain is required')
       this.checkWriteBufferLength()
 
       return false
     }
 
+    // bail if there is no data to send
     if (this.writeBuffer.byteLength === 0) {
+      this.log.trace('not processing send queue as no bytes to send')
       return true
     }
 
+    // bail if we are already sending data
     if (this.sendingData) {
+      this.log.trace('not processing send queue as already sending data')
       return true
     }
 
     this.sendingData = true
 
+    this.log.trace('processing send queue with %d queued bytes', this.writeBuffer.byteLength)
+
     try {
       let canSendMore = true
+      const totalBytes = this.writeBuffer.byteLength
+      let sentBytes = 0
 
+      // send as much data as possible while we have data to send and the
+      // underlying muxer can still accept data
       while (this.writeBuffer.byteLength > 0) {
         const end = Math.min(this.maxMessageSize ?? this.writeBuffer.byteLength, this.writeBuffer.byteLength)
 
@@ -401,8 +416,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
         this.writeBuffer.consume(toSend.byteLength)
 
+        // sending data can cause buffers to fill up, events to be emitted and
+        // this method to be invoked again
         const sendResult = this.sendData(toSend)
         canSendMore = sendResult.canSendMore
+        sentBytes += sendResult.sentBytes
 
         if (sendResult.sentBytes !== willSend.byteLength) {
           willSend.consume(sendResult.sentBytes)
@@ -415,8 +433,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       }
 
       if (!canSendMore) {
-        this.log.trace('pausing sending because underlying stream is full')
-        this.writableNeedDrain = true
+        this.log.trace('sent %d/%d bytes, pausing sending because underlying stream is full, %d bytes left in the write buffer', sentBytes, totalBytes, this.writeBuffer.byteLength)
+        this.writableNeedsDrain = true
         this.checkWriteBufferLength()
       }
 
@@ -483,6 +501,14 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     if (this.writeBuffer.byteLength > this.maxWriteBufferLength) {
       this.abort(new StreamBufferError(`Write buffer length of ${this.writeBuffer.byteLength} exceeded limit of ${this.maxWriteBufferLength}, write status is ${this.writeStatus}`))
     }
+  }
+
+  public onMuxerNeedsDrain (): void {
+    this.writableNeedsDrain = true
+  }
+
+  public onMuxerDrain (): void {
+    this.safeDispatchEvent('drain')
   }
 
   /**

@@ -3,11 +3,11 @@ import { multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
 import { pushable } from 'it-pushable'
 import { raceSignal } from 'race-signal'
+import { DEFAULT_MAX_MESSAGE_SIZE } from './constants.ts'
 import { pushableToMaConn } from './pushable-to-conn.ts'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
 import type { Logger, MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
-import { DEFAULT_MAX_MESSAGE_SIZE } from './constants.ts'
 
 export const connections = new Map<string, MemoryConnection>()
 

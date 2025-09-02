@@ -5,7 +5,7 @@ import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionInit, RepeatingTask, SendResult } from '@libp2p/utils'
 
 const DEFAULT_MAX_BUFFERED_AMOUNT = 1024 * 1024 * 4
-const DEFAULT_BUFFERED_AMOUNT_POLL_INTERVAL = 500
+const DEFAULT_BUFFERED_AMOUNT_POLL_INTERVAL = 10
 
 export interface WebSocketMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name'> {
   websocket: WebSocket
@@ -23,10 +23,7 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
     this.websocket = init.websocket
     this.maxBufferedAmount = init.maxBufferedAmount ?? DEFAULT_MAX_BUFFERED_AMOUNT
-    this.checkBufferedAmountTask = repeatingTask(this.checkBufferedAmount.bind(this), init.bufferedAmountPollInterval ?? DEFAULT_BUFFERED_AMOUNT_POLL_INTERVAL, {
-      debounce: 100,
-      runImmediately: false
-    })
+    this.checkBufferedAmountTask = repeatingTask(this.checkBufferedAmount.bind(this), init.bufferedAmountPollInterval ?? DEFAULT_BUFFERED_AMOUNT_POLL_INTERVAL)
 
     this.websocket.addEventListener('close', (evt) => {
       this.log('closed - code %d, reason "%s", wasClean %s', evt.code, evt.reason, evt.wasClean)
@@ -95,11 +92,11 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   private checkBufferedAmount (): void {
-    this.log('check buffered amount %d', this.websocket.bufferedAmount)
+    this.log('buffered amount now %d', this.websocket.bufferedAmount)
 
     if (this.websocket.bufferedAmount === 0) {
-      this.safeDispatchEvent('drain')
       this.checkBufferedAmountTask.stop()
+      this.safeDispatchEvent('drain')
     }
   }
 }

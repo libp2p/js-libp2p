@@ -25,6 +25,7 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
     super({
       ...init,
       direction: init.stream.direction
+
     })
 
     this.init = init
@@ -48,6 +49,11 @@ class StreamMultiaddrConnection extends AbstractMultiaddrConnection {
     this.stream.addEventListener('message', (evt) => {
       init.onDataRead?.(evt.data)
       this.onData(evt.data)
+    })
+
+    // forward drain events
+    this.stream.addEventListener('drain', () => {
+      this.safeDispatchEvent('drain')
     })
   }
 

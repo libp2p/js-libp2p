@@ -8,7 +8,6 @@ import type { MessageStreamDirection, MultiaddrConnection, AbortOptions } from '
 import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Pushable } from 'it-pushable'
-import { DEFAULT_MAX_MESSAGE_SIZE } from './constants.ts'
 
 export interface MemoryMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name' | 'stream'> {
   localPushable: Pushable<Uint8Array | Uint8ArrayList>

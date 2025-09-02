@@ -30,8 +30,12 @@ describe('stream', () => {
   })
 
   afterEach(async () => {
-    await client?.close()
-    await server?.close()
+    await client?.close().catch(err => {
+      client.abort(err)
+    })
+    await server?.close().catch(err => {
+      server.abort(err)
+    })
   })
 
   it('test send data - small', async () => {

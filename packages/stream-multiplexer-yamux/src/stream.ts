@@ -83,12 +83,14 @@ export class YamuxStream extends AbstractStream {
     let sentBytes = 0
     let canSendMore = true
 
+    this.log?.trace('send window capacity is %d bytes', this.sendWindowCapacity)
+
     // send in chunks, waiting for window updates
     while (buf.byteLength > 0) {
       // we exhausted the send window, sending will resume later
       if (this.sendWindowCapacity === 0) {
         canSendMore = false
-        this.log?.trace('sent %d/%d bytes, wait for send window update, status %s', sentBytes, totalBytes, this.status)
+        this.log?.trace('sent %d/%d bytes, exhausted send window, waiting for window update', sentBytes, totalBytes)
         break
       }
 
@@ -111,7 +113,7 @@ export class YamuxStream extends AbstractStream {
 
       if (!muxerSendMore) {
         canSendMore = muxerSendMore
-        this.log('sent %d/%d bytes, wait for muxer to have more send capacity', sentBytes, totalBytes)
+        this.log.trace('sent %d/%d bytes, wait for muxer to have more send capacity', sentBytes, totalBytes)
         break
       }
     }

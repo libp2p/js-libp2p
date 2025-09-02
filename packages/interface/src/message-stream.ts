@@ -118,7 +118,7 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * A `drain` event will be emitted after which is its safe to call `.send`
    * again to resume sending.
    */
-  writableNeedDrain: boolean
+  writableNeedsDrain: boolean
 
   /**
    * Write data to the stream. If the method returns false it means the

@@ -3,13 +3,11 @@ import { defaultLogger } from '@libp2p/logger'
 import { raceSignal } from 'race-signal'
 import { AbstractStream } from './abstract-stream.ts'
 import type { SendResult } from './abstract-message-stream.ts'
-import type { MessageQueue } from './message-queue.ts'
+import type { MessageQueue, MessageQueueEvents } from './message-queue.ts'
 import type { AbortOptions, MessageStreamDirection, TypedEventTarget } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-interface MockStreamMessages {
-  message: MessageEvent
-  reset: Event
+interface MockStreamMessages extends MessageQueueEvents {
   closeWrite: Event
   closeRead: Event
 }
@@ -94,6 +92,10 @@ export class MockStream extends AbstractStream {
   }
 
   onRemoteResumed (): void {
+    this.local.resume()
+  }
+
+  onMuxerDrain (): void {
     this.local.resume()
   }
 }

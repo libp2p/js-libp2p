@@ -58,7 +58,7 @@ export abstract class AbstractMultiaddrConnection extends AbstractMessageStream 
 
     // if we are currently sending data, wait for all the data to be written
     // into the underlying transport
-    if (this.sendingData) {
+    if (this.sendingData || this.writeBuffer.byteLength > 0) {
       this.log('waiting for write queue to become idle before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
       await pEvent(this, 'idle', {
         ...options,
@@ -70,7 +70,7 @@ export abstract class AbstractMultiaddrConnection extends AbstractMessageStream 
 
     // now that the underlying transport has all the data, if the buffer is full
     // wait for it to be emptied
-    if (this.writableNeedDrain) {
+    if (this.writableNeedsDrain) {
       this.log('waiting for write queue to drain before closing writable end of stream, %d unsent bytes', this.writeBuffer.byteLength)
       await pEvent(this, 'drain', {
         ...options,
