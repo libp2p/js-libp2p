@@ -80,12 +80,6 @@ export class Echo implements Startable, EchoInterface {
 
     log('echoed %d bytes in %dms', bytes, Date.now() - start)
 
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve()
-      }, 2_000)
-    })
-
     await stream.close({
       signal
     })
