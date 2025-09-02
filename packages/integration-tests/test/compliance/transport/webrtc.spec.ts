@@ -3,6 +3,7 @@
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import tests from '@libp2p/interface-compliance-tests/transport'
+import { enable } from '@libp2p/logger'
 import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { webRTC } from '@libp2p/webrtc'
@@ -10,6 +11,8 @@ import { webSockets } from '@libp2p/websockets'
 import { yamux } from '@libp2p/yamux'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { isWebWorker } from 'wherearewe'
+
+enable('dialer:*,listener:*,relay:*,*:trace')
 
 describe('WebRTC transport interface compliance', () => {
   if (isWebWorker) {
