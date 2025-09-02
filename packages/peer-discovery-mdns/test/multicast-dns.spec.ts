@@ -6,6 +6,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import { stubInterface } from 'sinon-ts'
 import { mdns } from './../src/index.js'
@@ -13,7 +14,6 @@ import type { MulticastDNSComponents } from './../src/mdns.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import { pEvent } from 'p-event'
 
 function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSComponents {
   const addressManager = stubInterface<AddressManager>()
@@ -25,7 +25,7 @@ function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSCo
   }
 }
 
-describe.only('MulticastDNS', () => {
+describe('MulticastDNS', () => {
   let pA: PeerId
   let aMultiaddrs: Multiaddr[]
   let pB: PeerId
