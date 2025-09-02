@@ -10,10 +10,9 @@ import { webSockets } from '@libp2p/websockets'
 import { yamux } from '@libp2p/yamux'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { isWebWorker } from 'wherearewe'
-import { isFirefox } from '../../fixtures/utils.ts'
 
 describe('WebRTC transport interface compliance', () => {
-  if (isWebWorker || (process.env.CI != null && isFirefox)) {
+  if (isWebWorker) {
     return
   }
 
