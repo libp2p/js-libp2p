@@ -77,6 +77,72 @@ async function getSetup (common: TestSetup<TransportTestFixtures>): Promise<{ di
 }
 
 export default (common: TestSetup<TransportTestFixtures>): void => {
+  describe('transport events', () => {
+    let dialer: Libp2p<{ echo: Echo }>
+    let listener: Libp2p<{ echo: Echo }> | undefined
+    let listenMultiaddrMatcher: MultiaddrMatcher
+
+    afterEach(async () => {
+      await stop(dialer, listener)
+      await common.teardown()
+    })
+
+    it('emits listening', async function () {
+      ({ dialer, listener, listenMultiaddrMatcher } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      await listener.stop()
+
+      const transportListeningPromise = Promise.withResolvers<void>()
+
+      listener.addEventListener('transport:listening', (event) => {
+        const transportListener = event.detail
+
+        if (transportListener.getAddrs().some(ma => listenMultiaddrMatcher.exactMatch(ma))) {
+          transportListeningPromise.resolve()
+        }
+      })
+
+      await listener.start()
+
+      await raceSignal(transportListeningPromise.promise, AbortSignal.timeout(1000), {
+        translateError: () => {
+          return new TimeoutError('Did not emit listening event')
+        }
+      })
+    })
+
+    it('emits close', async function () {
+      ({ dialer, listener } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      const transportManager = getTransportManager(listener)
+      const transportListener = transportManager.getListeners()
+        .filter(listener => listener.getAddrs().some(ma => listenMultiaddrMatcher.exactMatch(ma)))
+        .pop()
+
+      if (transportListener == null) {
+        throw new Error('Could not find address listener')
+      }
+
+      const p = pEvent(transportListener, 'close')
+
+      await listener.stop()
+
+      await raceSignal(p, AbortSignal.timeout(1000), {
+        translateError: () => {
+          return new TimeoutError('Did not emit close event')
+        }
+      })
+    })
+  })
+
   describe('interface-transport', () => {
     let dialer: Libp2p<{ echo: Echo }>
     let listener: Libp2p<{ echo: Echo }> | undefined
@@ -527,72 +593,6 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       ])
 
       expect(new Uint8ArrayList(...output).byteLength).to.equal(bytes)
-    })
-  })
-
-  describe('events', () => {
-    let dialer: Libp2p<{ echo: Echo }>
-    let listener: Libp2p<{ echo: Echo }> | undefined
-    let listenMultiaddrMatcher: MultiaddrMatcher
-
-    afterEach(async () => {
-      await stop(dialer, listener)
-      await common.teardown()
-    })
-
-    it('emits listening', async function () {
-      ({ dialer, listener, listenMultiaddrMatcher } = await getSetup(common))
-
-      if (listener == null) {
-        return this.skip()
-      }
-
-      await listener.stop()
-
-      const transportListeningPromise = Promise.withResolvers<void>()
-
-      listener.addEventListener('transport:listening', (event) => {
-        const transportListener = event.detail
-
-        if (transportListener.getAddrs().some(ma => listenMultiaddrMatcher.exactMatch(ma))) {
-          transportListeningPromise.resolve()
-        }
-      })
-
-      await listener.start()
-
-      await raceSignal(transportListeningPromise.promise, AbortSignal.timeout(1000), {
-        translateError: () => {
-          return new TimeoutError('Did not emit listening event')
-        }
-      })
-    })
-
-    it('emits close', async function () {
-      ({ dialer, listener } = await getSetup(common))
-
-      if (listener == null) {
-        return this.skip()
-      }
-
-      const transportManager = getTransportManager(listener)
-      const transportListener = transportManager.getListeners()
-        .filter(listener => listener.getAddrs().some(ma => listenMultiaddrMatcher.exactMatch(ma)))
-        .pop()
-
-      if (transportListener == null) {
-        throw new Error('Could not find address listener')
-      }
-
-      const p = pEvent(transportListener, 'close')
-
-      await listener.stop()
-
-      await raceSignal(p, AbortSignal.timeout(1000), {
-        translateError: () => {
-          return new TimeoutError('Did not emit close event')
-        }
-      })
     })
   })
 }
