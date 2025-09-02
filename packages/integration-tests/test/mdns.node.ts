@@ -28,6 +28,7 @@ describe('mdns', () => {
     const serviceTag = `libp2p-test-${uint8ArrayToString(randomBytes(4), 'base16')}.local`
 
     const getConfig = (): Libp2pOptions => ({
+      start: false,
       addresses: {
         listen: [
           listenAddr.toString()
