@@ -1,4 +1,5 @@
 import { stop, TimeoutError } from '@libp2p/interface'
+import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -48,11 +49,17 @@ export interface TransportTestFixtures {
 
 async function getSetup (common: TestSetup<TransportTestFixtures>): Promise<{ dialer: Libp2p<{ echo: Echo }>, listener?: Libp2p<{ echo: Echo }>, dialAddrs: Multiaddr[], dialMultiaddrMatcher: MultiaddrMatcher, listenMultiaddrMatcher: MultiaddrMatcher }> {
   const setup = await common.setup()
-  const dialer = await createPeer(setup.dialer)
+  const dialer = await createPeer({
+    logger: prefixLogger('dialer'),
+    ...setup.dialer
+  })
   let listener
 
   if (setup.listener != null) {
-    listener = await createPeer(setup.listener)
+    listener = await createPeer({
+      logger: prefixLogger('listener'),
+      ...setup.listener
+    })
   }
 
   let dialAddrs = listener?.getMultiaddrs() ?? setup.dialAddrs
@@ -172,8 +179,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const input = Uint8Array.from([0, 1, 2, 3, 4])
 
       const output1 = await dialer.services.echo.echo(dialAddrs[0], input, {
-        signal: AbortSignal.timeout(5000),
-        force: true
+        signal: AbortSignal.timeout(5000)
       })
       expect(output1.subarray()).to.equalBytes(input)
 

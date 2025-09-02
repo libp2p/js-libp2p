@@ -109,7 +109,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
         signal
       })
         .catch(err => {
-          log.error('error sending ICE candidate', err)
+          log.error('error sending ICE candidate - %e', err)
         })
     }
     peerConnection.onicecandidateerror = (event) => {
