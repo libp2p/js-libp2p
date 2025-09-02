@@ -13,6 +13,7 @@ import type { MulticastDNSComponents } from './../src/mdns.js'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import { pEvent } from 'p-event'
 
 function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSComponents {
   const addressManager = stubInterface<AddressManager>()
@@ -24,7 +25,7 @@ function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSCo
   }
 }
 
-describe('MulticastDNS', () => {
+describe.only('MulticastDNS', () => {
   let pA: PeerId
   let aMultiaddrs: Multiaddr[]
   let pB: PeerId
@@ -77,15 +78,14 @@ describe('MulticastDNS', () => {
       port: 50001 // port must be the same
     })(getComponents(pB, bMultiaddrs))
 
-    await start(mdnsA, mdnsB)
+    const [
+      evt
+    ] = await Promise.all([
+      pEvent<'peer', CustomEvent<PeerInfo>>(mdnsA, 'peer'),
+      start(mdnsA, mdnsB)
+    ])
 
-    const { detail: { id } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => {
-      mdnsA.addEventListener('peer', resolve, {
-        once: true
-      })
-    })
-
-    expect(pB.toString()).to.eql(id.toString())
+    expect(pB).to.deep.equal(evt.detail.id)
 
     await stop(mdnsA, mdnsB)
   })
@@ -104,13 +104,13 @@ describe('MulticastDNS', () => {
       port: 50003 // port must be the same
     })(getComponents(pD, dMultiaddrs))
 
+    const foundPeer = (evt: CustomEvent<PeerInfo>): Map<string, PeerInfo> => peers.set(evt.detail.id.toString(), evt.detail)
+    mdnsA.addEventListener('peer', foundPeer)
+
     await start(mdnsA, mdnsB, mdnsD)
 
     const peers = new Map()
     const expectedPeer = pB.toString()
-
-    const foundPeer = (evt: CustomEvent<PeerInfo>): Map<string, PeerInfo> => peers.set(evt.detail.id.toString(), evt.detail)
-    mdnsA.addEventListener('peer', foundPeer)
 
     await pWaitFor(() => peers.has(expectedPeer))
     mdnsA.removeEventListener('peer', foundPeer)
@@ -204,15 +204,14 @@ describe('MulticastDNS', () => {
       ip: '224.0.0.252' // ip must be the same
     })(getComponents(pB, bMultiaddrs))
 
-    await start(mdnsA, mdnsB)
+    const [
+      evt
+    ] = await Promise.all([
+      pEvent<'peer', CustomEvent<PeerInfo>>(mdnsA, 'peer'),
+      start(mdnsA, mdnsB)
+    ])
 
-    const { detail: { id } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => {
-      mdnsA.addEventListener('peer', resolve, {
-        once: true
-      })
-    })
-
-    expect(pB.toString()).to.eql(id.toString())
+    expect(pB).to.deep.equal(evt.detail.id)
 
     await stop(mdnsA, mdnsB)
   })
@@ -259,15 +258,14 @@ describe('MulticastDNS', () => {
       multiaddr(localWsAddress)
     ]))
 
-    await start(mdnsA, mdnsB)
+    const [
+      evt
+    ] = await Promise.all([
+      pEvent<'peer', CustomEvent<PeerInfo>>(mdnsA, 'peer'),
+      start(mdnsA, mdnsB)
+    ])
 
-    const { detail: { id, multiaddrs } } = await new Promise<CustomEvent<PeerInfo>>((resolve) => {
-      mdnsA.addEventListener('peer', resolve, {
-        once: true
-      })
-    })
-
-    expect(pB.toString()).to.eql(id.toString())
+    expect(pB).to.deep.equal(evt.detail.id)
 
     ;[
       publicAddress,
@@ -275,7 +273,7 @@ describe('MulticastDNS', () => {
       dnsAddress,
       longAddress
     ].forEach(addr => {
-      expect(multiaddrs.map(ma => ma.toString()))
+      expect(evt.detail.multiaddrs.map(ma => ma.toString()))
         .to.not.include(addr)
     })
 
@@ -286,7 +284,7 @@ describe('MulticastDNS', () => {
       loopbackAddress,
       loopbackAddress6
     ].forEach(addr => {
-      expect(multiaddrs.map(ma => ma.toString()))
+      expect(evt.detail.multiaddrs.map(ma => ma.toString()))
         .to.include(addr)
     })
 
