@@ -299,47 +299,6 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       }
     })
 
-    it('can close a stream for writing but receive a large amount of data', async function () {
-      const timeout = 120_000
-      this.timeout(timeout);
-      ({ dialer, listener, dialAddrs } = await getSetup(common))
-
-      if (listener == null) {
-        return this.skip()
-      }
-
-      const protocol = '/receive-data/1.0.0'
-      const chunkSize = 1024
-      const bytes = chunkSize * 1024 * 10
-
-      await listener.handle(protocol, async (stream) => {
-        for (let i = 0; i < bytes; i += chunkSize) {
-          const sendMore = stream.send(new Uint8Array(chunkSize))
-
-          if (!sendMore) {
-            await pEvent(stream, 'drain', {
-              rejectionEvents: [
-                'close'
-              ]
-            })
-          }
-        }
-
-        await stream.close()
-      })
-
-      const stream = await dialer.dialProtocol(dialAddrs[0], protocol)
-
-      const [
-        output
-      ] = await Promise.all([
-        all(stream),
-        stream.close()
-      ])
-
-      expect(new Uint8ArrayList(...output).byteLength).to.equal(bytes)
-    })
-
     it('can close local stream while a remote stream is writing', async function () {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
@@ -527,6 +486,47 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       // both ends should be closed
       assertStreamClosed(localStream)
       assertStreamClosed(remoteStream)
+    })
+
+    it('can close a stream for writing but receive a large amount of data', async function () {
+      const timeout = 120_000
+      this.timeout(timeout);
+      ({ dialer, listener, dialAddrs } = await getSetup(common))
+
+      if (listener == null) {
+        return this.skip()
+      }
+
+      const protocol = '/receive-data/1.0.0'
+      const chunkSize = 1024
+      const bytes = chunkSize * 1024 * 10
+
+      await listener.handle(protocol, async (stream) => {
+        for (let i = 0; i < bytes; i += chunkSize) {
+          const sendMore = stream.send(new Uint8Array(chunkSize))
+
+          if (!sendMore) {
+            await pEvent(stream, 'drain', {
+              rejectionEvents: [
+                'close'
+              ]
+            })
+          }
+        }
+
+        await stream.close()
+      })
+
+      const stream = await dialer.dialProtocol(dialAddrs[0], protocol)
+
+      const [
+        output
+      ] = await Promise.all([
+        all(stream),
+        stream.close()
+      ])
+
+      expect(new Uint8ArrayList(...output).byteLength).to.equal(bytes)
     })
   })
 
