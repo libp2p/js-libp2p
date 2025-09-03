@@ -3,13 +3,13 @@
   "version": "7.0.4",
   "description": "Yamux stream multiplexer for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ChainSafe/js-libp2p-yamux#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-yamux#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ChainSafe/js-libp2p-yamux.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/ChainSafe/js-libp2p-yamux/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
@@ -60,99 +60,6 @@
       "import": "./dist/src/stream.js"
     }
   },
-  "release": {
-    "branches": [
-      "master"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits",
-          "releaseRules": [
-            {
-              "breaking": true,
-              "release": "major"
-            },
-            {
-              "revert": true,
-              "release": "patch"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "docs",
-              "release": "patch"
-            },
-            {
-              "type": "test",
-              "release": "patch"
-            },
-            {
-              "type": "deps",
-              "release": "patch"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "conventionalcommits",
-          "presetConfig": {
-            "types": [
-              {
-                "type": "feat",
-                "section": "Features"
-              },
-              {
-                "type": "fix",
-                "section": "Bug Fixes"
-              },
-              {
-                "type": "chore",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "docs",
-                "section": "Documentation"
-              },
-              {
-                "type": "deps",
-                "section": "Dependencies"
-              },
-              {
-                "type": "test",
-                "section": "Tests"
-              }
-            ]
-          }
-        }
-      ],
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "CHANGELOG.md",
-            "package.json"
-          ]
-        }
-      ]
-    ]
-  },
   "scripts": {
     "clean": "aegir clean",
     "lint": "aegir lint",
@@ -167,22 +74,21 @@
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
-    "release": "aegir release",
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.0.0",
-    "@libp2p/utils": "^6.0.0",
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/utils": "^6.7.2",
     "race-signal": "^2.0.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
     "@dapplion/benchmark": "^1.0.0",
-    "@libp2p/interface-compliance-tests": "^6.4.12",
-    "@libp2p/mplex": "^11.0.0",
-    "aegir": "^47.0.17",
+    "@libp2p/interface-compliance-tests": "^6.5.0",
+    "@libp2p/mplex": "^11.0.47",
+    "aegir": "^47.0.21",
     "it-all": "^3.0.9",
-    "it-drain": "^3.0.5",
+    "it-drain": "^3.0.10",
     "it-pushable": "^3.2.3",
     "p-event": "^6.0.1"
   }

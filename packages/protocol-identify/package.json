@@ -51,21 +51,21 @@
     "@libp2p/peer-id": "^5.1.9",
     "@libp2p/peer-record": "^8.0.35",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.4.4",
-    "@multiformats/multiaddr-matcher": "^2.0.0",
-    "it-drain": "^3.0.9",
-    "it-parallel": "^3.0.11",
+    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr-matcher": "^2.0.2",
+    "it-drain": "^3.0.10",
+    "it-parallel": "^3.0.13",
     "main-event": "^1.0.1",
-    "protons-runtime": "^5.5.0",
+    "protons-runtime": "^5.6.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.2.0",
-    "aegir": "^47.0.14",
+    "aegir": "^47.0.21",
     "delay": "^6.0.0",
     "it-length-prefixed": "^10.0.1",
-    "protons": "^7.6.1",
+    "protons": "^7.7.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

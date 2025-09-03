@@ -9,7 +9,28 @@
   ],
   "references": [
     {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../kad-dht"
+    },
+    {
       "path": "../libp2p-daemon-protocol"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../transport-tcp"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

@@ -47,13 +47,13 @@
     "@libp2p/interface": "^2.11.0",
     "@libp2p/interface-internal": "^2.3.19",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.4.4",
+    "@multiformats/multiaddr": "^12.5.1",
     "p-event": "^6.0.1",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^47.0.14",
-    "it-all": "^3.0.8",
+    "aegir": "^47.0.21",
+    "it-all": "^3.0.9",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

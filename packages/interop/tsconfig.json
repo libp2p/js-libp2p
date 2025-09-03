@@ -5,5 +5,16 @@
   },
   "include": [
     "src"
+  ],
+  "references": [
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../libp2p-daemon-client"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }

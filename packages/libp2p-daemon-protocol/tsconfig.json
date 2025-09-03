@@ -8,5 +8,10 @@
   ],
   "exclude": [
     "src/index.js"
+  ],
+  "references": [
+    {
+      "path": "../interface"
+    }
   ]
 }

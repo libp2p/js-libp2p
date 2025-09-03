@@ -48,14 +48,14 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.11.0",
-    "@multiformats/multiaddr": "^12.4.4",
-    "interface-datastore": "^8.3.1",
-    "multiformats": "^13.3.6",
-    "weald": "^1.0.4"
+    "@multiformats/multiaddr": "^12.5.1",
+    "interface-datastore": "^8.3.2",
+    "multiformats": "^13.4.0",
+    "weald": "^1.0.6"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^5.1.9",
-    "aegir": "^47.0.14",
+    "aegir": "^47.0.21",
     "sinon": "^21.0.0",
     "uint8arrays": "^5.1.0"
   },

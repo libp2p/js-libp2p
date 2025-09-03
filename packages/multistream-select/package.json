@@ -58,10 +58,10 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.0.14",
+    "aegir": "^47.0.21",
     "iso-random-stream": "^2.0.2",
-    "it-all": "^3.0.8",
-    "it-drain": "^3.0.9",
+    "it-all": "^3.0.9",
+    "it-drain": "^3.0.10",
     "it-pipe": "^3.0.1",
     "p-event": "^6.0.1",
     "p-timeout": "^6.1.4"

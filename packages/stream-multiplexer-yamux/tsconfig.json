@@ -6,5 +6,19 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../interface-compliance-tests"
+    },
+    {
+      "path": "../stream-multiplexer-mplex"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }
