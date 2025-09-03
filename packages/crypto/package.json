@@ -86,7 +86,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^2.11.0",
-    "@noble/curves": "^1.9.7",
+    "@noble/curves": "^2.0.0",
     "@noble/hashes": "^1.8.0",
     "multiformats": "^13.4.0",
     "protons-runtime": "^5.6.0",
