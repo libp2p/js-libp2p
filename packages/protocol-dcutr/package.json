@@ -51,14 +51,13 @@
     "@multiformats/multiaddr": "^12.4.4",
     "@multiformats/multiaddr-matcher": "^2.0.0",
     "delay": "^6.0.0",
-    "it-protobuf-stream": "^2.0.2",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
     "aegir": "^47.0.14",
     "protons": "^7.6.1",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

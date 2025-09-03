@@ -36,7 +36,7 @@ These problems are the motivation for this package, having shared logic in this 
 Each function should be imported directly.
 
 ```TypeScript
-import { ipPortToMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
+import { ipPortToMultiaddr } from '@libp2p/utils'
 
 const ma = ipPortToMultiaddr('127.0.0.1', 9000)
 ```

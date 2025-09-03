@@ -84,6 +84,7 @@
     "it-pushable": "^3.2.3",
     "main-event": "^1.0.1",
     "multiformats": "^13.3.6",
+    "p-event": "^6.0.1",
     "p-queue": "^8.1.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
@@ -93,12 +94,13 @@
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.14",
     "delay": "^6.0.0",
-    "it-pair": "^2.0.6",
+    "it-all": "^3.0.9",
     "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
     "protons": "^7.6.1",
     "protons-runtime": "^5.5.0",
-    "sinon": "^20.0.0"
+    "sinon": "^21.0.0",
+    "sinon-ts": "^2.0.0"
   },
   "sideEffects": false
 }

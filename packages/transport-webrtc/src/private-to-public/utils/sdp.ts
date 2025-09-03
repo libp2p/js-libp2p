@@ -166,8 +166,13 @@ export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessi
 
   const lineBreak = desc.sdp.includes('\r\n') ? '\r\n' : '\n'
 
-  desc.sdp = desc.sdp
-    .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + lineBreak)
-    .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + lineBreak)
+  try {
+    desc.sdp = desc.sdp
+      .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + lineBreak)
+      .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + lineBreak)
+  } catch {
+    // fails under Node.js
+  }
+
   return desc
 }

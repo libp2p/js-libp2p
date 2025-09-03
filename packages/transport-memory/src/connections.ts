@@ -1,55 +1,12 @@
-/**
- * @packageDocumentation
- *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/)
- * that operates in-memory only.
- *
- * This is intended for testing and can only be used to connect two libp2p nodes
- * that are running in the same process.
- *
- * @example
- *
- * ```TypeScript
- * import { createLibp2p } from 'libp2p'
- * import { memory } from '@libp2p/memory'
- * import { multiaddr } from '@multiformats/multiaddr'
- *
- * const listener = await createLibp2p({
- *   addresses: {
- *     listen: [
- *       '/memory/node-a'
- *     ]
- *   },
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const dialer = await createLibp2p({
- *   transports: [
- *     memory()
- *   ]
- * })
- *
- * const ma = multiaddr('/memory/node-a')
- *
- * // dial the listener, timing out after 10s
- * const connection = await dialer.dial(ma, {
- *   signal: AbortSignal.timeout(10_000)
- * })
- *
- * // use connection...
- * ```
- */
-
 import { ConnectionFailedError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
 import delay from 'delay'
-import map from 'it-map'
 import { pushable } from 'it-pushable'
 import { raceSignal } from 'race-signal'
+import { DEFAULT_MAX_MESSAGE_SIZE } from './constants.ts'
+import { pushableToMaConn } from './pushable-to-conn.ts'
 import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
-import type { MultiaddrConnection, PeerId } from '@libp2p/interface'
+import type { Logger, MultiaddrConnection, PeerId } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export const connections = new Map<string, MemoryConnection>()
@@ -63,106 +20,74 @@ interface MemoryConnectionInit extends MemoryTransportInit {
   address: string
 }
 
+let connectionId = 0
+
 export class MemoryConnection {
+  public readonly latency: number
+
   private readonly components: MemoryTransportComponents
   private readonly init: MemoryConnectionInit
   private readonly connections: Set<MultiaddrConnection>
-  private readonly latency: number
+  private readonly log: Logger
 
   constructor (components: MemoryTransportComponents, init: MemoryConnectionInit) {
     this.components = components
     this.init = init
     this.connections = new Set()
     this.latency = init.latency ?? 0
+    this.log = components.logger.forComponent('libp2p:memory')
   }
 
-  async dial (dialingPeerId: PeerId, signal: AbortSignal): Promise<MultiaddrConnection> {
-    const dialerPushable = pushable<Uint8Array | Uint8ArrayList>()
-    const listenerPushable = pushable<Uint8Array | Uint8ArrayList>()
+  async dial (dialingPeerId: PeerId, dialingPeerLog: Logger, signal: AbortSignal): Promise<MultiaddrConnection> {
     const self = this
 
-    const dialer: MultiaddrConnection = {
-      source: (async function * () {
-        yield * map(listenerPushable, async buf => {
-          if (self.latency > 0) {
-            await delay(self.latency)
-          }
+    let dialerEnded = false
+    let listenerEnded = false
 
-          return buf
-        })
-      })(),
-      sink: async (source) => {
-        for await (const buf of source) {
-          dialerPushable.push(buf)
+    const dialerPushable = pushable<Uint8Array | Uint8ArrayList>({
+      onEnd (err) {
+        dialerEnded = true
+        self.connections.delete(dialer)
+
+        if (!listenerEnded) {
+          listenerPushable.end(err)
         }
-      },
-      close: async () => {
-        dialerPushable.end()
-        this.connections.delete(dialer)
-        dialer.timeline.close = Date.now()
+      }
+    })
+    const listenerPushable = pushable<Uint8Array | Uint8ArrayList>({
+      onEnd (err) {
+        listenerEnded = true
+        self.connections.delete(listener)
 
-        listenerPushable.end()
-        this.connections.delete(listener)
-        listener.timeline.close = Date.now()
-      },
-      abort: (err) => {
-        dialerPushable.end(err)
-        this.connections.delete(dialer)
-        dialer.timeline.close = Date.now()
+        if (!dialerEnded) {
+          dialerPushable.end(err)
+        }
+      }
+    })
 
-        listenerPushable.end(err)
-        this.connections.delete(listener)
-        listener.timeline.close = Date.now()
-      },
-      timeline: {
-        open: Date.now()
-      },
+    const dialer = pushableToMaConn({
+      connection: this,
       remoteAddr: multiaddr(`${this.init.address}/p2p/${this.components.peerId}`),
-      log: this.components.logger.forComponent('libp2p:memory')
-    }
+      direction: 'outbound',
+      localPushable: dialerPushable,
+      remotePushable: listenerPushable,
+      log: dialingPeerLog.newScope(`connection:${connectionId}`),
+      maxMessageSize: this.init.maxMessageSize ?? DEFAULT_MAX_MESSAGE_SIZE
+    })
 
-    const listener: MultiaddrConnection = {
-      source: (async function * () {
-        yield * map(dialerPushable, async buf => {
-          if (self.latency > 0) {
-            await delay(self.latency)
-          }
-
-          return buf
-        })
-      })(),
-      sink: async (source) => {
-        for await (const buf of source) {
-          listenerPushable.push(buf)
-        }
-      },
-      close: async () => {
-        listenerPushable.end()
-        this.connections.delete(listener)
-        listener.timeline.close = Date.now()
-
-        dialerPushable.end()
-        this.connections.delete(dialer)
-        dialer.timeline.close = Date.now()
-      },
-      abort: (err) => {
-        listenerPushable.end(err)
-        this.connections.delete(listener)
-        listener.timeline.close = Date.now()
-
-        dialerPushable.end(err)
-        this.connections.delete(dialer)
-        dialer.timeline.close = Date.now()
-      },
-      timeline: {
-        open: Date.now()
-      },
+    const listener = pushableToMaConn({
+      connection: this,
       remoteAddr: multiaddr(`${this.init.address}-outgoing/p2p/${dialingPeerId}`),
-      log: this.components.logger.forComponent('libp2p:memory')
-    }
+      direction: 'inbound',
+      localPushable: listenerPushable,
+      remotePushable: dialerPushable,
+      log: this.log.newScope(`connection:${connectionId}`),
+      maxMessageSize: this.init.maxMessageSize ?? DEFAULT_MAX_MESSAGE_SIZE
+    })
 
     this.connections.add(dialer)
     this.connections.add(listener)
+    connectionId++
 
     await raceSignal(delay(this.latency), signal)
 

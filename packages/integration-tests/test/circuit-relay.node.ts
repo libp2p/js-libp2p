@@ -1,27 +1,27 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 6] */
 
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { RELAY_V2_HOP_CODEC, circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
+import { PeerSet } from '@libp2p/peer-collections'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
+import { echo } from '@libp2p/utils'
+import { yamux } from '@libp2p/yamux'
 import { Circuit } from '@multiformats/mafmt'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import all from 'it-all'
-import { pipe } from 'it-pipe'
 import { createLibp2p } from 'libp2p'
-import defer from 'p-defer'
+import { pEvent } from 'p-event'
 import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, usingAsRelay } from './fixtures/utils.js'
+import { discoveredRelayConfig, doesNotHaveRelay, getRelayAddress, hasRelay, notUsingAsRelay, usingAsRelay } from './fixtures/utils.js'
 import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
-import type { Libp2p, Connection } from '@libp2p/interface'
+import type { Libp2p } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -48,6 +48,9 @@ async function createClient (options: Libp2pOptions = {}): Promise<Libp2p> {
     services: {
       identify: identify()
     },
+    connectionMonitor: {
+      enabled: false
+    },
     ...options
   })
 }
@@ -68,6 +71,9 @@ async function createRelay (options: Libp2pOptions = {}): Promise<Libp2p<{ relay
     connectionEncrypters: [
       plaintext()
     ],
+    connectionMonitor: {
+      enabled: false
+    },
     ...options,
     services: {
       relay: circuitRelayServer(),
@@ -85,10 +91,8 @@ const ECHO_PROTOCOL = '/test/echo/1.0.0'
 const echoService = (components: EchoServiceComponents): unknown => {
   return {
     async start () {
-      await components.registrar.handle(ECHO_PROTOCOL, ({ stream }) => {
-        void pipe(
-          stream, stream
-        )
+      await components.registrar.handle(ECHO_PROTOCOL, (stream) => {
+        return echo(stream)
       }, {
         runOnLimitedConnection: true
       })
@@ -176,9 +180,9 @@ describe('circuit-relay', () => {
       await relay1.stop()
 
       // wait for removed listening on the relay
-      await expect(usingAsRelay(local, relay1, {
+      await expect(notUsingAsRelay(local, relay1, {
         timeout: 1000
-      })).to.eventually.be.rejected()
+      })).to.eventually.be.undefined('local node did not remove relay address after relay stopped')
     })
 
     it('should try to listen on other connected peers relayed address if one used relay disconnects', async () => {
@@ -235,7 +239,7 @@ describe('circuit-relay', () => {
     })
 
     it('should not fail when trying to dial unreachable peers to add as hop relay and replaced removed ones', async () => {
-      const deferred = defer()
+      const deferred = Promise.withResolvers<void>()
 
       // discover one relay and connect
       await local.dial(relay1.getMultiaddrs()[0])
@@ -275,7 +279,7 @@ describe('circuit-relay', () => {
       expect(local.getMultiaddrs().find(ma => Circuit.matches(ma))).to.be.undefined()
 
       // set up listener for address change
-      const deferred = defer()
+      const deferred = Promise.withResolvers<void>()
 
       local.addEventListener('self:peer:update', ({ detail }) => {
         const hasCircuitRelayAddress = detail.peer.addresses
@@ -502,13 +506,13 @@ describe('circuit-relay', () => {
       const ma = getRelayAddress(remote)
       await local.dial(ma)
 
-      const deferred = defer()
-      const events: Array<CustomEvent<Connection>> = []
+      const deferred = Promise.withResolvers<void>()
+      const disconnectedPeers = new PeerSet()
 
       local.addEventListener('connection:close', (evt) => {
-        events.push(evt)
+        disconnectedPeers.add(evt.detail.remotePeer)
 
-        if (events.length === 2) {
+        if (disconnectedPeers.size === 2) {
           deferred.resolve()
         }
       })
@@ -520,8 +524,8 @@ describe('circuit-relay', () => {
       await deferred.promise
 
       // should have closed connections to remote and to relay
-      expect(events[0].detail.remotePeer.toString()).to.equal(remote.peerId.toString())
-      expect(events[1].detail.remotePeer.toString()).to.equal(relay1.peerId.toString())
+      expect(disconnectedPeers.has(remote.peerId)).to.be.true()
+      expect(disconnectedPeers.has(relay1.peerId)).to.be.true()
     })
 
     it('should mark an outgoing relayed connection as limited', async () => {
@@ -580,8 +584,8 @@ describe('circuit-relay', () => {
       const protocol = '/my-protocol/1.0.0'
 
       // remote registers handler, disallow running over limited connections
-      await remote.handle(protocol, ({ stream }) => {
-        void pipe(stream, stream)
+      await remote.handle(protocol, (stream) => {
+        echo(stream)
       }, {
         runOnLimitedConnection: false
       })
@@ -607,8 +611,8 @@ describe('circuit-relay', () => {
       const protocol = '/my-protocol/1.0.0'
 
       // remote registers handler, allow running over limited streams
-      await remote.handle(protocol, ({ stream }) => {
-        void pipe(stream, stream)
+      await remote.handle(protocol, (stream) => {
+        echo(stream)
       }, {
         runOnLimitedConnection: true
       })
@@ -635,6 +639,7 @@ describe('circuit-relay', () => {
     let local: Libp2p
     let remote: Libp2p
     let relay: Libp2p<{ relay: CircuitRelayService }>
+    const DATA_LIMIT = 2048
 
     beforeEach(async () => {
       [local, remote, relay] = await Promise.all([
@@ -644,7 +649,7 @@ describe('circuit-relay', () => {
           services: {
             relay: circuitRelayServer({
               reservations: {
-                defaultDataLimit: 1024n
+                defaultDataLimit: BigInt(DATA_LIMIT)
               }
             })
           }
@@ -675,33 +680,32 @@ describe('circuit-relay', () => {
 
       // set up an echo server on the remote
       const protocol = '/test/protocol/1.0.0'
-      await remote.handle(protocol, ({ stream }) => {
-        void Promise.resolve().then(async () => {
-          try {
-            for await (const buf of stream.source) {
-              transferred.append(buf)
-            }
-          } catch {}
+      await remote.handle(protocol, (stream) => {
+        stream.addEventListener('message', (evt) => {
+          transferred.append(evt.data)
         })
+      }, {
+        runOnLimitedConnection: true
       })
 
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
+      const stream = await local.dialProtocol(ma, protocol, {
+        runOnLimitedConnection: true
+      })
 
-      try {
-        const stream = await local.dialProtocol(ma, protocol)
-
-        await stream.sink(async function * () {
-          while (true) {
-            await delay(100)
-            yield new Uint8Array(2048)
-          }
-        }())
-      } catch {}
+      Promise.resolve().then(async () => {
+        while (true) {
+          await delay(100)
+          stream.send(new Uint8Array(2048))
+        }
+      }).catch(() => {
+        // writing to a closed stream will throw so swallow the error
+      })
 
       // we cannot be exact about this figure because mss, encryption and other
       // protocols all send data over connections when they are opened
-      expect(transferred.byteLength).to.be.lessThan(1024)
+      expect(transferred.byteLength).to.be.lessThan(DATA_LIMIT)
     })
   })
 
@@ -749,13 +753,9 @@ describe('circuit-relay', () => {
 
       // set up an echo server on the remote
       const protocol = '/test/protocol/1.0.0'
-      await remote.handle(protocol, ({ stream }) => {
-        void Promise.resolve().then(async () => {
-          try {
-            for await (const buf of stream.source) {
-              transferred.append(buf)
-            }
-          } catch {}
+      await remote.handle(protocol, (stream) => {
+        stream.addEventListener('message', (evt) => {
+          transferred.append(evt.data)
         })
       }, {
         runOnLimitedConnection: true
@@ -764,19 +764,22 @@ describe('circuit-relay', () => {
       // dial the remote from the local through the relay
       const ma = getRelayAddress(remote)
 
-      try {
-        const stream = await local.dialProtocol(ma, protocol, {
-          runOnLimitedConnection: true
-        })
+      const stream = await local.dialProtocol(ma, protocol, {
+        runOnLimitedConnection: true
+      })
 
-        await stream.sink(async function * () {
+      await Promise.all([
+        pEvent(stream, 'close'),
+        Promise.resolve().then(async () => {
           while (true) {
             await delay(100)
-            yield new Uint8Array(10)
+            stream.send(new Uint8Array(10))
             await delay(5000)
           }
-        }())
-      } catch {}
+        }).catch(() => {
+          // writing to a closed stream will throw so swallow the error
+        })
+      ])
 
       expect(transferred.byteLength).to.equal(10)
     })
@@ -902,21 +905,31 @@ describe('circuit-relay', () => {
 
     it('should not apply a data limit', async () => {
       const ma = getRelayAddress(remote)
-
-      const stream = await local.dialProtocol(ma, ECHO_PROTOCOL, {
-        runOnLimitedConnection: true
-      })
+      const stream = await local.dialProtocol(ma, ECHO_PROTOCOL)
 
       // write more than the default data limit
       const data = new Uint8Array(Number(DEFAULT_DATA_LIMIT * 2n))
+      const receivedData = Promise.withResolvers<void>()
 
-      const result = await pipe(
-        [data],
-        stream,
-        async (source) => new Uint8ArrayList(...(await all(source)))
-      )
+      const output = new Uint8ArrayList()
 
-      expect(result.subarray()).to.equalBytes(data)
+      stream.addEventListener('message', (evt) => {
+        output.append(evt.data)
+
+        if (output.byteLength === data.byteLength) {
+          receivedData.resolve()
+        }
+      })
+
+      if (!stream.send(data)) {
+        await pEvent(stream, 'drain', {
+          rejectionEvents: ['close']
+        })
+      }
+
+      await receivedData.promise
+
+      expect(output.subarray()).to.equalBytes(data)
     })
 
     it('should not apply a time limit', async () => {
@@ -935,20 +948,15 @@ describe('circuit-relay', () => {
       const start = Date.now()
       let finish = 0
 
-      await pipe(
-        async function * () {
-          while (true) {
-            yield new Uint8Array()
-            await delay(10)
+      while (true) {
+        stream.send(new Uint8Array())
+        await delay(10)
 
-            if (finished) {
-              finish = Date.now()
-              break
-            }
-          }
-        },
-        stream
-      )
+        if (finished) {
+          finish = Date.now()
+          break
+        }
+      }
 
       // default time limit is set to 100ms so the stream should have been open
       // for longer than that

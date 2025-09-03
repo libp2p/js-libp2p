@@ -73,7 +73,7 @@
     "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "protons": "^7.6.1",
-    "sinon": "^20.0.0"
+    "sinon": "^21.0.0"
   },
   "sideEffects": false
 }

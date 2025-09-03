@@ -1,85 +1,118 @@
-import { AbstractStream } from '@libp2p/utils/abstract-stream'
+import { AbstractStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
-import { Uint8ArrayList } from 'uint8arraylist'
-import type { AbortOptions, Direction, Logger, Stream } from '@libp2p/interface'
-import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import type { AbortOptions, MessageStreamDirection, Logger, StreamOptions } from '@libp2p/interface'
+import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface WebTransportStreamInit extends AbstractStreamInit {
-  bidiStream: WebTransportBidirectionalStream
+  stream: WebTransportBidirectionalStream
 }
 
-class WebTransportStream extends AbstractStream {
+export class WebTransportStream extends AbstractStream {
   private readonly writer: WritableStreamDefaultWriter<Uint8Array>
   private readonly reader: ReadableStreamDefaultReader<Uint8Array>
 
   constructor (init: WebTransportStreamInit) {
     super(init)
 
-    this.writer = init.bidiStream.writable.getWriter()
-    this.reader = init.bidiStream.readable.getReader()
+    this.writer = init.stream.writable.getWriter()
+    this.reader = init.stream.readable.getReader()
 
+    void this.writer.closed
+      .then(() => {
+        this.log('writer closed gracefully')
+      })
+      .catch((err) => {
+        // chrome/ff send different messages
+        if (err.message.includes('STOP_SENDING') || err.message.includes('StopSending')) {
+          // err.code === 0 so we may be able to use this to detect remote close
+          // read instead?
+          this.onRemoteCloseRead()
+        } else if (err.message.includes('RESET_STREAM') || err.message.includes('Reset')) {
+          this.onRemoteReset()
+        } else {
+          this.log('writer close promise rejected - %e', err)
+        }
+      })
+
+    this.readData()
+  }
+
+  private readData (): void {
     Promise.resolve()
       .then(async () => {
         while (true) {
           const result = await this.reader.read()
 
+          if (result.value != null) {
+            this.onData(result.value)
+          }
+
           if (result.done) {
-            init.log('remote closed write')
+            this.log('remote closed write')
+            this.onRemoteCloseWrite()
             return
           }
 
-          if (result.value != null) {
-            this.sourcePush(new Uint8ArrayList(result.value))
+          if (this.readStatus === 'paused') {
+            break
           }
         }
       })
       .catch(err => {
-        init.log.error('error reading from stream', err)
         this.abort(err)
       })
       .finally(() => {
-        this.remoteCloseWrite()
-      })
-
-    void this.writer.closed
-      .then(() => {
-        init.log('writer closed')
-      })
-      .catch((err) => {
-        init.log('writer close promise rejected', err)
-      })
-      .finally(() => {
-        this.remoteCloseRead()
+        this.reader.releaseLock()
       })
   }
 
-  sendNewStream (options?: AbortOptions | undefined): void {
-    // this is a no-op
-  }
-
-  async sendData (buf: Uint8ArrayList, options?: AbortOptions): Promise<void> {
-    for (const chunk of buf) {
-      this.log('sendData waiting for writer to be ready')
-      await raceSignal(this.writer.ready, options?.signal)
-
-      // the streams spec recommends not waiting for data to be sent
-      // https://streams.spec.whatwg.org/#example-manual-write-dont-await
-      this.writer.write(chunk)
+  sendData (data: Uint8ArrayList): SendResult {
+    // the streams spec recommends not waiting for data to be sent
+    // https://streams.spec.whatwg.org/#example-manual-write-dont-await
+    for (const buf of data) {
+      this.writer.write(buf)
         .catch(err => {
-          this.log.error('error sending stream data', err)
+          this.abort(err)
         })
+    }
+
+    this.log.trace('desired size after sending %d bytes is %d bytes', data.byteLength, this.writer.desiredSize)
+
+    // null means the stream has errored - https://streams.spec.whatwg.org/#writable-stream-default-writer-get-desired-size
+    if (this.writer.desiredSize == null) {
+      return {
+        sentBytes: data.byteLength,
+        canSendMore: false
+      }
+    }
+
+    const canSendMore = this.writer.desiredSize > 0
+
+    if (!canSendMore) {
+      this.writer.ready.then(() => {
+        this.safeDispatchEvent('drain')
+      }, (err) => {
+        this.abort(err)
+      })
+    }
+
+    return {
+      sentBytes: data.byteLength,
+      canSendMore
     }
   }
 
-  async sendReset (options?: AbortOptions): Promise<void> {
-    this.log('sendReset aborting writer')
-    await raceSignal(this.writer.abort(), options?.signal)
-    this.log('sendReset aborted writer')
+  sendReset (err: Error): void {
+    this.writer.abort(err)
+      .catch(err => {
+        this.log.error('error aborting writer - %e', err)
+      })
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
     this.log('sendCloseWrite closing writer')
-    await raceSignal(this.writer.close(), options?.signal)
+    await raceSignal(this.writer.close().catch(() => {}), options?.signal)
     this.log('sendCloseWrite closed writer')
   }
 
@@ -88,23 +121,23 @@ class WebTransportStream extends AbstractStream {
     await raceSignal(this.reader.cancel(), options?.signal)
     this.log('sendCloseRead cancelled reader')
   }
+
+  sendPause (): void {
+
+  }
+
+  sendResume (): void {
+    this.readData()
+  }
 }
 
-export async function webtransportBiDiStreamToStream (bidiStream: WebTransportBidirectionalStream, streamId: string, direction: Direction, activeStreams: Stream[], onStreamEnd: undefined | ((s: Stream) => void), log: Logger): Promise<Stream> {
-  const stream = new WebTransportStream({
-    bidiStream,
+export function webtransportBiDiStreamToStream (stream: WebTransportBidirectionalStream, streamId: string, direction: MessageStreamDirection, log: Logger, options?: StreamOptions): WebTransportStream {
+  return new WebTransportStream({
+    ...options,
+    stream,
     id: streamId,
     direction,
     log: log.newScope(`${direction}:${streamId}`),
-    onEnd: () => {
-      const index = activeStreams.findIndex(s => s === stream)
-      if (index !== -1) {
-        activeStreams.splice(index, 1)
-      }
-
-      onStreamEnd?.(stream)
-    }
+    protocol: ''
   })
-
-  return stream
 }

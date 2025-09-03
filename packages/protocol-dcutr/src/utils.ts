@@ -1,4 +1,4 @@
-import { isPrivateIp } from '@libp2p/utils/private-ip'
+import { isPrivateIp } from '@libp2p/utils'
 import { Circuit, IP, DNS } from '@multiformats/multiaddr-matcher'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'

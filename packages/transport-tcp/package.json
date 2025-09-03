@@ -59,17 +59,17 @@
     "@multiformats/multiaddr-matcher": "^2.0.0",
     "@types/sinon": "^17.0.4",
     "main-event": "^1.0.1",
-    "p-defer": "^4.0.1",
     "p-event": "^6.0.1",
     "progress-events": "^1.0.1",
-    "race-event": "^1.3.0",
-    "stream-to-it": "^1.0.1"
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.2.0",
     "aegir": "^47.0.14",
+    "delay": "^6.0.0",
+    "p-defer": "^4.0.1",
     "p-wait-for": "^5.0.2",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
   },

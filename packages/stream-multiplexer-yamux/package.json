@@ -1,0 +1,189 @@
+{
+  "name": "@libp2p/yamux",
+  "version": "7.0.4",
+  "description": "Yamux stream multiplexer for libp2p",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/ChainSafe/js-libp2p-yamux#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChainSafe/js-libp2p-yamux.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ChainSafe/js-libp2p-yamux/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS",
+    "libp2p",
+    "multiplexer",
+    "muxer",
+    "stream"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./config": {
+      "types": "./dist/src/config.d.ts",
+      "import": "./dist/src/config.js"
+    },
+    "./stream": {
+      "types": "./dist/src/stream.d.ts",
+      "import": "./dist/src/stream.js"
+    }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "CHANGELOG.md",
+            "package.json"
+          ]
+        }
+      ]
+    ]
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
+    "benchmark": "benchmark dist/test/bench/*.bench.js --timeout 400000",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "release": "aegir release",
+    "docs": "aegir docs"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^2.0.0",
+    "@libp2p/utils": "^6.0.0",
+    "race-signal": "^2.0.0",
+    "uint8arraylist": "^2.4.8"
+  },
+  "devDependencies": {
+    "@dapplion/benchmark": "^1.0.0",
+    "@libp2p/interface-compliance-tests": "^6.4.12",
+    "@libp2p/mplex": "^11.0.0",
+    "aegir": "^47.0.17",
+    "it-all": "^3.0.9",
+    "it-drain": "^3.0.5",
+    "it-pushable": "^3.2.3",
+    "p-event": "^6.0.1"
+  }
+}
