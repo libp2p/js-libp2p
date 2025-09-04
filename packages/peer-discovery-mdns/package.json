@@ -47,7 +47,7 @@
     "@libp2p/interface-internal": "^2.3.19",
     "@libp2p/peer-id": "^5.1.9",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.0",
     "@types/multicast-dns": "^7.2.4",
     "dns-packet": "^5.6.1",
     "main-event": "^1.0.1",

@@ -46,8 +46,8 @@
   "dependencies": {
     "@libp2p/interface": "^2.11.0",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.5.1",
-    "@multiformats/multiaddr-matcher": "^2.0.2",
+    "@multiformats/multiaddr": "^13.0.0",
+    "@multiformats/multiaddr-matcher": "^3.0.0",
     "@types/sinon": "^17.0.4",
     "delay": "^6.0.0",
     "it-map": "^3.1.4",
