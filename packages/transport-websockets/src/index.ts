@@ -27,7 +27,6 @@ import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@li
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
-import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { webSocketToMaConn } from './websocket-to-conn.js'
 import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
@@ -183,24 +182,10 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     })
   }
 
-  /**
-   * Takes a list of `Multiaddr`s and returns only valid WebSockets addresses.
-   * By default, in a browser environment only DNS+WSS multiaddr is accepted,
-   * while in a Node.js environment DNS+{WS, WSS} multiaddrs are accepted.
-   */
   listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
-
-    if (this.init?.filter != null) {
-      return this.init?.filter(multiaddrs)
-    }
-
-    return filters.all(multiaddrs)
+    return multiaddrs
   }
 
-  /**
-   * Filter check for all Multiaddrs that this transport can dial
-   */
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return this.listenFilter(multiaddrs)
   }
