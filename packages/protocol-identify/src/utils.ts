@@ -37,14 +37,6 @@ export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined)
   }
 }
 
-export function getAgentVersion (nodeInfo: NodeInfo, agentVersion?: string): string {
-  if (agentVersion != null) {
-    return agentVersion
-  }
-
-  return nodeInfo.userAgent
-}
-
 export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
   log('received identify from %p', connection.remotePeer)
 
@@ -217,7 +209,7 @@ export abstract class AbstractIdentify implements Startable {
     // Store self host metadata
     this.host = {
       protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: getAgentVersion(components.nodeInfo, init.agentVersion)
+      agentVersion: components.nodeInfo.userAgent
     }
 
     this.handleProtocol = this.handleProtocol.bind(this)
