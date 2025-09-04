@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interop",
-  "version": "13.0.2",
+  "version": "13.0.3",
   "description": "Interoperability Tests for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interop#readme",
