@@ -55,7 +55,7 @@
     "@libp2p/ping": "^2.0.37",
     "@libp2p/record": "^4.0.7",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.1",
     "any-signal": "^4.1.1",
     "interface-datastore": "^8.3.2",
     "it-all": "^3.0.9",

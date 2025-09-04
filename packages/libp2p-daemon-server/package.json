@@ -51,7 +51,7 @@
     "@libp2p/peer-id": "^5.1.9",
     "@libp2p/tcp": "^10.1.19",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.1",
     "it-drain": "^3.0.10",
     "it-length-prefixed": "^10.0.1",
     "it-pushable": "^3.2.3",
