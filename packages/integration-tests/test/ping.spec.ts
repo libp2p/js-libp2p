@@ -6,10 +6,10 @@ import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 
 describe('ping', () => {
-  let nodes: Array<Libp2p<{ ping: PingService }>>
+  let nodes: Array<Libp2p<{ ping: Ping }>>
 
   beforeEach(async () => {
     nodes = await Promise.all([
