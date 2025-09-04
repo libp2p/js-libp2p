@@ -46,7 +46,7 @@
     "@libp2p/crypto": "^5.1.8",
     "@libp2p/interface": "^2.11.0",
     "@libp2p/interface-internal": "^2.3.19",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.1",
     "p-event": "^6.0.1",
     "race-signal": "^2.0.0",
     "uint8arraylist": "^2.4.8",

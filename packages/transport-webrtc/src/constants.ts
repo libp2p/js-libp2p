@@ -27,16 +27,6 @@ export const UFRAG_ALPHABET = Array.from('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 export const UFRAG_PREFIX = 'libp2p+webrtc+v1/'
 
 /**
- * The multicodec code for webrtc-direct tuples
- */
-export const CODEC_WEBRTC_DIRECT = 0x0118
-
-/**
- * The multicodec code for certhash tuples
- */
-export const CODEC_CERTHASH = 0x01d2
-
-/**
  * How much can be buffered to the DataChannel at once
  */
 export const MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024

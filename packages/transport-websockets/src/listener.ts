@@ -1,7 +1,7 @@
 import http from 'node:http'
 import https from 'node:https'
 import net from 'node:net'
-import { getThinWaistAddresses, ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils'
+import { getNetConfig, getThinWaistAddresses, ipPortToMultiaddr as toMultiaddr } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
@@ -246,12 +246,12 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
       this.https.addListener('tlsClientError', this.onTLSClientError.bind(this))
     }
 
-    const options = ma.toOptions()
-    this.addr = `${options.host}:${options.port}`
+    const config = getNetConfig(ma)
+    this.addr = `${config.host}:${config.port}`
 
     this.server.listen({
-      ...options,
-      ipv6Only: options.family === 6
+      ...config,
+      ipv6Only: config.type === 'ip6'
     })
 
     await new Promise<void>((resolve, reject) => {

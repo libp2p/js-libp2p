@@ -52,8 +52,8 @@
     "@libp2p/interface": "^2.11.0",
     "@libp2p/interface-internal": "^2.3.19",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.5.1",
-    "@multiformats/multiaddr-matcher": "^2.0.2",
+    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr-matcher": "^3.0.1",
     "main-event": "^1.0.1",
     "p-defer": "^4.0.1",
     "race-signal": "^2.0.0"

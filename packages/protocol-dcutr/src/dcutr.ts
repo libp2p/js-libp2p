@@ -1,6 +1,6 @@
 import { InvalidMessageError, serviceDependencies } from '@libp2p/interface'
 import { pbStream } from '@libp2p/utils'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
 import { HolePunch } from './pb/message.js'
@@ -235,7 +235,7 @@ export class DefaultDCUtRService implements Startable {
         const ma = address.multiaddr
 
         // ensure all multiaddrs have the peer id
-        if (ma.getPeerId() == null) {
+        if (ma.getComponents().find(c => c.code === CODE_P2P)?.value == null) {
           return ma.encapsulate(`/p2p/${relayedConnection.remotePeer}`)
         }
 
@@ -312,7 +312,7 @@ export class DefaultDCUtRService implements Startable {
     const multiaddrs = this.getDialableMultiaddrs(connect.observedAddresses)
 
     if (multiaddrs.length === 0) {
-      this.log('B had no dialable multiaddrs')
+      this.log('B had no dialable multiaddrs in %o', connect.observedAddresses.map(b => multiaddr(b)))
       throw new InvalidMessageError('DCUtR connect message had no dialable multiaddrs')
     }
 

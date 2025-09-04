@@ -1,6 +1,6 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { InvalidParametersError, start, stop } from '@libp2p/interface'
-import { isLinkLocal, isLoopback, isPrivate, isPrivateIp } from '@libp2p/utils'
+import { getNetConfig, isLinkLocal, isLoopback, isPrivate, isPrivateIp } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { QUIC_V1, TCP, WebSockets, WebSocketsSecure, WebTransport } from '@multiformats/multiaddr-matcher'
 import { dynamicExternalAddress, staticExternalAddress } from './check-external-address.js'
@@ -118,8 +118,8 @@ export class UPnPPortMapper {
         continue
       }
 
-      const stringTuples = ma.stringTuples()
-      const address = `${stringTuples[0][1]}`
+      const config = getNetConfig(ma)
+      const address = config.host
 
       // ignore public IPv4 addresses
       if (isIPv4(address) && !isPrivate(ma)) {
@@ -146,9 +146,7 @@ export class UPnPPortMapper {
         continue
       }
 
-      const { port, transport } = ma.toOptions()
-
-      if (this.mappedPorts.has(`${port}-${transport}`)) {
+      if (this.mappedPorts.has(`${config.port}-${config.protocol}`)) {
         continue
       }
 
@@ -177,19 +175,23 @@ export class UPnPPortMapper {
 
       for (const addr of addresses) {
         // try to open uPnP ports for each thin waist address
-        const { port, host, transport, family } = addr.toOptions()
+        const { port, host, protocol, type } = getNetConfig(addr)
+
+        if (port == null || protocol == null || (type !== 'ip4' && type !== 'ip6')) {
+          continue
+        }
 
         // don't try to open port on IPv6 host via IPv4 gateway
-        if (family === 4 && this.gateway.family !== 'IPv4') {
+        if (type === 'ip4' && this.gateway.family !== 'IPv4') {
           continue
         }
 
         // don't try to open port on IPv4 host via IPv6 gateway
-        if (family === 6 && this.gateway.family !== 'IPv6') {
+        if (type === 'ip6' && this.gateway.family !== 'IPv6') {
           continue
         }
 
-        const key = `${host}-${port}-${transport}`
+        const key = `${host}-${port}-${protocol}`
 
         if (this.mappedPorts.has(key)) {
           // already mapped this port
@@ -198,21 +200,21 @@ export class UPnPPortMapper {
 
         try {
           const mapping = await this.gateway.map(port, host, {
-            protocol: transport === 'tcp' ? 'TCP' : 'UDP'
+            protocol: protocol === 'tcp' ? 'TCP' : 'UDP'
           })
           this.mappedPorts.set(key, mapping)
-          this.addressManager.addPublicAddressMapping(mapping.internalHost, mapping.internalPort, mapping.externalHost, mapping.externalPort, transport === 'tcp' ? 'tcp' : 'udp')
-          this.log('created mapping of %s:%s to %s:%s for protocol %s', mapping.internalHost, mapping.internalPort, mapping.externalHost, mapping.externalPort, transport)
+          this.addressManager.addPublicAddressMapping(mapping.internalHost, mapping.internalPort, mapping.externalHost, mapping.externalPort, protocol === 'tcp' ? 'tcp' : 'udp')
+          this.log('created mapping of %s:%s to %s:%s for protocol %s', mapping.internalHost, mapping.internalPort, mapping.externalHost, mapping.externalPort, protocol)
 
           if (options?.autoConfirmAddress === true) {
-            const ma = multiaddr(`/ip${isIPv4(mapping.externalHost) ? 4 : 6}/${mapping.externalHost}/${transport}/${mapping.externalPort}`)
+            const ma = multiaddr(`/ip${isIPv4(mapping.externalHost) ? 4 : 6}/${mapping.externalHost}/${protocol}/${mapping.externalPort}`)
             this.log('auto-confirming IP address %a', ma)
             this.addressManager.confirmObservedAddr(ma, {
               ttl: MAX_DATE - Date.now()
             })
           }
         } catch (err) {
-          this.log.error('failed to create mapping for %s:%d for protocol - %e', host, port, transport, err)
+          this.log.error('failed to create mapping for %s:%d for protocol - %e', host, port, protocol, err)
         }
       }
     } catch (err: any) {

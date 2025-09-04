@@ -1,4 +1,5 @@
 import { PeerMap } from '@libp2p/peer-collections'
+import { getNetConfig, isNetworkAddress } from '@libp2p/utils'
 import { multiaddrToIpNet, safelyCloseConnectionIfUnused } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
 import type { Libp2pEvents, Logger, ComponentLogger, PeerStore, Connection } from '@libp2p/interface'
@@ -102,7 +103,12 @@ export class ConnectionPruner {
       this.log('too many connections open - closing a connection to %p', connection.remotePeer)
       // check allow list
       const connectionInAllowList = this.allow.some((ipNet) => {
-        return ipNet.contains(connection.remoteAddr.nodeAddress().address)
+        if (isNetworkAddress(connection.remoteAddr)) {
+          const config = getNetConfig(connection.remoteAddr)
+          return ipNet.contains(config.host)
+        }
+
+        return true
       })
 
       // Connections in the allow list should be excluded from pruning

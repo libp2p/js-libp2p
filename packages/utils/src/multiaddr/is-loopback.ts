@@ -1,17 +1,22 @@
 import { isLoopbackAddr } from 'is-loopback-addr'
-import { isIpBased } from './is-ip-based.js'
+import { getNetConfig } from './get-net-config.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * Check if a given multiaddr is a loopback address.
  */
 export function isLoopback (ma: Multiaddr): boolean {
-  if (!isIpBased(ma)) {
-    // not an IP based multiaddr, cannot be private
+  try {
+    const config = getNetConfig(ma)
+
+    switch (config.type) {
+      case 'ip4':
+      case 'ip6':
+        return isLoopbackAddr(config.host)
+      default:
+        return false
+    }
+  } catch {
     return false
   }
-
-  const { address } = ma.nodeAddress()
-
-  return isLoopbackAddr(address)
 }

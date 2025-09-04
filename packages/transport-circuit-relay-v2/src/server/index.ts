@@ -3,10 +3,10 @@ import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import {
-  CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
   KEEP_ALIVE_SOURCE_TAG,
   MAX_CONNECTIONS,
@@ -23,9 +23,6 @@ import type { Reservation } from '../pb/index.js'
 import type { Logger, Connection, Stream, PeerId, Startable, AbortOptions } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { ProtobufStream } from '@libp2p/utils'
-import type { Multiaddr } from '@multiformats/multiaddr'
-
-const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
 
 export interface HopProtocolOptions {
   connection: Connection
@@ -165,7 +162,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
     const hopstr = stream.pb(HopMessage)
     this.log('hop reserve request from %p', connection.remotePeer)
 
-    if (isRelayAddr(connection.remoteAddr)) {
+    if (Circuit.exactMatch(connection.remoteAddr)) {
       this.log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
@@ -263,7 +260,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
   async handleConnect ({ stream, request, connection }: HopProtocolOptions, options: AbortOptions): Promise<void> {
     const hopstr = stream.pb(HopMessage)
 
-    if (isRelayAddr(connection.remoteAddr)) {
+    if (Circuit.matches(connection.remoteAddr)) {
       this.log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return

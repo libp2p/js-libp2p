@@ -1,4 +1,5 @@
 import { ConnectionFailedError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import { Memory } from '@multiformats/multiaddr-matcher'
 import { connections } from './connections.js'
 import { MemoryTransportListener } from './listener.js'
@@ -26,7 +27,8 @@ export class MemoryTransport implements Transport {
   async dial (ma: Multiaddr, options: DialTransportOptions): Promise<Connection> {
     options.signal.throwIfAborted()
 
-    const memoryConnection = connections.get(`${ma.getPeerId() == null ? ma : ma.decapsulate('/p2p')}`)
+    const peerId = ma.getComponents().find(c => c.code === CODE_P2P)?.value
+    const memoryConnection = connections.get(`${peerId == null ? ma : ma.decapsulate('/p2p')}`)
 
     if (memoryConnection == null) {
       throw new ConnectionFailedError(`No memory listener found at ${ma}`)

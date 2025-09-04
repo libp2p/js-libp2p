@@ -1,5 +1,4 @@
-import type { Stream, TypedEventTarget, MessageStream } from './index.js'
-import type { AbortOptions } from '@multiformats/multiaddr'
+import type { Stream, TypedEventTarget, MessageStream, AbortOptions } from './index.js'
 
 /**
  * User-facing message stream muxer options
