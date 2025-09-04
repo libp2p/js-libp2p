@@ -314,9 +314,4 @@ export interface PeerStore {
    * ```
    */
   consumePeerRecord(buf: Uint8Array, options?: ConsumePeerRecordOptions): Promise<boolean>
-
-  /**
-   * @deprecated Pass `expectedPeer` as a property of `options` instead
-   */
-  consumePeerRecord(buf: Uint8Array, expectedPeer?: PeerId, options?: AbortOptions): Promise<boolean>
 }

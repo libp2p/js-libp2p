@@ -1,22 +1,4 @@
-import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology } from '@libp2p/interface'
-import type { AbortOptions } from '@multiformats/multiaddr'
-
-export type {
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandler,
-
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandlerOptions,
-
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandlerRecord
-}
+import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, AbortOptions } from '@libp2p/interface'
 
 /**
  * The `Registrar` provides an interface for registering protocol handlers -
