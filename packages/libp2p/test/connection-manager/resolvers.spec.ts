@@ -83,16 +83,6 @@ describe('multiaddr resolve', () => {
     }
   })
 
-  it('should throw if no resolver is available', async () => {
-    const ma = multiaddr('/dnsaddr/bootstrap.libp2p.io')
-
-    resolvers = {}
-
-    // Resolve
-    await expect(ma.resolve()).to.eventually.be.rejected()
-      .and.to.have.property('name', 'NoAvailableResolverError')
-  })
-
   describe('dnsaddr', () => {
     afterEach(() => {
       sinon.restore()
@@ -139,20 +129,6 @@ describe('multiaddr resolve', () => {
       // Should only have one address with the same peer id and should ignore the bad record
       expect(resolvedMas).to.have.lengthOf(1)
       expect(resolvedMas[0].toString()).to.equal(stubs['_dnsaddr.am6.bootstrap.libp2p.io'][0].split('=').pop())
-    })
-
-    it('can cancel resolving', async () => {
-      const ma = multiaddr('/dnsaddr/bootstrap.libp2p.ii/p2p/QmbLHAnMoJPWSCR5Zhtx6BHJX9KiKNN6tpvbUcqanj75Nc')
-      const controller = new AbortController()
-
-      // Resolve
-      const resolvePromise = ma.resolve({
-        signal: controller.signal
-      })
-
-      controller.abort()
-
-      await expect(resolvePromise).to.eventually.be.rejected()
     })
 
     it('should abort resolving deeply nested records', async () => {

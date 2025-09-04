@@ -1,10 +1,9 @@
 /* eslint-env mocha */
 
-import { isPeerId, start, stop } from '@libp2p/interface'
+import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { IPFS } from '@multiformats/mafmt'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { bootstrap } from '../src/index.js'
@@ -104,7 +103,8 @@ describe('bootstrap', () => {
     await p
 
     const bootstrapper0ma = multiaddr(peerList[0])
-    const bootstrapper0PeerIdStr = bootstrapper0ma.getPeerId()
+    const bootstrapper0PeerIdStr = bootstrapper0ma.getComponents()
+      .find(c => c.code === CODE_P2P)?.value
 
     if (bootstrapper0PeerIdStr == null) {
       throw new Error('bootstrapper had no PeerID')
@@ -131,29 +131,13 @@ describe('bootstrap', () => {
     await stop(r)
   })
 
-  it('should not fail on malformed peers in peer list', async function () {
-    this.timeout(5 * 1000)
-
-    const r = bootstrap({
-      list: partialValidPeerList,
-      timeout: 100
-    })(components)
-
-    const p = new Promise<void>((resolve) => {
-      r.addEventListener('peer', (evt) => {
-        const { id, multiaddrs } = evt.detail
-
-        expect(id).to.exist()
-        expect(isPeerId(id)).to.be.true()
-        expect(multiaddrs.length).to.eq(1)
-        expect(IPFS.matches(multiaddrs[0].toString())).equals(true)
-        resolve()
-      })
-    })
-
-    await start(r)
-
-    await p
-    await stop(r)
+  it('should fail on malformed peers in peer list', async function () {
+    expect(() => {
+      bootstrap({
+        list: partialValidPeerList,
+        timeout: 100
+      })(components)
+    }).to.throw()
+      .with.property('name', 'ValidationError')
   })
 })

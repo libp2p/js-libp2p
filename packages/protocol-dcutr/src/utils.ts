@@ -1,4 +1,4 @@
-import { isPrivateIp } from '@libp2p/utils'
+import { isPrivate } from '@libp2p/utils'
 import { Circuit, IP, DNS } from '@multiformats/multiaddr-matcher'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -29,5 +29,5 @@ export function isPublicAndDialable (ma: Multiaddr, transportManager: TransportM
     return false
   }
 
-  return isPrivateIp(ma.toOptions().host) === false
+  return !isPrivate(ma)
 }

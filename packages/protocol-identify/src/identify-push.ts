@@ -1,7 +1,7 @@
 import { serviceCapabilities } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { debounce, pbStream } from '@libp2p/utils'
-import { protocols } from '@multiformats/multiaddr'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import parallel from 'it-parallel'
 import { setMaxListeners } from 'main-event'
@@ -63,7 +63,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     }
 
     try {
-      const listenAddresses = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+      const listenAddresses = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
       const peerRecord = new PeerRecord({
         peerId: this.components.peerId,
         multiaddrs: listenAddresses

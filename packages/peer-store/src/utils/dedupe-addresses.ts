@@ -1,9 +1,8 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import type { AddressFilter } from '../index.js'
 import type { Address as AddressPB } from '../pb/peer.js'
-import type { PeerId, Address } from '@libp2p/interface'
-import type { AbortOptions } from '@multiformats/multiaddr'
+import type { PeerId, Address, AbortOptions } from '@libp2p/interface'
 
 export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>, existingAddresses?: AddressPB[], options?: AbortOptions): Promise<AddressPB[]> {
   const addressMap = new Map<string, Address>()
@@ -45,7 +44,7 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     })
     .map(({ isCertified, multiaddr: ma }) => {
       // strip the trailing peerId if it is present
-      const addrPeer = ma.getPeerId()
+      const addrPeer = ma.getComponents().find(c => c.code === CODE_P2P)?.value
 
       if (peerId.equals(addrPeer)) {
         ma = ma.decapsulate(multiaddr(`/p2p/${peerId}`))

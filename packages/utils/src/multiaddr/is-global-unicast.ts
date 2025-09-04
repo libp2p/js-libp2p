@@ -1,5 +1,5 @@
 import { cidrContains } from '@chainsafe/netmask'
-import { CODE_IP6 } from '@multiformats/multiaddr'
+import { getNetConfig } from './get-net-config.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -7,18 +7,15 @@ import type { Multiaddr } from '@multiformats/multiaddr'
  */
 export function isGlobalUnicast (ma: Multiaddr): boolean {
   try {
-    for (const { code, value } of ma.getComponents()) {
-      if (value == null) {
-        continue
-      }
+    const config = getNetConfig(ma)
 
-      if (code === CODE_IP6) {
-        return cidrContains('2000::/3', value)
-      }
+    switch (config.type) {
+      case 'ip6':
+        return cidrContains('2000::/3', config.host)
+      default:
+        return false
     }
   } catch {
-
+    return false
   }
-
-  return false
 }

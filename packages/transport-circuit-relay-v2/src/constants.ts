@@ -4,11 +4,6 @@ const second = 1000
 const minute = 60 * second
 
 /**
- * Multicodec code
- */
-export const CIRCUIT_PROTO_CODE = 290
-
-/**
  * The maximum number of relay reservations the relay server will accept
  */
 export const DEFAULT_MAX_RESERVATION_STORE_SIZE = 15

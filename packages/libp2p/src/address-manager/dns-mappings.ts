@@ -1,9 +1,9 @@
-import { isPrivateIp, trackedMap } from '@libp2p/utils'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { getNetConfig, isNetworkAddress, isPrivateIp, trackedMap } from '@libp2p/utils'
+import { CODE_SNI, CODE_TLS, multiaddr } from '@multiformats/multiaddr'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
 import type { NodeAddress } from '@libp2p/interface-internal'
-import type { Multiaddr, StringTuple } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const MAX_DATE = 8_640_000_000_000_000
 
@@ -18,13 +18,6 @@ interface DNSMapping {
   lastVerified?: number
 }
 
-const CODEC_TLS = 0x01c0
-const CODEC_SNI = 0x01c1
-const CODEC_DNS = 0x35
-const CODEC_DNS4 = 0x36
-const CODEC_DNS6 = 0x37
-const CODEC_DNSADDR = 0x38
-
 export class DNSMappings {
   private readonly log: Logger
   private readonly mappings: Map<string, DNSMapping>
@@ -38,7 +31,12 @@ export class DNSMappings {
   }
 
   has (ma: Multiaddr): boolean {
-    const host = this.findHost(ma)
+    const config = getNetConfig(ma)
+    let host = config.host
+
+    if ((config.type === 'ip4' || config.type === 'ip6') && config.sni != null) {
+      host = config.sni
+    }
 
     for (const mapping of this.mappings.values()) {
       if (mapping.domain === host) {
@@ -66,11 +64,16 @@ export class DNSMappings {
   }
 
   remove (ma: Multiaddr): boolean {
-    const host = this.findHost(ma)
+    const config = getNetConfig(ma)
+
+    if (config.type !== 'ip4' && config.type !== 'ip6') {
+      return false
+    }
+
     let wasConfident = false
 
     for (const [ip, mapping] of this.mappings.entries()) {
-      if (mapping.domain === host) {
+      if (mapping.domain === config.sni) {
         this.log('removing %s to %s DNS mapping %e', ip, mapping.domain)
         this.mappings.delete(ip)
         wasConfident = wasConfident || mapping.verified
@@ -84,37 +87,30 @@ export class DNSMappings {
     const dnsMappedAddresses: NodeAddress[] = []
 
     for (let i = 0; i < addresses.length; i++) {
-      const address = addresses[i]
-      const tuples = address.multiaddr.stringTuples()
-      const host = tuples[0][1]
+      const address = addresses[i].multiaddr
 
-      if (host == null) {
+      if (!isNetworkAddress(address)) {
         continue
       }
 
+      const config = getNetConfig(address)
+
       for (const [ip, mapping] of this.mappings.entries()) {
-        if (host !== ip) {
+        if (config.host !== ip) {
           continue
         }
 
         // insert SNI tuple after TLS tuple, if one is present
-        const mappedIp = this.maybeAddSNITuple(tuples, mapping.domain)
+        const maWithSni = this.maybeAddSNIComponent(address, mapping.domain)
 
-        if (mappedIp) {
+        if (maWithSni != null) {
           // remove the address and replace it with the version that includes
           // the SNI tuple
           addresses.splice(i, 1)
           i--
 
           dnsMappedAddresses.push({
-            multiaddr: multiaddr(`/${
-              tuples.map(tuple => {
-                return [
-                  protocols(tuple[0]).name,
-                  tuple[1]
-                ].join('/')
-              }).join('/')
-            }`),
+            multiaddr: maWithSni,
             verified: mapping.verified,
             type: 'dns-mapping',
             expires: mapping.expires,
@@ -127,19 +123,30 @@ export class DNSMappings {
     return dnsMappedAddresses
   }
 
-  private maybeAddSNITuple (tuples: StringTuple[], domain: string): boolean {
-    for (let j = 0; j < tuples.length; j++) {
-      if (tuples[j][0] === CODEC_TLS && tuples[j + 1]?.[0] !== CODEC_SNI) {
-        tuples.splice(j + 1, 0, [CODEC_SNI, domain])
-        return true
+  private maybeAddSNIComponent (ma: Multiaddr, domain: string): Multiaddr | undefined {
+    const components = ma.getComponents()
+
+    for (let j = 0; j < components.length; j++) {
+      if (components[j].code === CODE_TLS && components[j + 1]?.code !== CODE_SNI) {
+        components.splice(j + 1, 0, {
+          name: 'sni',
+          code: CODE_SNI,
+          value: domain
+        })
+
+        return multiaddr(components)
       }
     }
-
-    return false
   }
 
   confirm (ma: Multiaddr, ttl: number): boolean {
-    const host = this.findHost(ma)
+    const config = getNetConfig(ma)
+    let host = config.host
+
+    if ((config.type === 'ip4' || config.type === 'ip6') && config.sni != null) {
+      host = config.sni
+    }
+
     let startingConfidence = false
 
     for (const [ip, mapping] of this.mappings.entries()) {
@@ -156,7 +163,13 @@ export class DNSMappings {
   }
 
   unconfirm (ma: Multiaddr, ttl: number): boolean {
-    const host = this.findHost(ma)
+    const config = getNetConfig(ma)
+
+    if (config.type !== 'ip4' && config.type !== 'ip6') {
+      return false
+    }
+
+    const host = config.sni ?? config.host
     let wasConfident = false
 
     for (const [ip, mapping] of this.mappings.entries()) {
@@ -169,17 +182,5 @@ export class DNSMappings {
     }
 
     return wasConfident
-  }
-
-  private findHost (ma: Multiaddr): string | undefined {
-    for (const tuple of ma.stringTuples()) {
-      if (tuple[0] === CODEC_SNI) {
-        return tuple[1]
-      }
-
-      if (tuple[0] === CODEC_DNS || tuple[0] === CODEC_DNS4 || tuple[0] === CODEC_DNS6 || tuple[0] === CODEC_DNSADDR) {
-        return tuple[1]
-      }
-    }
   }
 }

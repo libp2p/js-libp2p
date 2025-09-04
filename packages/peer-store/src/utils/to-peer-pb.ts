@@ -6,8 +6,7 @@ import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
 import type { AddressFilter } from '../index.js'
 import type { Tag, Peer as PeerPB } from '../pb/peer.js'
 import type { ExistingPeer } from '../store.js'
-import type { PeerId, Address, PeerData, TagOptions } from '@libp2p/interface'
-import type { AbortOptions } from '@multiformats/multiaddr'
+import type { PeerId, Address, PeerData, TagOptions, AbortOptions } from '@libp2p/interface'
 
 export interface ToPBPeerOptions extends AbortOptions {
   addressFilter?: AddressFilter

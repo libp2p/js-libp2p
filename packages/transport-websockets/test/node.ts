@@ -4,6 +4,7 @@
 import fs from 'node:fs'
 import http from 'node:http'
 import { defaultLogger } from '@libp2p/logger'
+import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
@@ -93,7 +94,7 @@ describe('listen', () => {
     it('should error on starting two listeners on same address', async () => {
       listener = ws.createListener({ upgrader })
       const dumbServer = http.createServer()
-      const options = ma.toOptions()
+      const options = getNetConfig(ma)
       await new Promise<void>(resolve => dumbServer.listen(options.port, options.host, resolve))
       await expect(listener.listen(ma)).to.eventually.rejectedWith('listen EADDRINUSE')
       await new Promise<void>(resolve => dumbServer.close(() => { resolve() }))
@@ -123,7 +124,7 @@ describe('listen', () => {
 
       await listener.listen(ma)
       const addrs = listener.getAddrs()
-      expect(addrs.map((a) => a.toOptions().port)).to.not.include(0)
+      expect(addrs.map((a) => getNetConfig(a).port)).to.not.include(0)
     })
 
     it('listen on any Interface', async () => {
@@ -132,7 +133,7 @@ describe('listen', () => {
 
       await listener.listen(ma)
       const addrs = listener.getAddrs()
-      expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+      expect(addrs.map((a) => getNetConfig(a).host)).to.not.include('0.0.0.0')
     })
 
     it('getAddrs', async () => {
@@ -149,7 +150,7 @@ describe('listen', () => {
       await listener.listen(addr)
       const addrs = listener.getAddrs()
       expect(addrs.length).to.equal(1)
-      expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+      expect(addrs.map((a) => getNetConfig(a).port)).to.not.include('0')
     })
 
     it('getAddrs from listening on 0.0.0.0', async () => {
@@ -157,7 +158,7 @@ describe('listen', () => {
       listener = ws.createListener({ upgrader })
       await listener.listen(addr)
       const addrs = listener.getAddrs()
-      expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
+      expect(addrs.map((a) => getNetConfig(a).host)).to.not.include('0.0.0.0')
     })
 
     it('getAddrs from listening on 0.0.0.0 and port 0', async () => {
@@ -165,8 +166,8 @@ describe('listen', () => {
       listener = ws.createListener({ upgrader })
       await listener.listen(addr)
       const addrs = listener.getAddrs()
-      expect(addrs.map((a) => a.toOptions().host)).to.not.include('0.0.0.0')
-      expect(addrs.map((a) => a.toOptions().port)).to.not.include('0')
+      expect(addrs.map((a) => getNetConfig(a).host)).to.not.include('0.0.0.0')
+      expect(addrs.map((a) => getNetConfig(a).port)).to.not.include('0')
     })
 
     it('getAddrs preserves p2p Id', async () => {
@@ -340,9 +341,9 @@ describe('dial', () => {
 
     it('dial', async () => {
       const addrs = listener.getAddrs().filter((ma) => {
-        const { address } = ma.nodeAddress()
+        const { host } = getNetConfig(ma)
 
-        return !isLoopbackAddr(address)
+        return !isLoopbackAddr(host)
       })
 
       if (addrs.length === 0) {
@@ -700,8 +701,8 @@ describe('auto-tls (IPv4)', () => {
     expect(WebSockets.exactMatch(addrs2[0])).to.be.true()
     expect(WebSocketsSecure.exactMatch(addrs2[1])).to.be.true()
 
-    const wsOptions = addrs2[0].toOptions()
-    const wssOptions = addrs2[1].toOptions()
+    const wsOptions = getNetConfig(addrs2[0])
+    const wssOptions = getNetConfig(addrs2[1])
 
     expect(wsOptions.host).to.equal(wssOptions.host)
     expect(wsOptions.port).to.equal(wssOptions.port)
@@ -762,8 +763,8 @@ describe('auto-tls (IPv6)', () => {
     expect(WebSockets.exactMatch(addrs2[0])).to.be.true()
     expect(WebSocketsSecure.exactMatch(addrs2[1])).to.be.true()
 
-    const wsOptions = addrs2[0].toOptions()
-    const wssOptions = addrs2[1].toOptions()
+    const wsOptions = getNetConfig(addrs2[0])
+    const wssOptions = getNetConfig(addrs2[1])
 
     expect(wsOptions.host).to.equal(wssOptions.host)
     expect(wsOptions.port).to.equal(wssOptions.port)

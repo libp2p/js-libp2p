@@ -7,7 +7,7 @@ import { mplex } from '@libp2p/mplex'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { TypedEventEmitter } from 'main-event'
@@ -134,7 +134,7 @@ describe('bootstrap', () => {
     })
 
     const expectedPeers = new Set(
-      list.map(ma => multiaddr(ma).getPeerId())
+      list.map(ma => multiaddr(ma).getComponents().findLast(c => c.code === CODE_P2P)?.value)
     )
 
     libp2p.addEventListener('connection:open', (evt) => {

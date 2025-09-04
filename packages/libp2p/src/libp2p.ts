@@ -4,7 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { isMultiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, isMultiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -318,7 +318,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
   async hangUp (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<void> {
     if (isMultiaddr(peer)) {
-      peer = peerIdFromString(peer.getPeerId() ?? '')
+      peer = peerIdFromString(peer.getComponents().findLast(c => c.code === CODE_P2P)?.value ?? '')
     }
 
     await this.components.connectionManager.closeConnections(peer, options)

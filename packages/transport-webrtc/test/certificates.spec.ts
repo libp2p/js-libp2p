@@ -3,14 +3,13 @@ import { start, stop } from '@libp2p/interface'
 import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_CERTHASH, multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { anySignal } from 'any-signal'
 import { MemoryDatastore } from 'datastore-core'
 import delay from 'delay'
 import { stubInterface } from 'sinon-ts'
 import { isNode, isElectronMain } from 'wherearewe'
-import { CODEC_CERTHASH } from '../src/constants.js'
 import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
 import type { Upgrader, Listener, Transport } from '@libp2p/interface'
@@ -179,10 +178,10 @@ function getCerthashes (addrs: Multiaddr[]): string[] {
 
   addrs
     .forEach(ma => {
-      ma.stringTuples()
-        .forEach(([key, value]) => {
-          if (key === CODEC_CERTHASH && value != null) {
-            output.push(value)
+      ma.getComponents()
+        .forEach(c => {
+          if (c.code === CODE_CERTHASH && c.value != null) {
+            output.push(c.value)
           }
         })
     })

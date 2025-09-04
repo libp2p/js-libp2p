@@ -1,5 +1,5 @@
 import { isPrivateIp } from '../private-ip.js'
-import { isIpBased } from './is-ip-based.js'
+import { getNetConfig } from './get-net-config.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -7,21 +7,16 @@ import type { Multiaddr } from '@multiformats/multiaddr'
  */
 export function isPrivate (ma: Multiaddr): boolean {
   try {
-    if (!isIpBased(ma)) {
-      // not an IP based multiaddr, cannot be private
-      return false
+    const config = getNetConfig(ma)
+
+    switch (config.type) {
+      case 'ip4':
+      case 'ip6':
+        return isPrivateIp(config.host) ?? false
+      default:
+        return config.host === 'localhost'
     }
-
-    const [[, value]] = ma.stringTuples()
-
-    if (value == null) {
-      return false
-    }
-
-    return isPrivateIp(value) ?? false
   } catch {
-
+    return false
   }
-
-  return true
 }

@@ -23,7 +23,7 @@
     "@libp2p/webrtc": "^5.2.24",
     "@libp2p/websockets": "^9.2.19",
     "@libp2p/webtransport": "^5.0.51",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.1",
     "aegir": "^47.0.21",
     "libp2p": "^2.10.0",
     "p-event": "^6.0.1",

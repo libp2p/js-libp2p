@@ -48,7 +48,7 @@
     "@libp2p/peer-id": "^5.1.9",
     "@libp2p/tcp": "^10.1.19",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.1",
     "multiformats": "^13.4.0"
   },
   "devDependencies": {

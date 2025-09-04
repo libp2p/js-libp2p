@@ -1,6 +1,6 @@
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
-import { isPrivateIp } from '@libp2p/utils'
+import { isPrivate } from '@libp2p/utils'
 import { Key } from 'interface-datastore/key'
 import { CID } from 'multiformats/cid'
 import * as raw from 'multiformats/codecs/raw'
@@ -12,7 +12,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { Operation, OperationMetrics } from './kad-dht.js'
 import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
 
 // const IPNS_PREFIX = uint8ArrayFromString('/ipns/')
 const PK_PREFIX = uint8ArrayFromString('/pk/')
@@ -21,34 +20,7 @@ export function removePrivateAddressesMapper (peer: PeerInfo): PeerInfo {
   return {
     ...peer,
     multiaddrs: peer.multiaddrs.filter(multiaddr => {
-      const [[type, addr]] = multiaddr.stringTuples()
-
-      // treat /dns, /dns4, and /dns6 addrs as public
-      if (type === 53 || type === 54 || type === 55) {
-        // localhost can be a dns address but it's private
-        if (addr === 'localhost') {
-          return false
-        }
-
-        return true
-      }
-
-      if (type !== 4 && type !== 6) {
-        return false
-      }
-
-      if (addr == null) {
-        return false
-      }
-
-      const isPrivate = isPrivateIp(addr)
-
-      if (isPrivate == null) {
-        // not an ip address
-        return true
-      }
-
-      return !isPrivate
+      return !isPrivate(multiaddr)
     })
   }
 }
@@ -57,28 +29,7 @@ export function removePublicAddressesMapper (peer: PeerInfo): PeerInfo {
   return {
     ...peer,
     multiaddrs: peer.multiaddrs.filter(multiaddr => {
-      const [[type, addr]] = multiaddr.stringTuples()
-
-      if (addr === 'localhost') {
-        return true
-      }
-
-      if (type !== 4 && type !== 6) {
-        return false
-      }
-
-      if (addr == null) {
-        return false
-      }
-
-      const isPrivate = isPrivateIp(addr)
-
-      if (isPrivate == null) {
-        // not an ip address
-        return false
-      }
-
-      return isPrivate
+      return isPrivate(multiaddr)
     })
   }
 }
@@ -158,40 +109,6 @@ export function createPutRecord (key: Uint8Array, value: Uint8Array): Uint8Array
   const rec = new Libp2pRecord(key, value, timeReceived)
 
   return rec.serialize()
-}
-
-// see https://github.com/multiformats/multiaddr/blob/master/protocols.csv
-const P2P_CIRCUIT_CODE = 290
-const DNS4_CODE = 54
-const DNS6_CODE = 55
-const DNSADDR_CODE = 56
-const IP4_CODE = 4
-const IP6_CODE = 41
-
-export function multiaddrIsPublic (multiaddr: Multiaddr): boolean {
-  const tuples = multiaddr.stringTuples()
-
-  // p2p-circuit should not enable server mode
-  for (const tuple of tuples) {
-    if (tuple[0] === P2P_CIRCUIT_CODE) {
-      return false
-    }
-  }
-
-  // dns4 or dns6 or dnsaddr
-  if (tuples[0][0] === DNS4_CODE || tuples[0][0] === DNS6_CODE || tuples[0][0] === DNSADDR_CODE) {
-    return true
-  }
-
-  // ip4 or ip6
-  if (tuples[0][0] === IP4_CODE || tuples[0][0] === IP6_CODE) {
-    const result = isPrivateIp(`${tuples[0][1]}`)
-    const isPublic = result == null || !result
-
-    return isPublic
-  }
-
-  return false
 }
 
 /**

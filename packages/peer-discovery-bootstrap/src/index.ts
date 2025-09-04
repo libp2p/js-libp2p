@@ -34,8 +34,8 @@
 
 import { peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { P2P } from '@multiformats/mafmt'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
+import { P2P } from '@multiformats/multiaddr-matcher'
 import { TypedEventEmitter } from 'main-event'
 import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, PeerStore, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
@@ -103,29 +103,29 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     this.components = components
     this.log = components.logger.forComponent('libp2p:bootstrap')
     this.timeout = options.timeout ?? DEFAULT_BOOTSTRAP_DISCOVERY_TIMEOUT
-    this.list = []
+    this.list = options.list
+      .map(str => multiaddr(str))
+      .filter(ma => {
+        if (!P2P.matches(ma)) {
+          this.log.error('Invalid multiaddr')
+          return false
+        }
 
-    for (const candidate of options.list) {
-      if (!P2P.matches(candidate)) {
-        this.log.error('Invalid multiaddr')
-        continue
-      }
+        const peerIdStr = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
 
-      const ma = multiaddr(candidate)
-      const peerIdStr = ma.getPeerId()
+        if (peerIdStr == null) {
+          this.log.error('Invalid bootstrap multiaddr without peer id')
+          return false
+        }
 
-      if (peerIdStr == null) {
-        this.log.error('Invalid bootstrap multiaddr without peer id')
-        continue
-      }
-
-      const peerData: PeerInfo = {
-        id: peerIdFromString(peerIdStr),
-        multiaddrs: [ma]
-      }
-
-      this.list.push(peerData)
-    }
+        return true
+      })
+      .map(ma => {
+        return {
+          id: peerIdFromString(ma.getComponents().findLast(c => c.code === CODE_P2P)?.value ?? ''),
+          multiaddrs: [ma]
+        }
+      })
 
     this._init = options
   }

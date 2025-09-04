@@ -5,8 +5,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
 import { Envelope as Protobuf } from './envelope.js'
 import { InvalidSignatureError } from './errors.js'
-import type { Record, Envelope, PrivateKey, PublicKey } from '@libp2p/interface'
-import type { AbortOptions } from '@multiformats/multiaddr'
+import type { Record, Envelope, PrivateKey, PublicKey, AbortOptions } from '@libp2p/interface'
 
 export interface RecordEnvelopeInit {
   publicKey: PublicKey

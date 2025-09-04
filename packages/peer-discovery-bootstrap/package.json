@@ -50,8 +50,8 @@
     "@libp2p/interface": "^2.11.0",
     "@libp2p/interface-internal": "^2.3.19",
     "@libp2p/peer-id": "^5.1.9",
-    "@multiformats/mafmt": "^12.1.6",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr-matcher": "^3.0.1",
     "main-event": "^1.0.1"
   },
   "devDependencies": {

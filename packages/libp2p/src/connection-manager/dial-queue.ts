@@ -2,7 +2,7 @@
 import { TimeoutError, DialError, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { PriorityQueue } from '@libp2p/utils'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
@@ -446,7 +446,7 @@ export class DialQueue {
       // if the resolved multiaddr has a PeerID but it's the wrong one, ignore it
       // - this can happen with addresses like bootstrap.libp2p.io that resolve
       // to multiple different peers
-      const addrPeerId = addr.multiaddr.getPeerId()
+      const addrPeerId = addr.multiaddr.getComponents().findLast(c => c.code === CODE_P2P)?.value
       if (peerId != null && addrPeerId != null) {
         return peerId.equals(addrPeerId)
       }

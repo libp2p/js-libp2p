@@ -1,4 +1,5 @@
-import { multiaddr } from '@multiformats/multiaddr'
+import { getNetConfig } from './multiaddr/get-net-config.ts'
+import { netConfigToMultiaddr } from './multiaddr/utils.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -7,14 +8,14 @@ import type { Multiaddr } from '@multiformats/multiaddr'
  *
  * Wildcard IP4/6 addresses will be expanded into all available interfaces.
  */
-export function getThinWaistAddresses (ma?: Multiaddr, port?: number): Multiaddr[] {
+export function getThinWaistAddresses (ma?: Multiaddr, port?: number | string): Multiaddr[] {
   if (ma == null) {
     return []
   }
 
-  const options = ma.toOptions()
+  const config = getNetConfig(ma)
 
   return [
-    multiaddr(`/ip${options.family}/${options.host}/${options.transport}/${port ?? options.port}`)
+    netConfigToMultiaddr(config, port)
   ]
 }

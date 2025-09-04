@@ -13,7 +13,7 @@ import { defaultLogger, logger } from '@libp2p/logger'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
 import { pbStream, lpStream, pipe } from '@libp2p/utils'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import * as lp from 'it-length-prefixed'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
@@ -409,7 +409,7 @@ export class Server implements Libp2pServer {
               type: Response.Type.OK,
               identify: {
                 id: daemon.libp2p.peerId.toMultihash().bytes,
-                addrs: daemon.libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(protocols('p2p').code)).map(m => m.bytes)
+                addrs: daemon.libp2p.getMultiaddrs().map(ma => ma.decapsulateCode(CODE_P2P)).map(m => m.bytes)
               }
             }, Response)
 

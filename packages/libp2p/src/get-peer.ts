@@ -1,6 +1,6 @@
 import { InvalidMultiaddrError, InvalidParametersError, isPeerId } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { isMultiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, isMultiaddr } from '@multiformats/multiaddr'
 import { PEER_ID } from '@multiformats/multiaddr-matcher'
 import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -24,7 +24,7 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAdd
   let peerId: PeerId | undefined
 
   if (multiaddrs.length > 0) {
-    const peerIdStr = multiaddrs[0].getPeerId()
+    const peerIdStr = multiaddrs[0].getComponents().findLast(c => c.code === CODE_P2P)?.value
     peerId = peerIdStr == null ? undefined : peerIdFromString(peerIdStr)
 
     // ensure PeerId is either not set or is consistent
@@ -33,7 +33,7 @@ export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAdd
         throw new InvalidMultiaddrError('Invalid multiaddr')
       }
 
-      const maPeerIdStr = ma.getPeerId()
+      const maPeerIdStr = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
 
       if (maPeerIdStr == null) {
         if (peerId != null) {

@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 
-import { isIPv6 } from '@chainsafe/is-ip'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop, FaultTolerance } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
+import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
@@ -187,7 +187,7 @@ describe('Transport Manager', () => {
       createListener: () => {
         return stubInterface<Listener>({
           listen: async (ma) => {
-            if (isIPv6(ma.toOptions().host)) {
+            if (getNetConfig(ma).type === 'ip6') {
               throw new Error('Listen on IPv6 failed')
             }
           }

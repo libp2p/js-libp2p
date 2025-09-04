@@ -19,7 +19,7 @@ export default {
       const { circuitRelayServer, circuitRelayTransport } = await import('@libp2p/circuit-relay-v2')
       const { identify } = await import('@libp2p/identify')
       const { echo } = await import('@libp2p/echo')
-      const { mockMuxer } = await import('@libp2p/utils')
+      const { mockMuxer, getNetConfig } = await import('@libp2p/utils')
       const { ping } = await import('@libp2p/ping')
       const { prefixLogger } = await import('@libp2p/logger')
       const { webRTCDirect } = await import('@libp2p/webrtc')
@@ -118,7 +118,7 @@ export default {
       const webRTCDirectPorts = new Set()
       const webRTCDirectAddresses = libp2p.getMultiaddrs()
         .filter(ma => {
-          const options = ma.toOptions()
+          const options = getNetConfig(ma)
           // firefox can't seem to dial loopback :shrug:
           if (options.host !== '127.0.0.1') {
             return false

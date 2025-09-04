@@ -1,5 +1,6 @@
 import { InvalidMultiaddrError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { getNetConfig } from '@libp2p/utils'
 import { WebTransport } from '@multiformats/multiaddr-matcher'
 import { bases, digest } from 'multiformats/basics'
 import type { PeerId } from '@libp2p/interface'
@@ -42,10 +43,10 @@ export function parseMultiaddr (ma: Multiaddr): ParsedMultiaddr {
     throw new InvalidMultiaddrError('Remote peer must be present in multiaddr')
   }
 
-  const opts = ma.toOptions()
+  const opts = getNetConfig(ma)
   let host = opts.host
 
-  if (opts.family === 6 && host?.includes(':')) {
+  if (opts.type === 'ip6' && host.includes(':')) {
     /**
      * This resolves cases where `new WebTransport()` fails to construct because of an invalid URL being passed.
      *

@@ -1,7 +1,7 @@
-import { serviceCapabilities, serviceDependencies } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { peerSet } from '@libp2p/peer-collections'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
-import { createScalableCuckooFilter, isGlobalUnicast, isPrivate, PeerQueue, repeatingTask, trackedMap, pbStream } from '@libp2p/utils'
+import { createScalableCuckooFilter, isGlobalUnicast, isPrivate, PeerQueue, repeatingTask, trackedMap, pbStream, getNetConfig } from '@libp2p/utils'
 import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
@@ -251,7 +251,7 @@ export class AutoNATService implements Startable {
 
   private async handleAutonatMessage (message: Message, connection: Connection, options?: AbortOptions): Promise<Message> {
     const ourHosts = this.components.addressManager.getAddresses()
-      .map(ma => ma.toOptions().host)
+      .map(ma => getNetConfig(ma).host)
 
     const dialRequest = message.dial
 
@@ -317,14 +317,14 @@ export class AutoNATService implements Startable {
       .map(buf => multiaddr(buf))
       .filter(ma => {
         try {
-          const options = ma.toOptions()
+          const options = getNetConfig(ma)
 
           if (isPrivate(ma)) {
             // don't try to dial private addresses
             return false
           }
 
-          if (options.host !== connection.remoteAddr.toOptions().host) {
+          if (options.host !== getNetConfig(connection.remoteAddr).host) {
             // skip any Multiaddrs where the target node's IP does not match the sending node's IP
             this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
             return false
@@ -349,7 +349,7 @@ export class AutoNATService implements Startable {
         }
       })
       .map(ma => {
-        if (ma.getPeerId() == null) {
+        if (ma.getComponents().find(c => c.code === CODE_P2P)?.value == null) {
           // make sure we have the PeerId as part of the Multiaddr
           ma = ma.encapsulate(`/p2p/${peerId.toString()}`)
         }
@@ -450,9 +450,9 @@ export class AutoNATService implements Startable {
           return false
         }
 
-        const options = addr.multiaddr.toOptions()
+        const options = getNetConfig(addr.multiaddr)
 
-        if (options.family === 6) {
+        if (options.type === 'ip6') {
           // do not send IPv6 addresses to peers without IPv6 addresses
           if (!supportsIPv6) {
             return false
@@ -571,7 +571,7 @@ export class AutoNATService implements Startable {
     // if the remote peer has IPv6 addresses, we can probably send them an IPv6
     // address to verify, otherwise only send them IPv4 addresses
     const supportsIPv6 = peer.addresses.some(({ multiaddr }) => {
-      return multiaddr.toOptions().family === 6
+      return getNetConfig(multiaddr).type === 'ip6'
     })
 
     // get multiaddrs this peer is eligible to verify
@@ -745,14 +745,20 @@ export class AutoNATService implements Startable {
 
   private getNetworkSegment (ma: Multiaddr): string {
     // make sure we use different network segments
-    const options = ma.toOptions()
+    const options = getNetConfig(ma)
 
-    if (options.family === 4) {
-      const octets = options.host.split('.')
-      return octets[0].padStart(3, '0')
+    switch (options.type) {
+      case 'ip4': {
+        const octets = options.host.split('.')
+        return octets[0].padStart(3, '0')
+      }
+      case 'ip6': {
+        const octets = options.host.split(':')
+        return octets[0].padStart(4, '0')
+      }
+      default: {
+        throw new InvalidParametersError(`Remote address ${ma} was not an IPv4 or Ipv6 address`)
+      }
     }
-
-    const octets = options.host.split(':')
-    return octets[0].padStart(4, '0')
   }
 }

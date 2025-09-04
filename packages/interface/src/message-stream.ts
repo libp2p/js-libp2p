@@ -1,5 +1,4 @@
-import type { Logger, StreamCloseEvent, StreamMessageEvent, TypedEventTarget } from './index.js'
-import type { AbortOptions } from '@multiformats/multiaddr'
+import type { Logger, StreamCloseEvent, StreamMessageEvent, TypedEventTarget, AbortOptions } from './index.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**
