@@ -1,6 +1,6 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { isPrivate } from '@libp2p/utils'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import type { LoggerOptions, PeerInfo } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Answer, StringAnswer, TxtAnswer } from 'dns-packet'
@@ -64,7 +64,7 @@ export function gotResponse (rsp: ResponsePacket, localPeerName: string, service
         return multiaddr(answerData.toString().substring('dnsaddr='.length))
       })
 
-    const peerId = multiaddrs[0].getPeerId()
+    const peerId = multiaddrs[0].getComponents().findLast(c => c.code === CODE_P2P)?.value
     if (peerId == null) {
       throw new Error("Multiaddr doesn't contain PeerId")
     }
@@ -72,7 +72,7 @@ export function gotResponse (rsp: ResponsePacket, localPeerName: string, service
 
     return {
       id: peerIdFromString(peerId),
-      multiaddrs: multiaddrs.map(addr => addr.decapsulateCode(protocols('p2p').code))
+      multiaddrs: multiaddrs.map(addr => addr.decapsulateCode(CODE_P2P))
     }
   } catch (e) {
     options?.log.error('failed to parse mdns response', e)
@@ -115,7 +115,7 @@ export function gotQuery (qry: QueryPacket, mdns: MulticastDNS, peerName: string
         }
 
         // spec mandates multiaddr contains peer id
-        if (addr.getPeerId() == null) {
+        if (addr.getComponents().findLast(c => c.code === CODE_P2P)?.value == null) {
           options?.log('multiaddr %a did not have a peer ID so cannot be used in mDNS query response', addr)
           return
         }

@@ -1,7 +1,7 @@
-import { multiaddr } from '@multiformats/multiaddr'
-import { convertToIpNet } from '@multiformats/multiaddr/convert'
+import { IpNet } from '@chainsafe/netmask'
+import { InvalidParametersError } from '@libp2p/interface'
+import { getNetConfig } from '@libp2p/utils'
 import { Circuit } from '@multiformats/multiaddr-matcher'
-import type { IpNet } from '@chainsafe/netmask'
 import type { Connection, AbortOptions, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -63,32 +63,36 @@ export async function safelyCloseConnectionIfUnused (connection?: Connection, op
  * - /ipcidr/32 for IPv4
  * - /ipcidr/128 for IPv6
  *
- * @param {string | Multiaddr} ma - The multiaddr string or object to convert.
+ * @param {string | Multiaddr} ma - The multiaddr object to convert.
  * @returns {IpNet} The converted IpNet object.
  * @throws {Error} Throws an error if the multiaddr is not valid.
  */
-export function multiaddrToIpNet (ma: string | Multiaddr): IpNet {
-  try {
-    let parsedMa: Multiaddr
-    if (typeof ma === 'string') {
-      parsedMa = multiaddr(ma)
-    } else {
-      parsedMa = ma
-    }
+export function multiaddrToIpNet (ma: Multiaddr): IpNet {
+  const config = getNetConfig(ma)
+  let mask = config.cidr
 
-    const protoNames = new Set([...parsedMa.getComponents().map(component => component.name)])
-
-    // Check if /ipcidr is already present
-    if (!protoNames.has('ipcidr')) {
-      const isIPv6 = protoNames.has('ip6')
-      const cidr = isIPv6 ? '/ipcidr/128' : '/ipcidr/32'
-      parsedMa = parsedMa.encapsulate(cidr)
-    }
-
-    return convertToIpNet(parsedMa)
-  } catch (error) {
-    throw new Error(`Can't convert to IpNet, Invalid multiaddr format: ${ma}`)
+  if (config.type !== 'ip4' && config.type !== 'ip6') {
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`)
   }
+
+  // Check if /ipcidr is already present
+  if (mask == null) {
+    switch (config.type) {
+      case 'ip4': {
+        mask = 32
+        break
+      }
+      case 'ip6': {
+        mask = 128
+        break
+      }
+      default: {
+        throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`)
+      }
+    }
+  }
+
+  return new IpNet(config.host, mask)
 }
 
 /**

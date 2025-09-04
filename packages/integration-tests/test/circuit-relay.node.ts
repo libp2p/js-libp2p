@@ -9,8 +9,8 @@ import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { echo } from '@libp2p/utils'
 import { yamux } from '@libp2p/yamux'
-import { Circuit } from '@multiformats/mafmt'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { createLibp2p } from 'libp2p'
@@ -409,7 +409,7 @@ describe('circuit-relay', () => {
       // get the relayed multiaddr without the remote's peer id
       const ma = getRelayAddress(remote)
       const maWithoutPeerId = multiaddr(`${ma.toString().split('/p2p-circuit')[0]}/p2p-circuit`)
-      expect(maWithoutPeerId.getPeerId()).to.not.equal(remote.peerId.toString())
+      expect(maWithoutPeerId.getComponents().findLast(c => c.code === CODE_P2P)?.value).to.not.equal(remote.peerId.toString())
 
       // ensure this is the only address we have for the peer
       await local.peerStore.patch(remote.peerId, {

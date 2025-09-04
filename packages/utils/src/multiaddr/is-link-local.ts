@@ -1,4 +1,4 @@
-import { CODE_IP4, CODE_IP6, CODE_IP6ZONE } from '@multiformats/multiaddr'
+import { getNetConfig } from './get-net-config.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -6,26 +6,17 @@ import type { Multiaddr } from '@multiformats/multiaddr'
  */
 export function isLinkLocal (ma: Multiaddr): boolean {
   try {
-    for (const { code, value } of ma.getComponents()) {
-      if (code === CODE_IP6ZONE) {
-        continue
-      }
+    const config = getNetConfig(ma)
 
-      if (value == null) {
-        continue
-      }
-
-      if (code === CODE_IP4) {
-        return value.startsWith('169.254.')
-      }
-
-      if (code === CODE_IP6) {
-        return value.toLowerCase().startsWith('fe80')
-      }
+    switch (config.type) {
+      case 'ip4':
+        return config.host.startsWith('169.254.')
+      case 'ip6':
+        return config.host.toLowerCase().startsWith('fe80')
+      default:
+        return false
     }
-  } catch {
-
+  } catch (err) {
+    return false
   }
-
-  return false
 }

@@ -2,12 +2,12 @@ import { DialError, InvalidMessageError, serviceCapabilities, serviceDependencie
 import { peerFilter } from '@libp2p/peer-collections'
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { pbStream } from '@libp2p/utils'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { CustomProgressEvent } from 'progress-events'
-import { CIRCUIT_PROTO_CODE, DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
+import { DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { CircuitListen, CircuitSearch, LimitTracker } from '../utils.js'
 import { RelayDiscovery } from './discovery.js'
@@ -140,18 +140,12 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
    * Dial a peer over a relay
    */
   async dial (ma: Multiaddr, options: DialTransportOptions<CircuitRelayDialEvents>): Promise<Connection> {
-    if (ma.protoCodes().filter(code => code === CIRCUIT_PROTO_CODE).length !== 1) {
-      const errMsg = 'Invalid circuit relay address'
-      this.log.error(errMsg, ma)
-      throw new DialError(errMsg)
-    }
-
     // Check the multiaddr to see if it contains a relay and a destination peer
     const addrs = ma.toString().split('/p2p-circuit')
     const relayAddr = multiaddr(addrs[0])
     const destinationAddr = multiaddr(addrs[addrs.length - 1])
-    const relayId = relayAddr.getPeerId()
-    const destinationId = destinationAddr.getPeerId()
+    const relayId = relayAddr.getComponents().find(c => c.code === CODE_P2P)?.value
+    const destinationId = destinationAddr.getComponents().find(c => c.code === CODE_P2P)?.value
 
     if (relayId == null || destinationId == null) {
       const errMsg = `ircuit relay dial to ${ma.toString()} failed as address did not have both relay and destination PeerIDs`

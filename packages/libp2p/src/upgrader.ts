@@ -2,6 +2,7 @@ import { InvalidMultiaddrError, InvalidPeerIdError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { trackedMap } from '@libp2p/utils'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
 import { CustomProgressEvent } from 'progress-events'
@@ -222,7 +223,7 @@ export class Upgrader implements UpgraderInterface {
         outbound: true
       })
 
-      const idStr = maConn.remoteAddr.getPeerId()
+      const idStr = maConn.remoteAddr.getComponents().findLast(c => c.code === CODE_P2P)?.value
       let remotePeerId: PeerId | undefined
 
       if (idStr != null) {
@@ -284,7 +285,7 @@ export class Upgrader implements UpgraderInterface {
         cryptoProtocol = 'native'
         remotePeer = opts.remotePeer
       } else {
-        const peerIdString = maConn.remoteAddr.getPeerId()
+        const peerIdString = maConn.remoteAddr.getComponents().findLast(c => c.code === CODE_P2P)?.value
         let remotePeerFromMultiaddr: PeerId | undefined
 
         if (peerIdString != null) {

@@ -1,7 +1,7 @@
 import { ListenError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createScalableCuckooFilter, PeerQueue, pbStream } from '@libp2p/utils'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { nanoid } from 'nanoid'
@@ -427,7 +427,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       for (const buf of response.reservation.addrs) {
         let ma = multiaddr(buf)
 
-        if (ma.getPeerId() == null) {
+        if (ma.getComponents().find(c => c.code === CODE_P2P) == null) {
           ma = ma.encapsulate(`/p2p/${connection.remotePeer}`)
         }
 

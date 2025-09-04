@@ -10,9 +10,9 @@ import { splitAddr } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'
 import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.js'
 import type { DataChannelOptions } from '../index.js'
-import type { LoggerOptions, Connection, ComponentLogger } from '@libp2p/interface'
+import type { LoggerOptions, Connection, ComponentLogger, AbortOptions } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
-import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
 export interface IncomingStreamOptions extends AbortOptions {

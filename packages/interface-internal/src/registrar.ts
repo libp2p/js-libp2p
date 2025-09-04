@@ -1,5 +1,4 @@
-import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology } from '@libp2p/interface'
-import type { AbortOptions } from '@multiformats/multiaddr'
+import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, AbortOptions } from '@libp2p/interface'
 
 export type {
   /**

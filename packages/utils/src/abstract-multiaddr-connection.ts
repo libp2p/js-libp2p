@@ -1,8 +1,8 @@
 import { pEvent } from 'p-event'
 import { AbstractMessageStream } from './abstract-message-stream.ts'
 import type { MessageStreamInit } from './abstract-message-stream.ts'
-import type { CounterGroup, Logger, MultiaddrConnection, MessageStreamDirection } from '@libp2p/interface'
-import type { AbortOptions, Multiaddr } from '@multiformats/multiaddr'
+import type { CounterGroup, Logger, MultiaddrConnection, MessageStreamDirection, AbortOptions } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface AbstractMultiaddrConnectionInit extends Omit<MessageStreamInit, 'log'> {
   remoteAddr: Multiaddr

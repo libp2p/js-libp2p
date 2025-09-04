@@ -43,7 +43,7 @@
   "dependencies": {
     "@libp2p/interface": "^2.11.0",
     "@libp2p/peer-collections": "^6.0.35",
-    "@multiformats/multiaddr": "^12.5.1",
+    "@multiformats/multiaddr": "^13.0.1",
     "progress-events": "^1.0.1"
   },
   "devDependencies": {

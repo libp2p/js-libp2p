@@ -1,6 +1,6 @@
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { RateLimiter } from '@libp2p/utils'
+import { getNetConfig, isNetworkAddress, RateLimiter } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
@@ -250,8 +250,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.onDisconnect = this.onDisconnect.bind(this)
 
     // allow/deny lists
-    this.allow = (init.allow ?? []).map(str => multiaddrToIpNet(str))
-    this.deny = (init.deny ?? []).map(str => multiaddrToIpNet(str))
+    this.allow = (init.allow ?? []).map(str => multiaddrToIpNet(multiaddr(str)))
+    this.deny = (init.deny ?? []).map(str => multiaddrToIpNet(multiaddr(str)))
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
@@ -639,8 +639,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   acceptIncomingConnection (maConn: MultiaddrConnection): boolean {
     // check deny list
-    const denyConnection = this.deny.some(ma => {
-      return ma.contains(maConn.remoteAddr.nodeAddress().address)
+    const denyConnection = this.deny.some(ipNet => {
+      if (isNetworkAddress(maConn.remoteAddr)) {
+        const config = getNetConfig(maConn.remoteAddr)
+        return ipNet.contains(config.host)
+      }
+
+      return false
     })
 
     if (denyConnection) {
@@ -650,7 +655,12 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     // check allow list
     const allowConnection = this.allow.some(ipNet => {
-      return ipNet.contains(maConn.remoteAddr.nodeAddress().address)
+      if (isNetworkAddress(maConn.remoteAddr)) {
+        const config = getNetConfig(maConn.remoteAddr)
+        return ipNet.contains(config.host)
+      }
+
+      return true
     })
 
     if (allowConnection) {
@@ -665,13 +675,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       return false
     }
 
-    if (maConn.remoteAddr.isThinWaistAddress()) {
-      const host = maConn.remoteAddr.nodeAddress().address
+    if (isNetworkAddress(maConn.remoteAddr)) {
+      const config = getNetConfig(maConn.remoteAddr)
 
       try {
-        this.inboundConnectionRateLimiter.consume(host, 1)
+        this.inboundConnectionRateLimiter.consume(config.host, 1)
       } catch {
-        this.log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, host)
+        this.log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, config.host)
         return false
       }
     }
