@@ -41,18 +41,6 @@ import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   /**
-   * @deprecated Use a ConnectionGater instead
-   */
-  filter?: MultiaddrFilter
-
-  /**
-   * Options used to create WebSockets
-   *
-   * @deprecated This option will be removed in a future release
-   */
-  websocket?: ClientOptions
-
-  /**
    * Options used to create the HTTP server
    */
   http?: http.ServerOptions
@@ -62,13 +50,6 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
    * unspecified.
    */
   https?: https.ServerOptions
-
-  /**
-   * Inbound connections must complete their upgrade within this many ms
-   *
-   * @deprecated Use the `connectionManager.inboundUpgradeTimeout` libp2p config key instead
-   */
-  inboundConnectionUpgradeTimeout?: number
 
   /**
    * How large the outgoing [bufferedAmount](https://websockets.spec.whatwg.org/#dom-websocket-bufferedamount)
