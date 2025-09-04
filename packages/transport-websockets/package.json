@@ -69,8 +69,8 @@
   "dependencies": {
     "@libp2p/interface": "^2.11.0",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.4.4",
-    "@multiformats/multiaddr-matcher": "^2.0.0",
+    "@multiformats/multiaddr": "^13.0.0",
+    "@multiformats/multiaddr-matcher": "^3.0.0",
     "@multiformats/multiaddr-to-uri": "^11.0.0",
     "@types/ws": "^8.18.1",
     "it-ws": "^6.1.5",

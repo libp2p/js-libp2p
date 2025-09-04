@@ -48,8 +48,8 @@
     "@libp2p/interface": "^2.11.0",
     "@libp2p/interface-internal": "^2.3.19",
     "@libp2p/utils": "^6.7.2",
-    "@multiformats/multiaddr": "^12.4.4",
-    "@multiformats/multiaddr-matcher": "^2.0.0",
+    "@multiformats/multiaddr": "^13.0.0",
+    "@multiformats/multiaddr-matcher": "^3.0.0",
     "delay": "^6.0.0",
     "protons-runtime": "^5.5.0",
     "uint8arraylist": "^2.4.8"

@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@multiformats/dns": "^1.0.6",
-    "@multiformats/multiaddr": "^12.4.4",
+    "@multiformats/multiaddr": "^13.0.0",
     "it-pushable": "^3.2.3",
     "main-event": "^1.0.1",
     "multiformats": "^13.3.6",
