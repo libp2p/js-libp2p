@@ -30,13 +30,14 @@ import { CustomProgressEvent } from 'progress-events'
 import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { webSocketToMaConn } from './websocket-to-conn.js'
-import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
+import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { WebSocketOptions } from 'it-ws/client'
 import type { TypedEventTarget } from 'main-event'
 import type http from 'node:http'
 import type https from 'node:https'
 import type { ProgressEvent } from 'progress-events'
+import type { ClientOptions } from 'ws'
 
 export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
   /**
