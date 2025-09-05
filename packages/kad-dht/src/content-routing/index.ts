@@ -1,5 +1,5 @@
 import { PeerSet } from '@libp2p/peer-collections'
-import { Queue } from '@libp2p/utils/queue'
+import { Queue } from '@libp2p/utils'
 import { pushable } from 'it-pushable'
 import { ALPHA } from '../constants.js'
 import { MessageType } from '../message/dht.js'
@@ -134,8 +134,8 @@ export class ContentRouting {
     queue.addEventListener('idle', () => {
       events.end()
     })
-    queue.addEventListener('error', (err) => {
-      this.log.error('error publishing provider record to peer - %e', err)
+    queue.addEventListener('failure', (event) => {
+      this.log.error('error publishing provider record to peer - %e', event.detail.error)
     })
 
     queue.add(async () => {

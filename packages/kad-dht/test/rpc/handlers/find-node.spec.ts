@@ -61,8 +61,8 @@ describe('rpc - handlers - FindNode', () => {
       multiaddr('/ip4/221.4.67.0/tcp/4002')
     ])
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(peerId.peerId.toMultihash().bytes, peerId.peerId)
+    peerRouting.getClosestPeersOffline
+      .withArgs(peerId.peerId.toMultihash().bytes)
       .resolves([{
         id: targetPeer.peerId, // closer peer
         multiaddrs: [
@@ -96,8 +96,8 @@ describe('rpc - handlers - FindNode', () => {
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.peerId.toMultihash().bytes, sourcePeer.peerId)
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
       .resolves([{
         id: targetPeer.peerId,
         multiaddrs: [
@@ -120,6 +120,26 @@ describe('rpc - handlers - FindNode', () => {
     expect(peer.multiaddrs).to.not.be.empty()
   })
 
+  it('does not return requesting peer in results', async () => {
+    const msg: Message = {
+      type: T,
+      key: targetPeer.peerId.toMultihash().bytes,
+      closer: [],
+      providers: []
+    }
+
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
+      .resolves([])
+
+    await handler.handle(sourcePeer.peerId, msg)
+
+    expect(peerRouting.getClosestPeersOffline.getCall(0).args[1]?.exclude)
+      .to.include(peerId.peerId, 'did not exclude server PeerId from results')
+    expect(peerRouting.getClosestPeersOffline.getCall(0).args[1]?.exclude)
+      .to.include(sourcePeer.peerId, 'did not exclude requesting peer id from results')
+  })
+
   it('handles no peers found', async () => {
     const msg: Message = {
       type: T,
@@ -128,7 +148,7 @@ describe('rpc - handlers - FindNode', () => {
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline.resolves([])
+    peerRouting.getClosestPeersOffline.resolves([])
 
     const response = await handler.handle(sourcePeer.peerId, msg)
 
@@ -143,8 +163,8 @@ describe('rpc - handlers - FindNode', () => {
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.peerId.toMultihash().bytes, sourcePeer.peerId)
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
       .resolves([{
         id: targetPeer.peerId,
         multiaddrs: [
@@ -186,8 +206,8 @@ describe('rpc - handlers - FindNode', () => {
       providers: []
     }
 
-    peerRouting.getCloserPeersOffline
-      .withArgs(targetPeer.peerId.toMultihash().bytes, sourcePeer.peerId)
+    peerRouting.getClosestPeersOffline
+      .withArgs(targetPeer.peerId.toMultihash().bytes)
       .resolves([{
         id: targetPeer.peerId,
         multiaddrs: [

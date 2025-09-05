@@ -1,7 +1,8 @@
-import { duplexPair } from 'it-pair/duplex'
+import { streamPair } from '@libp2p/utils'
+import { stubInterface } from 'sinon-ts'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { Connection, PeerId, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, IncomingStreamData, StreamHandler, StreamHandlerRecord, StreamMiddleware } from '@libp2p/interface'
+import type { Connection, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, StreamHandler, StreamHandlerRecord, PeerId, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 export class PubsubImplementation extends PubSubBaseProtocol {
@@ -129,37 +130,25 @@ export class MockRegistrar implements Registrar {
   }
 }
 
-export const ConnectionPair = (): [Connection, Connection] => {
-  const [d0, d1] = duplexPair<Uint8Array>()
+/**
+ * Returns two connections:
+ *
+ * 1. peerA -> peerB
+ * 2. peerB -> peerA
+ */
+export const connectionPair = async (peerA: PeerId, peerB: PeerId): Promise<[Connection, Connection]> => {
+  const [d0, d1] = await streamPair()
 
   return [
-    {
-      // @ts-expect-error incomplete implementation
-      newStream: async (protocol: string[]) => Promise.resolve({
-        ...d0,
-        protocol: protocol[0],
-        closeWrite: async () => {}
-      }),
-      streams: []
-    },
-    {
-      // @ts-expect-error incomplete implementation
-      newStream: async (protocol: string[]) => Promise.resolve({
-        ...d1,
-        protocol: protocol[0],
-        closeWrite: async () => {}
-      }),
-      streams: []
-    }
+    stubInterface<Connection>({
+      newStream: async () => d0,
+      streams: [],
+      remotePeer: peerB
+    }),
+    stubInterface<Connection>({
+      newStream: async () => d1,
+      streams: [],
+      remotePeer: peerA
+    })
   ]
-}
-
-export async function mockIncomingStreamEvent (protocol: string, conn: Connection, remotePeer: PeerId): Promise<IncomingStreamData> {
-  return {
-    stream: await conn.newStream([protocol]),
-    // @ts-expect-error incomplete implementation
-    connection: {
-      remotePeer
-    }
-  }
 }

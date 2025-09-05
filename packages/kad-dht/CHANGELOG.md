@@ -106,6 +106,132 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [15.1.11](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.10...kad-dht-v15.1.11) (2025-08-19)
+
+
+### Bug Fixes
+
+* avoid wasteful reprovides outside threshold ([#3238](https://github.com/libp2p/js-libp2p/issues/3238)) ([aa770ab](https://github.com/libp2p/js-libp2p/commit/aa770ab81b6ca2a86cc2d6df12a3176a292455bf))
+* silence max listeners warning for dht routing table ([#3233](https://github.com/libp2p/js-libp2p/issues/3233)) ([cf9aab5](https://github.com/libp2p/js-libp2p/commit/cf9aab5c841ec08bc023b9f49083c95ad78a7a07))
+* use failure event instead of error ([#3219](https://github.com/libp2p/js-libp2p/issues/3219)) ([4420fad](https://github.com/libp2p/js-libp2p/commit/4420fad686921f887854e1b37ecd01f65b276e0d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/interface-internal bumped from ^2.3.18 to ^2.3.19
+    * @libp2p/peer-collections bumped from ^6.0.34 to ^6.0.35
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/ping bumped from ^2.0.36 to ^2.0.37
+    * @libp2p/utils bumped from ^6.7.1 to ^6.7.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.16 to ^6.5.0
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+    * @libp2p/peer-store bumped from ^11.2.6 to ^11.2.7
+
+## [15.1.10](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.9...kad-dht-v15.1.10) (2025-07-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.15 to ^6.4.16
+
+## [15.1.9](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.8...kad-dht-v15.1.9) (2025-07-07)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.14 to ^6.4.15
+
+## [15.1.8](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.7...kad-dht-v15.1.8) (2025-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.13 to ^6.4.14
+
+## [15.1.7](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.6...kad-dht-v15.1.7) (2025-06-25)
+
+
+### Bug Fixes
+
+* remove signal event listener used during query ([#3202](https://github.com/libp2p/js-libp2p/issues/3202)) ([2d6079b](https://github.com/libp2p/js-libp2p/commit/2d6079bc16d591806877fa6efbced0fecca352d2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/interface-internal bumped from ^2.3.17 to ^2.3.18
+    * @libp2p/peer-collections bumped from ^6.0.33 to ^6.0.34
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/ping bumped from ^2.0.35 to ^2.0.36
+    * @libp2p/utils bumped from ^6.7.0 to ^6.7.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.12 to ^6.4.13
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/peer-store bumped from ^11.2.5 to ^11.2.6
+
+## [15.1.6](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.5...kad-dht-v15.1.6) (2025-06-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.11 to ^6.4.12
+
+## [15.1.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.4...kad-dht-v15.1.5) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.16 to ^2.3.17
+    * @libp2p/peer-collections bumped from ^6.0.32 to ^6.0.33
+    * @libp2p/ping bumped from ^2.0.34 to ^2.0.35
+    * @libp2p/utils bumped from ^6.6.7 to ^6.7.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.10 to ^6.4.11
+    * @libp2p/peer-store bumped from ^11.2.4 to ^11.2.5
+
+## [15.1.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.3...kad-dht-v15.1.4) (2025-06-16)
+
+
+### Bug Fixes
+
+* return closest known peers, even if they are not closer ([#3182](https://github.com/libp2p/js-libp2p/issues/3182)) ([ae595d8](https://github.com/libp2p/js-libp2p/commit/ae595d8db4456e57064876f7646ad3d2610177c2))
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/interface-internal bumped from ^2.3.15 to ^2.3.16
+    * @libp2p/peer-collections bumped from ^6.0.31 to ^6.0.32
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/ping bumped from ^2.0.33 to ^2.0.34
+    * @libp2p/utils bumped from ^6.6.6 to ^6.6.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.9 to ^6.4.10
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/peer-store bumped from ^11.2.3 to ^11.2.4
+
 ## [15.1.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v15.1.2...kad-dht-v15.1.3) (2025-06-03)
 
 

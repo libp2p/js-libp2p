@@ -37,7 +37,7 @@ import { base58btc } from 'multiformats/bases/base58'
 import { base64 } from 'multiformats/bases/base64'
 import debug from 'weald'
 import { truncatePeerId } from './utils.js'
-import type { PeerId } from '@libp2p/interface'
+import type { PeerId, Logger, ComponentLogger } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Key } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
@@ -82,16 +82,7 @@ debug.formatters.e = (v?: Error): string => {
   return v == null ? 'undefined' : notEmpty(v.stack) ?? notEmpty(v.message) ?? v.toString()
 }
 
-export interface Logger {
-  (formatter: any, ...args: any[]): void
-  error(formatter: any, ...args: any[]): void
-  trace(formatter: any, ...args: any[]): void
-  enabled: boolean
-}
-
-export interface ComponentLogger {
-  forComponent(name: string): Logger
-}
+export type { Logger, ComponentLogger }
 
 function createDisabledLogger (namespace: string): debug.Debugger {
   const logger = (): void => {}
@@ -205,7 +196,8 @@ export function logger (name: string): Logger {
 
   return Object.assign(debug(name), {
     error: debug(`${name}:error`),
-    trace
+    trace,
+    newScope: (scope: string) => logger(`${name}:${scope}`)
   })
 }
 

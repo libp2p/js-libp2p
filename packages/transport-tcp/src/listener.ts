@@ -1,6 +1,6 @@
-import net from 'net'
+import net from 'node:net'
 import { AlreadyStartedError, InvalidParametersError, NotStartedError } from '@libp2p/interface'
-import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
+import { getThinWaistAddresses } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { pEvent } from 'p-event'
@@ -8,13 +8,12 @@ import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { CloseServerOnMaxConnectionsOpts, TCPCreateListenerOptions } from './index.js'
 import type { NetConfig } from './utils.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, Logger, MultiaddrConnection, CounterGroup, MetricGroup, Metrics, Listener, ListenerEvents, Upgrader, AbortOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 interface Context extends TCPCreateListenerOptions {
   upgrader: Upgrader
-  socketInactivityTimeout?: number
-  socketCloseTimeout?: number
+  inactivityTimeout?: number
   maxConnections?: number
   backlog?: number
   metrics?: Metrics
@@ -61,6 +60,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     context.keepAlive = context.keepAlive ?? true
     context.noDelay = context.noDelay ?? true
+    context.allowHalfOpen = context.allowHalfOpen ?? false
 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
@@ -161,14 +161,14 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     let maConn: MultiaddrConnection
     try {
-      maConn = toMultiaddrConnection(socket, {
-        listeningAddr: this.status.listeningAddr,
-        socketInactivityTimeout: this.context.socketInactivityTimeout,
-        socketCloseTimeout: this.context.socketCloseTimeout,
+      maConn = toMultiaddrConnection({
+        socket,
+        inactivityTimeout: this.context.inactivityTimeout,
         metrics: this.metrics?.events,
         metricPrefix: `${this.addr} `,
-        logger: this.context.logger,
-        direction: 'inbound'
+        direction: 'inbound',
+        localAddr: this.status.listeningAddr,
+        log: this.context.logger.forComponent('libp2p:tcp:connection')
       })
     } catch (err: any) {
       this.log.error('inbound connection failed', err)
@@ -210,6 +210,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
           this.context.closeServerOnMaxConnections != null &&
           this.sockets.size >= this.context.closeServerOnMaxConnections.closeAbove
         ) {
+          this.log('pausing incoming connections as limit is exceeded - %d/%d', this.sockets.size, this.context.closeServerOnMaxConnections.closeAbove)
           this.pause()
         }
       })
@@ -234,8 +235,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     if (typeof address === 'string') {
       return [
-        // TODO: wrap with encodeURIComponent https://github.com/multiformats/multiaddr/pull/174
-        multiaddr(`/unix/${address}`)
+        multiaddr(`/unix/${encodeURIComponent(address)}`)
       ]
     }
 
@@ -265,11 +265,11 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     }
   }
 
-  async close (): Promise<void> {
+  async close (options?: AbortOptions): Promise<void> {
     const events: Array<Promise<void>> = []
 
     if (this.server.listening) {
-      events.push(pEvent(this.server, 'close'))
+      events.push(pEvent(this.server, 'close', options))
     }
 
     // shut down the server socket, permanently
@@ -282,7 +282,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     // the server socket in case new sockets are opened during the shutdown
     this.sockets.forEach(socket => {
       if (socket.readable) {
-        events.push(pEvent(socket, 'close'))
+        events.push(pEvent(socket, 'close', options))
         socket.destroy()
       }
     })
@@ -321,7 +321,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       return
     }
 
-    this.log('closing server on %s', this.server.address())
+    this.log('%s server on %s', permanent ? 'closing' : 'pausing', this.server.address())
 
     // NodeJS implementation tracks listening status with `this._handle` property.
     // - Server.close() sets this._handle to null immediately. If this._handle is null, NotStartedError is thrown

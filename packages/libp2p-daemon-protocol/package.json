@@ -1,0 +1,74 @@
+{
+  "name": "@libp2p/daemon-protocol",
+  "version": "7.0.6",
+  "description": "Communication protocol between libp2p daemons and clients",
+  "author": "",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p-daemon-protocol#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./stream-handler": {
+      "types": "./dist/src/stream-handler.d.ts",
+      "import": "./dist/src/stream-handler.js"
+    },
+    "./upgrader": {
+      "types": "./dist/src/upgrader.d.ts",
+      "import": "./dist/src/upgrader.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "generate": "protons ./src/index.proto",
+    "build": "aegir build",
+    "dep-check": "aegir dep-check"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^2.11.0",
+    "any-signal": "^4.1.1",
+    "protons-runtime": "^5.6.0",
+    "uint8arraylist": "^2.4.8"
+  },
+  "devDependencies": {
+    "aegir": "^47.0.21",
+    "protons": "^7.7.0"
+  }
+}

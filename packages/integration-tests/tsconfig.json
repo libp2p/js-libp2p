@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../connection-encrypter-noise"
+    },
+    {
       "path": "../connection-encrypter-plaintext"
     },
     {
@@ -27,13 +30,25 @@
       "path": "../interface-internal"
     },
     {
+      "path": "../interop"
+    },
+    {
       "path": "../kad-dht"
     },
     {
       "path": "../libp2p"
     },
     {
+      "path": "../libp2p-daemon-client"
+    },
+    {
+      "path": "../libp2p-daemon-server"
+    },
+    {
       "path": "../logger"
+    },
+    {
+      "path": "../peer-collections"
     },
     {
       "path": "../peer-discovery-bootstrap"
@@ -64,6 +79,9 @@
     },
     {
       "path": "../stream-multiplexer-mplex"
+    },
+    {
+      "path": "../stream-multiplexer-yamux"
     },
     {
       "path": "../transport-circuit-relay-v2"

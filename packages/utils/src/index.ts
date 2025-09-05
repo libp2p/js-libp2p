@@ -1,22 +1,39 @@
 /**
  * @packageDocumentation
  *
- * The libp2p ecosystem has lots of repos with it comes several problems like:
- *
- * - Domain logic dedupe - all modules shared a lot of logic like validation, streams handling, etc.
- * - Dependencies management - it's really easy with so many repos for dependencies to go out of control, they become outdated, different repos use different modules to do the same thing (like merging defaults options), browser bundles ends up with multiple versions of the same package, bumping versions is cumbersome to do because we need to go through several repos, etc.
- *
- * These problems are the motivation for this package, having shared logic in this package avoids creating cyclic dependencies, centralizes common use modules/functions (exactly like aegir does for the tooling), semantic versioning for 3rd party dependencies is handled in one single place (a good example is going from streams 2 to 3) and maintainers should only care about having `libp2p-utils` updated.
- *
- * @example
- *
- * Each function should be imported directly.
- *
- * ```TypeScript
- * import { ipPortToMultiaddr } from '@libp2p/utils/ip-port-to-multiaddr'
- *
- * const ma = ipPortToMultiaddr('127.0.0.1', 9000)
- * ```
+ * This module contains utility functions used by libp2p modules.
  */
 
-export {}
+export * from './filters/index.js'
+export * from './multiaddr/index.js'
+export * from './queue/index.js'
+export * from './abstract-message-stream.js'
+export * from './abstract-multiaddr-connection.js'
+export * from './abstract-stream-muxer.js'
+export * from './abstract-stream.js'
+export * from './adaptive-timeout.js'
+export * from './debounce.js'
+export * from './errors.js'
+export * from './get-thin-waist-addresses.js'
+export * from './global-unicast-ip.js'
+export * from './ip-port-to-multiaddr.js'
+export * from './is-async-generator.js'
+export * from './is-generator.js'
+export * from './is-promise.js'
+export * from './length-prefixed-decoder.js'
+export * from './link-local-ip.js'
+export * from './merge-options.js'
+export * from './mock-muxer.js'
+export * from './mock-stream.js'
+export * from './moving-average.js'
+export * from './multiaddr-connection-pair.js'
+export * from './peer-queue.js'
+export * from './priority-queue.js'
+export * from './private-ip.js'
+export * from './rate-limiter.js'
+export * from './repeating-task.js'
+export * from './stream-pair.js'
+export * from './stream-utils.js'
+export * from './socket-writer.js'
+export * from './tracked-list.js'
+export * from './tracked-map.js'

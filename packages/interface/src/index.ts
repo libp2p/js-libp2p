@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Connection, NewStreamOptions, Stream } from './connection.js'
+import type { Connection, NewStreamOptions } from './connection.js'
 import type { ContentRouting } from './content-routing.js'
 import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
 import type { Metrics } from './metrics.js'
@@ -24,8 +24,10 @@ import type { PeerRouting } from './peer-routing.js'
 import type { Address, Peer, PeerStore } from './peer-store.js'
 import type { Startable } from './startable.js'
 import type { StreamHandler, StreamHandlerOptions, StreamMiddleware } from './stream-handler.js'
+import type { Stream } from './stream.js'
 import type { Topology } from './topology.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
+import type { DNS } from '@multiformats/dns'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
@@ -126,10 +128,46 @@ export interface IdentifyResult {
  * Logger component for libp2p
  */
 export interface Logger {
+  /**
+   * Log a message
+   */
   (formatter: any, ...args: any[]): void
+
+  /**
+   * Log an error message
+   */
   error(formatter: any, ...args: any[]): void
+
+  /**
+   * Log a trace message
+   */
   trace(formatter: any, ...args: any[]): void
+
+  /**
+   * `true` if this logger is enabled
+   */
   enabled: boolean
+
+  /**
+   * Create a logger scoped below this one
+   *
+   * @example
+   *
+   * ```ts
+   * import { defaultLogger } from '@libp2p/logger'
+   *
+   * const log = defaultLogger().forComponent('foo')
+   *
+   * log('hello')
+   * // foo hello
+   *
+   * const subLog = log.newScope('bar')
+   *
+   * subLog('hello')
+   * // foo:bar hello
+   * ```
+   */
+  newScope(name: string): Logger
 }
 
 /**
@@ -171,6 +209,29 @@ export interface ComponentLogger {
    * ```
    */
   forComponent(name: string): Logger
+}
+
+export interface MultiaddrResolveOptions extends AbortOptions, LoggerOptions {
+  /**
+   * An optional DNS resolver
+   */
+  dns?: DNS
+}
+
+/**
+ * `MultiaddrResolver`s perform resolution of multiaddr components that require
+ * translation by external systems (for example DNSADDR to TXT records).
+ */
+export interface MultiaddrResolver {
+  /**
+   * Returns true if this resolver can resolve components of this multiaddr
+   */
+  canResolve (address: Multiaddr): boolean
+
+  /**
+   * Returns one or more multiaddrs with components resolved to other values
+   */
+  resolve (address: Multiaddr, options: MultiaddrResolveOptions): Promise<Multiaddr[]>
 }
 
 /**
@@ -882,9 +943,14 @@ export const serviceDependencies = Symbol.for('@libp2p/service-dependencies')
 export * from './connection.js'
 export * from './connection-encrypter.js'
 export * from './connection-gater.js'
+export * from './connection-protector.js'
 export * from './content-routing.js'
+export * from './errors.js'
+export * from './events.js'
 export * from './keys.js'
+export * from './message-stream.js'
 export * from './metrics.js'
+export * from './multiaddr-connection.js'
 export * from './peer-discovery.js'
 export * from './peer-id.js'
 export * from './peer-info.js'
@@ -892,10 +958,11 @@ export * from './peer-routing.js'
 export * from './peer-store.js'
 export * from './pubsub.js'
 export * from './record.js'
+export * from './startable.js'
 export * from './stream-handler.js'
 export * from './stream-muxer.js'
+export * from './stream.js'
 export * from './topology.js'
 export * from './transport.js'
-export * from './errors.js'
+
 export * from 'main-event'
-export * from './startable.js'

@@ -1,0 +1,58 @@
+{
+  "name": "@libp2p/daemon",
+  "version": "5.0.4",
+  "description": "libp2p-daemon JavaScript implementation",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p-daemon#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "libp2p"
+  ],
+  "bin": {
+    "jsp2pd": "dist/src/index.js"
+  },
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "test": "aegir test -t node",
+    "test:node": "aegir test -t node"
+  },
+  "dependencies": {
+    "@libp2p/daemon-server": "^8.0.6",
+    "@multiformats/multiaddr": "^13.0.1",
+    "es-main": "^1.4.0",
+    "yargs": "^18.0.0",
+    "yargs-promise": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.33",
+    "aegir": "^47.0.21",
+    "sinon": "^21.0.0"
+  }
+}

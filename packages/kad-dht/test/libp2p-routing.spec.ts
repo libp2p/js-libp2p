@@ -1,12 +1,13 @@
 import { contentRoutingSymbol, start, stop, peerRoutingSymbol } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
+import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
 import all from 'it-all'
+import first from 'it-first'
 import map from 'it-map'
-import { duplexPair } from 'it-pair/duplex'
-import { pbStream } from 'it-protobuf-stream'
+import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
 import { CID } from 'multiformats/cid'
 import pDefer from 'p-defer'
@@ -40,27 +41,25 @@ interface StubbedKadDHTComponents {
 
 const PROTOCOL = '/test/dht/1.0.0'
 
-function createStreams (peerId: PeerId, components: StubbedKadDHTComponents): { connection: Connection, incomingStream: Stream } {
-  const duplex = duplexPair<any>()
-  const outgoingStream = stubInterface<Stream>({
-    close: async () => {}
+async function createStreams (peerId: PeerId, components: StubbedKadDHTComponents): Promise<{ connection: Connection, incomingStreams: AsyncIterable<Stream> }> {
+  const incomingStreams = pushable<Stream>({
+    objectMode: true
   })
-  outgoingStream.source = duplex[0].source
-  outgoingStream.sink.callsFake(async source => duplex[0].sink(source))
-
-  const incomingStream = stubInterface<Stream>({
-    close: async () => {}
-  })
-  incomingStream.source = duplex[1].source
-  incomingStream.sink.callsFake(async source => duplex[1].sink(source))
 
   const connection = stubInterface<Connection>()
-  connection.newStream.withArgs(PROTOCOL).resolves(outgoingStream)
-  components.connectionManager.openConnection.withArgs(peerId).resolves(connection)
+  components.connectionManager.openStream.withArgs(peerId).callsFake(async () => {
+    const [outboundStream, incomingStream] = await streamPair()
+
+    queueMicrotask(() => {
+      incomingStreams.push(incomingStream)
+    })
+
+    return outboundStream
+  })
 
   return {
     connection,
-    incomingStream
+    incomingStreams
   }
 }
 
@@ -83,7 +82,7 @@ function createPeer (peerId: PeerId, peer: Partial<Peer> = {}): Peer {
   }
 }
 
-describe('content routing', () => {
+describe('libp2p routing - content routing', () => {
   let contentRouting: ContentRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
@@ -150,34 +149,48 @@ describe('content routing', () => {
 
     const {
       connection,
-      incomingStream
-    } = createStreams(remotePeer.id, components)
+      incomingStreams
+    } = await createStreams(remotePeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]
     topology.onConnect?.(remotePeer.id, connection)
 
     // begin provide
-    void contentRouting.provide(key)
+    await Promise.all([
+      contentRouting.provide(key),
+      (async function () {
+        let streamCount = 0
 
-    // read FIND_NODE message
-    const pb = pbStream(incomingStream)
-    const findNodeRequest = await pb.read(Message)
-    expect(findNodeRequest.type).to.equal(MessageType.FIND_NODE)
-    expect(findNodeRequest.key).to.equalBytes(key.multihash.bytes)
+        for await (const incomingStream of incomingStreams) {
+          streamCount++
 
-    // reply with this node
-    await pb.write({
-      type: MessageType.FIND_NODE,
-      closer: [{
-        id: remotePeer.id.toMultihash().bytes,
-        multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
-      }]
-    }, Message)
+          if (streamCount === 1) {
+            // read FIND_NODE message
+            const pb = pbStream(incomingStream)
+            const findNodeRequest = await pb.read(Message)
+            expect(findNodeRequest.type).to.equal(MessageType.FIND_NODE)
+            expect(findNodeRequest.key).to.equalBytes(key.multihash.bytes)
 
-    // read ADD_PROVIDER message
-    const addProviderRequest = await pb.read(Message)
-    expect(addProviderRequest.type).to.equal(MessageType.ADD_PROVIDER)
+            // reply with this node
+            await pb.write({
+              type: MessageType.FIND_NODE,
+              closer: [{
+                id: remotePeer.id.toMultihash().bytes,
+                multiaddrs: remotePeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
+              }]
+            }, Message)
+          } else if (streamCount === 2) {
+            // read ADD_PROVIDER message
+            const pb = pbStream(incomingStream)
+            const addProviderRequest = await pb.read(Message)
+            expect(addProviderRequest.type).to.equal(MessageType.ADD_PROVIDER)
+
+            return
+          }
+        }
+      })()
+    ])
   })
 
   it('should find providers', async () => {
@@ -192,30 +205,32 @@ describe('content routing', () => {
 
     const {
       connection,
-      incomingStream
-    } = createStreams(remotePeer.id, components)
+      incomingStreams
+    } = await createStreams(remotePeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]
     topology.onConnect?.(remotePeer.id, connection)
 
     void Promise.resolve().then(async () => {
-      const pb = pbStream(incomingStream)
+      for await (const incomingStream of incomingStreams) {
+        const pb = pbStream(incomingStream)
 
-      // read GET_PROVIDERS message
-      const getProvidersRequest = await pb.read(Message)
+        // read GET_PROVIDERS message
+        const getProvidersRequest = await pb.read(Message)
 
-      expect(getProvidersRequest.type).to.equal(MessageType.GET_PROVIDERS)
-      expect(getProvidersRequest.key).to.equalBytes(key.multihash.bytes)
+        expect(getProvidersRequest.type).to.equal(MessageType.GET_PROVIDERS)
+        expect(getProvidersRequest.key).to.equalBytes(key.multihash.bytes)
 
-      // reply with the provider node
-      await pb.write({
-        type: MessageType.GET_PROVIDERS,
-        providers: [{
-          id: providerPeer.id.toMultihash().bytes,
-          multiaddrs: providerPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
-        }]
-      }, Message)
+        // reply with the provider node
+        await pb.write({
+          type: MessageType.GET_PROVIDERS,
+          providers: [{
+            id: providerPeer.id.toMultihash().bytes,
+            multiaddrs: providerPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
+          }]
+        }, Message)
+      }
     })
 
     // should have received the provider
@@ -229,7 +244,7 @@ describe('content routing', () => {
   })
 })
 
-describe('peer routing', () => {
+describe('libp2p routing - peer routing', () => {
   let peerRouting: PeerRouting
   let components: StubbedKadDHTComponents
   let dht: KadDHT
@@ -291,32 +306,39 @@ describe('peer routing', () => {
 
     const {
       connection,
-      incomingStream
-    } = createStreams(remotePeer.id, components)
+      incomingStreams
+    } = await createStreams(remotePeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]
     topology.onConnect?.(remotePeer.id, connection)
 
-    // begin find
-    const p = peerRouting.findPeer(peers[0].peerId)
+    const [peerInfo] = await Promise.all([
+      // begin find
+      peerRouting.findPeer(peers[0].peerId),
+      Promise.resolve().then(async () => {
+        const incomingStream = await first(incomingStreams)
 
-    // read FIND_NODE message
-    const pb = pbStream(incomingStream)
-    const findNodeRequest = await pb.read(Message)
-    expect(findNodeRequest.type).to.equal(MessageType.FIND_NODE)
-    expect(findNodeRequest.key).to.equalBytes(peers[0].peerId.toMultihash().bytes)
+        if (incomingStream == null) {
+          throw new Error('No stream was opened')
+        }
 
-    // reply with this node
-    await pb.write({
-      type: MessageType.FIND_NODE,
-      closer: [{
-        id: targetPeer.id.toMultihash().bytes,
-        multiaddrs: targetPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
-      }]
-    }, Message)
+        // read FIND_NODE message
+        const pb = pbStream(incomingStream)
+        const findNodeRequest = await pb.read(Message)
+        expect(findNodeRequest.type).to.equal(MessageType.FIND_NODE)
+        expect(findNodeRequest.key).to.equalBytes(peers[0].peerId.toMultihash().bytes)
 
-    const peerInfo = await p
+        // reply with this node
+        await pb.write({
+          type: MessageType.FIND_NODE,
+          closer: [{
+            id: targetPeer.id.toMultihash().bytes,
+            multiaddrs: targetPeer.addresses.map(({ multiaddr }) => multiaddr.bytes)
+          }]
+        }, Message)
+      })
+    ])
 
     expect({
       id: peerInfo.id.toString(),
@@ -347,12 +369,12 @@ describe('peer routing', () => {
 
     const {
       connection,
-      incomingStream
-    } = createStreams(remotePeer.id, components)
+      incomingStreams
+    } = await createStreams(remotePeer.id, components)
 
     const {
-      incomingStream: closestPeerIncomingStream
-    } = createStreams(closestPeer.id, components)
+      incomingStreams: closestPeerIncomingStreams
+    } = await createStreams(closestPeer.id, components)
 
     // a peer has connected
     const topology = components.registrar.register.getCall(0).args[1]
@@ -360,6 +382,12 @@ describe('peer routing', () => {
 
     // remotePeer stream
     void Promise.resolve().then(async () => {
+      const incomingStream = await first(incomingStreams)
+
+      if (incomingStream == null) {
+        throw new Error('No stream was opened')
+      }
+
       const pb = pbStream(incomingStream)
 
       // read FIND_NODE message
@@ -381,7 +409,13 @@ describe('peer routing', () => {
 
     // closestPeer stream
     void Promise.resolve().then(async () => {
-      const pb = pbStream(closestPeerIncomingStream)
+      const incomingStream = await first(closestPeerIncomingStreams)
+
+      if (incomingStream == null) {
+        throw new Error('No stream was opened')
+      }
+
+      const pb = pbStream(incomingStream)
 
       // read FIND_NODE message
       const findNodeRequest = await pb.read(Message)

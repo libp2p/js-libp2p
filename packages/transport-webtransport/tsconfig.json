@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../connection-encrypter-noise"
+    },
+    {
       "path": "../crypto"
     },
     {
@@ -16,6 +19,9 @@
     },
     {
       "path": "../libp2p"
+    },
+    {
+      "path": "../libp2p-daemon-client"
     },
     {
       "path": "../logger"

@@ -1,8 +1,11 @@
-import { byteStream } from 'it-byte-stream'
-import { pipe } from 'it-pipe'
+import { ProtocolError, setMaxListeners, TimeoutError } from '@libp2p/interface'
+import { UnexpectedEOFError } from '@libp2p/utils'
+import { pEvent } from 'p-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import type { Echo as EchoInterface, EchoComponents, EchoInit } from './index.js'
-import type { AbortOptions, Logger, PeerId, Startable } from '@libp2p/interface'
+import type { PeerId, Startable, Stream } from '@libp2p/interface'
+import type { OpenConnectionOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -13,25 +16,20 @@ export class Echo implements Startable, EchoInterface {
   private readonly components: EchoComponents
   private started: boolean
   private readonly init: EchoInit
-  private readonly log: Logger
+  private readonly timeout: number
 
   constructor (components: EchoComponents, init: EchoInit = {}) {
-    this.log = components.logger.forComponent('libp2p:echo')
     this.started = false
     this.components = components
     this.protocol = `/${[init.protocolPrefix, PROTOCOL_NAME, PROTOCOL_VERSION].filter(Boolean).join('/')}`
     this.init = init
+    this.timeout = init.timeout ?? 20_000
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/echo'
 
   async start (): Promise<void> {
-    await this.components.registrar.handle(this.protocol, ({ stream }) => {
-      void pipe(stream, stream)
-        .catch((err: any) => {
-          this.log.error('error piping stream', err)
-        })
-    }, {
+    await this.components.registrar.handle(this.protocol, this.onEcho.bind(this), {
       maxInboundStreams: this.init.maxInboundStreams,
       maxOutboundStreams: this.init.maxOutboundStreams,
       runOnLimitedConnection: this.init.runOnLimitedConnection
@@ -48,24 +46,82 @@ export class Echo implements Startable, EchoInterface {
     return this.started
   }
 
-  async echo (peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: AbortOptions): Promise<Uint8Array> {
-    const conn = await this.components.connectionManager.openConnection(peer, options)
-    const stream = await conn.newStream(this.protocol, {
+  async onEcho (stream: Stream): Promise<void> {
+    const log = stream.log.newScope('echo')
+    const start = Date.now()
+    const signal = AbortSignal.timeout(this.timeout)
+    setMaxListeners(Infinity, signal)
+    let bytes = 0
+
+    signal.addEventListener('abort', () => {
+      stream.abort(new TimeoutError())
+    })
+
+    for await (const buf of stream) {
+      bytes += buf.byteLength
+
+      if (stream.status !== 'open') {
+        log('stream status changed to %s', stream.status)
+        break
+      }
+
+      if (!stream.send(buf)) {
+        log('sent %d bytes, wait for drain', bytes)
+        await pEvent(stream, 'drain', {
+          rejectionEvents: [
+            'close'
+          ],
+          signal
+        })
+      } else {
+        log('sent %d bytes', bytes)
+      }
+    }
+
+    log('echoed %d bytes in %dms', bytes, Date.now() - start)
+
+    await stream.close({
+      signal
+    })
+  }
+
+  async echo (peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array | Uint8ArrayList, options?: OpenConnectionOptions): Promise<Uint8ArrayList> {
+    const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
       ...this.init,
       ...options
     })
-    const bytes = byteStream(stream)
 
-    const [, output] = await Promise.all([
-      bytes.write(buf, options),
-      bytes.read({
-        ...options,
-        bytes: buf.byteLength
-      })
-    ])
+    const log = stream.log.newScope('echo')
+
+    const received = new Uint8ArrayList()
+    const output = Promise.withResolvers<Uint8ArrayList>()
+
+    stream.addEventListener('message', (evt) => {
+      received.append(evt.data)
+      log('received %d/%d bytes', received.byteLength, buf.byteLength)
+    })
+
+    stream.addEventListener('close', (evt) => {
+      if (evt.error != null) {
+        output.reject(evt.error)
+      }
+
+      if (received.byteLength > buf.byteLength) {
+        output.reject(new ProtocolError(`Overread: ${received.byteLength}/${buf.byteLength} bytes`))
+      }
+
+      if (received.byteLength < buf.byteLength) {
+        output.reject(new UnexpectedEOFError(`Underread: ${received.byteLength}/${buf.byteLength} bytes`))
+      }
+
+      output.resolve(received)
+    })
+
+    log('sending %d bytes', buf.byteLength)
+    stream.send(buf)
 
     await stream.close(options)
 
-    return output.subarray()
+    return output.promise
   }
 }

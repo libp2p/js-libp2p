@@ -2,18 +2,29 @@ import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { pair } from 'it-pair'
-import { pbStream } from 'it-protobuf-stream'
+import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { IdentifyPush } from '../src/identify-push.js'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { identifyPushStream } from './fixtures/index.js'
-import type { StubbedIdentifyComponents } from './fixtures/index.js'
-import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
+import type { ComponentLogger, Connection, Libp2pEvents, NodeInfo, PeerId, PeerStore, PrivateKey, TypedEventTarget } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
+
+interface StubbedIdentifyComponents {
+  peerId: PeerId
+  privateKey: PrivateKey
+  peerStore: StubbedInstance<PeerStore>
+  registrar: StubbedInstance<Registrar>
+  connectionManager: StubbedInstance<ConnectionManager>
+  addressManager: StubbedInstance<AddressManager>
+  events: TypedEventTarget<Libp2pEvents>
+  logger: ComponentLogger
+  nodeInfo: NodeInfo
+}
 
 describe('identify (push)', () => {
   let components: StubbedIdentifyComponents
@@ -59,10 +70,11 @@ describe('identify (push)', () => {
     await start(identify)
 
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const { stream, connection } = identifyPushStream(remotePeer)
-    const duplex = pair<any>()
-    stream.source = duplex.source
-    stream.sink.callsFake(async (source) => duplex.sink(source))
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/push/1.0.0').resolves(outgoingStream)
 
     components.connectionManager.getConnections.returns([
       connection
@@ -92,7 +104,7 @@ describe('identify (push)', () => {
     // push update to connections
     void identify.push()
 
-    const pb = pbStream(stream)
+    const pb = pbStream(incomingStream)
     const message = await pb.read(IdentifyMessage)
 
     expect(message.protocols).to.include('/super/fun/protocol')
@@ -106,15 +118,15 @@ describe('identify (push)', () => {
     await start(identify)
 
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const { stream, connection } = identifyPushStream(remotePeer)
-    const duplex = pair<any>()
-    stream.source = duplex.source
-    stream.sink.callsFake(async (source) => duplex.sink(source))
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
 
     const updatedProtocol = '/special-new-protocol/1.0.0'
     const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
-    const pb = pbStream(stream)
+    const pb = pbStream(outgoingStream)
     void pb.write({
       publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       protocols: [
@@ -127,10 +139,7 @@ describe('identify (push)', () => {
 
     components.peerStore.patch.reset()
 
-    await identify.handleProtocol({
-      stream,
-      connection
-    })
+    await identify.handleProtocol(incomingStream, connection)
 
     expect(components.peerStore.patch.callCount).to.equal(1)
     const updatedId = components.peerStore.patch.getCall(0).args[0]
@@ -149,19 +158,47 @@ describe('identify (push)', () => {
     await start(identify)
 
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    const { stream, connection } = identifyPushStream(remotePeer)
-    const duplex = pair<any>()
-    stream.source = duplex.source
-    stream.sink.callsFake(async (source) => duplex.sink(source))
+    const [, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
 
     components.peerStore.patch.reset()
 
-    await expect(identify.handleProtocol({
-      stream,
-      connection
-    })).to.eventually.be.undefined()
+    await expect(identify.handleProtocol(incomingStream, connection)).to.eventually.be.rejected
+      .with.property('name', 'TimeoutError')
 
     expect(components.peerStore.patch.callCount).to.equal(0, 'patched peer when push timed out')
-    expect(stream.abort.callCount).to.equal(1, 'did not abort stream')
+  })
+
+  it('should debounce outgoing pushes', async () => {
+    identify = new IdentifyPush(components, {
+      timeout: 10
+    })
+
+    await start(identify)
+
+    components.addressManager.getAddresses.returns([multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${components.peerId}`)])
+    components.registrar.getProtocols.returns(['/super/fun/protocol'])
+    components.peerStore.get.withArgs(components.peerId).resolves({
+      id: components.peerId,
+      addresses: [],
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map()
+    })
+
+    expect(components.connectionManager.getConnections.called).to.be.false()
+
+    identify.push()
+    identify.push()
+    identify.push()
+    identify.push()
+    identify.push()
+    identify.push()
+
+    await delay(2_000)
+
+    expect(components.connectionManager.getConnections.callCount).to.equal(1)
   })
 })

@@ -48,7 +48,7 @@ describe('multiaddr isLoopback', () => {
     [
       multiaddr('/dns4/wss0.bootstrap.libp2p.io/tcp/443'),
       multiaddr('/dns6/wss0.bootstrap.libp2p.io/tcp/443'),
-      multiaddr('/unix/path/to/socket'),
+      multiaddr('/unix/%2Fpath%2Fto%2Fsocket'),
       multiaddr('/memory/addr-1')
     ].forEach(ma => {
       expect(isLoopback(ma)).to.be.false(`"${ma}" was identified as loopback`)

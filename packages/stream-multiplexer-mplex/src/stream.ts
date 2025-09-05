@@ -1,94 +1,127 @@
-import { AbstractStream } from '@libp2p/utils/abstract-stream'
+import { AbstractStream } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MAX_MSG_SIZE } from './decode.js'
+import { encode } from './encode.ts'
 import { InitiatorMessageTypes, ReceiverMessageTypes } from './message-types.js'
-import type { Message } from './message-types.js'
-import type { ComponentLogger } from '@libp2p/interface'
-import type { AbstractStreamInit } from '@libp2p/utils/abstract-stream'
+import type { MplexStreamMuxer } from './mplex.ts'
+import type { Logger, MessageStreamDirection } from '@libp2p/interface'
+import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
+import type { AbortOptions } from 'it-pushable'
 
 export interface Options {
   id: number
-  send(msg: Message): Promise<void>
-  name?: string
-  onEnd?(err?: Error): void
-  type?: 'initiator' | 'receiver'
+  log: Logger
+  direction: MessageStreamDirection
   maxMsgSize?: number
-  logger: ComponentLogger
+  muxer: MplexStreamMuxer
 }
 
 interface MplexStreamInit extends AbstractStreamInit {
-  streamId: number
-  name: string
-  send(msg: Message): Promise<void>
-
-  /**
-   * The maximum allowable data size, any data larger than this will be
-   * chunked and sent in multiple data messages
-   */
   maxDataSize: number
+  muxer: MplexStreamMuxer
+  direction: MessageStreamDirection
 }
 
 export class MplexStream extends AbstractStream {
-  private readonly name: string
-  private readonly streamId: number
-  private readonly send: (msg: Message) => Promise<void>
+  public readonly streamId: number
   private readonly types: Record<string, number>
   private readonly maxDataSize: number
+  private readonly muxer: MplexStreamMuxer
 
   constructor (init: MplexStreamInit) {
     super(init)
 
     this.types = init.direction === 'outbound' ? InitiatorMessageTypes : ReceiverMessageTypes
-    this.send = init.send
-    this.name = init.name
-    this.streamId = init.streamId
     this.maxDataSize = init.maxDataSize
-  }
+    this.muxer = init.muxer
+    this.streamId = parseInt(this.id.substring(1))
 
-  async sendNewStream (): Promise<void> {
-    await this.send({ id: this.streamId, type: InitiatorMessageTypes.NEW_STREAM, data: new Uint8ArrayList(uint8ArrayFromString(this.name)) })
-  }
-
-  async sendData (data: Uint8ArrayList): Promise<void> {
-    data = data.sublist()
-
-    while (data.byteLength > 0) {
-      const toSend = Math.min(data.byteLength, this.maxDataSize)
-      await this.send({
-        id: this.streamId,
-        type: this.types.MESSAGE,
-        data: data.sublist(0, toSend)
+    if (init.direction === 'outbound') {
+      // open the stream on the receiver end. do this in a microtask so the
+      // stream gets added to the streams array by the muxer superclass before
+      // we send the NEW_STREAM message, otherwise we create a race condition
+      // whereby we can receive the stream messages before the stream is added
+      // to the streams list
+      queueMicrotask(() => {
+        this.muxer.send(
+          encode({
+            id: this.streamId,
+            type: InitiatorMessageTypes.NEW_STREAM,
+            data: new Uint8ArrayList(uint8ArrayFromString(this.id))
+          })
+        )
       })
-
-      data.consume(toSend)
     }
   }
 
-  async sendReset (): Promise<void> {
-    await this.send({ id: this.streamId, type: this.types.RESET })
+  sendData (data: Uint8ArrayList): SendResult {
+    const list = new Uint8ArrayList()
+    const sentBytes = data.byteLength
+
+    while (data.byteLength > 0) {
+      const toSend = Math.min(data.byteLength, this.maxDataSize)
+      const slice = data.sublist(0, toSend)
+      data = data.sublist(toSend)
+
+      list.append(
+        encode({
+          id: this.streamId,
+          type: this.types.MESSAGE,
+          data: slice
+        })
+      )
+    }
+
+    return {
+      sentBytes,
+      canSendMore: this.muxer.send(list)
+    }
   }
 
-  async sendCloseWrite (): Promise<void> {
-    await this.send({ id: this.streamId, type: this.types.CLOSE })
+  sendReset (): boolean {
+    return this.muxer.send(
+      encode({
+        id: this.streamId,
+        type: this.types.RESET
+      })
+    )
   }
 
-  async sendCloseRead (): Promise<void> {
+  async sendCloseWrite (options?: AbortOptions): Promise<void> {
+    this.muxer.send(
+      encode({
+        id: this.streamId,
+        type: this.types.CLOSE
+      })
+    )
+    options?.signal?.throwIfAborted()
+  }
+
+  async sendCloseRead (options?: AbortOptions): Promise<void> {
+    options?.signal?.throwIfAborted()
     // mplex does not support close read, only close write
+  }
+
+  sendPause (): void {
+    // mplex does not support backpressure
+  }
+
+  sendResume (): void {
+    // mplex does not support backpressure
   }
 }
 
 export function createStream (options: Options): MplexStream {
-  const { id, name, send, onEnd, type = 'initiator', maxMsgSize = MAX_MSG_SIZE } = options
+  const { id, muxer, direction, maxMsgSize = MAX_MSG_SIZE } = options
 
   return new MplexStream({
-    id: type === 'initiator' ? (`i${id}`) : `r${id}`,
-    streamId: id,
-    name: `${name ?? id}`,
-    direction: type === 'initiator' ? 'outbound' : 'inbound',
+    ...options,
+    id: direction === 'outbound' ? (`i${id}`) : `r${id}`,
+    direction,
     maxDataSize: maxMsgSize,
-    onEnd,
-    send,
-    log: options.logger.forComponent(`libp2p:mplex:stream:${type}:${id}`)
+    muxer,
+    log: options.log.newScope(`${direction}:${id}`),
+    protocol: ''
   })
 }

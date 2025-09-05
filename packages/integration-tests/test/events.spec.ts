@@ -1,8 +1,8 @@
 import { identify } from '@libp2p/identify'
 import { stop } from '@libp2p/interface'
+import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import { createPeers } from './fixtures/create-peers.js'
 import type { Echo } from '@libp2p/echo'
@@ -17,24 +17,28 @@ describe('events', () => {
   })
 
   it('should emit connection events', async () => {
-    ({ dialer, listener } = await createPeers())
+    ({ dialer, listener } = await createPeers({
+      logger: prefixLogger('dialer')
+    }, {
+      logger: prefixLogger('listener')
+    }))
 
-    const localConnectionEventReceived = pDefer()
-    const localConnectionEndEventReceived = pDefer()
-    const localPeerConnectEventReceived = pDefer()
-    const localPeerDisconnectEventReceived = pDefer()
-    const remoteConnectionEventReceived = pDefer()
-    const remoteConnectionEndEventReceived = pDefer()
-    const remotePeerConnectEventReceived = pDefer()
-    const remotePeerDisconnectEventReceived = pDefer()
+    const localConnectionOpenEventReceived = Promise.withResolvers<void>()
+    const localConnectionCloseEventReceived = Promise.withResolvers<void>()
+    const localPeerConnectEventReceived = Promise.withResolvers<void>()
+    const localPeerDisconnectEventReceived = Promise.withResolvers<void>()
+    const remoteConnectionOpenEventReceived = Promise.withResolvers<void>()
+    const remoteConnectionCloseEventReceived = Promise.withResolvers<void>()
+    const remotePeerConnectEventReceived = Promise.withResolvers<void>()
+    const remotePeerDisconnectEventReceived = Promise.withResolvers<void>()
 
     dialer.addEventListener('connection:open', (event) => {
       expect(event.detail.remotePeer.equals(listener.peerId)).to.be.true()
-      localConnectionEventReceived.resolve()
+      localConnectionOpenEventReceived.resolve()
     })
     dialer.addEventListener('connection:close', (event) => {
       expect(event.detail.remotePeer.equals(listener.peerId)).to.be.true()
-      localConnectionEndEventReceived.resolve()
+      localConnectionCloseEventReceived.resolve()
     })
     dialer.addEventListener('peer:connect', (event) => {
       expect(event.detail.equals(listener.peerId)).to.be.true()
@@ -47,11 +51,11 @@ describe('events', () => {
 
     listener.addEventListener('connection:open', (event) => {
       expect(event.detail.remotePeer.equals(dialer.peerId)).to.be.true()
-      remoteConnectionEventReceived.resolve()
+      remoteConnectionOpenEventReceived.resolve()
     })
     listener.addEventListener('connection:close', (event) => {
       expect(event.detail.remotePeer.equals(dialer.peerId)).to.be.true()
-      remoteConnectionEndEventReceived.resolve()
+      remoteConnectionCloseEventReceived.resolve()
     })
     listener.addEventListener('peer:connect', (event) => {
       expect(event.detail.equals(dialer.peerId)).to.be.true()
@@ -72,9 +76,9 @@ describe('events', () => {
     expect(connections).to.have.lengthOf(2)
 
     await Promise.all([
-      localConnectionEventReceived.promise,
+      localConnectionOpenEventReceived.promise,
       localPeerConnectEventReceived.promise,
-      remoteConnectionEventReceived.promise,
+      remoteConnectionOpenEventReceived.promise,
       remotePeerConnectEventReceived.promise
     ])
 
@@ -82,31 +86,31 @@ describe('events', () => {
     await Promise.all(connections.map(async conn => { await conn.close() }))
 
     await Promise.all([
-      localConnectionEndEventReceived.promise,
+      localConnectionCloseEventReceived.promise,
       localPeerDisconnectEventReceived.promise,
-      remoteConnectionEndEventReceived.promise,
+      remoteConnectionCloseEventReceived.promise,
       remotePeerDisconnectEventReceived.promise
     ])
   })
 
   it('should run identify automatically after connecting', async () => {
     ({ dialer, listener } = await createPeers({
+      logger: prefixLogger('dialer'),
       services: {
         identify: identify()
       }
     }, {
+      logger: prefixLogger('listener'),
       services: {
         identify: identify()
       }
     }))
 
-    const listenerEvent = pEvent(listener, 'peer:identify')
-    const dialerEvent = pEvent(listener, 'peer:identify')
-
-    await dialer.dial(listener.getMultiaddrs())
-
-    await listenerEvent
-    await dialerEvent
+    await Promise.all([
+      pEvent(listener, 'peer:identify'),
+      pEvent(dialer, 'peer:identify'),
+      dialer.dial(listener.getMultiaddrs())
+    ])
   })
 
   it('should not run identify automatically after connecting when configured not to', async () => {
@@ -124,19 +128,17 @@ describe('events', () => {
       }
     }))
 
-    const listenerEvent = pEvent(listener, 'peer:identify')
-    const dialerEvent = pEvent(listener, 'peer:identify')
-
-    await dialer.dial(listener.getMultiaddrs())
-
-    await Promise.any([
-      listenerEvent.then(() => {
-        throw new Error('Should not have run identify')
-      }),
-      dialerEvent.then(() => {
-        throw new Error('Should not have run identify')
-      }),
-      delay(1000)
+    await Promise.all([
+      await Promise.any([
+        pEvent(listener, 'peer:identify').then(() => {
+          throw new Error('Listener should not have run identify')
+        }),
+        pEvent(dialer, 'peer:identify').then(() => {
+          throw new Error('Dialer should not have run identify')
+        }),
+        delay(1000)
+      ]),
+      dialer.dial(listener.getMultiaddrs())
     ])
   })
 })

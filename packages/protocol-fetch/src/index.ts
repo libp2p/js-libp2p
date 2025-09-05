@@ -43,7 +43,7 @@
  */
 
 import { Fetch as FetchClass } from './fetch.js'
-import type { AbortOptions, ComponentLogger, PeerId } from '@libp2p/interface'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface FetchInit {
@@ -71,7 +71,6 @@ export interface LookupFunction {
 export interface FetchComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
-  logger: ComponentLogger
 }
 
 export interface Fetch {

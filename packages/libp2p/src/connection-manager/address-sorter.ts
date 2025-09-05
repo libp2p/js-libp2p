@@ -1,5 +1,4 @@
-import { isLoopback } from '@libp2p/utils/multiaddr/is-loopback'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
+import { isLoopback, isPrivate } from '@libp2p/utils'
 import { Circuit, WebSockets, WebSocketsSecure, WebRTC, WebRTCDirect, WebTransport, TCP } from '@multiformats/multiaddr-matcher'
 import type { Address } from '@libp2p/interface'
 

@@ -126,6 +126,15 @@ export interface IdentifyPushInit extends Omit<IdentifyInit, 'runOnConnectionOpe
    * @default 32
    */
   concurrency?: number
+
+  /**
+   * To prevent rapid flurries of network activity when addresses/protocols
+   * change rapidly in succession, debounce the sending of push message by this
+   * amount in ms
+   *
+   * @default 1_000
+   */
+  debounce?: number
 }
 
 export interface IdentifyComponents {

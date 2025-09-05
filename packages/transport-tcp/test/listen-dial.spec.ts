@@ -1,19 +1,20 @@
 import os from 'os'
 import path from 'path'
 import { defaultLogger } from '@libp2p/logger'
+import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
-import type { Connection, Transport, Upgrader } from '@libp2p/interface'
+import type { Connection, Listener, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 
 describe('listen', () => {
   let transport: Transport
-  let listener: any
+  let listener: Listener
   let upgrader: Upgrader
 
   beforeEach(() => {
@@ -41,7 +42,7 @@ describe('listen', () => {
   })
 
   it('listen on unix domain socket', async () => {
-    const mh = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const mh = multiaddr(`/unix/${encodeURIComponent(path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`))}`)
 
     listener = transport.createListener({
       upgrader
@@ -148,7 +149,7 @@ describe('listen', () => {
 
     const multiaddrs = listener.getAddrs()
     expect(multiaddrs.length > 0).to.equal(true)
-    expect(multiaddrs[0].toOptions().host).to.not.equal('::')
+    expect(getNetConfig(multiaddrs[0]).host).to.not.equal('::')
   })
 })
 
@@ -206,7 +207,7 @@ describe('dial', () => {
   })
 
   it('dial unix domain socket', async () => {
-    const ma = multiaddr(`/unix/${path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`)}`)
+    const ma = multiaddr(`/unix/${encodeURIComponent(path.resolve(os.tmpdir(), `/tmp/p2pd-${Date.now()}.sock`))}`)
 
     const listener = transport.createListener({
       upgrader

@@ -107,9 +107,8 @@ describe('connection-pruner', () => {
 
   it('should close connections with low tag values first', async () => {
     const max = 5
-    pruner = new ConnectionPruner(components, {
-      maxConnections: max
-    })
+    components.connectionManager.getMaxConnections.returns(max)
+    pruner = new ConnectionPruner(components)
     pruner.start()
 
     const connections: Connection[] = []
@@ -161,9 +160,8 @@ describe('connection-pruner', () => {
 
   it('should close shortest-lived connection if the tag values are equal', async () => {
     const max = 5
-    pruner = new ConnectionPruner(components, {
-      maxConnections: max
-    })
+    components.connectionManager.getMaxConnections.returns(max)
+    pruner = new ConnectionPruner(components)
     pruner.start()
 
     const connections: Connection[] = []
@@ -255,7 +253,6 @@ describe('connection-pruner', () => {
     ]
 
     // Verify that the allow list in the pruner matches the expected IpNet objects
-
     expect(pruner['allow']).to.deep.equal(expectedAllowList)
   })
 
@@ -263,8 +260,8 @@ describe('connection-pruner', () => {
     const max = 2
     const remoteAddr = multiaddr('/ip4/83.13.55.32/tcp/59283')
 
+    components.connectionManager.getMaxConnections.returns(max)
     pruner = new ConnectionPruner(components, {
-      maxConnections: max,
       allow: [
         multiaddr('/ip4/83.13.55.32')
       ]
@@ -344,9 +341,8 @@ describe('connection-pruner', () => {
 
   it('should close connection when the maximum connections has been reached even without tags', async () => {
     const max = 5
-    pruner = new ConnectionPruner(components, {
-      maxConnections: max
-    })
+    components.connectionManager.getMaxConnections.returns(max)
+    pruner = new ConnectionPruner(components)
     pruner.start()
 
     const connections: Connection[] = []

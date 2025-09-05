@@ -21,17 +21,12 @@
  */
 
 import { PROTOCOL_ID } from './constants.js'
-import type { AbortOptions, LoggerOptions } from '@libp2p/interface'
-import type { LengthPrefixedStreamOpts } from 'it-length-prefixed-stream'
+import type { AbortOptions } from '@libp2p/interface'
+import type { LengthPrefixedStreamOpts } from '@libp2p/utils'
 
 export { PROTOCOL_ID }
 
-export interface ProtocolStream<Stream> {
-  stream: Stream
-  protocol: string
-}
-
-export interface MultistreamSelectInit extends AbortOptions, LoggerOptions, Partial<LengthPrefixedStreamOpts> {
+export interface MultistreamSelectInit extends AbortOptions, Partial<LengthPrefixedStreamOpts> {
   /**
    * When false, and only a single protocol is being negotiated, use optimistic
    * select to send both the protocol name and the first data buffer in the
@@ -43,5 +38,4 @@ export interface MultistreamSelectInit extends AbortOptions, LoggerOptions, Part
 }
 
 export { select } from './select.js'
-export type { SelectStream } from './select.js'
 export { handle } from './handle.js'
