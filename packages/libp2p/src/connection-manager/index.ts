@@ -595,12 +595,16 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           trackedConnection = true
         }
 
-        // make sure we don't already have a connection to this multiaddr
-        if (options.force !== true && conn.id !== connection.id && conn.remoteAddr.equals(connection.remoteAddr)) {
-          connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
+        // make sure we don't already have a connection to this peer
+        if (options.force !== true && conn.id !== connection.id && conn.remotePeer.equals(connection.remotePeer)) {
+          // choose the existing connection if it is either unlimited or both
+          // the old and the new connection are limited
+          if (conn.limits == null || (conn.limits != null && connection.limits != null)) {
+            connection.abort(new InvalidMultiaddrError('Duplicate multiaddr connection'))
 
-          // return the existing connection
-          return conn
+            // return the existing connection
+            return conn
+          }
         }
       }
 

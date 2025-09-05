@@ -188,7 +188,7 @@ describe('find existing connection', () => {
     ).to.equal(existingConnection)
   })
 
-  it('should not an existing limited connection when the new address would allow a direct connection', async () => {
+  it('should not find an existing limited connection when the new address would allow a direct connection', async () => {
     const remotePeer = peerIdFromString('12D3KooWJRSrypvnpHgc6ZAgyCni4KcSmbV7uGRaMw5LgMKT18fq')
     const remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${remotePeer}`)
     const dialAddrs = [
@@ -211,7 +211,7 @@ describe('find existing connection', () => {
     ).to.be.undefined()
   })
 
-  it('should not an existing limited connection when the new address would allow a direct connection established via the existing connection', async () => {
+  it('should not find an existing limited connection when the new address would allow a direct connection established via the existing connection', async () => {
     const remotePeer = peerIdFromString('12D3KooWJRSrypvnpHgc6ZAgyCni4KcSmbV7uGRaMw5LgMKT18fq')
     const remoteAddr = multiaddr(`/ip4/125.125.125.125/tcp/123/p2p/16Uiu2HAm2dSCBFxuge46aEt7U1oejtYuBUZXxASHqmcfVmk4gsbx/p2p-circuit/webrtc/p2p/${remotePeer}`)
     const dialAddrs = [
