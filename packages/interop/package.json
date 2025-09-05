@@ -1,0 +1,66 @@
+{
+  "name": "@libp2p/interop",
+  "version": "13.0.3",
+  "description": "Interoperability Tests for libp2p",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interop#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "libp2p"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "generate": "protons ./src/relay/pb/index.proto",
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build --bundle false",
+    "postbuild": "cp src/resources/keys/*.key dist/src/resources/keys",
+    "docs": "aegir docs"
+  },
+  "dependencies": {
+    "@libp2p/daemon-client": "^9.0.8",
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/utils": "^6.7.2",
+    "@multiformats/multiaddr": "^13.0.1",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.9",
+    "it-first": "^3.0.9",
+    "multiformats": "^13.4.0",
+    "p-retry": "^7.0.0",
+    "p-wait-for": "^5.0.2",
+    "protons-runtime": "^5.6.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.1.0"
+  },
+  "devDependencies": {
+    "aegir": "^47.0.21",
+    "protons": "^7.7.0"
+  },
+  "peerDependencies": {
+    "aegir": "^47.0.21"
+  }
+}

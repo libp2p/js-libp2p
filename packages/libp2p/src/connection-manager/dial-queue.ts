@@ -1,8 +1,8 @@
 /* eslint-disable max-depth */
 import { TimeoutError, DialError, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { PriorityQueue } from '@libp2p/utils/priority-queue'
-import { multiaddr } from '@multiformats/multiaddr'
+import { PriorityQueue } from '@libp2p/utils'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
@@ -20,10 +20,11 @@ import {
   LAST_DIAL_SUCCESS_KEY
 } from './constants.js'
 import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
+import { findExistingConnection } from './utils.ts'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
 import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
-import type { PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
+import type { PriorityQueueJobOptions } from '@libp2p/utils'
 import type { DNS } from '@multiformats/dns'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
@@ -102,9 +103,9 @@ export class DialQueue {
       metrics: components.metrics
     })
     // a started job errored
-    this.queue.addEventListener('error', (event) => {
-      if (event.detail?.name !== AbortError.name) {
-        this.log.error('error in dial queue - %e', event.detail)
+    this.queue.addEventListener('failure', (event) => {
+      if (event.detail?.error.name !== AbortError.name) {
+        this.log.error('error in dial queue - %e', event.detail.error)
       }
     })
   }
@@ -140,24 +141,14 @@ export class DialQueue {
 
     // make sure we don't have an existing connection to any of the addresses we
     // are about to dial
-    const existingConnection = Array.from(this.connections.values()).flat().find(conn => {
-      if (force === true) {
-        return false
+    if (options.force !== true) {
+      const existingConnection = findExistingConnection([...this.connections.values()].flat(), multiaddrs, peerId)
+
+      if (existingConnection != null) {
+        this.log('already connected to %a', existingConnection.remoteAddr)
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+        return existingConnection
       }
-
-      if (conn.remotePeer.equals(peerId)) {
-        return true
-      }
-
-      return multiaddrs.find(addr => {
-        return addr.equals(conn.remoteAddr)
-      })
-    })
-
-    if (existingConnection?.status === 'open') {
-      this.log('already connected to %a', existingConnection.remoteAddr)
-      options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-      return existingConnection
     }
 
     // ready to dial, all async work finished - make sure we don't have any
@@ -316,31 +307,6 @@ export class DialQueue {
             this.log.error('could not update last dial failure key for %p', peerId, err)
           }
 
-          const { remotePeer } = conn
-
-          // make sure we don't have an existing connection to the address we dialed
-          const existingConnection = Array.from(this.connections.values()).flat().find(_conn => {
-            if (options.force === true) {
-              return false
-            }
-
-            if (_conn.remotePeer.equals(remotePeer) && _conn !== conn) {
-              return true
-            }
-
-            return false
-          })
-
-          if (existingConnection?.status === 'open') {
-            this.log('already connected to %a', existingConnection.remoteAddr)
-            options?.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-
-            this.log('closing duplicate connection to %p', remotePeer)
-            await conn.close()
-
-            return existingConnection
-          }
-
           // dial successful, return the connection
           return conn
         } catch (err: any) {
@@ -485,7 +451,7 @@ export class DialQueue {
       // if the resolved multiaddr has a PeerID but it's the wrong one, ignore it
       // - this can happen with addresses like bootstrap.libp2p.io that resolve
       // to multiple different peers
-      const addrPeerId = addr.multiaddr.getPeerId()
+      const addrPeerId = addr.multiaddr.getComponents().findLast(c => c.code === CODE_P2P)?.value
       if (peerId != null && addrPeerId != null) {
         return peerId.equals(addrPeerId)
       }

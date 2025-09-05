@@ -1,5 +1,5 @@
 import { TimeoutError } from '@libp2p/interface'
-import { pbStream } from 'it-protobuf-stream'
+import { pbStream } from '@libp2p/utils'
 import { Message, MessageType } from '../message/dht.js'
 import { AddProviderHandler } from './handlers/add-provider.js'
 import { FindNodeHandler } from './handlers/find-node.js'
@@ -15,7 +15,7 @@ import type { GetProvidersHandlerComponents } from './handlers/get-providers.js'
 import type { GetValueHandlerComponents } from './handlers/get-value.js'
 import type { PutValueHandlerComponents } from './handlers/put-value.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { CounterGroup, Logger, Metrics, PeerId, IncomingStreamData, MetricGroup } from '@libp2p/interface'
+import type { CounterGroup, Logger, Metrics, PeerId, MetricGroup, Connection, Stream } from '@libp2p/interface'
 
 export interface DHTMessageHandler {
   handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
@@ -95,65 +95,61 @@ export class RPC {
   /**
    * Handle incoming streams on the dht protocol
    */
-  onIncomingStream (data: IncomingStreamData): void {
-    const message = 'unknown'
+  async onIncomingStream (stream: Stream, connection: Connection): Promise<void> {
+    const abortListener = (): void => {
+      stream.abort(new TimeoutError())
+    }
 
-    Promise.resolve().then(async () => {
-      const { stream, connection } = data
+    let signal = AbortSignal.timeout(this.incomingMessageTimeout)
+    signal.addEventListener('abort', abortListener)
 
-      const abortListener = (): void => {
-        stream.abort(new TimeoutError())
+    const messages = pbStream(stream).pb(Message)
+
+    while (true) {
+      // the remote will not send any more data
+      if (stream.readStatus !== 'readable') {
+        await stream.close({
+          signal
+        })
+
+        break
       }
 
-      let signal = AbortSignal.timeout(this.incomingMessageTimeout)
-      signal.addEventListener('abort', abortListener)
+      const message = await messages.read({
+        signal
+      })
 
-      const messages = pbStream(stream).pb(Message)
+      const stopSuccessTimer = this.metrics?.rpcTime?.timer(message.type.toString())
+      const stopErrorTimer = this.metrics?.rpcTime?.timer(message.type.toString())
+      let errored = false
 
       try {
-        while (true) {
-          const message = await messages.read({
+        // handle the message
+        this.log('incoming %s from %p', message.type, connection.remotePeer)
+        const res = await this.handleMessage(connection.remotePeer, message)
+
+        // Not all handlers will return a response
+        if (res != null) {
+          await messages.write(res, {
             signal
           })
-
-          const stopSuccessTimer = this.metrics?.rpcTime?.timer(message.type.toString())
-          const stopErrorTimer = this.metrics?.rpcTime?.timer(message.type.toString())
-          let errored = false
-
-          try {
-            // handle the message
-            this.log('incoming %s from %p', message.type, connection.remotePeer)
-            const res = await this.handleMessage(connection.remotePeer, message)
-
-            // Not all handlers will return a response
-            if (res != null) {
-              await messages.write(res, {
-                signal
-              })
-            }
-          } catch (err) {
-            errored = true
-            stopErrorTimer?.()
-
-            throw err
-          } finally {
-            if (!errored) {
-              stopSuccessTimer?.()
-            }
-          }
-
-          // we have received a message so reset the timeout controller to
-          // allow the remote to send another
-          signal.removeEventListener('abort', abortListener)
-          signal = AbortSignal.timeout(this.incomingMessageTimeout)
-          signal.addEventListener('abort', abortListener)
         }
-      } catch (err: any) {
-        stream.abort(err)
+      } catch (err) {
+        errored = true
+        stopErrorTimer?.()
+
+        throw err
+      } finally {
+        if (!errored) {
+          stopSuccessTimer?.()
+        }
       }
-    })
-      .catch(err => {
-        this.log.error('error handling %s RPC message from %p - %e', message, data.connection.remotePeer, err)
-      })
+
+      // we have received a message so reset the timeout controller to
+      // allow the remote to send another
+      signal.removeEventListener('abort', abortListener)
+      signal = AbortSignal.timeout(this.incomingMessageTimeout)
+      signal.addEventListener('abort', abortListener)
+    }
   }
 }

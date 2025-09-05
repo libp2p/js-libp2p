@@ -12,7 +12,7 @@
       "path": "../interface"
     },
     {
-      "path": "../logger"
+      "path": "../utils"
     }
   ]
 }

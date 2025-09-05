@@ -1,5 +1,5 @@
 import { InvalidMessageError } from '@libp2p/interface'
-import { protocols } from '@multiformats/multiaddr'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
 import { MessageType } from '../../message/dht.js'
 import type { PeerInfoMapper } from '../../index.js'
@@ -61,7 +61,7 @@ export class FindNodeHandler implements DHTMessageHandler {
       if (uint8ArrayEquals(this.peerId.toMultihash().bytes, msg.key)) {
         closer.push({
           id: this.peerId,
-          multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+          multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
         })
       }
 

@@ -1,23 +1,10 @@
-import type { Connection, Stream } from './connection.js'
-import type { AbortOptions } from './index.ts'
-
-export interface IncomingStreamData {
-  /**
-   * The newly opened stream
-   */
-  stream: Stream
-
-  /**
-   * The connection the stream was opened on
-   */
-  connection: Connection
-}
+import type { AbortOptions, Connection, Stream } from './index.ts'
 
 export interface StreamHandler {
   /**
    * A callback function that accepts the incoming stream data
    */
-  (data: IncomingStreamData): void
+  (stream: Stream, connection: Connection): void | Promise<void>
 }
 
 export interface StreamHandlerOptions extends AbortOptions {

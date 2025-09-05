@@ -382,25 +382,23 @@ describe('dial queue', () => {
     await expect(dialer.dial(remotePeer)).to.eventually.equal(connection)
   })
 
-  it('should return existing connection when dialing a multiaddr without a peer id', async () => {
+  it('should return new connection when dialing a different multiaddr without a peer id', async () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const ip = multiaddr('/ip4/123.123.123.123')
+
+    // same host but different ports
     const addr1 = ip.encapsulate('/tcp/123')
     const addr2 = ip.encapsulate('/tcp/321')
 
     const existingConnection = stubInterface<Connection>({
-      limits: {
-        bytes: 100n
-      },
+      limits: undefined,
       remotePeer,
       remoteAddr: addr1.encapsulate(`/p2p/${remotePeer}`),
       status: 'open'
     })
 
     const newConnection = stubInterface<Connection>({
-      limits: {
-        bytes: 100n
-      },
+      limits: undefined,
       remotePeer,
       remoteAddr: addr2.encapsulate(`/p2p/${remotePeer}`),
       status: 'open'
@@ -409,13 +407,70 @@ describe('dial queue', () => {
     const connections = new PeerMap<Connection[]>()
     connections.set(remotePeer, [existingConnection])
 
-    components.transportManager.dialTransportForMultiaddr.callsFake(ma => {
-      return stubInterface<Transport>()
-    })
+    components.transportManager.dialTransportForMultiaddr.callsFake(ma => stubInterface<Transport>())
     components.transportManager.dial.callsFake(async (ma, opts = {}) => newConnection)
     dialer = new DialQueue(components, { connections })
 
-    await expect(dialer.dial(addr2)).to.eventually.equal(existingConnection)
+    await expect(dialer.dial(addr2)).to.eventually.equal(newConnection, 'did not create new connection to different multiaddr')
+  })
+
+  it('should return existing connection when dialing the same multiaddr without a peer id', async () => {
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const addr = multiaddr('/ip4/123.123.123.123/tcp/123')
+
+    const existingConnection = stubInterface<Connection>({
+      limits: undefined,
+      remotePeer,
+      remoteAddr: addr.encapsulate(`/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const newConnection = stubInterface<Connection>({
+      limits: undefined,
+      remotePeer,
+      remoteAddr: addr.encapsulate(`/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const connections = new PeerMap<Connection[]>()
+    connections.set(remotePeer, [existingConnection])
+
+    components.transportManager.dialTransportForMultiaddr.callsFake(ma => stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (ma, opts = {}) => newConnection)
+    dialer = new DialQueue(components, { connections })
+
+    await expect(dialer.dial(addr)).to.eventually.equal(existingConnection, 'did not return existing connection')
+  })
+
+  it('should return new connection when dialing a multiaddr that would result in a direct connection', async () => {
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const addr = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${remotePeer}`)
+
+    const existingConnection = stubInterface<Connection>({
+      limits: {
+        bytes: 100n
+      },
+      remotePeer,
+      remoteAddr: multiaddr(`/ip4/124.124.124.124/tcp/123/p2p/${relayPeer}/p2p-circuit/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const newConnection = stubInterface<Connection>({
+      limits: undefined,
+      remotePeer,
+      remoteAddr: addr.encapsulate(`/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const connections = new PeerMap<Connection[]>()
+    connections.set(remotePeer, [existingConnection])
+
+    components.transportManager.dialTransportForMultiaddr.callsFake(ma => stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (ma, opts = {}) => newConnection)
+    dialer = new DialQueue(components, { connections })
+
+    await expect(dialer.dial(addr)).to.eventually.equal(newConnection, 'did not create direct connection where limited connection existed previously')
   })
 
   it('should respect user dial signal over default timeout if it is passed', async () => {

@@ -1,40 +1,29 @@
+import { setMaxListeners } from '@libp2p/interface'
+import { pipe } from '@libp2p/utils'
+import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 import { P2P } from '@multiformats/multiaddr-matcher'
-import { fmt, literal, and } from '@multiformats/multiaddr-matcher/utils'
+import { fmt, code, and } from '@multiformats/multiaddr-matcher/utils'
 import { anySignal } from 'any-signal'
 import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { DurationLimitError, TransferLimitError } from './errors.js'
 import type { RelayReservation } from './index.js'
 import type { Limit } from './pb/index.js'
-import type { ConnectionLimits, LoggerOptions, Stream } from '@libp2p/interface'
-import type { Source } from 'it-stream-types'
+import type { ConnectionLimits, LoggerOptions, Stream, MessageStream, StreamMessageEvent } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-async function * countStreamBytes (source: Source<Uint8Array | Uint8ArrayList>, limit: { remaining: bigint }, options: LoggerOptions): AsyncGenerator<Uint8Array | Uint8ArrayList, void, unknown> {
+function countStreamBytes (source: MessageStream, limit: { remaining: bigint }, options: LoggerOptions): void {
   const limitBytes = limit.remaining
 
-  for await (const buf of source) {
-    const len = BigInt(buf.byteLength)
-
-    if ((limit.remaining - len) < 0) {
-      // this is a safe downcast since len is guarantee to be in the range for a number
-      const remaining = Number(limit.remaining)
-      limit.remaining = 0n
-
-      try {
-        if (remaining !== 0) {
-          yield buf.subarray(0, remaining)
-        }
-      } catch (err: any) {
-        options.log.error(err)
-      }
-
-      throw new TransferLimitError(`data limit of ${limitBytes} bytes exceeded`)
-    }
-
+  const abortIfStreamByteLimitExceeded = (evt: StreamMessageEvent): void => {
+    const len = BigInt(evt.data.byteLength)
     limit.remaining -= len
-    yield buf
+
+    if (limit.remaining < 0) {
+      source.abort(new TransferLimitError(`data limit of ${limitBytes} bytes exceeded`))
+    }
   }
+  source.addEventListener('message', abortIfStreamByteLimitExceeded)
 }
 
 export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: AbortSignal, reservation: RelayReservation, options: LoggerOptions): void {
@@ -48,13 +37,13 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
 
   if (reservation.limit?.duration != null) {
     options.log('limiting relayed connection duration to %dms', reservation.limit.duration)
-    signals.push(AbortSignal.timeout(reservation.limit.duration))
+    const durationSignal = AbortSignal.timeout(reservation.limit.duration)
+    setMaxListeners(Infinity, durationSignal)
+    signals.push(durationSignal)
   }
 
   const signal = anySignal(signals)
-
-  let srcDstFinished = false
-  let dstSrcFinished = false
+  setMaxListeners(Infinity, signal)
 
   let dataLimit: { remaining: bigint } | undefined
 
@@ -64,51 +53,34 @@ export function createLimitedRelay (src: Stream, dst: Stream, abortSignal: Abort
     }
   }
 
-  queueMicrotask(() => {
-    const onAbort = (): void => {
-      options.log('relayed connection reached time limit')
-      dst.abort(new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`))
+  const onAbort = (): void => {
+    let err: Error
+
+    if (abortSignal.aborted) {
+      err = abortSignal.reason
+    } else {
+      err = new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`)
     }
 
-    signal.addEventListener('abort', onAbort, { once: true })
+    abortStreams(err)
+  }
+  signal.addEventListener('abort', onAbort, { once: true })
 
-    void dst.sink(dataLimit == null ? src.source : countStreamBytes(src.source, dataLimit, options))
-      .catch(err => {
-        options.log.error('error while relaying streams src -> dst', err)
-        abortStreams(err)
-      })
-      .finally(() => {
-        srcDstFinished = true
+  if (dataLimit != null) {
+    countStreamBytes(dst, dataLimit, options)
+    countStreamBytes(src, dataLimit, options)
+  }
 
-        if (dstSrcFinished) {
-          signal.removeEventListener('abort', onAbort)
-          signal.clear()
-        }
-      })
-  })
-
-  queueMicrotask(() => {
-    const onAbort = (): void => {
-      options.log('relayed connection reached time limit')
-      src.abort(new DurationLimitError(`duration limit of ${reservation.limit?.duration} ms exceeded`))
-    }
-
-    signal.addEventListener('abort', onAbort, { once: true })
-
-    void src.sink(dataLimit == null ? dst.source : countStreamBytes(dst.source, dataLimit, options))
-      .catch(err => {
-        options.log.error('error while relaying streams dst -> src', err)
-        abortStreams(err)
-      })
-      .finally(() => {
-        dstSrcFinished = true
-
-        if (srcDstFinished) {
-          signal.removeEventListener('abort', onAbort)
-          signal.clear()
-        }
-      })
-  })
+  // join the streams together
+  pipe(
+    src, dst, src
+  )
+    .catch(err => {
+      abortStreams(err)
+    })
+    .finally(() => {
+      signal.clear()
+    })
 }
 
 /**
@@ -197,12 +169,12 @@ export class LimitTracker {
  * A custom matcher that tells us to listen on a particular relay
  */
 export const CircuitListen = fmt(
-  and(P2P.matchers[0], literal('p2p-circuit'))
+  and(P2P.matchers[0], code(CODE_P2P_CIRCUIT))
 )
 
 /**
  * A custom matcher that tells us to discover available relays
  */
 export const CircuitSearch = fmt(
-  literal('p2p-circuit')
+  code(CODE_P2P_CIRCUIT)
 )

@@ -111,6 +111,61 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [5.2.24](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.23...webrtc-v5.2.24) (2025-08-19)
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/interface-internal bumped from ^2.3.18 to ^2.3.19
+    * @libp2p/keychain bumped from ^5.2.8 to ^5.2.9
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/utils bumped from ^6.7.1 to ^6.7.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.16 to ^6.5.0
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+
+## [5.2.23](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.22...webrtc-v5.2.23) (2025-07-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.15 to ^6.4.16
+
+## [5.2.22](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.21...webrtc-v5.2.22) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.14 to ^6.4.15
+
+## [5.2.21](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.20...webrtc-v5.2.21) (2025-07-03)
+
+
+### Bug Fixes
+
+* do not close relay connection after WebRTC upgrade ([#3205](https://github.com/libp2p/js-libp2p/issues/3205)) ([cfe2be4](https://github.com/libp2p/js-libp2p/commit/cfe2be4c9319b68f8e68df8021b9ee3c1a7236fd))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.13 to ^6.4.14
+
 ## [5.2.20](https://github.com/libp2p/js-libp2p/compare/webrtc-v5.2.19...webrtc-v5.2.20) (2025-06-25)
 
 

@@ -1,29 +1,24 @@
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import length from 'it-length'
 import * as lengthPrefixed from 'it-length-prefixed'
-import { pushable } from 'it-pushable'
 import { bytes } from 'multiformats'
-import pDefer from 'p-defer'
-import { Uint8ArrayList } from 'uint8arraylist'
-import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
+import { pEvent } from 'p-event'
+import { stubInterface } from 'sinon-ts'
+import { MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
 import { Message } from '../src/private-to-public/pb/message.js'
 import { createStream } from '../src/stream.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
-import { mockDataChannel, receiveFinAck } from './util.js'
+import { receiveFinAck, receiveRemoteCloseWrite } from './util.js'
 import type { WebRTCStream } from '../src/stream.js'
 import type { Stream } from '@libp2p/interface'
 
 describe('Max message size', () => {
   it(`sends messages smaller or equal to ${MAX_MESSAGE_SIZE} bytes in one`, async () => {
-    const sent: Uint8ArrayList = new Uint8ArrayList()
     const data = new Uint8Array(MAX_MESSAGE_SIZE - PROTOBUF_OVERHEAD)
-    const p = pushable<Uint8Array>()
-    const channel = mockDataChannel({
-      send: (bytes) => {
-        sent.append(bytes)
-      }
+    const channel = stubInterface<RTCDataChannel>({
+      readyState: 'open',
+      bufferedAmount: 0
     })
 
     // Make sure that a message with all fields will be exactly MAX_MESSAGE_SIZE
@@ -31,89 +26,49 @@ describe('Max message size', () => {
       flag: Message.Flag.STOP_SENDING,
       message: data
     }))
+    expect(messageLengthEncoded).to.have.lengthOf(MAX_MESSAGE_SIZE)
 
-    expect(messageLengthEncoded.length).eq(MAX_MESSAGE_SIZE)
     const webrtcStream = createStream({
       channel,
       direction: 'outbound',
       closeTimeout: 1,
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
-    p.push(data)
-    p.end()
-    receiveFinAck(channel)
-    await webrtcStream.sink(p)
+    const sendMore = webrtcStream.send(data)
+    expect(sendMore).to.be.true()
 
-    expect(length(sent)).to.be.gt(1)
+    expect(channel.send).to.have.property('callCount', 2)
 
-    for (const buf of sent) {
-      expect(buf.byteLength).to.be.lessThanOrEqual(MAX_MESSAGE_SIZE)
-    }
+    const bytes = channel.send.getCalls().reduce((acc, curr) => {
+      return acc + curr.args[0].byteLength
+    }, 0)
+
+    expect(bytes).to.be.lessThan(MAX_MESSAGE_SIZE)
+
+    // minus 2x bytes because there is no flag field in the protobuf message
+    expect(channel.send.getCall(1).args[0]).to.have.lengthOf(MAX_MESSAGE_SIZE - 4)
   })
 
   it(`sends messages greater than ${MAX_MESSAGE_SIZE} bytes in parts`, async () => {
-    const sent: Uint8ArrayList = new Uint8ArrayList()
-    const data = new Uint8Array(MAX_MESSAGE_SIZE)
-    const p = pushable<Uint8Array>()
-    const channel = mockDataChannel({
-      send: (bytes) => {
-        sent.append(bytes)
-      }
+    const data = new Uint8Array(MAX_MESSAGE_SIZE + 1)
+    const channel = stubInterface<RTCDataChannel>({
+      readyState: 'open',
+      bufferedAmount: 0
     })
-
-    // Make sure that the data that ought to be sent will result in a message with exactly MAX_MESSAGE_SIZE + 1
-    // const messageLengthEncoded = lengthPrefixed.encode.single(Message.encode({ message: data })).subarray()
-    // expect(messageLengthEncoded.length).eq(MAX_MESSAGE_SIZE + 1)
 
     const webrtcStream = createStream({
       channel,
       direction: 'outbound',
-      logger: defaultLogger()
+      log: defaultLogger().forComponent('test')
     })
 
-    p.push(data)
-    p.end()
-    receiveFinAck(channel)
-    await webrtcStream.sink(p)
+    webrtcStream.send(data)
 
-    expect(length(sent)).to.be.gt(1)
-
-    for (const buf of sent) {
-      expect(buf.byteLength).to.be.lessThanOrEqual(MAX_MESSAGE_SIZE)
+    expect(channel.send).to.have.property('callCount').that.is.greaterThan(1)
+    for (let i = 0; i < channel.send.callCount; i++) {
+      expect(channel.send.getCall(i).args[0]).to.have.length.that.is.lessThanOrEqual(MAX_MESSAGE_SIZE)
     }
-  })
-
-  it('closes the stream if buffer amount low timeout', async () => {
-    const timeout = 100
-    const closed = pDefer()
-    const channel = mockDataChannel({
-      send: () => {
-        throw new Error('Expected to not send')
-      },
-      bufferedAmount: MAX_BUFFERED_AMOUNT + 1
-    })
-    const webrtcStream = createStream({
-      bufferedAmountLowEventTimeout: timeout,
-      closeTimeout: 1,
-      channel,
-      direction: 'outbound',
-      onEnd: () => {
-        closed.resolve()
-      },
-      logger: defaultLogger()
-    })
-
-    const t0 = Date.now()
-
-    await expect(webrtcStream.sink([new Uint8Array(1)])).to.eventually.be.rejected
-      .with.property('name', 'TimeoutError')
-    const t1 = Date.now()
-    expect(t1 - t0).greaterThanOrEqual(timeout)
-    expect(t1 - t0).lessThan(timeout + 1000) // Some upper bound
-    await closed.promise
-    expect(webrtcStream.timeline.close).to.be.greaterThan(webrtcStream.timeline.open)
-    expect(webrtcStream.timeline.abort).to.be.greaterThan(webrtcStream.timeline.open)
   })
 })
 
@@ -122,7 +77,12 @@ const TEST_MESSAGE = 'test_message'
 function setup (): { peerConnection: RTCPeerConnection, dataChannel: RTCDataChannel, stream: WebRTCStream } {
   const peerConnection = new RTCPeerConnection()
   const dataChannel = peerConnection.createDataChannel('whatever', { negotiated: true, id: 91 })
-  const stream = createStream({ channel: dataChannel, direction: 'outbound', closeTimeout: 1, logger: defaultLogger() })
+  const stream = createStream({
+    channel: dataChannel,
+    direction: 'outbound',
+    closeTimeout: 1,
+    log: defaultLogger().forComponent('test')
+  })
 
   return { peerConnection, dataChannel, stream }
 }
@@ -157,60 +117,49 @@ describe('Stream Stats', () => {
 
   it('close marks it closed', async () => {
     expect(stream.timeline.close).to.not.exist()
+    expect(stream.writeStatus).to.equal('writable')
 
     receiveFinAck(dataChannel)
-    await stream.close()
+    receiveRemoteCloseWrite(dataChannel)
+
+    await Promise.all([
+      pEvent(stream, 'close'),
+      stream.close()
+    ])
 
     expect(stream.timeline.close).to.be.a('number')
+    expect(stream.writeStatus).to.equal('closed')
   })
 
   it('closeRead marks it read-closed only', async () => {
     expect(stream.timeline.close).to.not.exist()
     await stream.closeRead()
-    expect(stream.timeline.close).to.not.exist()
-    expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)
+
+    expect(stream).to.have.property('writeStatus', 'writable')
+    expect(stream).to.have.property('readStatus', 'closed')
   })
 
   it('closeWrite marks it write-closed only', async () => {
     expect(stream.timeline.close).to.not.exist()
 
     receiveFinAck(dataChannel)
-    await stream.closeWrite()
+    await stream.close()
 
-    expect(stream.timeline.close).to.not.exist()
-    expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
-  })
-
-  it('closeWrite AND closeRead = close', async () => {
-    expect(stream.timeline.close).to.not.exist()
-
-    receiveFinAck(dataChannel)
-    await Promise.all([
-      stream.closeRead(),
-      stream.closeWrite()
-    ])
-
-    expect(stream.timeline.close).to.be.a('number')
-    expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
-    expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)
+    expect(stream).to.have.property('writeStatus', 'closed')
+    expect(stream).to.have.property('readStatus', 'readable')
   })
 
   it('abort = close', () => {
     expect(stream.timeline.close).to.not.exist()
     stream.abort(new Error('Oh no!'))
     expect(stream.timeline.close).to.be.a('number')
-    expect(stream.timeline.close).to.be.greaterThanOrEqual(stream.timeline.open)
-    expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
-    expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)
   })
 
   it('reset = close', () => {
     expect(stream.timeline.close).to.not.exist()
-    stream.reset() // only resets the write side
+    stream.onRemoteReset() // only resets the write side
     expect(stream.timeline.close).to.be.a('number')
     expect(stream.timeline.close).to.be.greaterThanOrEqual(stream.timeline.open)
-    expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
-    expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)
   })
 })
 
@@ -243,8 +192,7 @@ describe('Stream Read Stats Transition By Incoming Flag', () => {
 
     await delay(100)
 
-    expect(stream.timeline.closeWrite).to.not.exist()
-    expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)
+    expect(stream.readStatus).to.equal('closed')
   })
 
   it('read-close to close by flag:STOP_SENDING', async () => {
@@ -253,8 +201,7 @@ describe('Stream Read Stats Transition By Incoming Flag', () => {
 
     await delay(100)
 
-    expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
-    expect(stream.timeline.closeRead).to.not.exist()
+    expect(stream.remoteReadStatus).to.equal('closed')
   })
 })
 
@@ -279,8 +226,7 @@ describe('Stream Write Stats Transition By Incoming Flag', () => {
 
     await delay(100)
 
-    expect(stream.timeline.closeWrite).to.be.greaterThanOrEqual(stream.timeline.open)
-    expect(stream.timeline.closeRead).to.not.exist()
+    expect(stream.remoteReadStatus).to.equal('closed')
   })
 
   it('write-close to close by flag:FIN', async () => {
@@ -289,7 +235,6 @@ describe('Stream Write Stats Transition By Incoming Flag', () => {
 
     await delay(100)
 
-    expect(stream.timeline.closeWrite).to.not.exist()
-    expect(stream.timeline.closeRead).to.be.greaterThanOrEqual(stream.timeline.open)
+    expect(stream.remoteWriteStatus).to.equal('closed')
   })
 })

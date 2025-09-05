@@ -1,58 +1,37 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
-import { logger } from '@libp2p/logger'
+import { streamPair, lpStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { lpStream } from 'it-length-prefixed-stream'
-import { duplexPair } from 'it-pair/duplex'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as Multistream from '../src/multistream.js'
+import { readString } from '../src/multistream.js'
 
 describe('Multistream', () => {
-  describe('Multistream.write', () => {
-    it('should encode and write a multistream-select message', async () => {
-      const input = uint8ArrayFromString(`TEST${Date.now()}`)
-      const duplexes = duplexPair<Uint8Array>()
-      const inputStream = lpStream(duplexes[0])
-      const outputStream = lpStream(duplexes[1])
-
-      void Multistream.write(inputStream, input)
-
-      const output = await outputStream.read()
-      expect(output.subarray()).to.equalBytes(input)
-    })
-  })
-
   describe('Multistream.read', () => {
     it('should decode a multistream-select message', async () => {
       const input = `TEST${Date.now()}`
-      const inputBuf = uint8ArrayFromString(input)
 
-      const duplexes = duplexPair<Uint8Array>()
-      const inputStream = lpStream(duplexes[0])
-      const outputStream = lpStream(duplexes[1])
+      const [outgoingStream, incomingStream] = await streamPair()
+      const inputStream = lpStream(outgoingStream)
+      const outputStream = lpStream(incomingStream)
 
       void inputStream.write(uint8ArrayFromString(`${input}\n`))
 
-      const output = await Multistream.read(outputStream, {
-        log: logger('mss:test')
-      })
-      expect(output.subarray()).to.equalBytes(inputBuf)
+      const output = await readString(outputStream)
+      expect(output).to.equal(input)
     })
 
     it('should throw for non-newline delimited message', async () => {
       const input = `TEST${Date.now()}`
       const inputBuf = uint8ArrayFromString(input)
 
-      const duplexes = duplexPair<Uint8Array>()
-      const inputStream = lpStream(duplexes[0])
-      const outputStream = lpStream(duplexes[1])
+      const [outgoingStream, incomingStream] = await streamPair()
+      const inputStream = lpStream(outgoingStream)
+      const outputStream = lpStream(incomingStream)
 
       void inputStream.write(inputBuf)
 
-      await expect(Multistream.read(outputStream, {
-        log: logger('mss:test')
-      })).to.eventually.be.rejected()
+      await expect(readString(outputStream)).to.eventually.be.rejected()
         .with.property('name', 'InvalidMessageError')
     })
 
@@ -60,32 +39,28 @@ describe('Multistream', () => {
       const input = new Uint8Array(10000)
       input[input.length - 1] = '\n'.charCodeAt(0)
 
-      const duplexes = duplexPair<Uint8Array>()
-      const inputStream = lpStream(duplexes[0])
-      const outputStream = lpStream(duplexes[1], {
+      const [outgoingStream, incomingStream] = await streamPair()
+      const inputStream = lpStream(outgoingStream)
+      const outputStream = lpStream(incomingStream, {
         maxDataLength: 9999
       })
 
       void inputStream.write(input)
 
-      await expect(Multistream.read(outputStream, {
-        log: logger('mss:test')
-      })).to.eventually.be.rejected()
+      await expect(readString(outputStream)).to.eventually.be.rejected()
         .with.property('name', 'InvalidDataLengthError')
     })
 
     it('should throw for a 0-length message', async () => {
       const input = new Uint8Array(0)
 
-      const duplexes = duplexPair<Uint8Array>()
-      const inputStream = lpStream(duplexes[0])
-      const outputStream = lpStream(duplexes[1])
+      const [outgoingStream, incomingStream] = await streamPair()
+      const inputStream = lpStream(outgoingStream)
+      const outputStream = lpStream(incomingStream)
 
       void inputStream.write(input)
 
-      await expect(Multistream.read(outputStream, {
-        log: logger('mss:test')
-      })).to.eventually.be.rejected()
+      await expect(readString(outputStream)).to.eventually.be.rejected()
         .with.property('name', 'InvalidMessageError')
     })
 
@@ -96,15 +71,14 @@ describe('Multistream', () => {
       const controller = new AbortController()
       controller.abort()
 
-      const duplexes = duplexPair<Uint8Array>()
-      const inputStream = lpStream(duplexes[0])
-      const outputStream = lpStream(duplexes[1])
+      const [outgoingStream, incomingStream] = await streamPair()
+      const inputStream = lpStream(outgoingStream)
+      const outputStream = lpStream(incomingStream)
 
       void inputStream.write(inputBuf)
 
-      await expect(Multistream.read(outputStream, {
-        signal: controller.signal,
-        log: logger('mss:test')
+      await expect(readString(outputStream, {
+        signal: controller.signal
       })).to.eventually.be.rejected.with.property('name', 'AbortError')
     })
   })

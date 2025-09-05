@@ -1,6 +1,4 @@
-import type { Connection, ConnectionLimits, MultiaddrConnection } from './connection.js'
-import type { AbortOptions, ClearableSignal, ConnectionEncrypter } from './index.js'
-import type { StreamMuxerFactory } from './stream-muxer.js'
+import type { AbortOptions, ClearableSignal, ConnectionEncrypter, MultiaddrConnection, Connection, ConnectionLimits, StreamMuxerFactory, PeerId } from './index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'
@@ -29,16 +27,19 @@ export interface Listener extends TypedEventTarget<ListenerEvents> {
    * Start a listener
    */
   listen(multiaddr: Multiaddr): Promise<void>
+
   /**
    * Get listen addresses
    */
   getAddrs(): Multiaddr[]
+
   /**
    * Close listener
    *
    * @returns {Promise<void>}
    */
   close(): Promise<void>
+
   /**
    * Allows transports to amend announce addresses - to add certificate hashes
    * or other metadata that cannot be known before runtime
@@ -135,15 +136,6 @@ export enum FaultTolerance {
  */
 export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent = ProgressEvent> extends ProgressOptions<ConnectionUpgradeEvents>, Required<AbortOptions> {
   /**
-   * If true the invoking transport is expected to implement it's own encryption
-   * and an encryption protocol will not attempted to be negotiated via
-   * multi-stream select
-   *
-   * @default false
-   */
-  skipEncryption?: boolean
-
-  /**
    * If true no connection protection will be performed on the connection.
    */
   skipProtection?: boolean
@@ -172,6 +164,23 @@ export interface UpgraderOptions<ConnectionUpgradeEvents extends ProgressEvent =
   initiator?: boolean
 }
 
+/**
+ * Options accepted by the upgrader during connection establishment
+ */
+export interface UpgraderWithoutEncryptionOptions extends UpgraderOptions {
+  /**
+   * If true the invoking transport is expected to implement it's own encryption
+   * and an encryption protocol will not attempted to be negotiated via
+   * multi-stream select
+   */
+  skipEncryption: true
+
+  /**
+   * If `skipEncryption` is true, a remote PeerId must be supplied
+   */
+  remotePeer: PeerId
+}
+
 export type InboundConnectionUpgradeEvents =
 ProgressEvent<'upgrader:encrypt-inbound-connection'> |
 ProgressEvent<'upgrader:multiplex-inbound-connection'>
@@ -184,13 +193,15 @@ export interface Upgrader {
   /**
    * Upgrades an outbound connection created by the `dial` method of a transport
    */
-  upgradeOutbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<OutboundConnectionUpgradeEvents>): Promise<Connection>
+  upgradeOutbound(maConn: MultiaddrConnection, opts: UpgraderOptions<OutboundConnectionUpgradeEvents>): Promise<Connection>
+  upgradeOutbound(maConn: MultiaddrConnection, opts: UpgraderWithoutEncryptionOptions): Promise<Connection>
 
   /**
    * Upgrades an inbound connection received by a transport listener and
    * notifies other libp2p components about the new connection
    */
-  upgradeInbound(maConn: MultiaddrConnection, opts?: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<void>
+  upgradeInbound(maConn: MultiaddrConnection, opts: UpgraderOptions<InboundConnectionUpgradeEvents>): Promise<void>
+  upgradeInbound(maConn: MultiaddrConnection, opts: UpgraderWithoutEncryptionOptions): Promise<void>
 
   /**
    * Used by transports that perform part of the upgrade process themselves and

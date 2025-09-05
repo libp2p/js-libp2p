@@ -1,18 +1,16 @@
 /* eslint-disable complexity */
 import { isIPv4 } from '@chainsafe/is-ip'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { debounce } from '@libp2p/utils/debounce'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
-import { isPrivateIp } from '@libp2p/utils/private-ip'
-import { multiaddr } from '@multiformats/multiaddr'
-import { QUICV1, TCP, WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
+import { debounce, createScalableCuckooFilter, isPrivateIp, getNetConfig, isNetworkAddress, isLoopback } from '@libp2p/utils'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
+import { QUIC_V1, TCP, WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { DNSMappings } from './dns-mappings.js'
 import { IPMappings } from './ip-mappings.js'
 import { ObservedAddresses } from './observed-addresses.js'
 import { TransportAddresses } from './transport-addresses.js'
 import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Metrics } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress, ConfirmAddressOptions } from '@libp2p/interface-internal'
-import type { Filter } from '@libp2p/utils/filters'
+import type { Filter } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
@@ -101,7 +99,7 @@ const defaultAddressFilter = (addrs: Multiaddr[]): Multiaddr[] => addrs
  * If the passed multiaddr contains the passed peer id, remove it
  */
 function stripPeerId (ma: Multiaddr, peerId: PeerId): Multiaddr {
-  const observedPeerIdStr = ma.getPeerId()
+  const observedPeerIdStr = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
 
   // strip our peer id if it has been passed
   if (observedPeerIdStr != null) {
@@ -177,7 +175,7 @@ export class AddressManager implements AddressManagerInterface {
     const addrs = this.getAddresses()
       .map(ma => {
         // strip our peer id if it is present
-        if (ma.getPeerId() === this.components.peerId.toString()) {
+        if (ma.getComponents().findLast(c => c.code === CODE_P2P)?.value === this.components.peerId.toString()) {
           return ma.decapsulate(`/p2p/${this.components.peerId.toString()}`)
         }
 
@@ -224,8 +222,22 @@ export class AddressManager implements AddressManagerInterface {
    * Add peer observed addresses
    */
   addObservedAddr (addr: Multiaddr): void {
-    const tuples = addr.stringTuples()
-    const socketAddress = `${tuples[0][1]}:${tuples[1][1]}`
+    const config = getNetConfig(addr)
+    let socketAddress: string
+
+    switch (config.type) {
+      case 'ip4': {
+        socketAddress = `${config.host}:${config.port}`
+        break
+      }
+      case 'ip6': {
+        socketAddress = `[${config.host}]:${config.port}`
+        break
+      }
+      default: {
+        return
+      }
+    }
 
     // ignore if this address if it's been observed before
     if (this.observedAddressFilter.has(socketAddress)) {
@@ -477,10 +489,14 @@ export class AddressManager implements AddressManagerInterface {
       return false
     }
 
-    const maOptions = ma.toOptions()
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
+    const config = getNetConfig(ma)
 
     // only public IPv4 addresses
-    if (maOptions.family === 6 || maOptions.host === '127.0.0.1' || isPrivateIp(maOptions.host) === true) {
+    if (config.type !== 'ip4' || isPrivateIp(config.host) === true) {
       return false
     }
 
@@ -489,7 +505,7 @@ export class AddressManager implements AddressManagerInterface {
     const transportMatchers: Array<(ma: Multiaddr) => boolean> = [
       (ma: Multiaddr) => WebSockets.exactMatch(ma) || WebSocketsSecure.exactMatch(ma),
       (ma: Multiaddr) => TCP.exactMatch(ma),
-      (ma: Multiaddr) => QUICV1.exactMatch(ma)
+      (ma: Multiaddr) => QUIC_V1.exactMatch(ma)
     ]
 
     for (const matcher of transportMatchers) {
@@ -502,7 +518,7 @@ export class AddressManager implements AddressManagerInterface {
       const transportListeners = listeners.filter(listener => {
         return listener.getAddrs().filter(ma => {
           // only IPv4 addresses of the matcher type
-          return ma.toOptions().family === 4 && matcher(ma)
+          return getNetConfig(ma).type === 'ip4' && matcher(ma)
         }).length > 0
       })
 
@@ -516,23 +532,27 @@ export class AddressManager implements AddressManagerInterface {
       // we have one listener which listens on one port so whatever the external
       // NAT port mapping is, it should be for this listener
       const linkLocalAddr = transportListeners[0].getAddrs().filter(ma => {
-        return ma.toOptions().host !== '127.0.0.1'
+        return !isLoopback(ma)
       }).pop()
 
       if (linkLocalAddr == null) {
         continue
       }
 
-      const linkLocalOptions = linkLocalAddr.toOptions()
+      const linkLocalOptions = getNetConfig(linkLocalAddr)
+
+      if (linkLocalOptions.port == null) {
+        return false
+      }
 
       // upgrade observed address to IP mapping
       this.observed.remove(ma)
       this.ipMappings.add(
         linkLocalOptions.host,
         linkLocalOptions.port,
-        maOptions.host,
-        maOptions.port,
-        maOptions.transport
+        config.host,
+        config.port,
+        config.protocol
       )
 
       return true

@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.1.14](https://github.com/libp2p/js-libp2p/compare/memory-v1.1.13...memory-v1.1.14) (2025-08-19)
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+
+## [1.1.13](https://github.com/libp2p/js-libp2p/compare/memory-v1.1.12...memory-v1.1.13) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+
 ## [1.1.12](https://github.com/libp2p/js-libp2p/compare/memory-v1.1.11...memory-v1.1.12) (2025-06-25)
 
 

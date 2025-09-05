@@ -27,12 +27,6 @@
       "path": "../logger"
     },
     {
-      "path": "../multistream-select"
-    },
-    {
-      "path": "../peer-collections"
-    },
-    {
       "path": "../peer-id"
     },
     {

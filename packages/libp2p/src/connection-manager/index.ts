@@ -1,7 +1,8 @@
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { RateLimiter } from '@libp2p/utils/rate-limiter'
+import { getNetConfig, isNetworkAddress, RateLimiter } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
+import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
@@ -9,11 +10,11 @@ import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_Q
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
 import { dnsaddrResolver } from './resolvers/index.ts'
-import { multiaddrToIpNet } from './utils.js'
+import { findExistingConnection, multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream, NewStreamOptions } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
-import type { JobStatus } from '@libp2p/utils/queue'
+import type { JobStatus } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
@@ -64,6 +65,14 @@ export interface ConnectionManagerInit {
    * @default 10_000
    */
   dialTimeout?: number
+
+  /**
+   * How many ms to wait when closing a connection if an abort signal is not
+   * passed
+   *
+   * @default 1_000
+   */
+  connectionCloseTimeout?: number
 
   /**
    * When a new incoming connection is opened, the upgrade process (e.g.
@@ -241,8 +250,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.onDisconnect = this.onDisconnect.bind(this)
 
     // allow/deny lists
-    this.allow = (init.allow ?? []).map(str => multiaddrToIpNet(str))
-    this.deny = (init.deny ?? []).map(str => multiaddrToIpNet(str))
+    this.allow = (init.allow ?? []).map(str => multiaddrToIpNet(multiaddr(str)))
+    this.deny = (init.deny ?? []).map(str => multiaddrToIpNet(multiaddr(str)))
 
     this.incomingPendingConnections = 0
     this.maxIncomingPendingConnections = init.maxIncomingPendingConnections ?? defaultOptions.maxIncomingPendingConnections
@@ -399,16 +408,22 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     )
 
     // Close all connections we're tracking
-    const tasks: Array<Promise<void>> = []
+    const tasks: Array<Promise<any>> = []
     for (const connectionList of this.connections.values()) {
       for (const connection of connectionList) {
-        tasks.push((async () => {
-          try {
-            await connection.close()
-          } catch (err) {
-            this.log.error(err)
-          }
-        })())
+        tasks.push(
+          Promise.all([
+            pEvent(connection, 'close', {
+              signal: AbortSignal.timeout(500)
+            }),
+            connection.close({
+              signal: AbortSignal.timeout(500)
+            })
+          ])
+            .catch(err => {
+              connection.abort(err)
+            })
+        )
       }
     }
 
@@ -500,11 +515,11 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     if (filteredPeerConns.length === 0) {
       // trigger disconnect event if no connections remain
-      this.log('onDisconnect remove all connections for peer %p', peerId)
+      this.log.trace('peer %p disconnected, removing connection map entry', peerId)
       this.connections.delete(peerId)
 
       // broadcast disconnect event
-      this.events.safeDispatchEvent('peer:disconnect', { detail: connection.remotePeer })
+      this.events.safeDispatchEvent('peer:disconnect', { detail: peerId })
     }
   }
 
@@ -536,19 +551,18 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     try {
       options.signal?.throwIfAborted()
 
-      const { peerId } = getPeerAddress(peerIdOrMultiaddr)
+      const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
       if (this.peerId.equals(peerId)) {
         throw new InvalidPeerIdError('Can not dial self')
       }
 
-      if (peerId != null && options.force !== true) {
+      if (options.force !== true) {
         this.log('dial %p', peerId)
-        const existingConnection = this.getConnections(peerId)
-          .find(conn => conn.limits == null)
+        const existingConnection = findExistingConnection(this.getConnections(), multiaddrs, peerId)
 
         if (existingConnection != null) {
-          this.log('had an existing non-limited connection to %p', peerId)
+          this.log('had an existing connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
           return existingConnection
@@ -600,13 +614,22 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     }
   }
 
+  async openStream (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options: OpenConnectionOptions & NewStreamOptions = {}): Promise<Stream> {
+    const connection = await this.openConnection(peerIdOrMultiaddr, options)
+
+    return connection.newStream(protocol, options)
+  }
+
   async closeConnections (peerId: PeerId, options: AbortOptions = {}): Promise<void> {
     const connections = this.connections.get(peerId) ?? []
 
     await Promise.all(
       connections.map(async connection => {
         try {
-          await connection.close(options)
+          await Promise.all([
+            pEvent(connection, 'close', options),
+            connection.close(options)
+          ])
         } catch (err: any) {
           connection.abort(err)
         }
@@ -614,10 +637,15 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     )
   }
 
-  async acceptIncomingConnection (maConn: MultiaddrConnection): Promise<boolean> {
+  acceptIncomingConnection (maConn: MultiaddrConnection): boolean {
     // check deny list
-    const denyConnection = this.deny.some(ma => {
-      return ma.contains(maConn.remoteAddr.nodeAddress().address)
+    const denyConnection = this.deny.some(ipNet => {
+      if (isNetworkAddress(maConn.remoteAddr)) {
+        const config = getNetConfig(maConn.remoteAddr)
+        return ipNet.contains(config.host)
+      }
+
+      return false
     })
 
     if (denyConnection) {
@@ -627,7 +655,12 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     // check allow list
     const allowConnection = this.allow.some(ipNet => {
-      return ipNet.contains(maConn.remoteAddr.nodeAddress().address)
+      if (isNetworkAddress(maConn.remoteAddr)) {
+        const config = getNetConfig(maConn.remoteAddr)
+        return ipNet.contains(config.host)
+      }
+
+      return true
     })
 
     if (allowConnection) {
@@ -642,13 +675,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       return false
     }
 
-    if (maConn.remoteAddr.isThinWaistAddress()) {
-      const host = maConn.remoteAddr.nodeAddress().address
+    if (isNetworkAddress(maConn.remoteAddr)) {
+      const config = getNetConfig(maConn.remoteAddr)
 
       try {
-        await this.inboundConnectionRateLimiter.consume(host, 1)
+        this.inboundConnectionRateLimiter.consume(config.host, 1)
       } catch {
-        this.log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, host)
+        this.log('connection from %a refused - inboundConnectionThreshold exceeded by host %s', maConn.remoteAddr, config.host)
         return false
       }
     }

@@ -253,7 +253,6 @@ describe('connection-pruner', () => {
     ]
 
     // Verify that the allow list in the pruner matches the expected IpNet objects
-
     expect(pruner['allow']).to.deep.equal(expectedAllowList)
   })
 

@@ -1,6 +1,7 @@
 import { generateKeyPair, privateKeyToCryptoKeyPair } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, NotStartedError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { BasicConstraintsExtension, X509Certificate, X509CertificateGenerator } from '@peculiar/x509'
 import { Key } from 'interface-datastore'
@@ -164,7 +165,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
     options.signal.throwIfAborted()
 
     let theirPeerId: PeerId | undefined
-    const remotePeerString = ma.getPeerId()
+    const remotePeerString = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
     if (remotePeerString != null) {
       theirPeerId = peerIdFromString(remotePeerString)
     }
@@ -186,7 +187,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
         dataChannel: this.init.dataChannel,
         upgrader: options.upgrader,
         peerId: this.components.peerId,
-        remotePeerId: theirPeerId,
+        remotePeer: theirPeerId,
         privateKey: this.components.privateKey
       })
     } catch (err) {

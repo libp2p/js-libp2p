@@ -1,12 +1,6 @@
-import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, IncomingStreamData } from '@libp2p/interface'
-import type { AbortOptions } from '@multiformats/multiaddr'
+import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, AbortOptions } from '@libp2p/interface'
 
 export type {
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  IncomingStreamData,
-
   /**
    * @deprecated This type should be imported from @libp2p/interface directly
    */
