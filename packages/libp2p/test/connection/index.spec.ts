@@ -38,6 +38,7 @@ describe('connection', () => {
       },
       options: {}
     })
+    registrar.getMiddleware.withArgs(ECHO_PROTOCOL).returns([])
 
     components = {
       peerStore,
@@ -223,6 +224,7 @@ describe('connection', () => {
       }
     })
     registrar.getProtocols.returns([protocol])
+    registrar.getMiddleware.withArgs(protocol).returns([])
 
     const connection = createConnection(components, init)
     expect(connection.streams).to.have.lengthOf(0)
@@ -259,6 +261,7 @@ describe('connection', () => {
       }
     })
     registrar.getProtocols.returns([protocol])
+    registrar.getMiddleware.withArgs(protocol).returns([])
 
     const connection = createConnection(components, init)
     expect(connection.streams).to.have.lengthOf(0)
@@ -274,6 +277,7 @@ describe('connection', () => {
     const protocol = '/test/protocol'
 
     registrar.getHandler.withArgs(protocol).throws(new UnhandledProtocolError())
+    registrar.getMiddleware.withArgs(protocol).returns([])
 
     const connection = createConnection(components, init)
     expect(connection.streams).to.have.lengthOf(0)
