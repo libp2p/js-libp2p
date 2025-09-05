@@ -2,7 +2,7 @@ import { streamPair } from '@libp2p/utils'
 import { stubInterface } from 'sinon-ts'
 import { PubSubBaseProtocol } from '../../src/index.js'
 import { RPC } from '../message/rpc.js'
-import type { Connection, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, StreamHandler, StreamHandlerRecord, PeerId } from '@libp2p/interface'
+import type { Connection, PublishResult, PubSubRPC, PubSubRPCMessage, Topology, StreamHandler, StreamHandlerRecord, PeerId, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 export class PubsubImplementation extends PubSubBaseProtocol {
@@ -32,6 +32,7 @@ export class PubsubImplementation extends PubSubBaseProtocol {
 export class MockRegistrar implements Registrar {
   private readonly topologies = new Map<string, { topology: Topology, protocols: string[] }>()
   private readonly handlers = new Map<string, StreamHandler>()
+  private readonly middleware = new Map<string, StreamMiddleware[]>()
 
   getProtocols (): string[] {
     const protocols = new Set<string>()
@@ -114,6 +115,18 @@ export class MockRegistrar implements Registrar {
     }
 
     throw new Error(`No topologies registered for protocol ${protocol}`)
+  }
+
+  use (protocol: string, middleware: StreamMiddleware[]): void {
+    this.middleware.set(protocol, middleware)
+  }
+
+  unuse (protocol: string): void {
+    this.middleware.delete(protocol)
+  }
+
+  getMiddleware (protocol: string): StreamMiddleware[] {
+    return this.middleware.get(protocol) ?? []
   }
 }
 

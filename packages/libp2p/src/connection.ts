@@ -126,7 +126,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     }
 
     this.log.trace('starting new stream for protocols %s', protocols)
-    const muxedStream = await this.muxer.createStream({
+    let muxedStream = await this.muxer.createStream({
       ...options,
 
       // most underlying transports only support negotiating a single protocol
@@ -177,6 +177,24 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       this.components.metrics?.trackProtocolStream(muxedStream)
 
+      const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
+
+      middleware.push((stream, connection, next) => {
+        next(stream, connection)
+      })
+
+      let i = 0
+      let connection: ConnectionInterface = this
+
+      while (i < middleware.length) {
+        // eslint-disable-next-line no-loop-func
+        middleware[i](muxedStream, connection, (s, c) => {
+          muxedStream = s
+          connection = c
+          i++
+        })
+      }
+
       return muxedStream
     } catch (err: any) {
       if (muxedStream.status === 'open') {
@@ -190,7 +208,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   }
 
   private async onIncomingStream (evt: CustomEvent<Stream>): Promise<void> {
-    const muxedStream = evt.detail
+    let muxedStream = evt.detail
 
     const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
     setMaxListeners(Infinity, signal)
@@ -233,6 +251,25 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       if (this.limits != null && options.runOnLimitedConnection !== true) {
         throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
+      }
+
+      const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
+
+      middleware.push((stream, connection, next) => {
+        handler(stream, connection)
+        next(stream, connection)
+      })
+
+      let i = 0
+      let connection: ConnectionInterface = this
+
+      while (i < middleware.length) {
+        // eslint-disable-next-line no-loop-func
+        middleware[i](muxedStream, connection, (s, c) => {
+          muxedStream = s
+          connection = c
+          i++
+        })
       }
 
       await handler(muxedStream, this)
