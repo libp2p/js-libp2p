@@ -179,9 +179,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
 
-      await this.runMiddlewareChain(muxedStream, this, middleware)
-
-      return muxedStream
+      return await this.runMiddlewareChain(muxedStream, this, middleware)
     } catch (err: any) {
       if (muxedStream.status === 'open') {
         muxedStream.abort(err)
@@ -252,7 +250,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     }
   }
 
-  private async runMiddlewareChain (stream: Stream, connection: ConnectionInterface, middleware: StreamMiddleware[]): Promise<{ stream: Stream; connection: ConnectionInterface }> {
+  private async runMiddlewareChain (stream: Stream, connection: ConnectionInterface, middleware: StreamMiddleware[]): Promise<Stream> {
     for (let i = 0; i < middleware.length; i++) {
       const mw = middleware[i]
       stream.log.trace('running middleware', i, mw)
@@ -277,7 +275,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
       stream.log.trace('ran middleware', i, mw)
     }
 
-    return { stream, connection }
+    return stream
   }
 
   /**
