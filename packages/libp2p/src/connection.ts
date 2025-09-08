@@ -260,15 +260,13 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
         next(stream, connection)
       })
 
-      let i = 0
       let connection: ConnectionInterface = this
 
-      while (i < middleware.length) {
+      for (const m of middleware) {
         // eslint-disable-next-line no-loop-func
-        await middleware[i](muxedStream, connection, (s, c) => {
+        await m(muxedStream, connection, (s, c) => {
           muxedStream = s
           connection = c
-          i++
         })
       }
     } catch (err: any) {
