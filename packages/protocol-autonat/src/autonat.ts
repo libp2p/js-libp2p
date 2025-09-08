@@ -1,25 +1,18 @@
-import { serviceCapabilities, serviceDependencies } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { peerSet } from '@libp2p/peer-collections'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
-import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { PeerQueue } from '@libp2p/utils/peer-queue'
-import { repeatingTask } from '@libp2p/utils/repeating-task'
-import { trackedMap } from '@libp2p/utils/tracked-map'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { createScalableCuckooFilter, isGlobalUnicast, isPrivate, PeerQueue, repeatingTask, trackedMap, pbStream, getNetConfig } from '@libp2p/utils'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { anySignal } from 'any-signal'
-import { pbStream } from 'it-protobuf-stream'
 import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { DEFAULT_CONNECTION_THRESHOLD, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION, TIMEOUT } from './constants.js'
 import { Message } from './pb/index.js'
 import type { AutoNATComponents, AutoNATServiceInit } from './index.js'
-import type { Logger, Connection, PeerId, Startable, AbortOptions, IncomingStreamData } from '@libp2p/interface'
+import type { Logger, Connection, PeerId, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { AddressType } from '@libp2p/interface-internal'
 import type { PeerSet } from '@libp2p/peer-collections'
-import type { Filter } from '@libp2p/utils/filters'
-import type { RepeatingTask } from '@libp2p/utils/repeating-task'
+import type { Filter, RepeatingTask } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 // if more than 3 peers manage to dial us on what we believe to be our external
@@ -136,8 +129,8 @@ export class AutoNATService implements Startable {
       return
     }
 
-    await this.components.registrar.handle(this.protocol, (data) => {
-      void this.handleIncomingAutonatStream(data)
+    await this.components.registrar.handle(this.protocol, (stream, connection) => {
+      void this.handleIncomingAutonatStream(stream, connection)
         .catch(err => {
           this.log.error('error handling incoming autonat stream - %e', err)
         })
@@ -229,36 +222,36 @@ export class AutoNATService implements Startable {
   /**
    * Handle an incoming AutoNAT request
    */
-  async handleIncomingAutonatStream (data: IncomingStreamData): Promise<void> {
+  async handleIncomingAutonatStream (stream: Stream, connection: Connection): Promise<void> {
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    const messages = pbStream(data.stream, {
-      maxDataLength: this.maxMessageSize
-    }).pb(Message)
-
     try {
+      const messages = pbStream(stream, {
+        maxDataLength: this.maxMessageSize
+      }).pb(Message)
+
       const request = await messages.read({
         signal
       })
-      const response = await this.handleAutonatMessage(request, data.connection, {
+      const response = await this.handleAutonatMessage(request, connection, {
         signal
       })
       await messages.write(response, {
         signal
       })
-      await messages.unwrap().unwrap().close({
+      await stream.close({
         signal
       })
     } catch (err: any) {
       this.log.error('error handling incoming autonat stream - %e', err)
-      data.stream.abort(err)
+      stream.abort(err)
     }
   }
 
   private async handleAutonatMessage (message: Message, connection: Connection, options?: AbortOptions): Promise<Message> {
     const ourHosts = this.components.addressManager.getAddresses()
-      .map(ma => ma.toOptions().host)
+      .map(ma => getNetConfig(ma).host)
 
     const dialRequest = message.dial
 
@@ -323,34 +316,40 @@ export class AutoNATService implements Startable {
     const multiaddrs = peer.addrs
       .map(buf => multiaddr(buf))
       .filter(ma => {
-        const options = ma.toOptions()
+        try {
+          const options = getNetConfig(ma)
 
-        if (isPrivate(ma)) {
-          // don't try to dial private addresses
+          if (isPrivate(ma)) {
+            // don't try to dial private addresses
+            return false
+          }
+
+          if (options.host !== getNetConfig(connection.remoteAddr).host) {
+            // skip any Multiaddrs where the target node's IP does not match the sending node's IP
+            this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
+            return false
+          }
+
+          if (ourHosts.includes(options.host)) {
+            // don't try to dial nodes on the same host as us
+            return false
+          }
+
+          if (this.components.transportManager.dialTransportForMultiaddr(ma) == null) {
+            // skip any Multiaddrs that have transports we do not support
+            this.log.trace('not dialing %a - transport unsupported', ma)
+            return false
+          }
+
+          return true
+        } catch {
+          // skip any addresses that cannot be parsed (memory, webrtc incoming,
+          // etc)
           return false
         }
-
-        if (options.host !== connection.remoteAddr.toOptions().host) {
-          // skip any Multiaddrs where the target node's IP does not match the sending node's IP
-          this.log.trace('not dialing %a - target host did not match remote host %a', ma, connection.remoteAddr)
-          return false
-        }
-
-        if (ourHosts.includes(options.host)) {
-          // don't try to dial nodes on the same host as us
-          return false
-        }
-
-        if (this.components.transportManager.dialTransportForMultiaddr(ma) == null) {
-          // skip any Multiaddrs that have transports we do not support
-          this.log.trace('not dialing %a - transport unsupported', ma)
-          return false
-        }
-
-        return true
       })
       .map(ma => {
-        if (ma.getPeerId() == null) {
+        if (ma.getComponents().find(c => c.code === CODE_P2P)?.value == null) {
           // make sure we have the PeerId as part of the Multiaddr
           ma = ma.encapsulate(`/p2p/${peerId.toString()}`)
         }
@@ -394,7 +393,7 @@ export class AutoNATService implements Startable {
           type: Message.MessageType.DIAL_RESPONSE,
           dialResponse: {
             status: Message.ResponseStatus.OK,
-            addr: connection.remoteAddr.decapsulateCode(protocols('p2p').code).bytes
+            addr: connection.remoteAddr.decapsulateCode(CODE_P2P).bytes
           }
         }
       } catch (err: any) {
@@ -451,9 +450,9 @@ export class AutoNATService implements Startable {
           return false
         }
 
-        const options = addr.multiaddr.toOptions()
+        const options = getNetConfig(addr.multiaddr)
 
-        if (options.family === 6) {
+        if (options.type === 'ip6') {
           // do not send IPv6 addresses to peers without IPv6 addresses
           if (!supportsIPv6) {
             return false
@@ -572,7 +571,7 @@ export class AutoNATService implements Startable {
     // if the remote peer has IPv6 addresses, we can probably send them an IPv6
     // address to verify, otherwise only send them IPv4 addresses
     const supportsIPv6 = peer.addresses.some(({ multiaddr }) => {
-      return multiaddr.toOptions().family === 6
+      return getNetConfig(multiaddr).type === 'ip6'
     })
 
     // get multiaddrs this peer is eligible to verify
@@ -623,7 +622,7 @@ export class AutoNATService implements Startable {
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)
 
-    this.log.trace('asking %p to verify multiaddr %s', connection.remotePeer, options.multiaddr)
+    this.log.trace('asking %a to verify multiaddr %s', connection.remoteAddr, options.multiaddr)
 
     const stream = await connection.newStream(this.protocol, {
       signal
@@ -746,14 +745,20 @@ export class AutoNATService implements Startable {
 
   private getNetworkSegment (ma: Multiaddr): string {
     // make sure we use different network segments
-    const options = ma.toOptions()
+    const options = getNetConfig(ma)
 
-    if (options.family === 4) {
-      const octets = options.host.split('.')
-      return octets[0].padStart(3, '0')
+    switch (options.type) {
+      case 'ip4': {
+        const octets = options.host.split('.')
+        return octets[0].padStart(3, '0')
+      }
+      case 'ip6': {
+        const octets = options.host.split(':')
+        return octets[0].padStart(4, '0')
+      }
+      default: {
+        throw new InvalidParametersError(`Remote address ${ma} was not an IPv4 or Ipv6 address`)
+      }
     }
-
-    const octets = options.host.split(':')
-    return octets[0].padStart(4, '0')
   }
 }

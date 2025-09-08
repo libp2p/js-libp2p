@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/perf",
-  "version": "4.0.45",
+  "version": "4.0.47",
   "description": "Implementation of Perf Protocol",
   "author": "@maschad / @marcopolo",
   "license": "Apache-2.0 OR MIT",
@@ -45,17 +45,18 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.10.5",
-    "@libp2p/interface-internal": "^2.3.18",
-    "@multiformats/multiaddr": "^12.4.4",
-    "it-pushable": "^3.2.3"
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/interface-internal": "^2.3.19",
+    "@multiformats/multiaddr": "^13.0.1",
+    "it-pushable": "^3.2.3",
+    "p-event": "^6.0.1",
+    "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@libp2p/interface-compliance-tests": "^6.4.15",
-    "@libp2p/logger": "^5.1.21",
-    "aegir": "^47.0.14",
-    "it-last": "^3.0.8",
-    "it-pair": "^2.0.6",
+    "@libp2p/logger": "^5.2.0",
+    "@libp2p/utils": "^6.7.2",
+    "aegir": "^47.0.21",
+    "it-last": "^3.0.9",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

@@ -21,6 +21,22 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.21...logger-v5.2.0) (2025-08-19)
+
+
+### Features
+
+* allow creating scoped loggers ([#3214](https://github.com/libp2p/js-libp2p/issues/3214)) ([58abe87](https://github.com/libp2p/js-libp2p/commit/58abe8702f0c28d87b54f29e19155ea5c00c407d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+
 ## [5.1.21](https://github.com/libp2p/js-libp2p/compare/logger-v5.1.20...logger-v5.1.21) (2025-06-25)
 
 

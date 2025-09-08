@@ -3,8 +3,8 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import { duplexPair } from 'it-pair/duplex'
 import sinon from 'sinon'
 import { plaintext } from '../src/index.js'
 import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
@@ -36,7 +36,7 @@ describe('plaintext', () => {
   })
 
   it('should verify the public key and id match', async () => {
-    const [inbound, outbound] = duplexPair<any>()
+    const [inbound, outbound] = await streamPair()
 
     await Promise.all([
       encrypter.secureInbound(inbound),
@@ -57,7 +57,7 @@ describe('plaintext', () => {
       logger: defaultLogger()
     })
 
-    const [inbound, outbound] = duplexPair<any>()
+    const [inbound, outbound] = await streamPair()
 
     await expect(Promise.all([
       encrypter.secureInbound(inbound),

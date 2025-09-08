@@ -1,19 +1,20 @@
 import os from 'os'
 import path from 'path'
 import { defaultLogger } from '@libp2p/logger'
+import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
-import type { Connection, Transport, Upgrader } from '@libp2p/interface'
+import type { Connection, Listener, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 
 describe('listen', () => {
   let transport: Transport
-  let listener: any
+  let listener: Listener
   let upgrader: Upgrader
 
   beforeEach(() => {
@@ -148,7 +149,7 @@ describe('listen', () => {
 
     const multiaddrs = listener.getAddrs()
     expect(multiaddrs.length > 0).to.equal(true)
-    expect(multiaddrs[0].toOptions().host).to.not.equal('::')
+    expect(getNetConfig(multiaddrs[0]).host).to.not.equal('::')
   })
 })
 

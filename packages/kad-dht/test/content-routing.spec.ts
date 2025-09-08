@@ -47,7 +47,7 @@ describe('content routing', () => {
       testDHT.spawn()
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
-    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
+    const sendMessageSpy = sinon.spy(dhts[3].dht.network, 'sendMessage')
 
     // connect peers
     await Promise.all([
@@ -57,7 +57,7 @@ describe('content routing', () => {
     ])
 
     // run provide operation
-    await drain(dhts[3].provide(cid))
+    await drain(dhts[3].dht.provide(cid))
 
     // check network messages
     const calls = sendMessageSpy.getCalls().map(c => c.args)
@@ -82,7 +82,7 @@ describe('content routing', () => {
 
     // Expect each DHT to find the provider of each value
     for (const d of dhts) {
-      const events = await all(d.findProviders(cid))
+      const events = await all(d.dht.findProviders(cid))
       const provs = Object.values(events.reduce<Record<string, PeerId>>((acc, curr) => {
         if (curr.name === 'PEER_RESPONSE') {
           curr.providers.forEach(peer => {
@@ -113,11 +113,11 @@ describe('content routing', () => {
       testDHT.connect(dhts[2], dhts[3])
     ])
 
-    const sendMessageSpy = sinon.spy(dhts[0].network, 'sendMessage')
+    const sendMessageSpy = sinon.spy(dhts[0].dht.network, 'sendMessage')
 
-    await dhts[0].setMode('server')
+    await dhts[0].dht.setMode('server')
 
-    await drain(dhts[0].provide(cid))
+    await drain(dhts[0].dht.provide(cid))
 
     expect(sendMessageSpy.called).to.be.true()
   })
@@ -137,9 +137,9 @@ describe('content routing', () => {
       testDHT.connect(dhts[1], dhts[2])
     ])
 
-    await Promise.all(dhts.map(async (dht) => { await drain(dht.provide(cid)) }))
+    await Promise.all(dhts.map(async (dht) => { await drain(dht.dht.provide(cid)) }))
 
-    const events = await all(dhts[0].findProviders(cid))
+    const events = await all(dhts[0].dht.findProviders(cid))
 
     // find providers find all the 3 providers
     const provs = Object.values(events.reduce<Record<string, PeerId>>((acc, curr) => {
@@ -171,12 +171,12 @@ describe('content routing', () => {
       testDHT.connect(dhts[1], dhts[2])
     ])
 
-    await drain(dhts[2].provide(cid))
+    await drain(dhts[2].dht.provide(cid))
 
     // wait for messages to be handled
     await delay(1000)
 
-    const events = await all(clientDHT.findProviders(cid))
+    const events = await all(clientDHT.dht.findProviders(cid))
 
     // find providers find all the 3 providers
     const provs = Object.values(events.reduce<Record<string, PeerId>>((acc, curr) => {
@@ -206,11 +206,11 @@ describe('content routing', () => {
       testDHT.connect(dhts[0], dhts[1])
     ])
 
-    await drain(clientDHT.provide(cid))
+    await drain(clientDHT.dht.provide(cid))
 
     await delay(1e3)
 
-    const events = await all(dhts[1].findProviders(cid))
+    const events = await all(dhts[1].dht.findProviders(cid))
 
     // find providers find the client provider
     const provs = Object.values(events.reduce<Record<string, PeerId>>((acc, curr) => {
@@ -238,10 +238,10 @@ describe('content routing', () => {
         tags: new Map(),
         metadata: new Map()
       })
-    sinon.stub(dht.providers, 'getProviders').resolves([dht.components.peerId])
+    sinon.stub(dht.dht.providers, 'getProviders').resolves([dht.components.peerId])
 
     // Find provider
-    const events = await all(dht.findProviders(cid))
+    const events = await all(dht.dht.findProviders(cid))
     const provs = Object.values(events.reduce<Record<string, PeerId>>((acc, curr) => {
       if (curr.name === 'PEER_RESPONSE') {
         curr.providers.forEach(peer => {
@@ -265,7 +265,7 @@ describe('content routing', () => {
     ]), await kadUtils.convertBuffer(cid.multihash.bytes))
 
     // Spy on network.sendMessage to verify it's not called after abort
-    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
+    const sendMessageSpy = sinon.spy(dhts[3].dht.network, 'sendMessage')
 
     // Connect peers
     await Promise.all([
@@ -277,7 +277,7 @@ describe('content routing', () => {
     const controller = new AbortController()
     controller.abort()
 
-    const generator = dhts[3].provide(cid, { signal: controller.signal })
+    const generator = dhts[3].dht.provide(cid, { signal: controller.signal })
     await expect(all(generator)).to.eventually.be.rejected
       .with.property('message').that.include('aborted')
 
@@ -301,12 +301,12 @@ describe('content routing', () => {
       testDHT.connect(dhts[2], dhts[3])
     ])
 
-    const sendMessageSpy = sinon.spy(dhts[3].network, 'sendMessage')
+    const sendMessageSpy = sinon.spy(dhts[3].dht.network, 'sendMessage')
 
     const controller = new AbortController()
 
     // Start the provide operation
-    const generator = dhts[3].provide(cid, { signal: controller.signal })
+    const generator = dhts[3].dht.provide(cid, { signal: controller.signal })
 
     // We want to push the generator manually to control timing
     const reader = async (): Promise<{ results: QueryEvent[], aborted: boolean }> => {

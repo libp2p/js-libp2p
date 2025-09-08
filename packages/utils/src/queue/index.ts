@@ -1,7 +1,7 @@
 import { AbortError } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'
 import { Job } from './job.js'
@@ -101,6 +101,8 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
 
   /**
    * A job has failed
+   *
+   * @deprecated Listen for the 'failure' event instead - it gives more context and is generally more useful, this event will be removed in a future release
    */
   error: CustomEvent<Error>
 
@@ -129,6 +131,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
   public queue: Array<Job<JobOptions, JobReturnType>>
   private pending: number
   private readonly sort?: Comparator<Job<JobOptions, JobReturnType>>
+  private paused: boolean
 
   constructor (init: QueueInit<JobReturnType, JobOptions> = {}) {
     super()
@@ -136,6 +139,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     this.concurrency = init.concurrency ?? Number.POSITIVE_INFINITY
     this.maxSize = init.maxSize ?? Number.POSITIVE_INFINITY
     this.pending = 0
+    this.paused = false
 
     if (init.metricName != null) {
       init.metrics?.registerMetricGroup(init.metricName, {
@@ -172,7 +176,24 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     this.safeDispatchEvent('idle')
   }
 
+  pause (): void {
+    this.paused = true
+  }
+
+  resume (): void {
+    if (!this.paused) {
+      return
+    }
+
+    this.paused = false
+    this.tryToStartAnother()
+  }
+
   private tryToStartAnother (): boolean {
+    if (this.paused) {
+      return false
+    }
+
     if (this.size === 0) {
       this.emitEmpty()
 
@@ -263,7 +284,6 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
           }
         }
 
-        this.safeDispatchEvent('error', { detail: err })
         this.safeDispatchEvent('failure', { detail: { job, error: err } })
 
         throw err
@@ -299,7 +319,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       return
     }
 
-    await raceEvent(this, 'empty', options?.signal)
+    await pEvent(this, 'empty', options)
   }
 
   /**
@@ -319,7 +339,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       return
     }
 
-    await raceEvent(this, 'next', options?.signal, {
+    await pEvent(this, 'next', {
+      ...options,
       filter: () => this.size < limit
     })
   }
@@ -338,7 +359,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       return
     }
 
-    await raceEvent(this, 'idle', options?.signal)
+    await pEvent(this, 'idle', options)
   }
 
   /**
@@ -395,8 +416,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       }
     }
 
-    const onQueueError = (evt: CustomEvent<Error>): void => {
-      cleanup(evt.detail)
+    const onQueueFailure = (evt: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>): void => {
+      cleanup(evt.detail.error)
     }
 
     const onQueueIdle = (): void => {
@@ -410,7 +431,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
     // add listeners
     this.addEventListener('completed', onQueueJobComplete)
-    this.addEventListener('error', onQueueError)
+    this.addEventListener('failure', onQueueFailure)
     this.addEventListener('idle', onQueueIdle)
     options?.signal?.addEventListener('abort', onSignalAbort)
 
@@ -419,7 +440,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     } finally {
       // remove listeners
       this.removeEventListener('completed', onQueueJobComplete)
-      this.removeEventListener('error', onQueueError)
+      this.removeEventListener('failure', onQueueFailure)
       this.removeEventListener('idle', onQueueIdle)
       options?.signal?.removeEventListener('abort', onSignalAbort)
 

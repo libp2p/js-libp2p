@@ -15,3 +15,14 @@ SECG
 Certicom
 RSAES
 unuse
+dialback
+chacha
+peerStore
+xxhandshake
+zerolen
+connmanager
+reprovide
+reprovider
+reproviding
+reprovides
+reprovided

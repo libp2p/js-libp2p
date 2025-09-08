@@ -16,9 +16,6 @@
     },
     {
       "path": "../peer-id"
-    },
-    {
-      "path": "../utils"
     }
   ]
 }

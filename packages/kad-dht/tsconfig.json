@@ -15,9 +15,6 @@
       "path": "../interface"
     },
     {
-      "path": "../interface-compliance-tests"
-    },
-    {
       "path": "../interface-internal"
     },
     {

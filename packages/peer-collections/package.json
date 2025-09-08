@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-collections",
-  "version": "6.0.34",
+  "version": "6.0.35",
   "description": "Stores values against a peer id",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-collections#readme",
@@ -47,16 +47,16 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.10.5",
-    "@libp2p/peer-id": "^5.1.8",
-    "@libp2p/utils": "^6.7.1",
-    "multiformats": "^13.3.6"
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/peer-id": "^5.1.9",
+    "@libp2p/utils": "^6.7.2",
+    "multiformats": "^13.4.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.1.7",
+    "@libp2p/crypto": "^5.1.8",
     "@types/sinon": "^17.0.4",
-    "aegir": "^47.0.14",
-    "sinon": "^20.0.0",
+    "aegir": "^47.0.21",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

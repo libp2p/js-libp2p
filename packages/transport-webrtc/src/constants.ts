@@ -27,24 +27,9 @@ export const UFRAG_ALPHABET = Array.from('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 export const UFRAG_PREFIX = 'libp2p+webrtc+v1/'
 
 /**
- * The multicodec code for webrtc-direct tuples
- */
-export const CODEC_WEBRTC_DIRECT = 0x0118
-
-/**
- * The multicodec code for certhash tuples
- */
-export const CODEC_CERTHASH = 0x01d2
-
-/**
  * How much can be buffered to the DataChannel at once
  */
 export const MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024
-
-/**
- * How long time we wait for the 'bufferedamountlow' event to be emitted
- */
-export const BUFFERED_AMOUNT_LOW_TIMEOUT = 30 * 1000
 
 /**
  * Max message size that can be sent to the DataChannel. In browsers this is
@@ -81,19 +66,6 @@ function calculateProtobufOverhead (maxMessageSize = MAX_MESSAGE_SIZE): number {
  * protobuf that aren't message field bytes
  */
 export const PROTOBUF_OVERHEAD = calculateProtobufOverhead()
-
-/**
- * When closing streams we send a FIN then wait for the remote to
- * reply with a FIN_ACK. If that does not happen within this timeout
- * we close the stream anyway.
- */
-export const FIN_ACK_TIMEOUT = 5_000
-
-/**
- * When sending data messages, if the channel is not in the "open" state, wait
- * this long for the "open" event to fire.
- */
-export const OPEN_TIMEOUT = 5_000
 
 /**
  * When closing a stream, we wait for `bufferedAmount` to become 0 before

@@ -69,7 +69,6 @@
 import { statfs } from 'node:fs/promises'
 import { totalmem } from 'node:os'
 import { serviceCapabilities } from '@libp2p/interface'
-import each from 'it-foreach'
 import { collectDefaultMetrics, register } from 'prom-client'
 import { PrometheusCounterGroup } from './counter-group.js'
 import { PrometheusCounter } from './counter.js'
@@ -79,10 +78,8 @@ import { PrometheusMetricGroup } from './metric-group.js'
 import { PrometheusMetric } from './metric.js'
 import { PrometheusSummaryGroup } from './summary-group.js'
 import { PrometheusSummary } from './summary.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, Stream, Connection, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics, CalculatedHistogramOptions, CalculatedSummaryOptions, HistogramOptions, Histogram, HistogramGroup, SummaryOptions, Summary, SummaryGroup } from '@libp2p/interface'
-import type { Duplex } from 'it-stream-types'
+import type { ComponentLogger, Logger, MultiaddrConnection, Stream, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics, CalculatedHistogramOptions, CalculatedSummaryOptions, HistogramOptions, Histogram, HistogramGroup, SummaryOptions, Summary, SummaryGroup, MessageStream } from '@libp2p/interface'
 import type { DefaultMetricsCollectorConfiguration, Registry, RegistryContentType } from 'prom-client'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 // export helper functions for creating buckets
 export { linearBuckets, exponentialBuckets } from 'prom-client'
@@ -238,27 +235,24 @@ class PrometheusMetrics implements Metrics {
    * Override the sink/source of the stream to count the bytes
    * in and out
    */
-  _track (stream: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>, name: string): void {
-    const self = this
-
-    const sink = stream.sink
-    stream.sink = async function trackedSink (source) {
-      await sink(each(source, buf => {
-        self._incrementValue(`${name} sent`, buf.byteLength)
-      }))
-    }
-
-    const source = stream.source
-    stream.source = each(source, buf => {
-      self._incrementValue(`${name} received`, buf.byteLength)
+  _track (stream: MessageStream, name: string): void {
+    stream.addEventListener('message', (evt) => {
+      this._incrementValue(`${name} received`, evt.data.byteLength)
     })
+
+    const send = stream.send.bind(stream)
+    stream.send = (buf) => {
+      this._incrementValue(`${name} sent`, buf.byteLength)
+
+      return send(buf)
+    }
   }
 
   trackMultiaddrConnection (maConn: MultiaddrConnection): void {
     this._track(maConn, 'global')
   }
 
-  trackProtocolStream (stream: Stream, connection: Connection): void {
+  trackProtocolStream (stream: Stream): void {
     if (stream.protocol == null) {
       // protocol not negotiated yet, should not happen as the upgrader
       // calls this handler after protocol negotiation

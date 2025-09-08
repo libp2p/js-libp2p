@@ -1,0 +1,20 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../libp2p-daemon-client"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
+}

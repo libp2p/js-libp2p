@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/memory",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "A memory transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-memory#readme",
@@ -44,23 +44,24 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^2.10.5",
-    "@multiformats/multiaddr": "^12.4.4",
-    "@multiformats/multiaddr-matcher": "^2.0.0",
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/utils": "^6.7.2",
+    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr-matcher": "^3.0.1",
     "@types/sinon": "^17.0.4",
     "delay": "^6.0.0",
-    "it-map": "^3.1.3",
+    "it-map": "^3.1.4",
     "it-pushable": "^3.2.3",
     "main-event": "^1.0.1",
     "nanoid": "^5.1.5",
-    "race-signal": "^1.1.3",
+    "race-signal": "^2.0.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.1.21",
-    "@libp2p/peer-id": "^5.1.8",
-    "aegir": "^47.0.14",
-    "sinon": "^20.0.0",
+    "@libp2p/logger": "^5.2.0",
+    "@libp2p/peer-id": "^5.1.9",
+    "aegir": "^47.0.21",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

@@ -3,7 +3,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { createLibp2p } from '../../src/index.js'
+import { createLibp2p, isLibp2p } from '../../src/index.js'
 import type { Libp2p, Transport } from '@libp2p/interface'
 
 describe('core', () => {
@@ -17,6 +17,19 @@ describe('core', () => {
     libp2p = await createLibp2p()
 
     expect(libp2p).to.have.property('status', 'started')
+  })
+
+  it('should detect the libp2p type', async () => {
+    libp2p = await createLibp2p()
+
+    expect(isLibp2p(libp2p)).to.be.true()
+  })
+
+  it('should not detect the libp2p type', async () => {
+    expect(isLibp2p({})).to.be.false()
+    expect(isLibp2p()).to.be.false()
+    expect(isLibp2p(null)).to.be.false()
+    expect(isLibp2p(undefined)).to.be.false()
   })
 
   it('should say an address is not dialable if we have no transport for it', async () => {

@@ -3,6 +3,7 @@ import { transportSymbol, start, stop } from '@libp2p/interface'
 import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
@@ -21,7 +22,7 @@ function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
   let port: number | undefined
 
   for (const addr of addrs) {
-    const options = addr.toOptions()
+    const options = getNetConfig(addr)
 
     if (port == null) {
       port = options.port
@@ -154,7 +155,7 @@ describe('WebRTCDirect Transport', () => {
     let foundIpv4Loopback = false
 
     for (const addr of listener.getAddrs()) {
-      const options = addr.toOptions()
+      const options = getNetConfig(addr)
 
       if (options.host === '127.0.0.1') {
         foundIpv4Loopback = true
@@ -179,7 +180,7 @@ describe('WebRTCDirect Transport', () => {
     let foundIpv6Loopback = false
 
     for (const addr of listener.getAddrs()) {
-      const options = addr.toOptions()
+      const options = getNetConfig(addr)
 
       if (options.host === '::1') {
         foundIpv6Loopback = true
@@ -285,7 +286,7 @@ describe('WebRTCDirect Transport', () => {
     assertAllMultiaddrsHaveSamePort(listener.getAddrs())
     assertAllMultiaddrsHaveSamePort(otherListener.getAddrs())
 
-    expect(listener.getAddrs()[0].toOptions().port).to.not.equal(otherListener.getAddrs()[0].toOptions().port, 'wildcard listeners did not listen on different ports')
+    expect(getNetConfig(listener.getAddrs()[0]).port).to.not.equal(getNetConfig(otherListener.getAddrs()[0]).port, 'wildcard listeners did not listen on different ports')
 
     await listener.close()
     await otherListener.close()

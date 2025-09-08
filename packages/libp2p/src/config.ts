@@ -1,5 +1,5 @@
 import { FaultTolerance, InvalidParametersError } from '@libp2p/interface'
-import { mergeOptions } from '@libp2p/utils/merge-options'
+import { mergeOptions } from '@libp2p/utils'
 import { dnsaddrResolver } from './connection-manager/resolvers/dnsaddr.ts'
 import type { Libp2pInit } from './index.js'
 import type { ServiceMap } from '@libp2p/interface'

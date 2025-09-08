@@ -4,8 +4,6 @@ export const second = 1000
 export const minute = 60 * second
 export const hour = 60 * minute
 
-export const MAX_RECORD_AGE = 36 * hour
-
 export const PROTOCOL = '/ipfs/kad/1.0.0'
 
 /**

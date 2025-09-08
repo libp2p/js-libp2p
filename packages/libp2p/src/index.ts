@@ -184,8 +184,8 @@ export type Libp2pOptions<T extends ServiceMap = ServiceMap> = Libp2pInit<T> & {
  * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'
- * import { noise } from '@chainsafe/libp2p-noise'
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { noise } from '@libp2p/noise'
+ * import { yamux } from '@libp2p/yamux'
  *
  * // specify options
  * const options = {
@@ -211,4 +211,24 @@ export async function createLibp2p <T extends ServiceMap = ServiceMap> (options:
   }
 
   return node
+}
+
+// a non-exhaustive list of methods found on the libp2p object
+const LIBP2P_METHODS = ['dial', 'dialProtocol', 'hangUp', 'handle', 'unhandle', 'getMultiaddrs', 'getProtocols']
+
+/**
+ * Returns true if the passed object is a libp2p node - this can be used for
+ * type guarding in TypeScript.
+ */
+export function isLibp2p <T extends ServiceMap = ServiceMap> (obj?: any): obj is Libp2p<T> {
+  if (obj == null) {
+    return false
+  }
+
+  if (obj instanceof Libp2pClass) {
+    return true
+  }
+
+  // if these are all functions it's probably a libp2p object
+  return LIBP2P_METHODS.every(m => typeof obj[m] === 'function')
 }
