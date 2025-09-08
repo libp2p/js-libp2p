@@ -255,8 +255,8 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
 
-      middleware.push((stream, connection, next) => {
-        handler(stream, connection)
+      middleware.push(async (stream, connection, next) => {
+        await handler(stream, connection)
         next(stream, connection)
       })
 
@@ -265,14 +265,12 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       while (i < middleware.length) {
         // eslint-disable-next-line no-loop-func
-        middleware[i](muxedStream, connection, (s, c) => {
+        await middleware[i](muxedStream, connection, (s, c) => {
           muxedStream = s
           connection = c
           i++
         })
       }
-
-      await handler(muxedStream, this)
     } catch (err: any) {
       muxedStream.abort(err)
     }
