@@ -14,13 +14,6 @@ export interface StreamMiddleware {
   (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void): void | Promise<void>
 }
 
-/**
- * Stream middleware allows accessing stream data outside of the stream handler
- */
-export interface StreamMiddleware {
-  (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void | Promise<void>): void | Promise<void>
-}
-
 export interface StreamHandlerOptions extends AbortOptions {
   /**
    * How many incoming streams can be open for this protocol at the same time on each connection

@@ -126,7 +126,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     }
 
     this.log.trace('starting new stream for protocols %s', protocols)
-    let muxedStream = await this.muxer.createStream({
+    const muxedStream = await this.muxer.createStream({
       ...options,
 
       // most underlying transports only support negotiating a single protocol
@@ -194,7 +194,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   }
 
   private async onIncomingStream (evt: CustomEvent<Stream>): Promise<void> {
-    let muxedStream = evt.detail
+    const muxedStream = evt.detail
 
     const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
     setMaxListeners(Infinity, signal)

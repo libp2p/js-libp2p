@@ -1,4 +1,5 @@
 import { StreamCloseEvent } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { echoStream, streamPair, echo, multiaddrConnectionPair, mockMuxer } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -14,7 +15,6 @@ import type { ConnectionComponents, ConnectionInit } from '../../src/connection.
 import type { MultiaddrConnection, PeerStore, Stream, StreamMuxer } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
-import { defaultLogger, logger } from '@libp2p/logger'
 
 const ECHO_PROTOCOL = '/echo/0.0.1'
 
