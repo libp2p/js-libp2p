@@ -119,6 +119,7 @@ export class WebRTCStream extends AbstractStream {
 
     // clean up the datachannel when both ends have sent a FIN
     const webRTCStreamOnClose = (): void => {
+      this.log('closing datachannel as this stream has emitted a close event')
       this.channel.close()
     }
     this.addEventListener('close', webRTCStreamOnClose)
@@ -165,6 +166,7 @@ export class WebRTCStream extends AbstractStream {
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
     } finally {
+      this.log('closing datachannel as have sent a reset message')
       this.channel.close()
     }
   }
