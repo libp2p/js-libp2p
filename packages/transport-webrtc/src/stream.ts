@@ -119,7 +119,7 @@ export class WebRTCStream extends AbstractStream {
 
     // clean up the datachannel when both ends have sent a FIN_ACK
     this.receivedFinAck.promise.then(() => {
-      if (this.remoteWriteStatus === 'closed') {
+      if (this.remoteWriteStatus === 'closed' && this.writeStatus === 'closing') {
         this.log('closing datachannel as FIN_ACK was received and remote has already closed its writable end')
         this.channel.close()
       }
@@ -204,9 +204,9 @@ export class WebRTCStream extends AbstractStream {
       }
 
       if (message.flag === Message.Flag.RESET) {
-        this.receivedFinAck.resolve()
         // Stop reading and writing to the stream immediately
         this.onRemoteReset()
+        this.receivedFinAck.resolve()
       }
 
       if (message.flag === Message.Flag.STOP_SENDING) {
