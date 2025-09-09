@@ -146,7 +146,7 @@ export class WebRTCStream extends AbstractStream {
         this.channel.send(buf)
       }
     } catch (err: any) {
-      this.log.error('error while sending message - %e', err)
+      this.log.error('error while sending message - %s %e', err.message, err)
     }
   }
 
