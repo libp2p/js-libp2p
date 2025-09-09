@@ -86,8 +86,9 @@ debug.formatters.e = (v?: Error): string => {
   const message = notEmpty(v.message)
   const stack = notEmpty(v.stack)
 
-  // some browser errors have no message or no stack, sometimes both, sometimes
-  // neither so try to do *something* useful
+  // some browser errors (mostly from Firefox) have no message or no stack,
+  // sometimes both, sometimes neither. Sometimes the message is in the stack,
+  // sometimes is isn't so try to do *something* useful
   if (message != null && stack != null) {
     if (stack.includes(message)) {
       return stack
