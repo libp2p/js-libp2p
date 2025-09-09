@@ -82,9 +82,7 @@ export function getConnectionState (pc: RTCPeerConnection): string {
 }
 
 function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
-  //pc[isFirefox ? 'oniceconnectionstatechange' : 'onconnectionstatechange'] = (_) => {
   pc.onconnectionstatechange = (_) => {
-    //switch (getConnectionState(pc)) {
     switch (pc.connectionState) {
       case 'connected':
         promise.resolve()
