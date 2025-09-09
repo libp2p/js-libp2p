@@ -77,6 +77,10 @@ export class WebRTCStream extends AbstractStream {
       this.onTransportClosed()
     }
 
+    this.channel.onclosing = () => {
+      this.log.trace('received onclosing event')
+    }
+
     this.channel.onerror = (evt) => {
       this.log.trace('received onerror event')
 
