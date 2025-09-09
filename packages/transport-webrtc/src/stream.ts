@@ -117,12 +117,13 @@ export class WebRTCStream extends AbstractStream {
         this.log.error('error processing incoming data channel messages', err)
       })
 
-    // clean up the datachannel when both ends have sent a FIN
-    const webRTCStreamOnClose = (): void => {
-      this.log('closing datachannel as this stream has emitted a close event')
-      this.channel.close()
-    }
-    this.addEventListener('close', webRTCStreamOnClose)
+    // clean up the datachannel when both ends have sent a FIN_ACK
+    this.receivedFinAck.promise.then(() => {
+      if (this.remoteWriteStatus === 'closed') {
+        this.log('closing datachannel as FIN_ACK was received and remote has already closed its writable end')
+        this.channel.close()
+      }
+    })
   }
 
   sendNewStream (): void {
@@ -174,9 +175,9 @@ export class WebRTCStream extends AbstractStream {
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
     if (this.channel.readyState === 'open') {
       this._sendFlag(Message.Flag.FIN)
+    } else {
+      throw new StreamStateError('Datachannel was not open so cannot send FIN flag')
     }
-
-    await raceSignal(this.receivedFinAck.promise, options?.signal)
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
