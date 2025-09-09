@@ -303,6 +303,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   onTransportClosed (err?: Error): void {
     this.log('transport closed')
 
+    if (this.readStatus === 'readable' && this.readBuffer.byteLength === 0) {
+      this.log('close readable end after transport closed and read buffer is empty')
+      this.readStatus = 'closed'
+    }
+
     if (this.remoteReadStatus !== 'closed') {
       this.remoteReadStatus = 'closed'
     }
@@ -474,6 +479,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
       this.dispatchEvent(new StreamMessageEvent(buf))
     } finally {
+      if (this.readBuffer.byteLength === 0 && this.remoteWriteStatus === 'closed') {
+        this.log('close readable end after dispatching read buffer and remote writable end is closed')
+        this.readStatus = 'closed'
+      }
+
       // abort if we failed to consume the read buffer and it is too large
       this.checkReadBufferLength()
     }
