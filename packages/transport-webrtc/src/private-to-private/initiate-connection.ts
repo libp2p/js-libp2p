@@ -178,7 +178,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       })
     }
 
-    log.trace('closing init channel, starting status')
+    log.trace('closing init channel, starting status %s', channel.readyState)
 
     channel.close()
 
