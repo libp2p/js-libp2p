@@ -94,19 +94,20 @@ Actions:
 - Validate that the string is a correct Multiaddr. Construct addresses using `@multiformats/multiaddr` where possible to avoid typos.
 - Ensure all required protocol parts are present (e.g. `/ip4/.../tcp/...`, `/dns4/.../tcp/.../ws`).
 
-### WebTransport cannot listen in Node.js
+### WebTransport is not supported in Node.js
 
 Symptoms:
 
-- Attempting to listen using WebTransport fails.
+- Attempting to configure, dial, or listen using WebTransport in Node.js does not work.
 
 Context:
 
-- The WebTransport transport currently only supports dialing to other nodes. Listening requires QUIC support to land in Node.js first.
+- In Node.js the WebTransport API is not available, so the transport does not enable dialing (it checks for a global `WebTransport`) and does not support listening.
 
 Actions:
 
-- Use WebTransport for dialing only. For listening in Node.js, use supported server-side transports such as TCP or WebSockets.
+- Do not use WebTransport in Node.js. Use supported transports such as TCP or WebSockets.
+- Use WebTransport only in environments that provide a `WebTransport` implementation.
 
 ### Peer discovery does not emit events
 
