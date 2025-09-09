@@ -79,7 +79,32 @@ debug.formatters.a = (v?: Multiaddr): string => {
 
 // Add a formatter for stringifying Errors
 debug.formatters.e = (v?: Error): string => {
-  return v == null ? 'undefined' : notEmpty(v.stack) ?? notEmpty(v.message) ?? v.toString()
+  if (v == null) {
+    return 'undefined'
+  }
+
+  const message = notEmpty(v.message)
+  const stack = notEmpty(v.stack)
+
+  // some browser errors have no message or no stack, sometimes both, sometimes
+  // neither so try to do *something* useful
+  if (message != null && stack != null) {
+    if (stack.includes(message)) {
+      return stack
+    }
+
+    return `${message}\n${stack}`
+  }
+
+  if (stack != null) {
+    return stack
+  }
+
+  if (message != null) {
+    return message
+  }
+
+  return v.toString()
 }
 
 export type { Logger, ComponentLogger }
