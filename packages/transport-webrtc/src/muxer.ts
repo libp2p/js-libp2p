@@ -122,16 +122,15 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
     this.log('open channel %d for protocol %s', channel.id, options?.protocol)
 
     if (channel.readyState !== 'open') {
-      this.log('channel %d state is "%s" and not "open", waiting for "open" event before sending data', channel.id, channel.readyState)
-      await pEvent(channel, 'open', options)
-
-      this.log('channel %d state is now "%s", sending data', channel.id, channel.readyState)
-
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve()
-        }, 1_000)
+      this.log('channel %d state is "%s" and not "open", waiting for "open" event before returning new channel', channel.id, channel.readyState)
+      await pEvent(channel, 'open', {
+        ...options,
+        rejectionEvents: [
+          'close'
+        ]
       })
+
+      this.log('channel %d state is now "%s", returning new channel', channel.id, channel.readyState)
     }
 
     const stream = createStream({
