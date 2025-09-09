@@ -92,10 +92,11 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
     this.peerConnection.ondatachannel = ({ channel }) => {
       this.log.trace('incoming %s datachannel with channel id %d and status', channel.protocol, channel.id, channel.readyState)
 
-      // 'init' channel is only used during connection establishment
+      // 'init' channel is only used during connection establishment, it is
+      // closed by the initiator
       if (channel.label === 'init') {
         this.log.trace('closing init channel')
-        channel.close()
+        // channel.close()
 
         return
       }

@@ -121,7 +121,7 @@ export class WebRTCStream extends AbstractStream {
     this.receivedFinAck.promise.then(() => {
       if (this.remoteWriteStatus === 'closed' && this.writeStatus === 'closed') {
         this.log('closing datachannel as FIN_ACK was received and remote has already closed its writable end')
-        // this.channel.close()
+        this.channel.close()
       }
     })
   }
@@ -168,7 +168,7 @@ export class WebRTCStream extends AbstractStream {
       this.log.error('failed to send reset - %e', err)
     } finally {
       this.log('closing datachannel as have sent a reset message')
-      // this.channel.close()
+      this.channel.close()
     }
   }
 
