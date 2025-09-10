@@ -99,6 +99,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       // be a valid candidate object
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
       if (candidate == null || candidate?.candidate === '') {
+        log.trace('initiator detected end of ICE candidates')
         return
       }
 

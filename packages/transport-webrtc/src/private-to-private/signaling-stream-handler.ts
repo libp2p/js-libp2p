@@ -26,6 +26,7 @@ export async function handleIncomingStream (stream: Stream, connection: Connecti
       // be a valid candidate object
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
       if (candidate == null || candidate?.candidate === '') {
+        log.trace('recipient detected end of ICE candidates')
         return
       }
 
