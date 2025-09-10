@@ -143,7 +143,7 @@ export class WebRTCStream extends AbstractStream {
     }
 
     try {
-      this.log.trace('sending message, channel state "%s"', this.channel.readyState)
+      this.log.trace('sending message, channel state "%s", connection state "%s", ', this.channel.readyState, this.connection.connectionState, this.connection.signalingState, this.connection.iceGatheringState, this.connection.iceConnectionState)
       // send message without copying data
       for (const buf of data) {
         this.channel.send(buf)
