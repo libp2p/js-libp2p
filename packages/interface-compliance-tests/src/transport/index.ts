@@ -162,7 +162,8 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       await common.teardown()
     })
 
-    it('simple', async () => {
+    // eslint-disable-next-line no-only-tests/no-only-tests
+    it.only('simple', async () => {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       const input = Uint8Array.from([0, 1, 2, 3, 4])

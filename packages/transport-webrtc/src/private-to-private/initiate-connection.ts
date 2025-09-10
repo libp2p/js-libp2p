@@ -182,7 +182,6 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     }
 
     log.trace('closing init channel')
-
     channel.close()
 
     onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'))
