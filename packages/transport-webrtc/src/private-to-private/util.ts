@@ -24,9 +24,7 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
     while (true) {
       // if we connect, stop trying to read from the stream
       const message = await Promise.race([
-        connectedPromise.promise.then(() => {
-          options.log('became connected')
-        }),
+        connectedPromise.promise,
         stream.read({
           signal: options.signal
         })
