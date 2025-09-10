@@ -3,7 +3,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { SDPHandshakeFailedError } from '../error.js'
 import { RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import { getConnectionState, getRemotePeer, readCandidatesUntilConnected } from './util.js'
+import { getRemotePeer, readCandidatesUntilConnected } from './util.js'
 import type { RTCPeerConnection } from '../webrtc/index.js'
 import type { AbortOptions, Connection, Logger, PeerId, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -90,7 +90,7 @@ export async function handleIncomingStream (stream: Stream, connection: Connecti
       log
     })
   } catch (err: any) {
-    if (getConnectionState(peerConnection) !== 'connected') {
+    if (peerConnection.connectionState !== 'connected') {
       log.error('error while handling signaling stream from peer %a', connection.remoteAddr, err)
 
       peerConnection.close()
