@@ -29,7 +29,7 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
         }),
         stream.read({
           signal: options.signal
-        }).catch(() => {})
+        })
       ])
 
       // stream ended or we became connected
@@ -64,11 +64,11 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
         options.onProgress?.(new CustomProgressEvent<string>('webrtc:add-ice-candidate', candidate.candidate))
         await pc.addIceCandidate(candidate)
       } catch (err) {
-        options.log.error('%s bad candidate received', options.direction, candidateInit, err)
+        options.log.error('%s bad candidate received %o - %e', options.direction, candidateInit, err)
       }
     }
   } catch (err) {
-    options.log.error('%s error parsing ICE candidate', options.direction, err)
+    options.log.error('%s error parsing ICE candidate - %e', options.direction, err)
 
     if (options.signal?.aborted === true && pc.connectionState !== 'connected') {
       throw err
@@ -77,6 +77,11 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
 }
 
 function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
+  if (pc.connectionState === 'connected') {
+    promise.resolve()
+    return
+  }
+
   pc.onconnectionstatechange = (_) => {
     switch (pc.connectionState) {
       case 'connected':
@@ -85,7 +90,7 @@ function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<voi
       case 'failed':
       case 'disconnected':
       case 'closed':
-        promise.reject(new ConnectionFailedError('RTCPeerConnection was closed'))
+        promise.reject(new ConnectionFailedError(`RTCPeerConnection connection state became "${pc.connectionState}"`))
         break
       default:
         break

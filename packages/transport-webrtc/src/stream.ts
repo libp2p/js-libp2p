@@ -2,7 +2,6 @@ import { StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
-import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
@@ -70,7 +69,7 @@ export class WebRTCStream extends AbstractStream {
     }
 
     // handle RTCDataChannel events
-    this.channel.onclose = (_evt) => {
+    this.channel.onclose = () => {
       this.log.trace('received onclose event')
 
       this.onRemoteCloseWrite()
@@ -179,9 +178,9 @@ export class WebRTCStream extends AbstractStream {
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
     if (this.channel.readyState === 'open') {
       this._sendFlag(Message.Flag.FIN)
-    } else {
-      throw new StreamStateError('Datachannel was not open so cannot send FIN flag')
     }
+
+    options?.signal?.throwIfAborted()
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {

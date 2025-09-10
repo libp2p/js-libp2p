@@ -174,11 +174,14 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     if (channel.readyState !== 'open') {
       log.trace('wait for init channel to open')
       await pEvent(channel, 'open', {
-        signal
+        signal,
+        rejectionEvents: [
+          'closed'
+        ]
       })
     }
 
-    log.trace('closing init channel, starting status %s', channel.readyState)
+    log.trace('closing init channel')
 
     channel.close()
 
