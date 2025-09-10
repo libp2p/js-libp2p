@@ -11,8 +11,8 @@
     "lint": "aegir lint",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
-    "test:firefox": "aegir test -t browser -- --browser firefox",
-    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:firefox": "DEBUG=relay*,listener*,dialer*,*:trace,-*:yamux:trace,-*websockets* aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "DEBUG=relay*,listener*,dialer*,*:trace,-*:yamux:trace,-*websockets* aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node -f dist/test/node.js -f dist/test/**/*.spec.js --cov -- --exit",
     "test:interop": "aegir test -t node -f dist/test/interop.js",
     "dep-check": "aegir dep-check"
