@@ -152,6 +152,10 @@ export class WebRTCStream extends AbstractStream {
       }
     } catch (err: any) {
       this.log.error('error while sending message - %e', err)
+      this.log.error('err.code', err.code)
+      this.log.error('err.message', err.message)
+      this.log.error('err.name', err.name)
+      this.log.error('err keys', Object.keys(err))
     }
   }
 
