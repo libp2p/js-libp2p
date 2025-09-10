@@ -32,7 +32,8 @@ describe('Max message size', () => {
       channel,
       direction: 'outbound',
       closeTimeout: 1,
-      log: defaultLogger().forComponent('test')
+      log: defaultLogger().forComponent('test'),
+      connection: stubInterface<globalThis.RTCPeerConnection>()
     })
 
     const sendMore = webrtcStream.send(data)
@@ -60,7 +61,9 @@ describe('Max message size', () => {
     const webrtcStream = createStream({
       channel,
       direction: 'outbound',
-      log: defaultLogger().forComponent('test')
+      log: defaultLogger().forComponent('test'),
+      // @ts-expect-error types are broken
+      connection: peerConnection
     })
 
     webrtcStream.send(data)
@@ -89,7 +92,8 @@ async function setup (): Promise<{ peerConnection: RTCPeerConnection, dataChanne
     channel: dataChannel,
     direction: 'outbound',
     closeTimeout: 1,
-    log: defaultLogger().forComponent('test')
+    log: defaultLogger().forComponent('test'),
+    connection: stubInterface<globalThis.RTCPeerConnection>()
   })
 
   return { peerConnection, dataChannel, stream }

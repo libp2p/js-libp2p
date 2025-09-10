@@ -20,6 +20,8 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
   channel: RTCDataChannel
 
   log: Logger
+
+  connection: RTCPeerConnection
 }
 
 export class WebRTCStream extends AbstractStream {
@@ -35,6 +37,7 @@ export class WebRTCStream extends AbstractStream {
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
   private readonly receivedFinAck: PromiseWithResolvers<void>
+  private readonly connection: RTCPeerConnection
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -47,6 +50,7 @@ export class WebRTCStream extends AbstractStream {
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
     this.receivedFinAck = Promise.withResolvers()
+    this.connection = init.connection
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -70,18 +74,18 @@ export class WebRTCStream extends AbstractStream {
 
     // handle RTCDataChannel events
     this.channel.onclose = () => {
-      this.log.trace('received onclose event')
+      this.log.trace('received datachannel close event, connection status %s', this.connection.connectionState)
 
       this.onRemoteCloseWrite()
       this.onTransportClosed()
     }
 
     this.channel.onclosing = () => {
-      this.log.trace('received onclosing event')
+      this.log.trace('received datachannel closing event')
     }
 
     this.channel.onerror = (evt) => {
-      this.log.trace('received onerror event')
+      this.log.trace('received datachannel error event')
 
       const err = (evt as RTCErrorEvent).error
       this.abort(err)
@@ -270,6 +274,8 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    */
   channel: RTCDataChannel
 
+  connection: RTCPeerConnection
+
   /**
    * The stream direction
    */
@@ -288,12 +294,13 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
 }
 
 export function createStream (options: WebRTCStreamOptions): WebRTCStream {
-  const { channel, direction, isHandshake } = options
+  const { channel, direction, isHandshake, connection } = options
 
   return new WebRTCStream({
     ...options,
     id: `${channel.id}`,
     log: options.log.newScope(`${isHandshake === true ? 'handshake' : direction}:${channel.id}`),
-    protocol: ''
+    protocol: '',
+    connection
   })
 }
