@@ -32,8 +32,7 @@ describe('Max message size', () => {
       channel,
       direction: 'outbound',
       closeTimeout: 1,
-      log: defaultLogger().forComponent('test'),
-      connection: stubInterface<globalThis.RTCPeerConnection>()
+      log: defaultLogger().forComponent('test')
     })
 
     const sendMore = webrtcStream.send(data)
@@ -92,8 +91,7 @@ async function setup (): Promise<{ peerConnection: RTCPeerConnection, dataChanne
     channel: dataChannel,
     direction: 'outbound',
     closeTimeout: 1,
-    log: defaultLogger().forComponent('test'),
-    connection: stubInterface<globalThis.RTCPeerConnection>()
+    log: defaultLogger().forComponent('test')
   })
 
   return { peerConnection, dataChannel, stream }
@@ -108,6 +106,7 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
   return lengthPrefixed.encode.single(buf).subarray()
 }
 
+// TODO: move to transport interface compliance suite
 describe.skip('Stream Stats', () => {
   let stream: WebRTCStream
   let peerConnection: RTCPeerConnection
@@ -175,6 +174,7 @@ describe.skip('Stream Stats', () => {
   })
 })
 
+// TODO: move to transport interface compliance suite
 describe.skip('Stream Read Stats Transition By Incoming Flag', () => {
   let dataChannel: RTCDataChannel
   let stream: Stream
@@ -217,6 +217,7 @@ describe.skip('Stream Read Stats Transition By Incoming Flag', () => {
   })
 })
 
+// TODO: move to transport interface compliance suite
 describe.skip('Stream Write Stats Transition By Incoming Flag', () => {
   let dataChannel: RTCDataChannel
   let stream: Stream

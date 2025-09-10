@@ -20,8 +20,6 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
   channel: RTCDataChannel
 
   log: Logger
-
-  connection: RTCPeerConnection
 }
 
 export class WebRTCStream extends AbstractStream {
@@ -37,7 +35,6 @@ export class WebRTCStream extends AbstractStream {
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
   private readonly receivedFinAck: PromiseWithResolvers<void>
-  private readonly connection: RTCPeerConnection
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -50,7 +47,6 @@ export class WebRTCStream extends AbstractStream {
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
     this.receivedFinAck = Promise.withResolvers()
-    this.connection = init.connection
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -74,7 +70,7 @@ export class WebRTCStream extends AbstractStream {
 
     // handle RTCDataChannel events
     this.channel.onclose = () => {
-      this.log.trace('received datachannel close event, connection status %s', this.connection.connectionState)
+      this.log.trace('received datachannel close event')
 
       this.onRemoteCloseWrite()
       this.onTransportClosed()
@@ -143,19 +139,13 @@ export class WebRTCStream extends AbstractStream {
     }
 
     try {
-      this.log.trace('sending message, channel state "%s", connection state "%s", ', this.channel.readyState, this.connection.connectionState, this.connection.signalingState, this.connection.iceGatheringState, this.connection.iceConnectionState)
+      this.log.trace('sending message, channel state "%s"', this.channel.readyState)
       // send message without copying data
       for (const buf of data) {
-        this.log.trace('will send %d with buffered amount %d/%d', buf.byteLength, this.channel.bufferedAmount, this.maxBufferedAmount)
         this.channel.send(buf)
-        this.log.trace('did send %d with buffered amount %d/%d', buf.byteLength, this.channel.bufferedAmount, this.maxBufferedAmount)
       }
     } catch (err: any) {
       this.log.error('error while sending message - %e', err)
-      this.log.error('err.code', err.code)
-      this.log.error('err.message', err.message)
-      this.log.error('err.name', err.name)
-      this.log.error('err keys', Object.keys(err))
     }
   }
 
@@ -280,8 +270,6 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    */
   channel: RTCDataChannel
 
-  connection: RTCPeerConnection
-
   /**
    * The stream direction
    */
@@ -300,13 +288,12 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
 }
 
 export function createStream (options: WebRTCStreamOptions): WebRTCStream {
-  const { channel, direction, isHandshake, connection } = options
+  const { channel, direction, isHandshake } = options
 
   return new WebRTCStream({
     ...options,
     id: `${channel.id}`,
     log: options.log.newScope(`${isHandshake === true ? 'handshake' : direction}:${channel.id}`),
-    protocol: '',
-    connection
+    protocol: ''
   })
 }

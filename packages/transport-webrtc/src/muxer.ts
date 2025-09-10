@@ -106,8 +106,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
         ...this.dataChannelOptions,
         channel,
         direction: 'inbound',
-        log: this.log,
-        connection: this.peerConnection
+        log: this.log
       })
 
       this.onRemoteStream(stream)
@@ -140,8 +139,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       ...this.dataChannelOptions,
       channel,
       direction: 'outbound',
-      log: this.log,
-      connection: this.peerConnection
+      log: this.log
     })
 
     return stream
