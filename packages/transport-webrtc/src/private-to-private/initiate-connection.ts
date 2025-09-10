@@ -98,6 +98,10 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       // means end-of-candidates for this generation, otherwise this should
       // be a valid candidate object
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      if (candidate == null || candidate?.candidate === '') {
+        return
+      }
+
       const data = JSON.stringify(candidate?.toJSON() ?? null)
 
       log.trace('initiator sending ICE candidate %o', candidate)

@@ -25,6 +25,10 @@ export async function handleIncomingStream (stream: Stream, connection: Connecti
       // means end-of-candidates for this generation, otherwise this should
       // be a valid candidate object
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      if (candidate == null || candidate?.candidate === '') {
+        return
+      }
+
       const data = JSON.stringify(candidate?.toJSON() ?? null)
 
       log.trace('recipient sending ICE candidate %s', data)
