@@ -20,6 +20,8 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
   channel: RTCDataChannel
 
   log: Logger
+
+  connection: globalThis.RTCPeerConnection
 }
 
 export class WebRTCStream extends AbstractStream {
@@ -35,6 +37,7 @@ export class WebRTCStream extends AbstractStream {
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
   private readonly receivedFinAck: PromiseWithResolvers<void>
+  private readonly connection: RTCPeerConnection
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -47,6 +50,7 @@ export class WebRTCStream extends AbstractStream {
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
     this.receivedFinAck = Promise.withResolvers()
+    this.connection = init.connection
 
     // set up initial state
     switch (this.channel.readyState) {
@@ -138,23 +142,23 @@ export class WebRTCStream extends AbstractStream {
       throw new StreamStateError(`Invalid datachannel state - ${this.channel.readyState}`)
     }
 
-    try {
-      this.log.trace('sending message, channel state "%s"', this.channel.readyState)
-      // send message without copying data
-      for (const buf of data) {
-        this.channel.send(buf)
-      }
-    } catch (err: any) {
-      this.log.error('error while sending message - %e', err)
+    this.log.trace('sending message, channel state "%s"', this.channel.readyState)
+
+    // send message without copying data
+    for (const buf of data) {
+      this.channel.send(buf)
     }
   }
 
   sendData (data: Uint8ArrayList): SendResult {
-    const messageBuf = Message.encode({
-      message: data.subarray()
-    })
-    const prefixedBuf = lengthPrefixed.encode.single(messageBuf)
-    this._sendMessage(prefixedBuf)
+    // send message without copying data
+    for (const message of data) {
+      this._sendMessage(
+        lengthPrefixed.encode.single(Message.encode({
+          message
+        }))
+      )
+    }
 
     return {
       sentBytes: data.byteLength,
@@ -269,6 +273,8 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
    */
   channel: RTCDataChannel
+
+  connection: globalThis.RTCPeerConnection
 
   /**
    * The stream direction

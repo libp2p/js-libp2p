@@ -94,6 +94,11 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     // setup callback to write ICE candidates to the remote peer
     peerConnection.onicecandidate = ({ candidate }) => {
+      if (peerConnection.connectionState === 'connected') {
+        log.trace('ignore new ice candidate as peer connection is already connected')
+        return
+      }
+
       // a null candidate means end-of-candidates, an empty string candidate
       // means end-of-candidates for this generation, otherwise this should
       // be a valid candidate object
