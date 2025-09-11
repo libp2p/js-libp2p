@@ -121,11 +121,10 @@ describe('identify', () => {
   })
 
   it('should store own host data and protocol version into metadataBook on start', async () => {
-    const agentVersion = 'js-project/1.0.0'
+    const agentVersion = 'test'
     const protocolVersion = '/my/id/0.1.0'
 
     identify = new Identify(components, {
-      agentVersion,
       protocolPrefix: '/my/id'
     })
 

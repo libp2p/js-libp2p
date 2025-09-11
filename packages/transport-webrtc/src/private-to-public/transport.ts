@@ -52,11 +52,6 @@ export interface WebRTCTransportDirectInit {
   dataChannel?: DataChannelOptions
 
   /**
-   * @deprecated use `certificate` instead - this option will be removed in a future release
-   */
-  certificates?: TransportCertificate[]
-
-  /**
    * Use an existing TLS certificate to secure incoming connections or supply
    * settings to generate one.
    *
@@ -67,11 +62,6 @@ export interface WebRTCTransportDirectInit {
    * Chromium).
    */
   certificate?: TransportCertificate
-
-  /**
-   * @deprecated this setting is ignored and will be removed in a future release
-   */
-  useLibjuice?: boolean
 
   /**
    * The key the certificate is stored in the datastore under

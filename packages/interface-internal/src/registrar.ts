@@ -1,22 +1,5 @@
 import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, StreamMiddleware, AbortOptions } from '@libp2p/interface'
 
-export type {
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandler,
-
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandlerOptions,
-
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandlerRecord
-}
-
 /**
  * The `Registrar` provides an interface for registering protocol handlers -
  * these are invoked when remote peers open streams on the local node with the

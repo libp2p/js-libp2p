@@ -81,12 +81,10 @@
     "wherearewe": "^2.0.1"
   },
   "browser": {
-    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.browser.js",
-    "./dist/src/socket-writer.js": "./dist/src/socket-writer.browser.js"
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.browser.js"
   },
   "react-native": {
-    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.js",
-    "./dist/src/socket-writer.js": "./dist/src/socket-writer.js"
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.js"
   },
   "sideEffects": false
 }

@@ -224,10 +224,11 @@ describe('identify', () => {
     const agentVersion = 'js-project/1.0.0'
 
     const libp2p = await createLibp2p(createBaseOptions({
+      nodeInfo: {
+        userAgent: agentVersion
+      },
       services: {
-        identify: identify({
-          agentVersion
-        })
+        identify: identify()
       }
     }))
 

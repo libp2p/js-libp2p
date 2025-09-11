@@ -25,7 +25,7 @@ import pDefer from 'p-defer'
 import type { Identify } from '@libp2p/identify'
 import type { ServiceMap, PrivateKey } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
 
 /**
@@ -159,7 +159,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     throw new UnsupportedError()
   }
 
-  const services: ServiceFactoryMap<{ identify: Identify, ping: PingService } & Record<string, any>> = {
+  const services: ServiceFactoryMap<{ identify: Identify, ping: Ping } & Record<string, any>> = {
     identify: identify(),
     ping: ping()
   }
