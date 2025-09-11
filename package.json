@@ -46,5 +46,10 @@
     "doc",
     "interop",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^16.1.4",
+    "@libp2p/tcp": "^10.1.14",
+    "libp2p": "^2.8.9"
+  }
 }
