@@ -14,8 +14,11 @@ import type { Multiaddr } from '@multiformats/multiaddr'
  */
 export function connectionGater (gater: ConnectionGater = {}): ConnectionGater {
   return {
-    denyDialPeer: async () => false,
     denyDialMultiaddr: async (multiaddr: Multiaddr) => {
+      if (gater.denyDialMultiaddr != null) {
+        return gater.denyDialMultiaddr(multiaddr)
+      }
+
       // do not connect to insecure websockets by default
       if (WebSockets.matches(multiaddr)) {
         return true
@@ -23,14 +26,6 @@ export function connectionGater (gater: ConnectionGater = {}): ConnectionGater {
 
       // do not connect to private addresses by default
       return isPrivate(multiaddr)
-    },
-    denyInboundConnection: async () => false,
-    denyOutboundConnection: async () => false,
-    denyInboundEncryptedConnection: async () => false,
-    denyOutboundEncryptedConnection: async () => false,
-    denyInboundUpgradedConnection: async () => false,
-    denyOutboundUpgradedConnection: async () => false,
-    filterMultiaddrForPeer: async () => true,
-    ...gater
+    }
   }
 }
