@@ -186,7 +186,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
       stream.close(options)
         .catch(err => {
-          this.log.error('error closing stream to %p', to, err)
+          this.log.error('error closing stream to %p - %e', to, err)
           stream?.abort(err)
         })
 
@@ -252,7 +252,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
 
       stream.close(options)
         .catch(err => {
-          this.log.error('error closing stream to %p', to, err)
+          this.log.error('error closing stream to %p - %e', to, err)
           stream?.abort(err)
         })
 

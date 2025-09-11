@@ -107,16 +107,16 @@ export class RoutingTableRefresh {
               try {
                 await this._refreshCommonPrefixLength(n, lastRefresh, force, options)
               } catch (err: any) {
-                this.log.error(err)
+                this.log.error('failed to refresh entries with common prefix length %d - %e', n, err)
               }
             }
           }
         } catch (err: any) {
-          this.log.error(err)
+          this.log.error('failed to refresh entries with common prefix length - %e', err)
         }
       })
     ).catch(err => {
-      this.log.error(err)
+      this.log.error('failed to refresh table - %e', err)
     }).then(() => {
       this.refreshTimeoutId = setTimeout(this.refreshTable, this.refreshInterval)
 
@@ -124,7 +124,7 @@ export class RoutingTableRefresh {
         this.refreshTimeoutId.unref()
       }
     }).catch(err => {
-      this.log.error(err)
+      this.log.error('failed to set refresh timeout - %e', err)
     })
   }
 

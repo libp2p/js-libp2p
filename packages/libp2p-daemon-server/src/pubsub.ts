@@ -34,7 +34,7 @@ export class PubSubOperations {
         }
       })
     } catch (err: any) {
-      log.error(err)
+      log.error('failed to get pubsub topics - %e', err)
       yield ErrorResponse(err)
     }
   }
@@ -71,7 +71,7 @@ export class PubSubOperations {
       yield OkResponse()
       yield * onMessage
     } catch (err: any) {
-      log.error(err)
+      log.error('failed to subscribe to topic %s - %e', topic, err)
       yield ErrorResponse(err)
     }
   }
@@ -81,7 +81,7 @@ export class PubSubOperations {
       await this.pubsub.publish(topic, data)
       yield OkResponse()
     } catch (err: any) {
-      log.error(err)
+      log.error('failed to publish message to topic %s - %e', topic, err)
       yield ErrorResponse(err)
     }
   }
@@ -95,7 +95,7 @@ export class PubSubOperations {
         }
       })
     } catch (err: any) {
-      log.error(err)
+      log.error('failed to list peers for topic %s - %e', topic, err)
       yield ErrorResponse(err)
     }
   }

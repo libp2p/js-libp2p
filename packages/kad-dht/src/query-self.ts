@@ -76,7 +76,7 @@ export class QuerySelf implements Startable {
     this.timeoutId = setTimeout(() => {
       this.querySelf()
         .catch(err => {
-          this.log.error('error running self-query', err)
+          this.log.error('error running self-query - %e', err)
         })
     }, this.initialInterval)
   }
@@ -146,7 +146,7 @@ export class QuerySelf implements Startable {
           }
         }))
       } catch (err: any) {
-        this.log.error('self-query error', err)
+        this.log.error('self-query error - %e', err)
       } finally {
         signal.clear()
 
@@ -167,7 +167,7 @@ export class QuerySelf implements Startable {
     this.timeoutId = setTimeout(() => {
       this.querySelf()
         .catch(err => {
-          this.log.error('error running self-query', err)
+          this.log.error('error running self-query - %e', err)
         })
     }, this.interval)
   }

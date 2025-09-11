@@ -14,7 +14,7 @@
  *   // an operation
  *   log('something happened: %s', 'it was ok')
  * } catch (err) {
- *   log.error('something bad happened: %o', err)
+ *   log.error('something bad happened: %e', err)
  * }
  *
  * log('with this peer: %p', {})

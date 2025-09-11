@@ -177,7 +177,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
             signal: this.discoveryController.signal
           })
             .catch(err => {
-              this.log.error('error opening connection to random peer %p', peer.id, err)
+              this.log.error('error opening connection to random peer %p - %e', peer.id, err)
             })
         }
 
@@ -187,7 +187,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
       })
       .catch(err => {
         if (!this.discoveryController.signal.aborted) {
-          this.log.error('failed when finding relays on the network', err)
+          this.log.error('failed when finding relays on the network - %e', err)
         }
       })
   }
@@ -245,7 +245,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
       signal: this.discoveryController.signal
     })
       .catch(err => {
-        this.log.error('error opening connection to discovered peer %p', evt.detail.id, err)
+        this.log.error('error opening connection to discovered peer %p - %e', evt.detail.id, err)
       })
   }
 

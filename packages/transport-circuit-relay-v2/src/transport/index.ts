@@ -72,7 +72,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       this.reservationStore.addRelay(evt.detail, 'discovered')
         .catch(err => {
           if (err.name !== 'HadEnoughRelaysError' && err.name !== 'RelayQueueFullError') {
-            this.log.error('could not add discovered relay %p', evt.detail, err)
+            this.log.error('could not add discovered relay %p - %e', evt.detail, err)
           }
         })
     })
@@ -214,7 +214,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
 
       return conn
     } catch (err: any) {
-      this.log.error('circuit relay dial to destination %p via relay %p failed', destinationPeer, relayPeer, err)
+      this.log.error('circuit relay dial to destination %p via relay %p failed - %e', destinationPeer, relayPeer, err)
       stream?.abort(err)
 
       throw err
@@ -269,7 +269,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
           await this.components.transportManager.listen([connection.remoteAddr.encapsulate('/p2p-circuit')])
         } catch (err: any) {
           // failed to refresh our hitherto unknown relay reservation but allow the connection attempt anyway
-          this.log.error('failed to listen on a relay peer we were dialed via but did not have a reservation on', err)
+          this.log.error('failed to listen on a relay peer we were dialed via but did not have a reservation on - %e', err)
         }
       }
 

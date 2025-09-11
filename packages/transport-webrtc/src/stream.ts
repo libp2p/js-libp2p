@@ -114,7 +114,7 @@ export class WebRTCStream extends AbstractStream {
       }
     })
       .catch(err => {
-        this.log.error('error processing incoming data channel messages', err)
+        this.log.error('error processing incoming data channel messages - %e', err)
       })
 
     // clean up the datachannel when both ends have sent a FIN
@@ -140,7 +140,7 @@ export class WebRTCStream extends AbstractStream {
         this.channel.send(buf)
       }
     } catch (err: any) {
-      this.log.error('error while sending message', err)
+      this.log.error('error while sending message - %e', err)
     }
   }
 

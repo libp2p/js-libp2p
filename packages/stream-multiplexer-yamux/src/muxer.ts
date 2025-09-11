@@ -128,7 +128,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
           await this.ping(options)
         } catch (err: any) {
           // TODO: should abort here?
-          this.log.error('ping error: %s', err)
+          this.log.error('ping error - %e', err)
         }
       }, this.keepAliveInterval, {
         // send an initial ping to establish RTT
@@ -268,7 +268,7 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
       }
 
       // If reason was provided, use that, otherwise use the presence of `err` to determine the reason
-      this.log.error('muxer abort reason=%s error=%s', reason, err)
+      this.log.error('muxer abort reason=%s error=%e', reason, err)
 
       // send reason to the other side, allow the other side to close gracefully
       this.sendGoAway(reason)

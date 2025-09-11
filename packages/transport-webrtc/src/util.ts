@@ -77,7 +77,7 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
       }
     })
     .catch(err => {
-      options.log.error('error closing outbound stream', err)
+      options.log.error('error closing outbound stream - %e', err)
     })
 }
 

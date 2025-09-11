@@ -217,7 +217,7 @@ export class QueryManager implements Startable {
       // Execute the query along each disjoint path and yield their results as they become available
       for await (const event of merge(...paths)) {
         if (event.name === 'QUERY_ERROR') {
-          log.error('query error', event.error)
+          log.error('query error - %e', event.error)
         }
 
         if (event.name === 'PEER_RESPONSE') {

@@ -104,8 +104,8 @@ class Plaintext implements ConnectionEncrypter {
         throw new InvalidCryptoExchangeError('Public key did not match id')
       }
     } catch (err: any) {
-      log.error(err)
-      throw new InvalidCryptoExchangeError('Invalid public key - ' + err.message)
+      log.error('invalid public key - %e', err)
+      throw new InvalidCryptoExchangeError(`Invalid public key - ${err.message}`)
     }
 
     if (options?.remotePeer != null && !peerId.equals(options?.remotePeer)) {

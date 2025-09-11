@@ -298,7 +298,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       const peerData = evt.detail
 
       this.onPeerConnect(peerData).catch(err => {
-        this.log.error('could not add %p to routing table', peerData.id, err)
+        this.log.error('could not add %p to routing table - %e', peerData.id, err)
       })
 
       this.dispatchEvent(new CustomEvent('peer', {
@@ -321,7 +321,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
         await this.onPeerConnect(peerData)
       }).catch(err => {
-        this.log.error('could not add %p to routing table - %e - %e', peerId, err)
+        this.log.error('could not add %p to routing table - %e', peerId, err)
       })
     })
 
@@ -350,7 +350,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
           }
         })
           .catch(err => {
-            this.log.error('error setting dht server mode', err)
+            this.log.error('error setting dht server mode - %e', err)
           })
       })
     }
@@ -407,7 +407,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
         signal
       })
     } catch (err: any) {
-      this.log.error('could not add %p to routing table', peerData.id, err)
+      this.log.error('could not add %p to routing table - %e', peerData.id, err)
     }
   }
 

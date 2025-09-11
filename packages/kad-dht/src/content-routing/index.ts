@@ -115,7 +115,7 @@ export class ContentRouting {
           yield addProviderEvent
         }
       } catch (err: any) {
-        self.log.error('error sending provide record to peer %p', event.peer.id, err)
+        self.log.error('error sending provide record to peer %p - %e', event.peer.id, err)
         yield queryErrorEvent({
           from: event.peer.id,
           error: err,

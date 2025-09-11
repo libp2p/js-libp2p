@@ -208,7 +208,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
         bufferedAmountPollInterval: this.bufferedAmountPollInterval
       })
     } catch (err: any) {
-      this.log.error('inbound connection failed', err)
+      this.log.error('inbound connection failed - %e', err)
       this.metrics.errors?.increment({ [`${this.addr} inbound_to_connection`]: true })
       socket.close()
       return

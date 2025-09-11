@@ -179,7 +179,7 @@ export class Server implements Libp2pServer {
           stream
         )
       } catch (err: any) {
-        log.error(err)
+        log.error('error handling stream handler - %e', err)
 
         conn?.abort(err)
       } finally {
@@ -206,7 +206,7 @@ export class Server implements Libp2pServer {
 
   _onExit (): void {
     void this.stop({ exit: true }).catch(err => {
-      log.error(err)
+      log.error('failed to stop daemon during exit - %e', err)
     })
   }
 
@@ -262,7 +262,7 @@ export class Server implements Libp2pServer {
           throw new Error('ERR_INVALID_REQUEST_TYPE')
       }
     } catch (err: any) {
-      log.error(err)
+      log.error('error handling peerstore request - %e', err)
       yield ErrorResponse(err)
     }
   }
@@ -305,7 +305,7 @@ export class Server implements Libp2pServer {
           throw new Error('ERR_INVALID_REQUEST_TYPE')
       }
     } catch (err: any) {
-      log.error(err)
+      log.error('error handling pubsub request - %e', err)
       yield ErrorResponse(err)
     }
   }
@@ -373,7 +373,7 @@ export class Server implements Libp2pServer {
           throw new Error('ERR_INVALID_REQUEST_TYPE')
       }
     } catch (err: any) {
-      log.error(err)
+      log.error('error handling DHT request - %e', err)
       yield ErrorResponse(err)
     }
   }
@@ -521,7 +521,7 @@ export class Server implements Libp2pServer {
             throw new Error('ERR_INVALID_REQUEST_TYPE')
         }
       } catch (err: any) {
-        log.error(err)
+        log.error('error handling incoming connection - %e', err)
 
         // recreate pb stream in case the original was unwrapped already
         const conn = pb.unwrap()
@@ -547,7 +547,7 @@ export class Server implements Libp2pServer {
       }
     })
       .catch(err => {
-        log.error('error handling incoming connection', err)
+        log.error('error handling incoming connection - %e', err)
       })
   }
 }
