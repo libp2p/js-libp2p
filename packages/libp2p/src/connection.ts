@@ -6,7 +6,7 @@ import { CONNECTION_CLOSE_TIMEOUT, PROTOCOL_NEGOTIATION_TIMEOUT } from './connec
 import { isDirect } from './connection-manager/utils.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
-import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
+import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -126,7 +126,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     }
 
     this.log.trace('starting new stream for protocols %s', protocols)
-    let muxedStream = await this.muxer.createStream({
+    const muxedStream = await this.muxer.createStream({
       ...options,
 
       // most underlying transports only support negotiating a single protocol
@@ -179,23 +179,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
 
-      middleware.push((stream, connection, next) => {
-        next(stream, connection)
-      })
-
-      let i = 0
-      let connection: ConnectionInterface = this
-
-      while (i < middleware.length) {
-        // eslint-disable-next-line no-loop-func
-        middleware[i](muxedStream, connection, (s, c) => {
-          muxedStream = s
-          connection = c
-          i++
-        })
-      }
-
-      return muxedStream
+      return await this.runMiddlewareChain(muxedStream, this, middleware)
     } catch (err: any) {
       if (muxedStream.status === 'open') {
         muxedStream.abort(err)
@@ -208,7 +192,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   }
 
   private async onIncomingStream (evt: CustomEvent<Stream>): Promise<void> {
-    let muxedStream = evt.detail
+    const muxedStream = evt.detail
 
     const signal = AbortSignal.timeout(this.inboundStreamProtocolNegotiationTimeout)
     setMaxListeners(Infinity, signal)
@@ -260,18 +244,38 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
         next(stream, connection)
       })
 
-      let connection: ConnectionInterface = this
-
-      for (const m of middleware) {
-        // eslint-disable-next-line no-loop-func
-        await m(muxedStream, connection, (s, c) => {
-          muxedStream = s
-          connection = c
-        })
-      }
+      await this.runMiddlewareChain(muxedStream, this, middleware)
     } catch (err: any) {
       muxedStream.abort(err)
     }
+  }
+
+  private async runMiddlewareChain (stream: Stream, connection: ConnectionInterface, middleware: StreamMiddleware[]): Promise<Stream> {
+    for (let i = 0; i < middleware.length; i++) {
+      const mw = middleware[i]
+      stream.log.trace('running middleware', i, mw)
+
+      // eslint-disable-next-line no-loop-func
+      await new Promise<void>((resolve, reject) => {
+        try {
+          const result = mw(stream, connection, (s, c) => {
+            stream = s
+            connection = c
+            resolve()
+          })
+
+          if (result instanceof Promise) {
+            result.catch(reject)
+          }
+        } catch (err) {
+          reject(err)
+        }
+      })
+
+      stream.log.trace('ran middleware', i, mw)
+    }
+
+    return stream
   }
 
   /**
