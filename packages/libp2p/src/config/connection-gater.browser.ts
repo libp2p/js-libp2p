@@ -16,9 +16,8 @@ const CODEC_IP6 = 0x29
  * confusion.
  */
 export function connectionGater (gater: ConnectionGater = {}): ConnectionGater {
-  return {
-    denyDialPeer: async () => false,
-    denyDialMultiaddr: async (multiaddr: Multiaddr) => {
+  if (gater.denyDialMultiaddr == null) {
+    gater.denyDialMultiaddr = (multiaddr: Multiaddr) => {
       // do not connect to insecure websockets by default
       if (WebSockets.matches(multiaddr)) {
         return false
@@ -32,14 +31,8 @@ export function connectionGater (gater: ConnectionGater = {}): ConnectionGater {
       }
 
       return false
-    },
-    denyInboundConnection: async () => false,
-    denyOutboundConnection: async () => false,
-    denyInboundEncryptedConnection: async () => false,
-    denyOutboundEncryptedConnection: async () => false,
-    denyInboundUpgradedConnection: async () => false,
-    denyOutboundUpgradedConnection: async () => false,
-    filterMultiaddrForPeer: async () => true,
-    ...gater
+    }
   }
+
+  return gater
 }
