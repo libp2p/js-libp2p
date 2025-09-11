@@ -75,7 +75,7 @@
     "@types/ws": "^8.18.1",
     "it-ws": "^6.1.5",
     "main-event": "^1.0.1",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0",

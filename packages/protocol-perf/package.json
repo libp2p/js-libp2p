@@ -49,7 +49,7 @@
     "@libp2p/interface-internal": "^2.3.19",
     "@multiformats/multiaddr": "^13.0.1",
     "it-pushable": "^3.2.3",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {

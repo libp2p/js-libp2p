@@ -84,7 +84,7 @@
     "it-pushable": "^3.2.3",
     "main-event": "^1.0.1",
     "multiformats": "^13.4.0",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "p-queue": "^8.1.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
