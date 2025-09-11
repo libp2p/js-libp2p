@@ -78,7 +78,7 @@ export class DefaultPeerRouting implements PeerRouting {
           try {
             yield await router.findPeer(id, options)
           } catch (err) {
-            self.log.error('%e', err)
+            self.log.error('router failed to find peer - %e', err)
           }
         })())
     )

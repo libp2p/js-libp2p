@@ -161,7 +161,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         this.#checkReservationCount()
       })
       .catch(err => {
-        this.log.error('%e', err)
+        this.log.error('failed to clean up and redial old relays during afterStart - %e', err)
       })
   }
 

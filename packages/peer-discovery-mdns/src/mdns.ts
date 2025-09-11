@@ -122,7 +122,7 @@ export class MulticastDNS extends TypedEventEmitter<PeerDiscoveryEvents> impleme
         }))
       }
     } catch (err) {
-      this.log.error('Error processing peer response - %e', err)
+      this.log.error('error processing peer response - %e', err)
     }
   }
 

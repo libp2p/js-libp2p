@@ -242,7 +242,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     }
 
     if (stream == null) {
-      this.log.error(`No stream found for ${message.id}`)
+      this.log.error(`no stream found for ${message.id}`)
       return
     }
 

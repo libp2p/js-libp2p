@@ -160,7 +160,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamEvents> {
         }
       }
     ).catch((err: Error) => {
-      this.log.error('%e', err)
+      this.log.error('outbound stream pipeline failed - %e', err)
     })
 
     // Only emit if the connection is new

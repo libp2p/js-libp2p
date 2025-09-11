@@ -112,8 +112,8 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
           log.error('error sending ICE candidate - %e', err)
         })
     }
-    peerConnection.onicecandidateerror = (event) => {
-      log.error('initiator ICE candidate error - %e', event)
+    peerConnection.onicecandidateerror = (err) => {
+      log.error('initiator ICE candidate error - %e', err)
     }
 
     // create an offer

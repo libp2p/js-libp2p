@@ -122,7 +122,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
 
       this._onProtocol(stream, connection, signal)
         .catch(err => {
-          this.log.error('failed to handle incoming connect from %p', connection.remotePeer, err)
+          this.log.error('failed to handle incoming connect from %p - %e', connection.remotePeer, err)
         })
         .finally(() => {
           signal.clear()

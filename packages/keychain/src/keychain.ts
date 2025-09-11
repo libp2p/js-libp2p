@@ -171,7 +171,7 @@ export class Keychain implements KeychainInterface {
       return JSON.parse(uint8ArrayToString(res))
     } catch (err: any) {
       await randomDelay()
-      this.log.error('%e', err)
+      this.log.error('could not read key from datastore - %e', err)
       throw new NotFoundError(`Key '${name}' does not exist.`)
     }
   }

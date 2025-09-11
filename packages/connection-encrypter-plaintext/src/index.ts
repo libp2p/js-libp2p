@@ -104,7 +104,7 @@ class Plaintext implements ConnectionEncrypter {
         throw new InvalidCryptoExchangeError('Public key did not match id')
       }
     } catch (err: any) {
-      log.error('Invalid public key - %e', err)
+      log.error('invalid public key - %e', err)
       throw new InvalidCryptoExchangeError(`Invalid public key - ${err.message}`)
     }
 

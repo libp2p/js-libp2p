@@ -403,7 +403,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
           await this.processMessage(from, msg)
         } catch (err: any) {
-          this.log.error('%e', err)
+          this.log.error('failed to queue messages from %p - %e', from, err)
         }
       }))
         .catch(err => { this.log(err) })
@@ -539,13 +539,13 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
     const peerStreams = this.peers.get(peer)
 
     if (peerStreams == null) {
-      this.log.error('Cannot send RPC to %p as there are no streams to it available', peer)
+      this.log.error('cannot send RPC to %p as there are no streams to it available', peer)
 
       return
     }
 
     if (!peerStreams.isWritable) {
-      this.log.error('Cannot send RPC to %p as there is no outbound stream to it available', peer)
+      this.log.error('cannot send RPC to %p as there is no outbound stream to it available', peer)
 
       return
     }

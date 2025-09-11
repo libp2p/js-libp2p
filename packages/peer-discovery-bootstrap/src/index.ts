@@ -107,14 +107,14 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       .map(str => multiaddr(str))
       .filter(ma => {
         if (!P2P.matches(ma)) {
-          this.log.error('Invalid multiaddr')
+          this.log.error('invalid multiaddr')
           return false
         }
 
         const peerIdStr = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
 
         if (peerIdStr == null) {
-          this.log.error('Invalid bootstrap multiaddr without peer id')
+          this.log.error('invalid bootstrap multiaddr without peer id')
           return false
         }
 
@@ -154,7 +154,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
     this.timer = setTimeout(() => {
       void this._discoverBootstrapPeers()
         .catch(err => {
-          this.log.error('%e', err)
+          this.log.error('failed to discover bootstrap peers - %e', err)
         })
     }, this.timeout)
   }
