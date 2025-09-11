@@ -81,7 +81,8 @@ const mergeKeys = (merged: any, source: any, keys: any[], config: any): any => {
     }
 
     // Do not recurse into prototype chain of merged
-    if (key in merged && merged[key] !== Object.getPrototypeOf(merged)) {
+    // Check for prototype pollution and avoid Object.getPrototypeOf in WASM environments
+    if (key in merged && key !== '__proto__' && key !== 'constructor' && key !== 'prototype') {
       defineProperty(merged, key, merge(merged[key], source[key], config))
     } else {
       defineProperty(merged, key, clone(source[key]))
