@@ -1,5 +1,4 @@
 import { peerIdFromMultihash } from '@libp2p/peer-id'
-import { arrayEquals } from '@libp2p/utils/array-equals'
 import { multiaddr } from '@multiformats/multiaddr'
 import * as Digest from 'multiformats/hashes/digest'
 import {
@@ -7,6 +6,7 @@ import {
   ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
 } from './consts.js'
 import { PeerRecord as Protobuf } from './peer-record.js'
+import { arrayEquals } from './utils.ts'
 import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Uint8ArrayList } from 'uint8arraylist'

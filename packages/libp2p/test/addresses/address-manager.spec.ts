@@ -322,7 +322,7 @@ describe('Address Manager', () => {
     am.addDNSMapping(domain, [externalIp])
     am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, 'tcp')
 
-    // have not verified DNS mapping so it is not included
+    // have not verified DNS or public IP mappings so they are not included
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),

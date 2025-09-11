@@ -1,8 +1,8 @@
-import { noise } from '@chainsafe/libp2p-noise'
-import { raceEvent } from 'race-event'
+import { noise } from '@libp2p/noise'
+import { pEvent } from 'p-event'
 import { WebRTCTransportError } from '../../error.js'
-import { WebRTCMultiaddrConnection } from '../../maconn.js'
 import { DataChannelMuxerFactory } from '../../muxer.js'
+import { toMultiaddrConnection } from '../../rtcpeerconnection-to-conn.ts'
 import { createStream } from '../../stream.js'
 import { isFirefox } from '../../util.js'
 import { generateNoisePrologue } from './generate-noise-prologue.js'
@@ -22,7 +22,7 @@ export interface ConnectOptions {
   dataChannel?: DataChannelOptions
   upgrader: Upgrader
   peerId: PeerId
-  remotePeerId?: PeerId
+  remotePeer?: PeerId
   signal: AbortSignal
   privateKey: PrivateKey
 }
@@ -83,7 +83,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
 
     if (handshakeDataChannel.readyState !== 'open') {
       options.log.trace('%s wait for handshake channel to open, starting status %s', options.role, handshakeDataChannel.readyState)
-      await raceEvent(handshakeDataChannel, 'open', options.signal)
+      await pEvent(handshakeDataChannel, 'open', options)
     }
 
     options.log.trace('%s handshake channel opened', options.role)
@@ -116,20 +116,19 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     const handshakeStream = createStream({
       channel: handshakeDataChannel,
       direction: 'outbound',
-      handshake: true,
+      isHandshake: true,
       log: options.log,
       ...(options.dataChannel ?? {})
     })
 
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
-    const maConn = new WebRTCMultiaddrConnection(options, {
+    const maConn = toMultiaddrConnection({
       peerConnection,
       remoteAddr: options.remoteAddr,
-      timeline: {
-        open: Date.now()
-      },
-      metrics: options.events
+      metrics: options.events,
+      direction: options.role === 'client' ? 'outbound' : 'inbound',
+      log: options.logger.forComponent('libp2p:webrtc-direct:connection')
     })
 
     peerConnection.addEventListener(CONNECTION_STATE_CHANGE_EVENT, () => {
@@ -150,7 +149,8 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // Track opened peer connection
     options.events?.increment({ peer_connection: true })
 
-    const muxerFactory = new DataChannelMuxerFactory(options, {
+    const muxerFactory = new DataChannelMuxerFactory({
+      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       metrics: options.events,
       dataChannelOptions: options.dataChannel
@@ -161,8 +161,8 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       // handshake. Therefore, we need to secure an inbound noise connection
       // from the server.
       options.log.trace('%s secure inbound', options.role)
-      await connectionEncrypter.secureInbound(handshakeStream, {
-        remotePeer: options.remotePeerId,
+      const result = await connectionEncrypter.secureInbound(handshakeStream, {
+        remotePeer: options.remotePeer,
         signal: options.signal,
         skipStreamMuxerNegotiation: true
       })
@@ -171,6 +171,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       return await options.upgrader.upgradeOutbound(maConn, {
         skipProtection: true,
         skipEncryption: true,
+        remotePeer: result.remotePeer,
         muxerFactory,
         signal: options.signal
       })
@@ -181,7 +182,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // the client.
     options.log.trace('%s secure outbound', options.role)
     const result = await connectionEncrypter.secureOutbound(handshakeStream, {
-      remotePeer: options.remotePeerId,
+      remotePeer: options.remotePeer,
       signal: options.signal,
       skipStreamMuxerNegotiation: true
     })
@@ -193,11 +194,13 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     await options.upgrader.upgradeInbound(maConn, {
       skipProtection: true,
       skipEncryption: true,
+      remotePeer: result.remotePeer,
       muxerFactory,
       signal: options.signal
     })
   } catch (err) {
     handshakeDataChannel.close()
+    peerConnection.close()
 
     throw err
   }

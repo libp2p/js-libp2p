@@ -59,6 +59,13 @@ export interface MemoryTransportInit {
    * @default 0
    */
   latency?: number
+
+  /**
+   * Data messages larger than this will be chunked before sending
+   *
+   * @default 65_536
+   */
+  maxMessageSize?: number
 }
 
 export function memory (init?: MemoryTransportInit): (components: MemoryTransportComponents) => Transport {

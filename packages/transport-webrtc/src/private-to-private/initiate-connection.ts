@@ -1,4 +1,5 @@
-import { pbStream } from 'it-protobuf-stream'
+import { pbStream } from '@libp2p/utils'
+import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { SIGNALING_PROTOCOL } from '../constants.js'
 import { SDPHandshakeFailedError } from '../error.js'
@@ -9,15 +10,14 @@ import { splitAddr } from './transport.js'
 import { readCandidatesUntilConnected } from './util.js'
 import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.js'
 import type { DataChannelOptions } from '../index.js'
-import type { LoggerOptions, Connection, ComponentLogger, IncomingStreamData } from '@libp2p/interface'
+import type { LoggerOptions, Connection, ComponentLogger, AbortOptions } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
-export interface IncomingStreamOpts extends IncomingStreamData {
+export interface IncomingStreamOptions extends AbortOptions {
   rtcConfiguration?: RTCConfiguration
   dataChannelOptions?: Partial<DataChannelOptions>
-  signal: AbortSignal
 }
 
 export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDialEvents> {
@@ -67,9 +67,21 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
   const messageStream = pbStream(stream).pb(Message)
   const peerConnection = new RTCPeerConnection(rtcConfiguration)
+
+  // make sure C++ peer connection is garbage collected
+  // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
+  peerConnection.addEventListener('connectionstatechange', () => {
+    switch (peerConnection.connectionState) {
+      case 'closed':
+        peerConnection.close()
+        break
+      default:
+        break
+    }
+  })
+
   const muxerFactory = new DataChannelMuxerFactory({
-    logger
-  }, {
+    // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     dataChannelOptions: dataChannel
   })
@@ -157,7 +169,17 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       onProgress
     })
 
-    log.trace('initiator connected, closing init channel')
+    log.trace('initiator connected')
+
+    if (channel.readyState !== 'open') {
+      log.trace('wait for init channel to open')
+      await pEvent(channel, 'open', {
+        signal
+      })
+    }
+
+    log.trace('closing init channel, starting status')
+
     channel.close()
 
     onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'))

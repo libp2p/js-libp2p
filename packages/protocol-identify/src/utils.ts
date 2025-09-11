@@ -7,8 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
 import type { Identify as IdentifyMessage } from './pb/message.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, NodeInfo, Startable, PeerId, IncomingStreamData, PrivateKey } from '@libp2p/interface'
-import type { AddressManager, Registrar } from '@libp2p/interface-internal'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, NodeInfo, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
@@ -191,31 +190,21 @@ export abstract class AbstractIdentify implements Startable {
     agentVersion: string
   }
 
+  protected components: IdentifyComponents
   protected protocol: string
   protected started: boolean
   protected readonly timeout: number
-  protected readonly peerId: PeerId
-  protected readonly privateKey: PrivateKey
-  protected readonly peerStore: PeerStore
-  protected readonly registrar: Registrar
-  protected readonly addressManager: AddressManager
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
   protected readonly maxMessageSize: number
   protected readonly maxObservedAddresses: number
-  protected readonly events: TypedEventTarget<Libp2pEvents>
   protected readonly runOnLimitedConnection: boolean
   protected readonly log: Logger
 
   constructor (components: IdentifyComponents, init: AbstractIdentifyInit) {
     this.protocol = init.protocol
     this.started = false
-    this.peerId = components.peerId
-    this.privateKey = components.privateKey
-    this.peerStore = components.peerStore
-    this.registrar = components.registrar
-    this.addressManager = components.addressManager
-    this.events = components.events
+    this.components = components
     this.log = init.log
 
     this.timeout = init.timeout ?? defaultValues.timeout
@@ -230,6 +219,8 @@ export abstract class AbstractIdentify implements Startable {
       protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
       agentVersion: getAgentVersion(components.nodeInfo, init.agentVersion)
     }
+
+    this.handleProtocol = this.handleProtocol.bind(this)
   }
 
   isStarted (): boolean {
@@ -241,18 +232,14 @@ export abstract class AbstractIdentify implements Startable {
       return
     }
 
-    await this.peerStore.merge(this.peerId, {
+    await this.components.peerStore.merge(this.components.peerId, {
       metadata: {
         AgentVersion: uint8ArrayFromString(this.host.agentVersion),
         ProtocolVersion: uint8ArrayFromString(this.host.protocolVersion)
       }
     })
 
-    await this.registrar.handle(this.protocol, (data) => {
-      void this.handleProtocol(data).catch(err => {
-        this.log.error('%e', err)
-      })
-    }, {
+    await this.components.registrar.handle(this.protocol, this.handleProtocol, {
       maxInboundStreams: this.maxInboundStreams,
       maxOutboundStreams: this.maxOutboundStreams,
       runOnLimitedConnection: this.runOnLimitedConnection
@@ -262,10 +249,10 @@ export abstract class AbstractIdentify implements Startable {
   }
 
   async stop (): Promise<void> {
-    await this.registrar.unhandle(this.protocol)
+    await this.components.registrar.unhandle(this.protocol)
 
     this.started = false
   }
 
-  protected abstract handleProtocol (data: IncomingStreamData): Promise<void>
+  protected abstract handleProtocol (stream: Stream, connection: Connection): Promise<void>
 }

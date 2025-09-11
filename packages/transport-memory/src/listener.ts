@@ -28,7 +28,8 @@ export class MemoryTransportListener extends TypedEventEmitter<ListenerEvents> i
   }
 
   async listen (ma: Multiaddr): Promise<void> {
-    const [[, value]] = ma.stringTuples()
+    const components = ma.getComponents()
+    const value = components[0]?.value
 
     const address = `/memory/${value ?? nanoid()}`
 

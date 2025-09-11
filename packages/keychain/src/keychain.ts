@@ -3,7 +3,7 @@
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
-import { mergeOptions } from '@libp2p/utils/merge-options'
+import { mergeOptions } from '@libp2p/utils'
 import { Key } from 'interface-datastore/key'
 import { base58btc } from 'multiformats/bases/base58'
 import { sha256 } from 'multiformats/hashes/sha2'

@@ -57,15 +57,15 @@
     "@libp2p/utils": "^6.7.2",
     "@noble/hashes": "^1.8.0",
     "asn1js": "^3.0.6",
-    "interface-datastore": "^8.3.1",
-    "multiformats": "^13.3.6",
+    "interface-datastore": "^8.3.2",
+    "multiformats": "^13.4.0",
     "sanitize-filename": "^1.6.3",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^5.2.0",
-    "aegir": "^47.0.14",
-    "datastore-core": "^10.0.2"
+    "aegir": "^47.0.21",
+    "datastore-core": "^10.0.4"
   },
   "sideEffects": false
 }

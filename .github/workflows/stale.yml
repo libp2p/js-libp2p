@@ -1,4 +1,4 @@
-name: Close Stale Issues
+name: Close and mark stale issue
 
 on:
   schedule:

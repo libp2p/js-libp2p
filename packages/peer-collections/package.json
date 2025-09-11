@@ -50,13 +50,13 @@
     "@libp2p/interface": "^2.11.0",
     "@libp2p/peer-id": "^5.1.9",
     "@libp2p/utils": "^6.7.2",
-    "multiformats": "^13.3.6"
+    "multiformats": "^13.4.0"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.8",
     "@types/sinon": "^17.0.4",
-    "aegir": "^47.0.14",
-    "sinon": "^20.0.0",
+    "aegir": "^47.0.21",
+    "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

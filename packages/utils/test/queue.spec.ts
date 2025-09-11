@@ -120,6 +120,42 @@ describe('queue', () => {
     await Promise.all(input)
   })
 
+  it('should pause', async () => {
+    const queue = new Queue({
+      concurrency: 1
+    })
+
+    queue.add(async () => {
+      await delay(10)
+    })
+    queue.add(async () => {
+      await delay(10)
+    })
+    queue.add(async () => {
+      await delay(10)
+    })
+    queue.add(async () => {
+      await delay(10)
+    })
+
+    expect(queue.running).to.equal(1)
+    expect(queue.size).to.equal(4)
+
+    queue.pause()
+
+    await delay(100)
+
+    expect(queue.running).to.equal(0, 'started new jobs while paused')
+    expect(queue.size).to.equal(3, 'started new jobs while paused')
+
+    queue.resume()
+
+    await delay(100)
+
+    expect(queue.running).to.equal(0, 'did not start new jobs after resume')
+    expect(queue.size).to.equal(0, 'did not start new jobs after resume')
+  })
+
   it('.onEmpty()', async () => {
     const queue = new Queue<number>({ concurrency: 1 })
 
@@ -159,7 +195,7 @@ describe('queue', () => {
     await expect(queue.onEmpty({
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('.onIdle()', async () => {
@@ -201,7 +237,7 @@ describe('queue', () => {
     await expect(queue.onIdle({
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('.onSizeLessThan()', async () => {
@@ -245,7 +281,7 @@ describe('queue', () => {
     await expect(queue.onSizeLessThan(1, {
       signal: AbortSignal.timeout(10)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('.onIdle() - no pending', async () => {

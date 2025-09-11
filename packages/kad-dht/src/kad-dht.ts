@@ -1,4 +1,6 @@
 import { NotFoundError, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
+import { isPrivate } from '@libp2p/utils'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import drain from 'it-drain'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
@@ -18,7 +20,6 @@ import { RoutingTableRefresh } from './routing-table/refresh.js'
 import { RPC } from './rpc/index.js'
 import { TopologyListener } from './topology-listener.js'
 import {
-  multiaddrIsPublic,
   removePrivateAddressesMapper,
   timeOperationGenerator
 } from './utils.js'
@@ -336,7 +337,9 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
         void Promise.resolve().then(async () => {
           const hasPublicAddress = evt.detail.peer.addresses
-            .some(({ multiaddr }) => multiaddrIsPublic(multiaddr))
+            .some(({ multiaddr }) => {
+              return !isPrivate(multiaddr) && !Circuit.exactMatch(multiaddr)
+            })
 
           const mode = this.getMode()
 
@@ -387,7 +390,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   }
 
   async onPeerConnect (peerData: PeerInfo): Promise<void> {
-    this.log.trace('peer %p connected', peerData.id)
+    this.log.trace('peer %p connected', peerData.id, peerData.multiaddrs)
 
     peerData = this.peerInfoMapper(peerData)
 

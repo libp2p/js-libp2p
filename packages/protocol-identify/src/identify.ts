@@ -1,12 +1,10 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidMessageError, UnsupportedProtocolError, serviceCapabilities } from '@libp2p/interface'
+import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { isGlobalUnicast } from '@libp2p/utils/multiaddr/is-global-unicast'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { CODE_IP6, CODE_IP6ZONE, protocols } from '@multiformats/multiaddr'
+import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
+import { CODE_IP6, CODE_IP6ZONE, CODE_P2P } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
-import { pbStream } from 'it-protobuf-stream'
 import { setMaxListeners } from 'main-event'
 import {
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
@@ -15,7 +13,7 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
-import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, IncomingStreamData, Logger } from '@libp2p/interface'
+import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger } from '@libp2p/interface'
 
 export class Identify extends AbstractIdentify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -30,14 +28,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       components.events.addEventListener('connection:open', (evt) => {
         const connection = evt.detail
         this.identify(connection)
-          .catch(err => {
-            if (err.name === UnsupportedProtocolError.name) {
-              // the remote did not support identify, ignore the error
-              return
-            }
-
-            this.log.error('error during identify trigged by connection:open - %e', err)
-          })
+          .catch(() => {})
       })
     }
   }
@@ -48,6 +39,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
   async _identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyMessage> {
     let stream: Stream | undefined
+    let log: Logger | undefined
 
     if (options.signal == null) {
       const signal = AbortSignal.timeout(this.timeout)
@@ -64,17 +56,21 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         ...options,
         runOnLimitedConnection: this.runOnLimitedConnection
       })
+      log = stream.log.newScope('identify')
 
       const pb = pbStream(stream, {
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
+      log('read response')
       const message = await pb.read(options)
 
-      await stream.close(options)
+      log('close write')
+      await pb.unwrap().unwrap().close(options)
 
       return message
     } catch (err: any) {
+      log?.error('identify failed - %e', err)
       stream?.abort(err)
       throw err
     }
@@ -94,43 +90,41 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
     const key = publicKeyFromProtobuf(publicKey)
     const id = peerIdFromCID(key.toCID())
-    const log = connection.log.newScope('identify')
 
     if (!connection.remotePeer.equals(id)) {
       throw new InvalidMessageError('Identified peer does not match the expected peer')
     }
 
-    if (this.peerId.equals(id)) {
+    if (this.components.peerId.equals(id)) {
       throw new InvalidMessageError('Identified peer is our own peer id?')
     }
 
     // if the observed address is publicly routable, add it to the address
     // manager for verification via AutoNAT
-    this.maybeAddObservedAddress(observedAddr, log)
+    this.maybeAddObservedAddress(observedAddr)
 
-    log('completed for peer %p and protocols %o', id, protocols)
+    this.log('completed for peer %p and protocols %o', id, protocols)
 
-    return consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
+    return consumeIdentifyMessage(this.components.peerStore, this.components.events, this.log, connection, message)
   }
 
-  private maybeAddObservedAddress (observedAddr: Uint8Array | undefined, log: Logger): void {
+  private maybeAddObservedAddress (observedAddr: Uint8Array | undefined): void {
     const cleanObservedAddr = getCleanMultiaddr(observedAddr)
 
     if (cleanObservedAddr == null) {
       return
     }
 
-    log.trace('our observed address was %a', cleanObservedAddr)
+    this.log.trace('our observed address was %a', cleanObservedAddr)
 
     if (isPrivate(cleanObservedAddr)) {
-      this.log.trace('our observed address was private')
       return
     }
 
     const tuples = cleanObservedAddr.getComponents()
 
     if (((tuples[0].code === CODE_IP6) || (tuples[0].code === CODE_IP6ZONE && tuples[1].code === CODE_IP6)) && !isGlobalUnicast(cleanObservedAddr)) {
-      log.trace('our observed address was IPv6 but not a global unicast address')
+      this.log.trace('our observed address was IPv6 but not a global unicast address')
       return
     }
 
@@ -142,63 +136,62 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       return
     }
 
-    log.trace('storing the observed address')
-    this.addressManager.addObservedAddr(cleanObservedAddr)
+    this.log.trace('storing the observed address')
+    this.components.addressManager.addObservedAddr(cleanObservedAddr)
   }
 
   /**
    * Sends the `Identify` response with the Signed Peer Record
    * to the requesting peer over the given `connection`
    */
-  async handleProtocol (data: IncomingStreamData): Promise<void> {
-    const { connection, stream } = data
-    const log = connection.log.newScope('identify')
+  async handleProtocol (stream: Stream, connection: Connection): Promise<void> {
+    const log = stream.log.newScope('identify')
 
     const signal = AbortSignal.timeout(this.timeout)
-
     setMaxListeners(Infinity, signal)
 
-    try {
-      const peerData = await this.peerStore.get(this.peerId)
-      const multiaddrs = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
-      let signedPeerRecord = peerData.peerRecordEnvelope
+    const peerData = await this.components.peerStore.get(this.components.peerId, {
+      signal
+    })
+    const multiaddrs = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
+    let signedPeerRecord = peerData.peerRecordEnvelope
 
-      if (multiaddrs.length > 0 && signedPeerRecord == null) {
-        const peerRecord = new PeerRecord({
-          peerId: this.peerId,
-          multiaddrs
-        })
-
-        const envelope = await RecordEnvelope.seal(peerRecord, this.privateKey)
-        signedPeerRecord = envelope.marshal().subarray()
-      }
-
-      let observedAddr: Uint8Array | undefined = connection.remoteAddr.bytes
-
-      if (!IP_OR_DOMAIN.matches(connection.remoteAddr)) {
-        observedAddr = undefined
-      }
-
-      const pb = pbStream(stream).pb(IdentifyMessage)
-
-      await pb.write({
-        protocolVersion: this.host.protocolVersion,
-        agentVersion: this.host.agentVersion,
-        publicKey: publicKeyToProtobuf(this.privateKey.publicKey),
-        listenAddrs: multiaddrs.map(addr => addr.bytes),
-        signedPeerRecord,
-        observedAddr,
-        protocols: peerData.protocols
-      }, {
-        signal
+    if (multiaddrs.length > 0 && signedPeerRecord == null) {
+      const peerRecord = new PeerRecord({
+        peerId: this.components.peerId,
+        multiaddrs
       })
 
-      await stream.close({
+      const envelope = await RecordEnvelope.seal(peerRecord, this.components.privateKey, {
         signal
       })
-    } catch (err: any) {
-      log.error('could not respond to identify request - %e', err)
-      stream.abort(err)
+      signedPeerRecord = envelope.marshal().subarray()
     }
+
+    let observedAddr: Uint8Array | undefined = connection.remoteAddr.bytes
+
+    if (!IP_OR_DOMAIN.matches(connection.remoteAddr)) {
+      observedAddr = undefined
+    }
+
+    const pb = pbStream(stream).pb(IdentifyMessage)
+
+    log('send response')
+    await pb.write({
+      protocolVersion: this.host.protocolVersion,
+      agentVersion: this.host.agentVersion,
+      publicKey: publicKeyToProtobuf(this.components.privateKey.publicKey),
+      listenAddrs: multiaddrs.map(addr => addr.bytes),
+      signedPeerRecord,
+      observedAddr,
+      protocols: peerData.protocols
+    }, {
+      signal
+    })
+
+    log('close write')
+    await pb.unwrap().unwrap().close({
+      signal
+    })
   }
 }

@@ -1,12 +1,12 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
-import { pbStream } from 'it-protobuf-stream'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import {
-  CIRCUIT_PROTO_CODE,
   DEFAULT_HOP_TIMEOUT,
   KEEP_ALIVE_SOURCE_TAG,
   MAX_CONNECTIONS,
@@ -18,49 +18,11 @@ import { HopMessage, Status, StopMessage } from '../pb/index.js'
 import { createLimitedRelay } from '../utils.js'
 import { ReservationStore } from './reservation-store.js'
 import { ReservationVoucherRecord } from './reservation-voucher.js'
-import type { ReservationStoreInit } from './reservation-store.js'
-import type { CircuitRelayService, RelayReservation } from '../index.js'
+import type { CircuitRelayServerComponents, CircuitRelayServerInit, CircuitRelayService, RelayReservation } from '../index.js'
 import type { Reservation } from '../pb/index.js'
-import type { ComponentLogger, Logger, Connection, Stream, ConnectionGater, PeerId, PeerStore, Startable, PrivateKey, Metrics, AbortOptions, IncomingStreamData } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { Logger, Connection, Stream, PeerId, Startable, AbortOptions } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
-import type { Multiaddr } from '@multiformats/multiaddr'
-import type { ProtobufStream } from 'it-protobuf-stream'
-
-const isRelayAddr = (ma: Multiaddr): boolean => ma.protoCodes().includes(CIRCUIT_PROTO_CODE)
-
-export interface CircuitRelayServerInit {
-  /**
-   * Incoming hop requests must complete within this time in ms otherwise
-   * the stream will be reset
-   *
-   * @default 30000
-   */
-  hopTimeout?: number
-
-  /**
-   * Configuration of reservations
-   */
-  reservations?: ReservationStoreInit
-
-  /**
-   * The maximum number of simultaneous HOP inbound streams that can be open at once
-   */
-  maxInboundHopStreams?: number
-
-  /**
-   * The maximum number of simultaneous HOP outbound streams that can be open at once
-   */
-  maxOutboundHopStreams?: number
-
-  /**
-   * The maximum number of simultaneous STOP outbound streams that can be open at
-   * once.
-   *
-   * @default 300
-   */
-  maxOutboundStopStreams?: number
-}
+import type { ProtobufStream } from '@libp2p/utils'
 
 export interface HopProtocolOptions {
   connection: Connection
@@ -73,18 +35,6 @@ export interface StopOptions {
   request: StopMessage
 }
 
-export interface CircuitRelayServerComponents {
-  registrar: Registrar
-  peerStore: PeerStore
-  addressManager: AddressManager
-  peerId: PeerId
-  privateKey: PrivateKey
-  connectionManager: ConnectionManager
-  connectionGater: ConnectionGater
-  logger: ComponentLogger
-  metrics?: Metrics
-}
-
 export interface RelayServerEvents {
   'relay:reservation': CustomEvent<RelayReservation>
   'relay:advert:success': CustomEvent<unknown>
@@ -95,14 +45,8 @@ const defaults = {
   maxOutboundStopStreams: MAX_CONNECTIONS
 }
 
-class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
-  private readonly registrar: Registrar
-  private readonly peerStore: PeerStore
-  private readonly addressManager: AddressManager
-  private readonly peerId: PeerId
-  private readonly privateKey: PrivateKey
-  private readonly connectionManager: ConnectionManager
-  private readonly connectionGater: ConnectionGater
+export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements Startable, CircuitRelayService {
+  private readonly components: CircuitRelayServerComponents
   private readonly reservationStore: ReservationStore
   private started: boolean
   private readonly hopTimeout: number
@@ -119,13 +63,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:server')
-    this.registrar = components.registrar
-    this.peerStore = components.peerStore
-    this.addressManager = components.addressManager
-    this.peerId = components.peerId
-    this.privateKey = components.privateKey
-    this.connectionManager = components.connectionManager
-    this.connectionGater = components.connectionGater
+    this.components = components
     this.started = false
     this.hopTimeout = init?.hopTimeout ?? DEFAULT_HOP_TIMEOUT
     this.maxInboundHopStreams = init.maxInboundHopStreams
@@ -135,6 +73,8 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
 
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
+
+    this.onHop = this.onHop.bind(this)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/circuit-relay-v2-server'
@@ -151,11 +91,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       return
     }
 
-    await this.registrar.handle(RELAY_V2_HOP_CODEC, (data) => {
-      void this.onHop(data).catch(err => {
-        this.log.error('%e', err)
-      })
-    }, {
+    await this.components.registrar.handle(RELAY_V2_HOP_CODEC, this.onHop, {
       maxInboundStreams: this.maxInboundHopStreams,
       maxOutboundStreams: this.maxOutboundHopStreams,
       runOnLimitedConnection: true
@@ -170,16 +106,19 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   async stop (): Promise<void> {
     this.reservationStore.clear()
     this.shutdownController.abort()
-    await this.registrar.unhandle(RELAY_V2_HOP_CODEC)
+    await this.components.registrar.unhandle(RELAY_V2_HOP_CODEC)
 
     this.started = false
   }
 
-  async onHop ({ connection, stream }: IncomingStreamData): Promise<void> {
+  async onHop (stream: Stream, connection: Connection): Promise<void> {
     this.log('received circuit v2 hop protocol stream from %p', connection.remotePeer)
 
+    const signal = AbortSignal.timeout(this.hopTimeout)
+    setMaxListeners(Infinity, signal)
+
     const options = {
-      signal: AbortSignal.timeout(this.hopTimeout)
+      signal
     }
     const pbstr = pbStream(stream)
 
@@ -223,13 +162,13 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
     const hopstr = stream.pb(HopMessage)
     this.log('hop reserve request from %p', connection.remotePeer)
 
-    if (isRelayAddr(connection.remoteAddr)) {
+    if (Circuit.exactMatch(connection.remoteAddr)) {
       this.log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
     }
 
-    if ((await this.connectionGater.denyInboundRelayReservation?.(connection.remotePeer)) === true) {
+    if ((await this.components.connectionGater.denyInboundRelayReservation?.(connection.remotePeer)) === true) {
       this.log.error('reservation for %p denied by connection gater', connection.remotePeer)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
@@ -247,12 +186,12 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       // result.expire is non-null if `ReservationStore.reserve` returns with status == OK
       if (result.expire != null) {
         const ttl = (result.expire * 1000) - Date.now()
-        await this.peerStore.merge(connection.remotePeer, {
+        await this.components.peerStore.merge(connection.remotePeer, {
           tags: {
             [RELAY_SOURCE_TAG]: { value: 1, ttl },
             [KEEP_ALIVE_SOURCE_TAG]: { value: 1, ttl }
           }
-        })
+        }, options)
       }
 
       await hopstr.write({
@@ -262,17 +201,20 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
         limit: this.reservationStore.get(connection.remotePeer)?.limit
       }, options)
       this.log('sent confirmation response to %s', connection.remotePeer)
+
+      // close writable end of stream
+      await hopstr.unwrap().unwrap().close(options)
     } catch (err) {
       this.log.error('failed to send confirmation response to %p - %e', connection.remotePeer, err)
       this.reservationStore.removeReservation(connection.remotePeer)
 
       try {
-        await this.peerStore.merge(connection.remotePeer, {
+        await this.components.peerStore.merge(connection.remotePeer, {
           tags: {
             [RELAY_SOURCE_TAG]: undefined,
             [KEEP_ALIVE_SOURCE_TAG]: undefined
           }
-        })
+        }, options)
       } catch (err) {
         this.log.error('failed to untag relay source peer %p - %e', connection.remotePeer, err)
       }
@@ -285,7 +227,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   ): Promise<Reservation> {
     const addrs = []
 
-    for (const relayAddr of this.addressManager.getAddresses()) {
+    for (const relayAddr of this.components.addressManager.getAddresses()) {
       if (relayAddr.toString().includes('/p2p-circuit')) {
         continue
       }
@@ -295,9 +237,9 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
 
     const envelope = await RecordEnvelope.seal(new ReservationVoucherRecord({
       peer: remotePeer,
-      relay: this.peerId,
+      relay: this.components.peerId,
       expiration: expire
-    }), this.privateKey)
+    }), this.components.privateKey)
 
     return {
       addrs,
@@ -307,7 +249,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
         payloadType: envelope.payloadType,
         payload: {
           peer: remotePeer.toMultihash().bytes,
-          relay: this.peerId.toMultihash().bytes,
+          relay: this.components.peerId.toMultihash().bytes,
           expiration: expire
         },
         signature: envelope.signature
@@ -318,7 +260,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
   async handleConnect ({ stream, request, connection }: HopProtocolOptions, options: AbortOptions): Promise<void> {
     const hopstr = stream.pb(HopMessage)
 
-    if (isRelayAddr(connection.remoteAddr)) {
+    if (Circuit.matches(connection.remoteAddr)) {
       this.log.error('relay reservation over circuit connection denied for peer: %p', connection.remotePeer)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
@@ -350,13 +292,13 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       return
     }
 
-    if ((await this.connectionGater.denyOutboundRelayedConnection?.(connection.remotePeer, dstPeer)) === true) {
+    if ((await this.components.connectionGater.denyOutboundRelayedConnection?.(connection.remotePeer, dstPeer)) === true) {
       this.log.error('hop connect for %p to %p denied by connection gater', connection.remotePeer, dstPeer)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.PERMISSION_DENIED }, options)
       return
     }
 
-    const connections = this.connectionManager.getConnections(dstPeer)
+    const connections = this.components.connectionManager.getConnections(dstPeer)
 
     if (connections.length === 0) {
       this.log('hop connect denied for destination peer %p not having a connection for %p as there is no destination connection', dstPeer, connection.remotePeer)
@@ -389,12 +331,11 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
       status: Status.OK,
       limit: reservation?.limit
     }, options)
-    const sourceStream = stream.unwrap()
 
     this.log('connection from %p to %p established - merging streams', connection.remotePeer, dstPeer)
 
     // Short circuit the two streams to create the relayed connection
-    createLimitedRelay(sourceStream, destinationStream, this.shutdownController.signal, reservation, {
+    createLimitedRelay(stream.unwrap(), destinationStream, this.shutdownController.signal, reservation, {
       log: this.log
     })
   }
@@ -404,7 +345,7 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
    */
   async stopHop ({ connection, request }: StopOptions, options: AbortOptions): Promise<Stream | undefined> {
     this.log('starting circuit relay v2 stop request to %s', connection.remotePeer)
-    const stream = await connection.newStream([RELAY_V2_STOP_CODEC], {
+    const stream = await connection.newStream(RELAY_V2_STOP_CODEC, {
       maxOutboundStreams: this.maxOutboundStopStreams,
       runOnLimitedConnection: true,
       ...options
@@ -437,11 +378,5 @@ class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> implements
 
   get reservations (): PeerMap<RelayReservation> {
     return this.reservationStore.reservations
-  }
-}
-
-export function circuitRelayServer (init: CircuitRelayServerInit = {}): (components: CircuitRelayServerComponents) => CircuitRelayService {
-  return (components) => {
-    return new CircuitRelayServer(components, init)
   }
 }

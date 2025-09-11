@@ -1,7 +1,7 @@
 import { AbortError } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
 import { TypedEventEmitter } from 'main-event'
-import { raceEvent } from 'race-event'
+import { pEvent } from 'p-event'
 import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'
 import { Job } from './job.js'
@@ -131,6 +131,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
   public queue: Array<Job<JobOptions, JobReturnType>>
   private pending: number
   private readonly sort?: Comparator<Job<JobOptions, JobReturnType>>
+  private paused: boolean
 
   constructor (init: QueueInit<JobReturnType, JobOptions> = {}) {
     super()
@@ -138,6 +139,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     this.concurrency = init.concurrency ?? Number.POSITIVE_INFINITY
     this.maxSize = init.maxSize ?? Number.POSITIVE_INFINITY
     this.pending = 0
+    this.paused = false
 
     if (init.metricName != null) {
       init.metrics?.registerMetricGroup(init.metricName, {
@@ -174,7 +176,24 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     this.safeDispatchEvent('idle')
   }
 
+  pause (): void {
+    this.paused = true
+  }
+
+  resume (): void {
+    if (!this.paused) {
+      return
+    }
+
+    this.paused = false
+    this.tryToStartAnother()
+  }
+
   private tryToStartAnother (): boolean {
+    if (this.paused) {
+      return false
+    }
+
     if (this.size === 0) {
       this.emitEmpty()
 
@@ -300,7 +319,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       return
     }
 
-    await raceEvent(this, 'empty', options?.signal)
+    await pEvent(this, 'empty', options)
   }
 
   /**
@@ -320,7 +339,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       return
     }
 
-    await raceEvent(this, 'next', options?.signal, {
+    await pEvent(this, 'next', {
+      ...options,
       filter: () => this.size < limit
     })
   }
@@ -339,7 +359,7 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
       return
     }
 
-    await raceEvent(this, 'idle', options?.signal)
+    await pEvent(this, 'idle', options)
   }
 
   /**

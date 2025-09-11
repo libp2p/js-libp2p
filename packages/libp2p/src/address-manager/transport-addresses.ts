@@ -1,6 +1,4 @@
-import { isNetworkAddress } from '@libp2p/utils/multiaddr/is-network-address'
-import { isPrivate } from '@libp2p/utils/multiaddr/is-private'
-import { trackedMap } from '@libp2p/utils/tracked-map'
+import { getNetConfig, isNetworkAddress, isPrivate, trackedMap } from '@libp2p/utils'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
 import type { NodeAddress } from '@libp2p/interface-internal'
@@ -114,13 +112,13 @@ export class TransportAddresses {
   }
 
   private toKey (ma: Multiaddr): string {
-    if (isNetworkAddress(ma)) {
-      // only works for dns/ip based addresses
-      const options = ma.toOptions()
-
-      return `${options.host}-${options.port}-${options.transport}`
+    if (!isNetworkAddress(ma)) {
+      return ma.toString()
     }
 
-    return ma.toString()
+    // only works for dns/ip based addresses
+    const config = getNetConfig(ma)
+
+    return `${config.host}-${config.port}-${config.protocol}`
   }
 }

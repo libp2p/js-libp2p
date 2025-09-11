@@ -1,4 +1,4 @@
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
 import { setMaxListeners } from 'main-event'

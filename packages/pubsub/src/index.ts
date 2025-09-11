@@ -41,7 +41,7 @@ import {
   verifySignature
 } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
-import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey, IncomingStreamData } from '@libp2p/interface'
+import type { PubSub, Message, StrictNoSign, StrictSign, PubSubInit, PubSubEvents, PeerStreams, PubSubRPCMessage, PubSubRPC, PubSubRPCSubscription, SubscriptionChangeData, PublishResult, TopicValidatorFn, ComponentLogger, Logger, Connection, PeerId, PrivateKey, Stream, Topology } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -158,7 +158,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
 
     // register protocol with topology
     // Topology callbacks called on connection manager changes
-    const topology = {
+    const topology: Topology = {
       onConnect: this._onPeerConnected,
       onDisconnect: this._onPeerDisconnected
     }
@@ -207,8 +207,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   /**
    * On an inbound stream opened
    */
-  protected _onIncomingStream (data: IncomingStreamData): void {
-    const { stream, connection } = data
+  protected _onIncomingStream (stream: Stream, connection: Connection): void {
     const peerId = connection.remotePeer
 
     if (stream.protocol == null) {
@@ -226,7 +225,7 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
   /**
    * Registrar notifies an established connection with pubsub protocol
    */
-  protected _onPeerConnected (peerId: PeerId, conn: Connection): void {
+  protected async _onPeerConnected (peerId: PeerId, conn: Connection): Promise<void> {
     this.log('connected %p', peerId)
 
     // if this connection is already in use for pubsub, ignore it
@@ -235,27 +234,18 @@ export abstract class PubSubBaseProtocol<Events extends Record<string, any> = Pu
       return
     }
 
-    void Promise.resolve().then(async () => {
-      try {
-        const stream = await conn.newStream(this.multicodecs)
+    const stream = await conn.newStream(this.multicodecs)
 
-        if (stream.protocol == null) {
-          stream.abort(new Error('Stream was not multiplexed'))
-          return
-        }
+    if (stream.protocol == null) {
+      stream.abort(new Error('Stream was not multiplexed'))
+      return
+    }
 
-        const peer = this.addPeer(peerId, stream.protocol)
-        await peer.attachOutboundStream(stream)
-      } catch (err: any) {
-        this.log.error('%e', err)
-      }
+    const peer = this.addPeer(peerId, stream.protocol)
+    await peer.attachOutboundStream(stream)
 
-      // Immediately send my own subscriptions to the newly established conn
-      this.send(peerId, { subscriptions: Array.from(this.subscriptions).map(sub => sub.toString()), subscribe: true })
-    })
-      .catch(err => {
-        this.log.error('%e', err)
-      })
+    // Immediately send my own subscriptions to the newly established conn
+    this.send(peerId, { subscriptions: Array.from(this.subscriptions).map(sub => sub.toString()), subscribe: true })
   }
 
   /**

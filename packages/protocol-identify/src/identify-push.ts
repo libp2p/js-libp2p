@@ -1,10 +1,9 @@
 import { serviceCapabilities } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { debounce } from '@libp2p/utils/debounce'
-import { protocols } from '@multiformats/multiaddr'
+import { debounce, pbStream } from '@libp2p/utils'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import parallel from 'it-parallel'
-import { pbStream } from 'it-protobuf-stream'
 import { setMaxListeners } from 'main-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -16,7 +15,7 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.js'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.js'
-import type { Stream, Startable, IncomingStreamData } from '@libp2p/interface'
+import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
 export class IdentifyPush extends AbstractIdentify implements Startable, IdentifyPushInterface {
@@ -64,22 +63,21 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     }
 
     try {
-      const listenAddresses = this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+      const listenAddresses = this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
       const peerRecord = new PeerRecord({
-        peerId: this.peerId,
+        peerId: this.components.peerId,
         multiaddrs: listenAddresses
       })
-      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.privateKey)
-      const supportedProtocols = this.registrar.getProtocols()
-      const peer = await this.peerStore.get(this.peerId)
+      const signedPeerRecord = await RecordEnvelope.seal(peerRecord, this.components.privateKey)
+      const supportedProtocols = this.components.registrar.getProtocols()
+      const peer = await this.components.peerStore.get(this.components.peerId)
       const agentVersion = uint8ArrayToString(peer.metadata.get('AgentVersion') ?? uint8ArrayFromString(this.host.agentVersion))
       const protocolVersion = uint8ArrayToString(peer.metadata.get('ProtocolVersion') ?? uint8ArrayFromString(this.host.protocolVersion))
       const self = this
 
       async function * pushToConnections (): AsyncGenerator<() => Promise<void>> {
         for (const connection of self.connectionManager.getConnections()) {
-          const peer = await self.peerStore.get(connection.remotePeer)
-          const log = connection.log.newScope('identify-push')
+          const peer = await self.components.peerStore.get(connection.remotePeer)
 
           if (!peer.protocols.includes(self.protocol)) {
             continue
@@ -115,8 +113,9 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
                 signal
               })
             } catch (err: any) {
-              // Just log errors
-              log.error('could not push identify update to peer - %e', err)
+              // Just log errors if the stream was opened
+              const log = stream?.log.newScope('identify-push')
+              log?.error('could not push identify update to peer', err)
               stream?.abort(err)
             }
           }
@@ -134,32 +133,25 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
   /**
    * Reads the Identify Push message from the given `connection`
    */
-  async handleProtocol (data: IncomingStreamData): Promise<void> {
-    const { connection, stream } = data
-    const log = connection.log.newScope('identify-push')
+  async handleProtocol (stream: Stream, connection: Connection): Promise<void> {
+    const log = stream.log.newScope('identify-push')
 
-    try {
-      if (this.peerId.equals(connection.remotePeer)) {
-        throw new Error('received push from ourselves?')
-      }
-
-      const options = {
-        signal: AbortSignal.timeout(this.timeout)
-      }
-
-      const pb = pbStream(stream, {
-        maxDataLength: this.maxMessageSize
-      }).pb(IdentifyMessage)
-
-      const message = await pb.read(options)
-      await stream.close(options)
-
-      await consumeIdentifyMessage(this.peerStore, this.events, log, connection, message)
-    } catch (err: any) {
-      log.error('received invalid message - %e', err)
-      stream.abort(err)
-      return
+    if (this.components.peerId.equals(connection.remotePeer)) {
+      throw new Error('received push from ourselves?')
     }
+
+    const options = {
+      signal: AbortSignal.timeout(this.timeout)
+    }
+
+    const pb = pbStream(stream, {
+      maxDataLength: this.maxMessageSize
+    }).pb(IdentifyMessage)
+
+    const message = await pb.read(options)
+    await stream.close(options)
+
+    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, message)
 
     log.trace('handled push from %p', connection.remotePeer)
   }

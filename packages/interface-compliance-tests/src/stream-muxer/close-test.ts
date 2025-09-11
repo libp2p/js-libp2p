@@ -1,104 +1,80 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-import { abortableSource } from 'abortable-iterator'
+import { multiaddrConnectionPair, echo, pbStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
-import drain from 'it-drain'
-import { duplexPair } from 'it-pair/duplex'
-import { pipe } from 'it-pipe'
-import { pbStream } from 'it-protobuf-stream'
-import toBuffer from 'it-to-buffer'
-import pDefer from 'p-defer'
+import map from 'it-map'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message } from './fixtures/pb/message.js'
 import type { TestSetup } from '../index.js'
-import type { StreamMuxerFactory } from '@libp2p/interface'
+import type { MultiaddrConnection, Stream, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 function randomBuffer (): Uint8Array {
   return uint8ArrayFromString(Math.random().toString())
 }
 
-function infiniteRandom (): AsyncGenerator<Uint8ArrayList, void, unknown> {
-  let done: Error | boolean = false
-
-  const generator: AsyncGenerator<Uint8ArrayList, void, unknown> = {
-    [Symbol.asyncIterator]: () => {
-      return generator
-    },
-    async next () {
-      await delay(10)
-
-      if (done instanceof Error) {
-        throw done
-      }
-
-      if (done) {
-        return {
-          done: true,
-          value: undefined
-        }
-      }
-
-      return {
-        done: false,
-        value: new Uint8ArrayList(randomBuffer())
-      }
-    },
-    async return (): Promise<IteratorReturnResult<void>> {
-      done = true
-
-      return {
-        done: true,
-        value: undefined
-      }
-    },
-    async throw (err: Error): Promise<IteratorReturnResult<void>> {
-      done = err
-
-      return {
-        done: true,
-        value: undefined
-      }
-    }
+async function * infiniteRandom (): AsyncGenerator<Uint8ArrayList, void, unknown> {
+  while (true) {
+    await delay(10)
+    yield new Uint8ArrayList(randomBuffer())
   }
-
-  return generator
 }
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {
   describe('close', () => {
-    it('closing underlying socket closes streams', async () => {
+    let outboundConnection: MultiaddrConnection
+    let inboundConnection: MultiaddrConnection
+    let dialer: StreamMuxer
+    let listener: StreamMuxer
+
+    beforeEach(async () => {
+      [outboundConnection, inboundConnection] = multiaddrConnectionPair()
+
+      const dialerFactory = await common.setup()
+      dialer = dialerFactory.createStreamMuxer(outboundConnection)
+
+      const listenerFactory = await common.setup()
+      listener = listenerFactory.createStreamMuxer(inboundConnection)
+    })
+
+    afterEach(async () => {
+      await dialer?.close()
+      await listener?.close()
+    })
+
+    it('closing underlying MultiaddrConnection closes streams', async () => {
       let openedStreams = 0
       const expectedStreams = 5
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
+
+      listener.addEventListener('stream', (evt) => {
+        openedStreams++
+
+        echo(evt.detail)
       })
 
-      // Listener is echo server :)
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          openedStreams++
-          void pipe(stream, stream)
-        }
-      })
-
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
-
-      const streams = await Promise.all(Array(expectedStreams).fill(0).map(async () => dialer.newStream()))
+      const streams = await Promise.all(
+        Array(expectedStreams).fill(0).map(async () => dialer.createStream())
+      )
 
       void Promise.all(
         streams.map(async stream => {
-          await pipe(
-            infiniteRandom(),
-            stream,
-            drain
-          )
+          for await (const buf of infiniteRandom()) {
+            if (stream.status !== 'open') {
+              return
+            }
+
+            const sendMore = stream.send(buf)
+
+            if (!sendMore) {
+              await pEvent(stream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
+            }
+          }
         })
       )
 
@@ -106,7 +82,9 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       // Pause, and then close the dialer
       await delay(50)
-      await pipe(async function * () {}, dialer, drain)
+      await inboundConnection.close()
+      await outboundConnection.close()
+      await delay(50)
 
       expect(openedStreams).to.have.equal(expectedStreams)
       expect(dialer.streams).to.have.lengthOf(0)
@@ -115,36 +93,37 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
     it('calling close closes streams', async () => {
       let openedStreams = 0
       const expectedStreams = 5
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
+
+      listener.addEventListener('stream', (evt) => {
+        openedStreams++
+
+        echo(evt.detail)
       })
 
-      // Listener is echo server :)
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          openedStreams++
-          void pipe(stream, stream).catch(() => {})
-        }
-      })
-
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
-
-      const streams = await Promise.all(Array(expectedStreams).fill(0).map(async () => dialer.newStream()))
+      const streams = await Promise.all(Array(expectedStreams).fill(0).map(async () => dialer.createStream()))
 
       void Promise.all(
         streams.map(async stream => {
-          await pipe(
-            infiniteRandom(),
-            stream,
-            drain
-          )
+          for await (const buf of infiniteRandom()) {
+            if (stream.status !== 'open') {
+              return
+            }
+
+            const sendMore = stream.send(buf)
+
+            if (!sendMore) {
+              await pEvent(stream, 'drain', {
+                rejectionEvents: [
+                  'close'
+                ]
+              })
+            }
+          }
         })
       )
+        .catch(() => {
+          // calling .send on a closed stream will throw so swallow any errors
+        })
 
       expect(dialer.streams, 'dialer - number of opened streams should match number of calls to newStream').to.have.lengthOf(expectedStreams)
 
@@ -153,281 +132,212 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       await dialer.close()
 
+      await delay(50)
+
       expect(openedStreams, 'listener - number of opened streams should match number of calls to newStream').to.have.equal(expectedStreams)
       expect(dialer.streams, 'all tracked streams should be deleted after the muxer has called close').to.have.lengthOf(0)
     })
 
-    it('calling close with an error aborts streams', async () => {
+    it('calling abort aborts streams', async () => {
       let openedStreams = 0
       const expectedStreams = 5
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
+
+      listener.addEventListener('stream', (evt) => {
+        openedStreams++
+
+        echo(evt.detail)
       })
 
-      // Listener is echo server :)
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          openedStreams++
-          void pipe(stream, stream).catch(() => {})
-        }
-      })
-
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
-
-      const streams = await Promise.all(Array(expectedStreams).fill(0).map(async () => dialer.newStream()))
+      const streams = await Promise.all(
+        Array(expectedStreams).fill(0).map(async () => dialer.createStream())
+      )
 
       const streamPipes = streams.map(async stream => {
-        await pipe(
-          infiniteRandom(),
-          stream,
-          drain
-        )
-      })
+        for await (const buf of infiniteRandom()) {
+          if (stream.writeStatus !== 'writable') {
+            break
+          }
 
-      expect(dialer.streams, 'dialer - number of opened streams should match number of calls to newStream').to.have.lengthOf(expectedStreams)
+          const sendMore = stream.send(buf)
 
-      // Pause, and then close the dialer
-      await delay(50)
-
-      // close _with an error_
-      dialer.abort(new Error('Oh no!'))
-
-      const timeoutError = new Error('timeout')
-      for (const pipe of streamPipes) {
-        try {
-          await Promise.race([
-            pipe,
-            new Promise((_resolve, reject) => setTimeout(() => { reject(timeoutError) }, 20))
-          ])
-          expect.fail('stream pipe with infinite source should never return')
-        } catch (e) {
-          if (e === timeoutError) {
-            expect.fail('expected stream pipe to throw an error after muxer closed with error')
+          if (!sendMore) {
+            await pEvent(stream, 'drain', {
+              rejectionEvents: ['close']
+            })
           }
         }
-      }
+      })
 
-      expect(openedStreams, 'listener - number of opened streams should match number of calls to newStream').to.have.equal(expectedStreams)
-      expect(dialer.streams, 'all tracked streams should be deleted after the muxer has called close').to.have.lengthOf(0)
+      expect(dialer.streams).to.have.lengthOf(expectedStreams, 'dialer - number of opened streams should match number of calls to createStream')
+
+      const timeoutError = new Error('timeout')
+
+      await Promise.all([
+        // Pause, and then close the dialer
+        delay(50).then(() => {
+          // close _with an error_
+          dialer.abort(new Error('Oh no!'))
+        }),
+        ...streamPipes.map(async pipe => {
+          try {
+            await Promise.race([
+              pipe,
+              new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  reject(timeoutError)
+                }, 70)
+              })
+            ])
+            expect.fail('stream pipe with infinite source should never return')
+          } catch (e) {
+            if (e === timeoutError) {
+              expect.fail('expected stream pipe to throw an error after muxer closed with error')
+            }
+          }
+        })
+      ])
+
+      expect(openedStreams).to.equal(expectedStreams, 'listener - number of opened streams should match number of calls to createStream')
+      expect(dialer.streams).to.have.lengthOf(0, 'all tracked streams should be deleted after the muxer has called close')
     })
 
     it('calling newStream after close throws an error', async () => {
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
-      })
-
       await dialer.close()
-
-      try {
-        await dialer.newStream()
-        expect.fail('newStream should throw if called after close')
-      } catch (e) {
-        expect(dialer.streams, 'closed muxer should have no streams').to.have.lengthOf(0)
-      }
+      await expect(dialer.createStream()).to.eventually.rejected.with.property('name', 'MuxerClosedError')
+      expect(dialer.streams).to.have.lengthOf(0, 'closed muxer should have no streams')
     })
 
     it('closing one of the muxed streams doesn\'t close others', async () => {
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
-      })
+      const streamCount = 5
+      const allStreamsOpen = Promise.withResolvers<void>()
 
-      // Listener is echo server :)
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          void pipe(stream, stream).catch(() => {})
+      listener.addEventListener('stream', (evt) => {
+        echo(evt.detail).catch(() => {})
+
+        if (listener.streams.length === streamCount) {
+          allStreamsOpen.resolve()
         }
       })
 
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
+      const streams = await Promise.all(
+        Array.from(Array(streamCount), async () => dialer.createStream())
+      )
+      await allStreamsOpen.promise
 
-      const stream = await dialer.newStream()
-      const streams = await Promise.all(Array.from(Array(5), async () => dialer.newStream()))
-      let closed = false
-      const controllers: AbortController[] = []
+      expect(dialer.streams).to.have.lengthOf(streamCount)
+      expect(listener.streams).to.have.lengthOf(streamCount)
 
-      const streamResults = streams.map(async stream => {
-        const controller = new AbortController()
-        controllers.push(controller)
+      expect(dialer.streams.map(s => s.status)).to.deep.equal(new Array(streamCount).fill('open'))
+      expect(listener.streams.map(s => s.status)).to.deep.equal(new Array(streamCount).fill('open'))
 
-        try {
-          const abortableRand = abortableSource(infiniteRandom(), controller.signal, {
-            abortName: 'TestAbortError'
-          })
-          await pipe(abortableRand, stream, drain)
-        } catch (err: any) {
-          if (err.name !== 'TestAbortError') { throw err }
-        }
+      const localStream = streams[0]
+      const remoteStream = listener.streams[0]
 
-        if (!closed) { throw new Error('stream should not have ended yet!') }
-      })
+      await Promise.all([
+        pEvent(remoteStream, 'close'),
+        pEvent(localStream, 'close'),
+        localStream.close()
+      ])
 
-      // Pause, and then send some data and close the first stream
-      await delay(50)
-      await pipe([new Uint8ArrayList(randomBuffer())], stream, drain)
-      closed = true
+      expect(dialer.streams).to.have.lengthOf(streamCount - 1)
+      expect(listener.streams).to.have.lengthOf(streamCount - 1)
 
-      // Abort all the other streams later
-      await delay(50)
-      controllers.forEach(c => { c.abort() })
-
-      // These should now all resolve without error
-      await Promise.all(streamResults)
+      expect(dialer.streams.map(s => s.status)).to.deep.equal(new Array(streamCount - 1).fill('open'))
+      expect(listener.streams.map(s => s.status)).to.deep.equal(new Array(streamCount - 1).fill('open'))
     })
 
     it('can close a stream for writing', async () => {
-      const deferred = pDefer<Error>()
+      const deferred = Promise.withResolvers<Error>()
+      const data = [Uint8Array.from([0, 1, 2, 3, 4]), Uint8Array.from([5, 6, 7, 8, 9])]
 
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
-      })
-      const data = [randomBuffer(), randomBuffer()]
-
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          void Promise.resolve().then(async () => {
+      listener.addEventListener('stream', (evt) => {
+        void Promise.resolve().then(async () => {
+          try {
             // Immediate close for write
-            await stream.closeWrite()
-
-            const results = await pipe(stream, async (source) => {
-              const data = []
-              for await (const chunk of source) {
-                data.push(chunk.slice())
-              }
-              return data
+            await evt.detail.close({
+              signal: AbortSignal.timeout(1_000)
             })
-            expect(results).to.eql(data)
+
+            const results = await all(map(evt.detail, (buf) => {
+              return buf.subarray()
+            }))
+
+            expect(results).to.deep.equal(data)
 
             try {
-              await stream.sink([new Uint8ArrayList(randomBuffer())])
+              evt.detail.send(randomBuffer())
             } catch (err: any) {
               deferred.resolve(err)
             }
 
-            deferred.reject(new Error('should not support writing to closed writer'))
-          })
-        }
+            throw new Error('should not support writing to closed writer')
+          } catch (err) {
+            deferred.reject(err)
+          }
+        })
       })
 
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
+      const stream = await dialer.createStream()
 
-      const stream = await dialer.newStream()
-      await stream.sink(data)
+      for (const buf of data) {
+        if (!stream.send(buf)) {
+          await pEvent(stream, 'drain', {
+            rejectionEvents: [
+              'close'
+            ]
+          })
+        }
+      }
+
+      await stream.close({
+        signal: AbortSignal.timeout(1_000)
+      })
 
       const err = await deferred.promise
       expect(err).to.have.property('name', 'StreamStateError')
     })
 
-    it('can close a stream for reading', async () => {
-      const deferred = pDefer<Uint8ArrayList[]>()
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
-      })
-      const data = [randomBuffer(), randomBuffer()].map(d => new Uint8ArrayList(d))
-      const expected = toBuffer(data.map(d => d.subarray()))
-
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          void all(stream.source).then(deferred.resolve, deferred.reject)
-        }
+    it('should emit a close event for closed streams not previously written', async () => {
+      listener.addEventListener('stream', async (evt) => {
+        void evt.detail.close()
       })
 
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
-
-      const stream = await dialer.newStream()
-      await stream.closeRead()
-
-      // Source should be done
-      void Promise.resolve().then(async () => {
-        expect(await stream.source.next()).to.have.property('done', true)
-        await stream.sink(data)
+      const deferred = Promise.withResolvers<void>()
+      const stream = await dialer.createStream()
+      stream.addEventListener('close', () => {
+        deferred.resolve()
       })
-
-      const results = await deferred.promise
-      expect(toBuffer(results.map(b => b.subarray()))).to.equalBytes(expected)
-    })
-
-    it('calls onStreamEnd for closed streams not previously written', async () => {
-      const deferred = pDefer()
-
-      const onStreamEnd = (): void => { deferred.resolve() }
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound',
-        onStreamEnd
-      })
-
-      const stream = await dialer.newStream()
 
       await stream.close()
       await deferred.promise
     })
 
-    it('calls onStreamEnd for read and write closed streams not previously written', async () => {
-      const deferred = pDefer()
-
-      const onStreamEnd = (): void => { deferred.resolve() }
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound',
-        onStreamEnd
+    it('should emit a close event for aborted streams not previously written', async () => {
+      const deferred = Promise.withResolvers<void>()
+      const stream = await dialer.createStream()
+      stream.addEventListener('close', () => {
+        deferred.resolve()
       })
 
-      const stream = await dialer.newStream()
-
-      await stream.closeWrite()
-      await stream.closeRead()
+      stream.abort(new Error('Urk!'))
       await deferred.promise
     })
 
     it('should wait for all data to be sent when closing streams', async () => {
-      const deferred = pDefer<Message>()
+      const deferred = Promise.withResolvers<Message>()
 
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({
-        direction: 'outbound'
+      listener.addEventListener('stream', (evt) => {
+        const pb = pbStream(evt.detail)
+
+        void pb.read(Message)
+          .then(async message => {
+            deferred.resolve(message)
+            await evt.detail.close()
+          })
+          .catch(err => {
+            deferred.reject(err)
+          })
       })
-
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          const pb = pbStream(stream)
-
-          void pb.read(Message)
-            .then(async message => {
-              deferred.resolve(message)
-              await pb.unwrap().close()
-            })
-            .catch(err => {
-              deferred.reject(err)
-            })
-        }
-      })
-
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
 
       const message = {
         message: 'hello world',
@@ -435,64 +345,115 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
         flag: true
       }
 
-      const stream = await dialer.newStream()
+      const stream = await dialer.createStream()
 
       const pb = pbStream(stream)
       await pb.write(message, Message)
-      await pb.unwrap().close()
+      await stream.close()
 
       await expect(deferred.promise).to.eventually.deep.equal(message)
     })
-    /*
-    it('should abort closing a stream with outstanding data to read', async () => {
-      const deferred = pDefer<Message>()
 
-      const p = duplexPair<Uint8Array | Uint8ArrayList>()
-      const dialerFactory = await common.setup()
-      const dialer = dialerFactory.createStreamMuxer({ direction: 'outbound' })
+    it('should remove a stream in the streams list after aborting', async () => {
+      const [
+        listenerStream,
+        dialerStream
+      ] = await Promise.all([
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
+      ])
 
-      const listenerFactory = await common.setup()
-      const listener = listenerFactory.createStreamMuxer({
-        direction: 'inbound',
-        onIncomingStream: (stream) => {
-          const pb = pbStream(stream)
+      expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
+      expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
 
-          void pb.read(Message)
-            .then(async message => {
-              await pb.write(message, Message)
-              await pb.unwrap().close()
-              deferred.resolve(message)
-            })
-            .catch(err => {
-              deferred.reject(err)
-            })
-        }
-      })
+      await Promise.all([
+        pEvent(listenerStream, 'close'),
+        dialerStream.abort(new Error('Urk!'))
+      ])
 
-      void pipe(p[0], dialer, p[0])
-      void pipe(p[1], listener, p[1])
-
-      const message = {
-        message: 'hello world',
-        value: 5,
-        flag: true
-      }
-
-      const stream = await dialer.newStream()
-
-      const pb = pbStream(stream)
-      await pb.write(message, Message)
-
-      console.info('await write back')
-      await deferred.promise
-
-      // let message arrive
-      await delay(100)
-
-      // close should time out as message is never read
-      await expect(pb.unwrap().close()).to.eventually.be.rejected
-        .with.property('name', 'TimeoutError')
+      expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
+      expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')
     })
-    */
+
+    it('should remove a stream in the streams list after closing', async () => {
+      const [
+        listenerStream,
+        dialerStream
+      ] = await Promise.all([
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
+      ])
+
+      expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
+      expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
+
+      await Promise.all([
+        dialerStream.close(),
+        listenerStream.close()
+      ])
+
+      await delay(10)
+
+      expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
+      expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')
+    })
+
+    it('should not remove a half-closed outbound stream', async () => {
+      const [
+        listenerStream,
+        dialerStream
+      ] = await Promise.all([
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
+      ])
+
+      await dialerStream.close()
+
+      expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
+      expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
+    })
+
+    it('should not remove a half-closed inbound stream', async () => {
+      const [
+        listenerStream,
+        dialerStream
+      ] = await Promise.all([
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
+      ])
+
+      await listenerStream.close()
+
+      expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
+      expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
+    })
+
+    it('should remove a stream half closed from both ends', async () => {
+      const [
+        listenerStream,
+        dialerStream
+      ] = await Promise.all([
+        pEvent<'stream', CustomEvent<Stream>>(listener, 'stream').then(evt => evt.detail),
+        dialer.createStream()
+      ])
+
+      expect(dialer.streams).to.include(dialerStream, 'dialer did not store outbound stream')
+      expect(listener.streams).to.include(listenerStream, 'listener did not store inbound stream')
+
+      await listenerStream.close()
+
+      expect(dialer.streams).to.include(dialerStream, 'dialer removed outbound stream before fully closing')
+      expect(listener.streams).to.include(listenerStream, 'listener removed inbound stream before fully closing')
+
+      await Promise.all([
+        pEvent(listenerStream, 'close'),
+        dialerStream.close()
+      ])
+
+      await delay(10)
+
+      expect(dialer.streams).to.not.include(dialerStream, 'dialer did not remove outbound stream close')
+      expect(listener.streams).to.not.include(listenerStream, 'listener did not remove inbound stream after close')
+    })
   })
 }

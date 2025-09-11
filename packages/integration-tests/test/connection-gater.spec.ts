@@ -147,7 +147,8 @@ describe('connection-gater', () => {
 
     localNode = await createLocalNode(connectionGater)
 
-    await remoteNode.dial(localNode.getMultiaddrs())
+    remoteNode.dial(localNode.getMultiaddrs())
+      .catch(() => {})
 
     await delay(100)
 

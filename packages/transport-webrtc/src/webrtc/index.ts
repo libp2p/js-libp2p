@@ -1,1 +1,1 @@
-export { RTCSessionDescription, RTCIceCandidate, RTCPeerConnection } from '@ipshipyard/node-datachannel/polyfill'
+export { RTCSessionDescription, RTCIceCandidate, RTCPeerConnection } from 'node-datachannel/polyfill'

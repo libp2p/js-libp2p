@@ -8,8 +8,8 @@
  * @example
  *
  * ```TypeScript
- * import { noise } from '@chainsafe/libp2p-noise'
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { noise } from '@libp2p/noise'
+ * import { yamux } from '@libp2p/yamux'
  * import { echo } from '@libp2p/echo'
  * import { peerIdFromString } from '@libp2p/peer-id'
  * import { createLibp2p } from 'libp2p'
@@ -43,15 +43,17 @@
  */
 
 import { Echo as EchoClass } from './echo.js'
-import type { AbortOptions, PeerId } from '@libp2p/interface'
-import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { PeerId } from '@libp2p/interface'
+import type { ConnectionManager, OpenConnectionOptions, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface EchoInit {
   protocolPrefix?: string
   maxInboundStreams?: number
   maxOutboundStreams?: number
   runOnLimitedConnection?: boolean
+  timeout?: number
 }
 
 export interface EchoComponents {
@@ -61,7 +63,7 @@ export interface EchoComponents {
 
 export interface Echo {
   protocol: string
-  echo(peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array, options?: AbortOptions): Promise<Uint8Array>
+  echo(peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array | Uint8ArrayList, options?: OpenConnectionOptions): Promise<Uint8ArrayList>
 }
 
 export function echo (init: EchoInit = {}): (components: EchoComponents) => Echo {

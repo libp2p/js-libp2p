@@ -43,10 +43,12 @@ describe('get-thin-waist-addresses', () => {
     expect(addrs).to.have.property('length').that.is.greaterThan(0)
 
     for (const addr of addrs) {
-      const options = addr.toOptions()
+      const components = addr.getComponents()
 
-      expect(options).to.have.property('family', 4)
-      expect(options).to.have.property('host').that.does.not.equal('0.0.0.0')
+      expect(components).to.have.nested.property('[0].name', 'ip4')
+      expect(components).to.have.nested.property('[0].value').that.is.ok().and.does.not.equal('0.0.0.0')
+      expect(components).to.have.nested.property('[1].name', 'tcp')
+      expect(components).to.have.nested.property('[1].value', '1234')
     }
   })
 
@@ -61,11 +63,12 @@ describe('get-thin-waist-addresses', () => {
     expect(addrs).to.have.property('length').that.is.greaterThan(0)
 
     for (const addr of addrs) {
-      const options = addr.toOptions()
+      const components = addr.getComponents()
 
-      expect(options).to.have.property('family', 4)
-      expect(options).to.have.property('host').that.does.not.equal('0.0.0.0')
-      expect(options).to.have.property('port', 100)
+      expect(components).to.have.nested.property('[0].name', 'ip4')
+      expect(components).to.have.nested.property('[0].value').that.is.ok().and.does.not.equal('0.0.0.0')
+      expect(components).to.have.nested.property('[1].name', 'tcp')
+      expect(components).to.have.nested.property('[1].value', '100')
     }
   })
 
@@ -80,11 +83,26 @@ describe('get-thin-waist-addresses', () => {
     expect(addrs).to.have.property('length').that.is.greaterThan(0)
 
     for (const addr of addrs) {
-      const options = addr.toOptions()
+      const components = addr.getComponents()
 
-      expect(options).to.have.property('family', 6)
-      expect(options).to.have.property('host').that.does.not.equal('::')
+      expect(components).to.have.nested.property('[0].name', 'ip6')
+      expect(components).to.have.nested.property('[0].value').that.is.ok().and.does.not.equal('::')
+      expect(components).to.have.nested.property('[1].name', 'tcp')
+      expect(components).to.have.nested.property('[1].value', '1234')
     }
+  })
+
+  it('should get thin waist addresses from IPv6 with zone', function () {
+    if (!isNode && !isElectronMain) {
+      return this.skip()
+    }
+
+    const input = multiaddr('/ip6zone/lo0/ip6/fe80::1/tcp/1234')
+    const addrs = getThinWaistAddresses(input)
+
+    expect(addrs).to.deep.equal([
+      multiaddr('/ip6/fe80::1/tcp/1234')
+    ])
   })
 
   it('should get thin waist addresses from IPv6 wildcard and override the port', function () {
@@ -98,11 +116,12 @@ describe('get-thin-waist-addresses', () => {
     expect(addrs).to.have.property('length').that.is.greaterThan(0)
 
     for (const addr of addrs) {
-      const options = addr.toOptions()
+      const components = addr.getComponents()
 
-      expect(options).to.have.property('family', 6)
-      expect(options).to.have.property('host').that.does.not.equal('::')
-      expect(options).to.have.property('port', 100)
+      expect(components).to.have.nested.property('[0].name', 'ip6')
+      expect(components).to.have.nested.property('[0].value').that.is.ok().and.does.not.equal('::')
+      expect(components).to.have.nested.property('[1].name', 'tcp')
+      expect(components).to.have.nested.property('[1].value', '100')
     }
   })
 })

@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Connection, NewStreamOptions, Stream } from './connection.js'
+import type { Connection, NewStreamOptions } from './connection.js'
 import type { ContentRouting } from './content-routing.js'
 import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
 import type { Metrics } from './metrics.js'
@@ -23,7 +23,8 @@ import type { PeerInfo } from './peer-info.js'
 import type { PeerRouting } from './peer-routing.js'
 import type { Address, Peer, PeerStore } from './peer-store.js'
 import type { Startable } from './startable.js'
-import type { StreamHandler, StreamHandlerOptions } from './stream-handler.js'
+import type { StreamHandler, StreamHandlerOptions, StreamMiddleware } from './stream-handler.js'
+import type { Stream } from './stream.js'
 import type { Topology } from './topology.js'
 import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
 import type { DNS } from '@multiformats/dns'
@@ -781,6 +782,33 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   unregister(id: string): void
 
   /**
+   * Registers one or more middleware implementations that will be invoked for
+   * incoming and outgoing protocol streams that match the passed protocol.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.use('/my/protocol/1.0.0', (stream, connection, next) => {
+   *   // do something with stream and/or connection
+   *   next(stream, connection)
+   * })
+   * ```
+   */
+  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
+
+  /**
+   * Deregisters all middleware for the passed protocol.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.unuse('/my/protocol/1.0.0')
+   * // any previously registered middleware will no longer be invoked
+   * ```
+   */
+  unuse (protocol: string): void
+
+  /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA'
    * type this may mean searching the routing if the peer's key is not present
    * in the peer store.
@@ -915,9 +943,14 @@ export const serviceDependencies = Symbol.for('@libp2p/service-dependencies')
 export * from './connection.js'
 export * from './connection-encrypter.js'
 export * from './connection-gater.js'
+export * from './connection-protector.js'
 export * from './content-routing.js'
+export * from './errors.js'
+export * from './events.js'
 export * from './keys.js'
+export * from './message-stream.js'
 export * from './metrics.js'
+export * from './multiaddr-connection.js'
 export * from './peer-discovery.js'
 export * from './peer-id.js'
 export * from './peer-info.js'
@@ -925,10 +958,11 @@ export * from './peer-routing.js'
 export * from './peer-store.js'
 export * from './pubsub.js'
 export * from './record.js'
+export * from './startable.js'
 export * from './stream-handler.js'
 export * from './stream-muxer.js'
+export * from './stream.js'
 export * from './topology.js'
 export * from './transport.js'
-export * from './errors.js'
+
 export * from 'main-event'
-export * from './startable.js'

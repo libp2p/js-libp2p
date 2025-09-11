@@ -1,30 +1,12 @@
-import { PeerQueue } from '@libp2p/utils/peer-queue'
+import { PeerQueue } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   RELAY_V2_HOP_CODEC
 } from '../constants.js'
-import type { ComponentLogger, Libp2pEvents, Logger, Peer, PeerId, PeerInfo, PeerStore, Startable, TopologyFilter, TypedEventTarget } from '@libp2p/interface'
-import type { ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
-
-export interface RelayDiscoveryEvents {
-  'relay:discover': CustomEvent<PeerId>
-}
-
-export interface RelayDiscoveryComponents {
-  peerStore: PeerStore
-  connectionManager: ConnectionManager
-  transportManager: TransportManager
-  registrar: Registrar
-  logger: ComponentLogger
-  randomWalk: RandomWalk
-  events: TypedEventTarget<Libp2pEvents>
-}
-
-export interface RelayDiscoveryInit {
-  filter?: TopologyFilter
-}
+import type { RelayDiscoveryComponents, RelayDiscoveryEvents, RelayDiscoveryInit } from '../index.ts'
+import type { Logger, Peer, PeerId, PeerInfo, Startable, TopologyFilter } from '@libp2p/interface'
 
 /**
  * ReservationManager automatically makes a circuit v2 reservation on any connected
@@ -221,7 +203,7 @@ export class RelayDiscovery extends TypedEventEmitter<RelayDiscoveryEvents> impl
   }
 
   onPeer (evt: CustomEvent<PeerInfo>): void {
-    this.log.trace('maybe dialing discovered peer %p - %e', evt.detail.id)
+    this.log.trace('maybe dialing discovered peer %p', evt.detail.id)
 
     this.maybeDialPeer(evt)
       .catch(err => {
