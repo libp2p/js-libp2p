@@ -45,7 +45,7 @@ The key management and naming service API all return a `KeyInfo` object.  The `i
 
 The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multihash) of its public key.
 
-The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto.js) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
+The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/958761163edfc7b1a6231041b199737d72fd6424/packages/crypto/src/keys/keys.proto) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
 
 ## Private key storage
 
@@ -64,8 +64,6 @@ const defaultOptions = {
   }
 }
 ```
-
-![key storage](https://github.com/libp2p/js-libp2p/blob/main/doc/private-key.png?raw=true)
 
 ## Physical storage
 
