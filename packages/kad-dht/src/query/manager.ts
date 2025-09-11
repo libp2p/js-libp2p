@@ -1,4 +1,4 @@
-import { createScalableCuckooFilter } from '@libp2p/utils/filters'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
 import { setMaxListeners } from 'main-event'
@@ -168,7 +168,9 @@ export class QueryManager implements Startable {
       const id = await convertBuffer(key, {
         signal
       })
-      const peers = this.routingTable.closestPeers(id, this.routingTable.kBucketSize)
+      const peers = this.routingTable.closestPeers(id, {
+        count: this.routingTable.kBucketSize
+      })
 
       // split peers into d buckets evenly(ish)
       const peersToQuery = peers.sort(() => {

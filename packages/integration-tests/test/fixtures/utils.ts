@@ -1,6 +1,7 @@
 import { RELAY_V2_HOP_CODEC } from '@libp2p/circuit-relay-v2'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
+import { Circuit } from '@multiformats/multiaddr-matcher'
 import { detect } from 'detect-browser'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -16,7 +17,7 @@ export const isFirefox = ((browser != null) && browser.name === 'firefox')
 export async function usingAsRelay (node: Libp2p, relay: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
-    const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
+    const relayAddrs = node.getMultiaddrs().filter(addr => Circuit.exactMatch(addr))
 
     if (relayAddrs.length > 0) {
       const search = `${relay.peerId.toString()}/p2p-circuit`
@@ -67,12 +68,12 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
     const relayHosts = new Set<string>()
 
     const relayAddrs = node.getMultiaddrs().filter(addr => {
-      if (!addr.protoNames().includes('p2p-circuit')) {
+      if (!Circuit.exactMatch(addr)) {
         return false
       }
 
       const ma = multiaddr(addr.toString().split('/p2p-circuit')[0])
-      const relayPeer = ma.getPeerId()
+      const relayPeer = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
 
       if (relayPeer != null) {
         relayHosts.add(relayPeer)
@@ -89,16 +90,14 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
       throw new Error(`node listening on too many relays - ${relayAddrs.length}`)
     }
 
-    for (const [code, value] of relayAddrs[0].stringTuples()) {
-      if (code === 421 && value != null) {
-        relayPeerId = peerIdFromString(value)
-        break
-      }
-    }
+    const ma = multiaddr(relayAddrs[0].toString().split('/p2p-circuit')[0])
+    const relayPeerString = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
 
-    if (relayPeerId == null) {
+    if (relayPeerString == null) {
       throw new Error('node had circuit relay address but address had no peer id')
     }
+
+    relayPeerId = peerIdFromString(relayPeerString)
 
     if (relayPeerId.equals(node.peerId)) {
       throw new Error('node was listening on itself as a relay')
@@ -117,7 +116,7 @@ export async function hasRelay (node: Libp2p, opts?: PWaitForOptions<PeerId>): P
 export async function doesNotHaveRelay (node: Libp2p, opts?: PWaitForOptions<boolean>): Promise<void> {
   // Wait for peer to be used as a relay
   await pWaitFor(() => {
-    const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
+    const relayAddrs = node.getMultiaddrs().filter(addr => Circuit.exactMatch(addr))
 
     return relayAddrs.length === 0
   }, opts)
@@ -135,7 +134,7 @@ export async function discoveredRelayConfig (node: Libp2p, relay: Libp2p, opts?:
 }
 
 export function getRelayAddress (node: Libp2p): Multiaddr {
-  const relayAddrs = node.getMultiaddrs().filter(addr => addr.protoNames().includes('p2p-circuit'))
+  const relayAddrs = node.getMultiaddrs().filter(addr => Circuit.exactMatch(addr))
 
   if (relayAddrs.length === 0) {
     throw new Error('could not find relay address')

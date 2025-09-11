@@ -1,0 +1,66 @@
+{
+  "name": "@libp2p/daemon-client",
+  "version": "9.0.8",
+  "description": "libp2p-daemon client implementation",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p-daemon-client#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "libp2p"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "build": "aegir build",
+    "pretest": "npm run build",
+    "test": "aegir test -t node",
+    "test:node": "aegir test -t node"
+  },
+  "dependencies": {
+    "@libp2p/daemon-protocol": "^7.0.6",
+    "@libp2p/interface": "^2.11.0",
+    "@libp2p/logger": "^5.2.0",
+    "@libp2p/peer-id": "^5.1.9",
+    "@libp2p/tcp": "^10.1.19",
+    "@libp2p/utils": "^6.7.2",
+    "@multiformats/multiaddr": "^13.0.1",
+    "multiformats": "^13.4.0"
+  },
+  "devDependencies": {
+    "@chainsafe/libp2p-gossipsub": "^14.1.1",
+    "@libp2p/daemon-server": "^8.0.6",
+    "@libp2p/kad-dht": "^15.1.11",
+    "aegir": "^47.0.21",
+    "it-all": "^3.0.9",
+    "p-event": "^6.0.1",
+    "sinon": "^21.0.0",
+    "sinon-ts": "^2.0.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.1.0"
+  }
+}

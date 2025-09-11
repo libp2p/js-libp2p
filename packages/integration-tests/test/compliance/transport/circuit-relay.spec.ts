@@ -1,16 +1,18 @@
 /* eslint-env mocha */
 
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import tests from '@libp2p/interface-compliance-tests/transport'
+import { prefixLogger } from '@libp2p/logger'
+import { noise } from '@libp2p/noise'
 import { webSockets } from '@libp2p/websockets'
+import { yamux } from '@libp2p/yamux'
+import { CODE_P2P_CIRCUIT } from '@multiformats/multiaddr'
 import { Circuit, P2P } from '@multiformats/multiaddr-matcher'
-import { and, fmt, literal } from '@multiformats/multiaddr-matcher/utils'
+import { and, fmt, code } from '@multiformats/multiaddr-matcher/utils'
 
 export const CircuitListen = fmt(
-  and(P2P.matchers[0], literal('p2p-circuit'))
+  and(P2P.matchers[0], code(CODE_P2P_CIRCUIT))
 )
 
 describe('Circuit relay transport interface compliance', () => {
@@ -35,7 +37,8 @@ describe('Circuit relay transport interface compliance', () => {
         },
         connectionMonitor: {
           enabled: false
-        }
+        },
+        logger: prefixLogger('dialer')
       }
 
       return {
@@ -47,7 +50,8 @@ describe('Circuit relay transport interface compliance', () => {
               `${process.env.RELAY_WS_MULTIADDR_1}/p2p-circuit`
             ]
           },
-          ...dialer
+          ...dialer,
+          logger: prefixLogger('listener')
         },
         dialMultiaddrMatcher: Circuit,
         listenMultiaddrMatcher: CircuitListen

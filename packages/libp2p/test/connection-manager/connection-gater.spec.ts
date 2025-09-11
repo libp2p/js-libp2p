@@ -8,6 +8,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { Upgrader } from '../../src/upgrader.js'
 import { createDefaultUpgraderComponents } from '../upgrading/utils.js'
@@ -81,6 +82,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)
@@ -111,6 +113,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)
@@ -133,9 +136,10 @@ describe('connection-gater', () => {
     })
     upgrader._encryptInbound = async (maConn) => {
       return {
-        conn: maConn,
+        connection: maConn,
         remotePeer,
-        protocol: '/test-encrypter'
+        protocol: '/test-encrypter',
+        earlyData: new Uint8ArrayList()
       }
     }
 
@@ -170,7 +174,7 @@ describe('connection-gater', () => {
     })
     upgrader._encryptOutbound = async (maConn) => {
       return {
-        conn: maConn,
+        connection: maConn,
         remotePeer,
         protocol: '/test-encrypter'
       }
@@ -212,6 +216,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeInbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)
@@ -242,6 +247,7 @@ describe('connection-gater', () => {
 
     await expect(upgrader.upgradeOutbound(maConn, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>(),
       signal: AbortSignal.timeout(5_000)

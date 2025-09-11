@@ -1,22 +1,24 @@
-import { Duplex as DuplexStream } from 'node:stream'
+import net from 'node:net'
+import { Duplex } from 'node:stream'
+import tls from 'node:tls'
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { InvalidCryptoExchangeError, UnexpectedPeerError } from '@libp2p/interface'
+import { InvalidCryptoExchangeError, UnexpectedPeerError, StreamMessageEvent } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
+import { AbstractMessageStream } from '@libp2p/utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import * as asn1X509 from '@peculiar/asn1-x509'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import * as asn1js from 'asn1js'
-import { queuelessPushable } from 'it-queueless-pushable'
+import { pEvent } from 'p-event'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { InvalidCertificateError } from './errors.js'
 import { KeyType, PublicKey } from './pb/index.js'
-import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey } from '@libp2p/interface'
-import type { Pushable } from 'it-queueless-pushable'
-import type { Duplex, Source } from 'it-stream-types'
-import type { Uint8ArrayList } from 'uint8arraylist'
+import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions, MessageStream, StreamCloseEvent } from '@libp2p/interface'
+import type { SendResult } from '@libp2p/utils'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -84,14 +86,14 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   const remotePeerId = peerIdFromCID(remoteLibp2pPublicKey.toCID())
 
   if (expectedPeerId?.equals(remotePeerId) === false) {
-    log?.error('invalid peer id')
+    log?.error('invalid peer id - expected %p got %p', expectedPeerId, remotePeerId)
     throw new UnexpectedPeerError()
   }
 
   return remotePeerId
 }
 
-export async function generateCertificate (privateKey: PrivateKey): Promise<{ cert: string, key: string }> {
+export async function generateCertificate (privateKey: PrivateKey, options?: AbortOptions): Promise<{ cert: string, key: string }> {
   const now = Date.now()
 
   const alg = {
@@ -101,9 +103,13 @@ export async function generateCertificate (privateKey: PrivateKey): Promise<{ ce
   }
 
   const keys = await crypto.subtle.generateKey(alg, true, ['sign'])
+  options?.signal?.throwIfAborted()
+
   const certPublicKeySpki = await crypto.subtle.exportKey('spki', keys.publicKey)
+  options?.signal?.throwIfAborted()
+
   const dataToSign = encodeSignatureData(certPublicKeySpki)
-  const sig = await privateKey.sign(dataToSign)
+  const sig = await privateKey.sign(dataToSign, options)
   const notAfter = new Date(now + CERT_VALIDITY_PERIOD_TO)
   // workaround for https://github.com/PeculiarVentures/x509/issues/73
   notAfter.setMilliseconds(0)
@@ -133,8 +139,10 @@ export async function generateCertificate (privateKey: PrivateKey): Promise<{ ce
       }).toBER())
     ]
   })
+  options?.signal?.throwIfAborted()
 
   const certPrivateKeyPkcs8 = await crypto.subtle.exportKey('pkcs8', keys.privateKey)
+  options?.signal?.throwIfAborted()
 
   return {
     cert: selfCert.toString(),
@@ -185,123 +193,162 @@ function formatAsPem (str: string): string {
   return finalString
 }
 
-export function itToStream (conn: Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>>): DuplexStream {
-  const output = queuelessPushable<Uint8Array>()
-  const iterator = conn.source[Symbol.asyncIterator]() as AsyncGenerator<Uint8Array>
-
-  const stream = new DuplexStream({
-    autoDestroy: false,
-    allowHalfOpen: true,
-    write (chunk, encoding, callback) {
-      output.push(chunk)
-        .then(() => {
-          callback()
-        }, err => {
-          callback(err)
-        })
-    },
-    read () {
-      iterator.next()
-        .then(result => {
-          if (result.done === true) {
-            this.push(null)
-          } else {
-            this.push(result.value)
-          }
-        }, (err) => {
-          this.destroy(err)
-        })
-    }
-  })
-
-  // @ts-expect-error return type of sink is unknown
-  conn.sink(output)
-    .catch((err: any) => {
-      stream.destroy(err)
-    })
-
-  return stream
-}
-
-class DuplexIterable implements Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
-  source: Pushable<Uint8Array>
-  private readonly stream: DuplexStream
-
-  constructor (stream: DuplexStream) {
-    this.stream = stream
-    this.source = queuelessPushable<Uint8Array>()
-
-    stream.addListener('data', (buf) => {
-      stream.pause()
-      this.source.push(buf.subarray())
-        .then(() => {
-          stream.resume()
-        }, (err) => {
-          stream.emit('error', err)
-        })
-    })
-    // both ends closed
-    stream.addListener('close', () => {
-      this.source.end()
-        .catch(err => {
-          stream.emit('error', err)
-        })
-    })
-    stream.addListener('error', (err) => {
-      this.source.end(err)
-        .catch(() => {})
-    })
-    // just writable end closed
-    stream.addListener('finish', () => {
-      this.source.end()
-        .catch(() => {})
-    })
-
-    this.sink = this.sink.bind(this)
-  }
-
-  async sink (source: Source<Uint8Array | Uint8ArrayList>): Promise<void> {
+export function toNodeDuplex (stream: MessageStream): Duplex {
+  function sendAndCallback (chunk: Uint8Array | Uint8ArrayList, callback: (err?: Error | null) => void): void {
     try {
-      for await (const buf of source) {
-        const sendMore = this.stream.write(buf.subarray())
+      const sendMore = stream.send(chunk)
 
-        if (!sendMore) {
-          await waitForBackpressure(this.stream)
-        }
+      if (sendMore) {
+        callback()
+        return
       }
 
-      // close writable end
-      this.stream.end()
+      socket.pause()
+
+      pEvent(stream, 'drain', {
+        rejectionEvents: ['close']
+      })
+        .then(() => {
+          socket.resume()
+          callback()
+        }, (err) => {
+          callback(err)
+        })
     } catch (err: any) {
-      this.stream.destroy(err)
-      throw err
+      callback(err)
+    }
+  }
+
+  // pause incoming messages until pulled from duplex
+  stream.pause()
+
+  const socket = new Duplex({
+    write (chunk, encoding, callback) {
+      sendAndCallback(chunk, callback)
+    },
+    writev (chunks, callback) {
+      sendAndCallback(new Uint8ArrayList(...chunks.map(({ chunk }) => chunk)), callback)
+    },
+    read () {
+      stream.resume()
+    },
+    final (cb) {
+      stream.close()
+        .then(() => cb(), (err) => cb(err))
+    }
+  })
+
+  const onMessage = (evt: StreamMessageEvent): void => {
+    const buf = evt.data
+    let sendMore = true
+
+    if (buf instanceof Uint8Array) {
+      sendMore = socket.push(buf)
+    } else {
+      for (const chunk of buf) {
+        sendMore = socket.push(chunk)
+      }
+    }
+
+    if (!sendMore) {
+      stream.pause()
+    }
+  }
+  stream.addEventListener('message', onMessage)
+
+  const onClose = (evt: StreamCloseEvent): void => {
+    socket.destroy(evt.error)
+  }
+  stream.addEventListener('close', onClose)
+
+  return socket
+}
+
+class EncryptedMultiaddrConnection extends AbstractMessageStream {
+  private socket: net.Socket
+
+  /**
+   * @param stream - The maConn that encrypted data is transferred over
+   * @param socket - Performs encryption/decryption
+   */
+  constructor (stream: MessageStream, socket: tls.TLSSocket) {
+    super({
+      log: stream.log,
+      inactivityTimeout: stream.inactivityTimeout,
+      maxReadBufferLength: stream.maxReadBufferLength,
+      direction: stream.direction
+    })
+
+    this.socket = socket
+
+    // accept decrypted data
+    this.socket.on('data', (buf) => {
+      this.onData(buf)
+    })
+    this.socket.on('error', err => {
+      stream.abort(err)
+    })
+    this.socket.on('close', () => {
+      stream.close()
+        .catch(err => {
+          stream.abort(err)
+        })
+    })
+
+    // can accept more plaintext data
+    this.socket.on('drain', () => {
+      this.safeDispatchEvent('drain')
+    })
+
+    stream.addEventListener('close', () => {
+      socket.destroy()
+      this.onTransportClosed()
+    })
+  }
+
+  async close (options?: AbortOptions): Promise<void> {
+    this.socket.destroySoon()
+
+    await pEvent(this.socket, 'close', options)
+  }
+
+  sendPause (): void {
+    this.socket.pause()
+  }
+
+  sendResume (): void {
+    this.socket.resume()
+  }
+
+  async sendClose (options?: AbortOptions): Promise<void> {
+    this.socket.destroySoon()
+    options?.signal?.throwIfAborted()
+  }
+
+  sendReset (): void {
+    this.socket.resetAndDestroy()
+  }
+
+  sendData (data: Uint8ArrayList): SendResult {
+    let sentBytes = 0
+    let canSendMore = true
+
+    for (const buf of data) {
+      sentBytes += buf.byteLength
+      canSendMore = this.socket.write(buf)
+
+      if (!canSendMore) {
+        break
+      }
+    }
+
+    return {
+      sentBytes,
+      canSendMore
     }
   }
 }
 
-export function streamToIt (stream: DuplexStream): Duplex<AsyncGenerator<Uint8Array | Uint8ArrayList>> {
-  return new DuplexIterable(stream)
-}
-
-async function waitForBackpressure (stream: DuplexStream): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const continueListener = (): void => {
-      cleanUp()
-      resolve()
-    }
-    const stopListener = (err?: Error): void => {
-      cleanUp()
-      reject(err ?? new Error('Stream ended'))
-    }
-
-    const cleanUp = (): void => {
-      stream.removeListener('drain', continueListener)
-      stream.removeListener('end', stopListener)
-      stream.removeListener('error', stopListener)
-    }
-
-    stream.addListener('drain', continueListener)
-    stream.addListener('end', stopListener)
-    stream.addListener('error', stopListener)
-  })
+export function toMessageStream (stream: MessageStream, socket: tls.TLSSocket): MessageStream {
+  return new EncryptedMultiaddrConnection(stream, socket)
 }

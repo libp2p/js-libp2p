@@ -15,13 +15,7 @@
       "path": "../interface"
     },
     {
-      "path": "../interface-compliance-tests"
-    },
-    {
-      "path": "../logger"
-    },
-    {
-      "path": "../peer-id"
+      "path": "../utils"
     }
   ]
 }

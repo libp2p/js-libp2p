@@ -1,10 +1,11 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { multiaddr } from '@multiformats/multiaddr'
+import { getNetConfig } from '@libp2p/utils'
+import { CODE_CERTHASH, multiaddr } from '@multiformats/multiaddr'
 import { base64url } from 'multiformats/bases/base64'
 import { bases, digest } from 'multiformats/basics'
 import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { CODEC_CERTHASH, MAX_MESSAGE_SIZE } from '../../constants.js'
+import { MAX_MESSAGE_SIZE } from '../../constants.js'
 import { InvalidFingerprintError, UnsupportedHashAlgorithmError } from '../../error.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -27,8 +28,8 @@ export function getFingerprintFromSdp (sdp: string | undefined): string | undefi
 
 // Extract the certhash from a multiaddr
 export function certhash (ma: Multiaddr): string {
-  const tups = ma.stringTuples()
-  const certhash = tups.filter((tup) => tup[0] === CODEC_CERTHASH).map((tup) => tup[1])[0]
+  const components = ma.getComponents()
+  const certhash = components.find(c => c.code === CODE_CERTHASH)?.value
 
   if (certhash === undefined || certhash === '') {
     throw new InvalidParametersError(`Couldn't find a certhash component of multiaddr: ${ma.toString()}`)
@@ -100,15 +101,20 @@ export function toSupportedHashFunction (code: number): 'sha-1' | 'sha-256' | 's
  * ice-lite mode and DTLS active mode.
  */
 export function serverAnswerFromMultiaddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
-  const { host, port, family } = ma.toOptions()
+  const { host, port, type } = getNetConfig(ma)
+
+  if (type !== 'ip4' && type !== 'ip6') {
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`)
+  }
+
   const fingerprint = ma2Fingerprint(ma)
   const sdp = `v=0
-o=- 0 0 IN IP${family} ${host}
+o=- 0 0 IN IP${type === 'ip4' ? 4 : 6} ${host}
 s=-
 t=0 0
 a=ice-lite
 m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
-c=IN IP${family} ${host}
+c=IN IP${type === 'ip4' ? 4 : 6} ${host}
 a=mid:0
 a=ice-options:ice2
 a=ice-ufrag:${ufrag}
@@ -131,11 +137,16 @@ a=end-of-candidates
  * Create an offer SDP message from a multiaddr
  */
 export function clientOfferFromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
-  const { host, port, family } = ma.toOptions()
+  const { host, port, type } = getNetConfig(ma)
+
+  if (type !== 'ip4' && type !== 'ip6') {
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`)
+  }
+
   const sdp = `v=0
-o=- 0 0 IN IP${family} ${host}
+o=- 0 0 IN IP${type === 'ip4' ? 4 : 6} ${host}
 s=-
-c=IN IP${family} ${host}
+c=IN IP${type === 'ip4' ? 4 : 6} ${host}
 t=0 0
 a=ice-options:ice2,trickle
 m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
@@ -166,8 +177,13 @@ export function munge (desc: RTCSessionDescriptionInit, ufrag: string): RTCSessi
 
   const lineBreak = desc.sdp.includes('\r\n') ? '\r\n' : '\n'
 
-  desc.sdp = desc.sdp
-    .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + lineBreak)
-    .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + lineBreak)
+  try {
+    desc.sdp = desc.sdp
+      .replace(/\na=ice-ufrag:[^\n]*\n/, '\na=ice-ufrag:' + ufrag + lineBreak)
+      .replace(/\na=ice-pwd:[^\n]*\n/, '\na=ice-pwd:' + ufrag + lineBreak)
+  } catch {
+    // fails under Node.js
+  }
+
   return desc
 }

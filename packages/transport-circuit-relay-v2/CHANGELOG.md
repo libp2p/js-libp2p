@@ -101,6 +101,128 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.2.24](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.23...circuit-relay-v2-v3.2.24) (2025-08-19)
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/interface-internal bumped from ^2.3.18 to ^2.3.19
+    * @libp2p/peer-collections bumped from ^6.0.34 to ^6.0.35
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/peer-record bumped from ^8.0.34 to ^8.0.35
+    * @libp2p/utils bumped from ^6.7.1 to ^6.7.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.16 to ^6.5.0
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+
+## [3.2.23](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.22...circuit-relay-v2-v3.2.23) (2025-07-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.15 to ^6.4.16
+
+## [3.2.22](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.21...circuit-relay-v2-v3.2.22) (2025-07-07)
+
+
+### Dependencies
+
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.14 to ^6.4.15
+
+## [3.2.21](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.20...circuit-relay-v2-v3.2.21) (2025-07-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.13 to ^6.4.14
+
+## [3.2.20](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.19...circuit-relay-v2-v3.2.20) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/interface-internal bumped from ^2.3.17 to ^2.3.18
+    * @libp2p/peer-collections bumped from ^6.0.33 to ^6.0.34
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/peer-record bumped from ^8.0.33 to ^8.0.34
+    * @libp2p/utils bumped from ^6.7.0 to ^6.7.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.12 to ^6.4.13
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+
+## [3.2.19](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.18...circuit-relay-v2-v3.2.19) (2025-06-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.11 to ^6.4.12
+
+## [3.2.18](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.17...circuit-relay-v2-v3.2.18) (2025-06-17)
+
+
+### Bug Fixes
+
+* dial peers until relays are discovered ([#3188](https://github.com/libp2p/js-libp2p/issues/3188)) ([439d2c9](https://github.com/libp2p/js-libp2p/commit/439d2c9ce3376077e7448b507d445154c0311fe5))
+
+## [3.2.17](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.16...circuit-relay-v2-v3.2.17) (2025-06-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^2.3.16 to ^2.3.17
+    * @libp2p/peer-collections bumped from ^6.0.32 to ^6.0.33
+    * @libp2p/peer-record bumped from ^8.0.32 to ^8.0.33
+    * @libp2p/utils bumped from ^6.6.7 to ^6.7.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.10 to ^6.4.11
+
+## [3.2.16](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.15...circuit-relay-v2-v3.2.16) (2025-06-16)
+
+
+### Bug Fixes
+
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/interface-internal bumped from ^2.3.15 to ^2.3.16
+    * @libp2p/peer-collections bumped from ^6.0.31 to ^6.0.32
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/peer-record bumped from ^8.0.31 to ^8.0.32
+    * @libp2p/utils bumped from ^6.6.6 to ^6.6.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.4.9 to ^6.4.10
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+
 ## [3.2.15](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v3.2.14...circuit-relay-v2-v3.2.15) (2025-06-03)
 
 

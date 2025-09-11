@@ -1,9 +1,8 @@
 /* eslint-disable max-depth */
 import { TimeoutError, DialError, AbortError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
-import { PriorityQueue } from '@libp2p/utils/priority-queue'
-import { resolvers, multiaddr } from '@multiformats/multiaddr'
-import { dnsaddrResolver } from '@multiformats/multiaddr/resolvers'
+import { PriorityQueue } from '@libp2p/utils'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
@@ -20,13 +19,14 @@ import {
   MAX_DIAL_QUEUE_LENGTH,
   LAST_DIAL_SUCCESS_KEY
 } from './constants.js'
-import { resolveMultiaddrs } from './utils.js'
+import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
+import { findExistingConnection } from './utils.ts'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
-import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
-import type { PriorityQueueJobOptions } from '@libp2p/utils/priority-queue'
+import type { PriorityQueueJobOptions } from '@libp2p/utils'
 import type { DNS } from '@multiformats/dns'
-import type { Multiaddr, Resolver } from '@multiformats/multiaddr'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
 
 export interface PendingDialTarget {
@@ -45,7 +45,7 @@ interface DialerInit {
   maxDialQueueLength?: number
   maxPeerAddrsToDial?: number
   dialTimeout?: number
-  resolvers?: Record<string, Resolver>
+  resolvers?: Record<string, MultiaddrResolver>
   connections?: PeerMap<Connection[]>
 }
 
@@ -80,6 +80,7 @@ export class DialQueue {
   private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
   private readonly log: Logger
+  private readonly resolvers: Record<string, MultiaddrResolver>
 
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter
@@ -89,13 +90,10 @@ export class DialQueue {
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
     this.components = components
+    this.resolvers = init.resolvers ?? defaultOptions.resolvers
 
     this.shutDownController = new AbortController()
     setMaxListeners(Infinity, this.shutDownController.signal)
-
-    for (const [key, value] of Object.entries(init.resolvers ?? {})) {
-      resolvers.set(key, value)
-    }
 
     // controls dial concurrency
     this.queue = new PriorityQueue({
@@ -104,9 +102,9 @@ export class DialQueue {
       metrics: components.metrics
     })
     // a started job errored
-    this.queue.addEventListener('error', (event) => {
-      if (event.detail?.name !== AbortError.name) {
-        this.log.error('error in dial queue - %e', event.detail)
+    this.queue.addEventListener('failure', (event) => {
+      if (event.detail?.error.name !== AbortError.name) {
+        this.log.error('error in dial queue - %e', event.detail.error)
       }
     })
   }
@@ -139,26 +137,14 @@ export class DialQueue {
   async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
-    // make sure we don't have an existing connection to any of the addresses we
-    // are about to dial
-    const existingConnection = Array.from(this.connections.values()).flat().find(conn => {
-      if (options.force === true) {
-        return false
+    if (peerId != null && options.force !== true) {
+      const existingConnection = findExistingConnection(peerId, this.connections.get(peerId), multiaddrs)
+
+      if (existingConnection != null) {
+        this.log('already connected to %a', existingConnection.remoteAddr)
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+        return existingConnection
       }
-
-      if (conn.remotePeer.equals(peerId)) {
-        return true
-      }
-
-      return multiaddrs.find(addr => {
-        return addr.equals(conn.remoteAddr)
-      })
-    })
-
-    if (existingConnection?.status === 'open') {
-      this.log('already connected to %a', existingConnection.remoteAddr)
-      options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
-      return existingConnection
     }
 
     // ready to dial, all async work finished - make sure we don't have any
@@ -415,10 +401,10 @@ export class DialQueue {
     // dnsaddrs are resolved
     let resolvedAddresses = (await Promise.all(
       addrs.map(async addr => {
-        const result = await resolveMultiaddrs(addr.multiaddr, {
+        const result = await resolveMultiaddr(addr.multiaddr, this.resolvers, {
           dns: this.components.dns,
-          ...options,
-          log: this.log
+          log: this.log,
+          ...options
         })
 
         if (result.length === 1 && result[0].equals(addr.multiaddr)) {
@@ -437,15 +423,10 @@ export class DialQueue {
     if (peerId != null) {
       const peerIdMultiaddr = `/p2p/${peerId.toString()}`
       resolvedAddresses = resolvedAddresses.map(addr => {
-        const lastProto = addr.multiaddr.protos().pop()
-
-        // do not append peer id to path multiaddrs
-        if (lastProto?.path === true) {
-          return addr
-        }
+        const lastComponent = addr.multiaddr.getComponents().pop()
 
         // append peer id to multiaddr if it is not already present
-        if (addr.multiaddr.getPeerId() == null) {
+        if (lastComponent?.name !== 'p2p') {
           return {
             multiaddr: addr.multiaddr.encapsulate(peerIdMultiaddr),
             isCertified: addr.isCertified
@@ -465,7 +446,7 @@ export class DialQueue {
       // if the resolved multiaddr has a PeerID but it's the wrong one, ignore it
       // - this can happen with addresses like bootstrap.libp2p.io that resolve
       // to multiple different peers
-      const addrPeerId = addr.multiaddr.getPeerId()
+      const addrPeerId = addr.multiaddr.getComponents().findLast(c => c.code === CODE_P2P)?.value
       if (peerId != null && addrPeerId != null) {
         return peerId.equals(addrPeerId)
       }

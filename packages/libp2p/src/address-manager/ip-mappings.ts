@@ -1,6 +1,6 @@
 import { isIPv4 } from '@chainsafe/is-ip'
-import { trackedMap } from '@libp2p/utils/tracked-map'
-import { multiaddr, protocols } from '@multiformats/multiaddr'
+import { getNetConfig, isNetworkAddress, trackedMap } from '@libp2p/utils'
+import { CODE_IP4, CODE_IP6, multiaddr } from '@multiformats/multiaddr'
 import type { AddressManagerComponents, AddressManagerInit } from './index.js'
 import type { Logger } from '@libp2p/interface'
 import type { NodeAddress } from '@libp2p/interface-internal'
@@ -22,11 +22,6 @@ interface PublicAddressMapping {
   lastVerified?: number
 }
 
-const CODEC_IP4 = 0x04
-const CODEC_IP6 = 0x29
-const CODEC_TCP = 0x06
-const CODEC_UDP = 0x0111
-
 export class IPMappings {
   private readonly log: Logger
   private readonly mappings: Map<string, PublicAddressMapping[]>
@@ -40,11 +35,15 @@ export class IPMappings {
   }
 
   has (ma: Multiaddr): boolean {
-    const tuples = ma.stringTuples()
+    const config = getNetConfig(ma)
+
+    if (config.type !== 'ip4' && config.type !== 'ip6') {
+      return false
+    }
 
     for (const mappings of this.mappings.values()) {
       for (const mapping of mappings) {
-        if (mapping.externalIp === tuples[0][1]) {
+        if (mapping.externalIp === config.host) {
           return true
         }
       }
@@ -72,18 +71,20 @@ export class IPMappings {
   }
 
   remove (ma: Multiaddr): boolean {
-    const tuples = ma.stringTuples()
-    const host = tuples[0][1] ?? ''
-    const protocol = tuples[1][0] === CODEC_TCP ? 'tcp' : 'udp'
-    const port = parseInt(tuples[1][1] ?? '0')
+    const config = getNetConfig(ma)
+
+    if (config.type !== 'ip4' && config.type !== 'ip6') {
+      return false
+    }
+
     let wasConfident = false
 
     for (const [key, mappings] of this.mappings.entries()) {
       for (let i = 0; i < mappings.length; i++) {
         const mapping = mappings[i]
 
-        if (mapping.externalIp === host && mapping.externalPort === port && mapping.protocol === protocol) {
-          this.log('removing %s:%s to %s:%s %s IP mapping', mapping.externalIp, mapping.externalPort, host, port, protocol)
+        if (mapping.externalIp === config.host && mapping.externalPort === config.port && mapping.protocol === config.protocol) {
+          this.log('removing %s:%s to %s:%s %s IP mapping', mapping.externalIp, mapping.externalPort, config.host, config.port, config.protocol)
 
           wasConfident = wasConfident || mapping.verified
           mappings.splice(i, 1)
@@ -103,40 +104,38 @@ export class IPMappings {
     const ipMappedAddresses: NodeAddress[] = []
 
     for (const { multiaddr: ma } of addresses) {
-      const tuples = ma.stringTuples()
-      let tuple: string | undefined
-
-      // see if the internal host/port/protocol tuple has been mapped externally
-      if ((tuples[0][0] === CODEC_IP4 || tuples[0][0] === CODEC_IP6) && tuples[1][0] === CODEC_TCP) {
-        tuple = `${tuples[0][1]}-${tuples[1][1]}-tcp`
-      } else if ((tuples[0][0] === CODEC_IP4 || tuples[0][0] === CODEC_IP6) && tuples[1][0] === CODEC_UDP) {
-        tuple = `${tuples[0][1]}-${tuples[1][1]}-udp`
-      }
-
-      if (tuple == null) {
+      if (!isNetworkAddress(ma)) {
         continue
       }
 
-      const mappings = this.mappings.get(tuple)
+      const config = getNetConfig(ma)
+
+      if (config.type !== 'ip4' && config.type !== 'ip6') {
+        continue
+      }
+
+      let key: string | undefined
+
+      // see if the internal host/port/protocol tuple has been mapped externally
+      if (config.protocol === 'tcp') {
+        key = `${config.host}-${config.port}-tcp`
+      } else if (config.protocol === 'udp') {
+        key = `${config.host}-${config.port}-udp`
+      }
+
+      if (key == null) {
+        continue
+      }
+
+      const mappings = this.mappings.get(key)
 
       if (mappings == null) {
         continue
       }
 
       for (const mapping of mappings) {
-        tuples[0][0] = mapping.externalFamily === 4 ? CODEC_IP4 : CODEC_IP6
-        tuples[0][1] = mapping.externalIp
-        tuples[1][1] = `${mapping.externalPort}`
-
         ipMappedAddresses.push({
-          multiaddr: multiaddr(`/${
-            tuples.map(tuple => {
-              return [
-                protocols(tuple[0]).name,
-                tuple[1]
-              ].join('/')
-            }).join('/')
-          }`),
+          multiaddr: this.maybeOverrideIp(ma, mapping.externalIp, mapping.externalFamily, mapping.protocol, mapping.externalPort),
           verified: mapping.verified,
           type: 'ip-mapping',
           expires: mapping.expires,
@@ -148,14 +147,34 @@ export class IPMappings {
     return ipMappedAddresses
   }
 
+  private maybeOverrideIp (ma: Multiaddr, externalIp: string, externalFamily: number, protocol: 'tcp' | 'udp', externalPort: number): Multiaddr {
+    const components = ma.getComponents()
+
+    const ipIndex = components.findIndex(c => c.code === CODE_IP4 || c.code === CODE_IP6)
+    const portIndex = components.findIndex(c => c.name === protocol)
+
+    if (ipIndex > -1 && portIndex > -1) {
+      components[ipIndex].value = externalIp
+      components[ipIndex].code = externalFamily === 4 ? CODE_IP4 : CODE_IP6
+      components[portIndex].value = `${externalPort}`
+
+      return multiaddr(components)
+    }
+
+    return ma
+  }
+
   confirm (ma: Multiaddr, ttl: number): boolean {
-    const tuples = ma.stringTuples()
-    const host = tuples[0][1]
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
+    const config = getNetConfig(ma)
     let startingConfidence = false
 
     for (const mappings of this.mappings.values()) {
       for (const mapping of mappings) {
-        if (mapping.externalIp === host) {
+        if (mapping.externalIp === config.host) {
           this.log('marking %s to %s IP mapping as verified', mapping.internalIp, mapping.externalIp)
           startingConfidence = mapping.verified
           mapping.verified = true
@@ -169,18 +188,19 @@ export class IPMappings {
   }
 
   unconfirm (ma: Multiaddr, ttl: number): boolean {
-    const tuples = ma.stringTuples()
-    const host = tuples[0][1] ?? ''
-    const protocol = tuples[1][0] === CODEC_TCP ? 'tcp' : 'udp'
-    const port = parseInt(tuples[1][1] ?? '0')
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
+    const config = getNetConfig(ma)
     let wasConfident = false
 
     for (const mappings of this.mappings.values()) {
       for (let i = 0; i < mappings.length; i++) {
         const mapping = mappings[i]
 
-        if (mapping.externalIp === host && mapping.externalPort === port && mapping.protocol === protocol) {
-          this.log('removing verification of %s:%s to %s:%s %s IP mapping', mapping.externalIp, mapping.externalPort, host, port, protocol)
+        if (mapping.externalIp === config.host && mapping.externalPort === config.port && mapping.protocol === config.protocol) {
+          this.log('removing verification of %s:%s to %s:%s %s IP mapping', mapping.externalIp, mapping.externalPort, config.host, config.port, config.protocol)
 
           wasConfident = wasConfident || mapping.verified
           mapping.verified = false

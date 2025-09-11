@@ -72,6 +72,53 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [2.0.29](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.28...plaintext-v2.0.29) (2025-08-19)
+
+
+### Bug Fixes
+
+* scope logging to connection and stream ([#3215](https://github.com/libp2p/js-libp2p/issues/3215)) ([ce6b542](https://github.com/libp2p/js-libp2p/commit/ce6b542a8ea3d42e2238f910cf2a113370515058))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/interface bumped from ^2.10.5 to ^2.11.0
+    * @libp2p/peer-id bumped from ^5.1.8 to ^5.1.9
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.7 to ^5.1.8
+    * @libp2p/logger bumped from ^5.1.21 to ^5.2.0
+
+## [2.0.28](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.27...plaintext-v2.0.28) (2025-06-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/interface bumped from ^2.10.4 to ^2.10.5
+    * @libp2p/peer-id bumped from ^5.1.7 to ^5.1.8
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.6 to ^5.1.7
+    * @libp2p/logger bumped from ^5.1.20 to ^5.1.21
+
+## [2.0.27](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.26...plaintext-v2.0.27) (2025-06-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/interface bumped from ^2.10.3 to ^2.10.4
+    * @libp2p/peer-id bumped from ^5.1.6 to ^5.1.7
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.5 to ^5.1.6
+    * @libp2p/logger bumped from ^5.1.19 to ^5.1.20
+
 ## [2.0.26](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.25...plaintext-v2.0.26) (2025-06-03)
 
 

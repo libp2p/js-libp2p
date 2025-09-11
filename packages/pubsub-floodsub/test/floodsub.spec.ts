@@ -2,7 +2,6 @@
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { StrictNoSign, start, stop } from '@libp2p/interface'
-import { mockRegistrar } from '@libp2p/interface-compliance-tests/mocks'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -11,22 +10,27 @@ import { expect } from 'aegir/chai'
 import { sha256 } from 'multiformats/hashes/sha2'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
+import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { floodsub, multicodec } from '../src/index.js'
 import type { Message, PubSubRPC } from '@libp2p/interface'
+import type { Registrar } from '@libp2p/interface-internal'
+import type { StubbedInstance } from 'sinon-ts'
 
 const topic = 'my-topic'
 const message = uint8ArrayFromString('a neat message')
 
 describe('floodsub', () => {
   let pubsub: any
+  let registrar: StubbedInstance<Registrar>
 
   before(async () => {
     expect(multicodec).to.exist()
 
     const privateKey = await generateKeyPair('Ed25519')
     const peerId = peerIdFromPrivateKey(privateKey)
+    registrar = stubInterface()
 
     pubsub = floodsub({
       emitSelf: true,
@@ -34,7 +38,7 @@ describe('floodsub', () => {
     })({
       peerId,
       privateKey,
-      registrar: mockRegistrar(),
+      registrar,
       logger: defaultLogger()
     })
   })

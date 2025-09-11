@@ -1,12 +1,12 @@
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
-import { mergeOptions } from '@libp2p/utils/merge-options'
+import { mergeOptions } from '@libp2p/utils'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
+import { yamux } from '@libp2p/yamux'
 import type { ServiceMap } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -18,6 +18,9 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
         '/ip4/0.0.0.0/tcp/0',
         '/webrtc'
       ]
+    },
+    connectionMonitor: {
+      enabled: false
     },
     transports: [
       tcp(),

@@ -1,24 +1,20 @@
 /* eslint-env mocha */
 
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { logger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import drain from 'it-drain'
 import { encode } from 'it-length-prefixed'
-import map from 'it-map'
+import * as lp from 'it-length-prefixed'
 import { pEvent } from 'p-event'
-import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Upgrader } from '../../src/upgrader.js'
 import { createDefaultUpgraderComponents } from './utils.js'
 import type { UpgraderComponents, UpgraderInit } from '../../src/upgrader.js'
-import type { ConnectionEncrypter, StreamMuxerFactory, MultiaddrConnection, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Stream, StreamMuxerInit, Connection } from '@libp2p/interface'
-import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ConnectionEncrypter, StreamMuxerFactory, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Connection } from '@libp2p/interface'
+import type { ConnectionManager } from '@libp2p/interface-internal'
 
 describe('upgrader', () => {
   let components: UpgraderComponents
@@ -26,8 +22,13 @@ describe('upgrader', () => {
   const encrypterProtocol = '/test-encrypter'
   const muxerProtocol = '/test-muxer'
   let remotePeer: PeerId
-  let remoteAddr: Multiaddr
-  let maConn: MultiaddrConnection
+
+  const handshake = [
+    lp.encode.single(uint8ArrayFromString('/multistream/1.0.0\n')),
+    lp.encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)),
+    lp.encode.single(uint8ArrayFromString('/multistream/1.0.0\n')),
+    lp.encode.single(uint8ArrayFromString(`${muxerProtocol}\n`))
+  ]
 
   class BoomCrypto implements ConnectionEncrypter {
     static protocol = encrypterProtocol
@@ -38,7 +39,6 @@ describe('upgrader', () => {
 
   beforeEach(async () => {
     remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    remoteAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${remotePeer}`)
     components = await createDefaultUpgraderComponents()
 
     init = {
@@ -46,11 +46,11 @@ describe('upgrader', () => {
         stubInterface<ConnectionEncrypter>({
           protocol: encrypterProtocol,
           secureOutbound: async (connection) => ({
-            conn: connection,
+            connection,
             remotePeer
           }),
           secureInbound: async (connection) => ({
-            conn: connection,
+            connection,
             remotePeer
           })
         })
@@ -59,29 +59,23 @@ describe('upgrader', () => {
         stubInterface<StreamMuxerFactory>({
           protocol: muxerProtocol,
           createStreamMuxer: () => stubInterface<StreamMuxer>({
-            protocol: muxerProtocol,
-            sink: async (source) => drain(source),
-            source: (async function * () {})()
+            protocol: muxerProtocol
           })
         })
       ]
     }
-
-    maConn = stubInterface<MultiaddrConnection>({
-      remoteAddr,
-      log: logger('test'),
-      sink: async (source) => drain(source),
-      source: map((async function * () {
-        yield '/multistream/1.0.0\n'
-        yield `${encrypterProtocol}\n`
-        yield `${muxerProtocol}\n`
-      })(), str => encode.single(uint8ArrayFromString(str)))
-    })
   })
 
   it('should upgrade outbound with valid muxers and crypto', async () => {
     const upgrader = new Upgrader(components, init)
-    const conn = await upgrader.upgradeOutbound(maConn, {
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      inbound.send(buf)
+    })
+
+    const conn = await upgrader.upgradeOutbound(outbound, {
       signal: AbortSignal.timeout(5_000)
     })
     expect(conn.encryption).to.equal(encrypterProtocol)
@@ -94,7 +88,13 @@ describe('upgrader', () => {
       streamMuxers: []
     })
 
-    const connection = await upgrader.upgradeOutbound(maConn, {
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      inbound.send(buf)
+    })
+
+    const connection = await upgrader.upgradeOutbound(outbound, {
       signal: AbortSignal.timeout(5_000)
     })
 
@@ -111,9 +111,20 @@ describe('upgrader', () => {
       connectionProtector
     }, init)
 
-    await upgrader.upgradeInbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    await Promise.all([
+      upgrader.upgradeInbound(inbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          outbound.send(buf)
+        })
+      })()
+    ])
 
     expect(connectionProtector.protect.callCount).to.equal(1)
   })
@@ -127,9 +138,20 @@ describe('upgrader', () => {
       connectionProtector
     }, init)
 
-    await upgrader.upgradeOutbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     expect(connectionProtector.protect.callCount).to.equal(1)
   })
@@ -142,9 +164,20 @@ describe('upgrader', () => {
       ]
     })
 
-    await expect(upgrader.upgradeInbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })).to.eventually.be.rejected
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    await expect(Promise.all([
+      upgrader.upgradeInbound(inbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          outbound.send(buf)
+        })
+      })()
+    ])).to.eventually.be.rejected
       .with.property('name', 'EncryptionFailedError')
   })
 
@@ -156,9 +189,24 @@ describe('upgrader', () => {
       ]
     })
 
-    await expect(upgrader.upgradeOutbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })).to.eventually.be.rejected
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      inbound.send(buf)
+    })
+
+    await expect(Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])).to.eventually.be.rejected
       .with.property('name', 'EncryptionFailedError')
   })
 
@@ -168,12 +216,15 @@ describe('upgrader', () => {
       inboundUpgradeTimeout: 100
     })
 
-    maConn.source = map(maConn.source, async (buf) => {
-      await delay(2000)
-      return buf
+    const [outbound, inbound] = multiaddrConnectionPair({
+      delay: 2_000
     })
 
-    await expect(upgrader.upgradeInbound(maConn, {
+    handshake.forEach(buf => {
+      outbound.send(buf)
+    })
+
+    await expect(upgrader.upgradeInbound(inbound, {
       signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.rejected
       .with.property('message').that.include('aborted')
@@ -185,15 +236,23 @@ describe('upgrader', () => {
       inboundUpgradeTimeout: 10000
     })
 
-    maConn.source = map(maConn.source, async (buf) => {
-      await delay(2000)
-      return buf
+    const [outbound, inbound] = multiaddrConnectionPair({
+      delay: 2_000
     })
 
-    await expect(upgrader.upgradeOutbound(maConn, {
-      signal: AbortSignal.timeout(100)
-    })).to.eventually.be.rejected
-      .with.property('message').that.include('aborted')
+    await expect(Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])).to.eventually.be.rejected
+      .with.property('name', 'MuxerUnavailableError')
   })
 
   it('should not abort if inbound upgrade is successful', async () => {
@@ -205,9 +264,20 @@ describe('upgrader', () => {
 
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
-    await upgrader.upgradeInbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     const event = await connectionPromise
 
@@ -222,9 +292,21 @@ describe('upgrader', () => {
       ...init,
       inboundUpgradeTimeout: 100
     })
-    const conn = await upgrader.upgradeOutbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    const [conn] = await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     await delay(1000)
 
@@ -241,9 +323,19 @@ describe('upgrader', () => {
 
     const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
 
-    await upgrader.upgradeInbound(maConn, {
-      signal: AbortSignal.timeout(100)
-    })
+    const [outbound, inbound] = multiaddrConnectionPair()
+    await Promise.all([
+      upgrader.upgradeInbound(inbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          outbound.send(buf)
+        })
+      })()
+    ])
 
     const event = await connectionPromise
 
@@ -258,9 +350,21 @@ describe('upgrader', () => {
       ...init,
       inboundUpgradeTimeout: 10000
     })
-    const conn = await upgrader.upgradeOutbound(maConn, {
-      signal: AbortSignal.timeout(100)
-    })
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    const [conn] = await Promise.all([
+      upgrader.upgradeOutbound(outbound, {
+        signal: AbortSignal.timeout(5_000)
+      }),
+      (async () => {
+        await delay(10)
+
+        handshake.forEach(buf => {
+          inbound.send(buf)
+        })
+      })()
+    ])
 
     await delay(1000)
 
@@ -269,40 +373,47 @@ describe('upgrader', () => {
   })
 
   it('should abort protocol selection for slow outbound stream creation', async () => {
+    const [outboundStream, inboundStream] = await streamPair({
+      delay: 2_000
+    })
+
     const upgrader = new Upgrader(components, {
       ...init,
       streamMuxers: [
         stubInterface<StreamMuxerFactory>({
           protocol: muxerProtocol,
           createStreamMuxer: () => stubInterface<StreamMuxer>({
-            protocol: muxerProtocol,
-            sink: async (source) => drain(source),
-            source: (async function * () {})(),
-            newStream: () => stubInterface<Stream>({
-              id: 'stream-id',
-              log: logger('test-stream'),
-              sink: async (source) => drain(source),
-              source: (async function * (): any {
-                await delay(2000)
-                yield Uint8Array.from([0, 1, 2, 3, 4])
-              })()
-            })
+            status: 'open',
+            createStream: () => {
+              return outboundStream
+            }
           })
         })
       ]
     })
-    const conn = await upgrader.upgradeOutbound(maConn, {
+
+    inboundStream.send(Uint8Array.from([0, 1, 2, 3, 4]))
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      inbound.send(buf)
+    })
+
+    const conn = await upgrader.upgradeOutbound(outbound, {
       signal: AbortSignal.timeout(5_000)
     })
 
     await expect(conn.newStream('/echo/1.0.0', {
       signal: AbortSignal.timeout(100)
     })).to.eventually.be.rejected
-      .with.property('name', 'AbortError')
+      .with.property('name', 'TimeoutError')
   })
 
   it('should abort stream when protocol negotiation fails on outbound stream', async () => {
-    let stream: Stream | undefined
+    const [outboundStream, inboundStream] = await streamPair({
+      delay: 2_000
+    })
 
     const upgrader = new Upgrader(components, {
       ...init,
@@ -310,30 +421,25 @@ describe('upgrader', () => {
         stubInterface<StreamMuxerFactory>({
           protocol: muxerProtocol,
           createStreamMuxer: () => stubInterface<StreamMuxer>({
-            protocol: muxerProtocol,
-            sink: async (source) => drain(source),
-            source: (async function * () {
-              await delay(2000)
-              yield Uint8Array.from([0, 1, 2, 3, 4])
-            })(),
-            newStream: () => {
-              stream = stubInterface<Stream>({
-                id: 'stream-id',
-                log: logger('test-stream'),
-                sink: async (source) => drain(source),
-                source: map((async function * () {
-                  yield '/multistream/1.0.0\n'
-                  yield '/different/protocol\n'
-                })(), str => encode.single(uint8ArrayFromString(str)))
-              })
-
-              return stream
+            status: 'open',
+            createStream: () => {
+              return outboundStream
             }
           })
         })
       ]
     })
-    const conn = await upgrader.upgradeOutbound(maConn, {
+
+    inboundStream.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+    inboundStream.send(encode.single(uint8ArrayFromString('/different/protocol\n')))
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      inbound.send(buf)
+    })
+
+    const conn = await upgrader.upgradeOutbound(outbound, {
       signal: AbortSignal.timeout(5_000)
     })
 
@@ -343,7 +449,7 @@ describe('upgrader', () => {
     // wait for remote to close
     await delay(100)
 
-    expect(stream?.abort).to.have.property('called', true)
+    expect(outboundStream).to.have.property('status', 'aborted')
   })
 
   it('should allow skipping outbound encryption and protection', async () => {
@@ -360,15 +466,19 @@ describe('upgrader', () => {
         connectionEncrypter
       ]
     })
-    await upgrader.upgradeOutbound(maConn, {
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      inbound.send(buf)
+    })
+
+    await upgrader.upgradeOutbound(outbound, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>({
-        createStreamMuxer: () => stubInterface<StreamMuxer>({
-          protocol: muxerProtocol,
-          sink: async (source) => drain(source),
-          source: (async function * () {})()
-        })
+        createStreamMuxer: () => stubInterface<StreamMuxer>()
       }),
       signal: AbortSignal.timeout(5_000)
     })
@@ -391,15 +501,19 @@ describe('upgrader', () => {
         connectionEncrypter
       ]
     })
-    await upgrader.upgradeInbound(maConn, {
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      outbound.send(buf)
+    })
+
+    await upgrader.upgradeInbound(inbound, {
       skipEncryption: true,
+      remotePeer,
       skipProtection: true,
       muxerFactory: stubInterface<StreamMuxerFactory>({
-        createStreamMuxer: () => stubInterface<StreamMuxer>({
-          protocol: muxerProtocol,
-          sink: async (source) => drain(source),
-          source: (async function * () {})()
-        })
+        createStreamMuxer: () => stubInterface<StreamMuxer>()
       }),
       signal: AbortSignal.timeout(5_000)
     })
@@ -410,11 +524,18 @@ describe('upgrader', () => {
   it('should not decrement inbound pending connection count if the connection is denied', async () => {
     const components = await createDefaultUpgraderComponents({
       connectionManager: stubInterface<ConnectionManager>({
-        acceptIncomingConnection: async () => false
+        acceptIncomingConnection: () => false
       })
     })
     const upgrader = new Upgrader(components, init)
-    await expect(upgrader.upgradeInbound(maConn, {
+
+    const [outbound, inbound] = multiaddrConnectionPair()
+
+    handshake.forEach(buf => {
+      outbound.send(buf)
+    })
+
+    await expect(upgrader.upgradeInbound(inbound, {
       signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.rejected
       .with.property('name', 'ConnectionDeniedError')
@@ -422,214 +543,10 @@ describe('upgrader', () => {
     expect(components.connectionManager.afterUpgradeInbound).to.have.property('called', false)
   })
 
-  it('should limit the number of incoming streams that can be opened using a protocol', async () => {
-    const protocol = '/test/protocol'
-    const maxInboundStreams = 2
-    let streamMuxerInit: StreamMuxerInit | undefined
-    let streamMuxer: StreamMuxer | undefined
-    const components = await createDefaultUpgraderComponents({
-      registrar: stubInterface<Registrar>({
-        getHandler: () => ({
-          options: {
-            maxInboundStreams
-          },
-          handler: Sinon.stub()
-        }),
-        getProtocols: () => [protocol]
-      })
-    })
-    const upgrader = new Upgrader(components, {
-      ...init,
-      streamMuxers: [
-        stubInterface<StreamMuxerFactory>({
-          protocol: muxerProtocol,
-          createStreamMuxer: (init) => {
-            streamMuxerInit = init
-            streamMuxer = stubInterface<StreamMuxer>({
-              protocol: muxerProtocol,
-              sink: async (source) => drain(source),
-              source: (async function * () {})(),
-              streams: []
-            })
-            return streamMuxer
-          }
-        })
-      ]
-    })
-
-    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
-
-    await upgrader.upgradeInbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })
-
-    const event = await connectionPromise
-
-    expect(event.detail.streams).to.have.lengthOf(0)
-
-    for (let i = 0; i < (maxInboundStreams + 1); i++) {
-      const incomingStream = stubInterface<Stream>({
-        id: `stream-id-${i}`,
-        log: logger('test-stream'),
-        direction: 'inbound',
-        sink: async (source) => drain(source),
-        source: map((async function * () {
-          yield '/multistream/1.0.0\n'
-          yield `${protocol}\n`
-        })(), str => encode.single(uint8ArrayFromString(str)))
-      })
-
-      streamMuxer?.streams.push(incomingStream)
-      streamMuxerInit?.onIncomingStream?.(incomingStream)
-    }
-
-    await delay(100)
-
-    expect(streamMuxer?.streams).to.have.lengthOf(3)
-    expect(streamMuxer?.streams[0]).to.have.nested.property('abort.called', false)
-    expect(streamMuxer?.streams[1]).to.have.nested.property('abort.called', false)
-    expect(streamMuxer?.streams[2]).to.have.nested.property('abort.called', true)
-  })
-
-  it('should limit the number of outgoing streams that can be opened using a protocol', async () => {
-    const protocol = '/test/protocol'
-    const maxOutboundStreams = 2
-    let streamMuxer: StreamMuxer | undefined
-    const components = await createDefaultUpgraderComponents({
-      registrar: stubInterface<Registrar>({
-        getHandler: () => ({
-          options: {
-            maxOutboundStreams
-          },
-          handler: Sinon.stub()
-        }),
-        getProtocols: () => [protocol]
-      })
-    })
-    const upgrader = new Upgrader(components, {
-      ...init,
-      streamMuxers: [
-        stubInterface<StreamMuxerFactory>({
-          protocol: muxerProtocol,
-          createStreamMuxer: () => {
-            streamMuxer = stubInterface<StreamMuxer>({
-              protocol: muxerProtocol,
-              sink: async (source) => drain(source),
-              source: (async function * () {})(),
-              streams: [],
-              newStream: () => {
-                const outgoingStream = stubInterface<Stream>({
-                  id: 'stream-id',
-                  log: logger('test-stream'),
-                  direction: 'outbound',
-                  sink: async (source) => drain(source),
-                  source: map((async function * () {
-                    yield '/multistream/1.0.0\n'
-                    yield `${protocol}\n`
-                  })(), str => encode.single(uint8ArrayFromString(str)))
-                })
-
-                streamMuxer?.streams.push(outgoingStream)
-                return outgoingStream
-              }
-            })
-            return streamMuxer
-          }
-        })
-      ]
-    })
-
-    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
-
-    await upgrader.upgradeInbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })
-
-    const event = await connectionPromise
-    const conn = event.detail
-
-    expect(conn.streams).to.have.lengthOf(0)
-
-    await conn.newStream(protocol)
-    await conn.newStream(protocol)
-
-    await expect(conn.newStream(protocol)).to.eventually.be.rejected
-      .with.property('name', 'TooManyOutboundProtocolStreamsError')
-  })
-
-  it('should allow overriding the number of outgoing streams that can be opened using a protocol without a handler', async () => {
-    const protocol = '/test/protocol'
-    let streamMuxer: StreamMuxer | undefined
-    const components = await createDefaultUpgraderComponents({
-      registrar: stubInterface<Registrar>({
-        getHandler: () => ({
-          options: {},
-          handler: Sinon.stub()
-        }),
-        getProtocols: () => [protocol]
-      })
-    })
-    const upgrader = new Upgrader(components, {
-      ...init,
-      streamMuxers: [
-        stubInterface<StreamMuxerFactory>({
-          protocol: muxerProtocol,
-          createStreamMuxer: () => {
-            streamMuxer = stubInterface<StreamMuxer>({
-              protocol: muxerProtocol,
-              sink: async (source) => drain(source),
-              source: (async function * () {})(),
-              streams: [],
-              newStream: () => {
-                const outgoingStream = stubInterface<Stream>({
-                  id: 'stream-id',
-                  log: logger('test-stream'),
-                  direction: 'outbound',
-                  sink: async (source) => drain(source),
-                  source: map((async function * () {
-                    yield '/multistream/1.0.0\n'
-                    yield `${protocol}\n`
-                  })(), str => encode.single(uint8ArrayFromString(str)))
-                })
-
-                streamMuxer?.streams.push(outgoingStream)
-                return outgoingStream
-              }
-            })
-            return streamMuxer
-          }
-        })
-      ]
-    })
-
-    const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
-
-    await upgrader.upgradeInbound(maConn, {
-      signal: AbortSignal.timeout(5_000)
-    })
-
-    const event = await connectionPromise
-    const conn = event.detail
-
-    expect(conn.streams).to.have.lengthOf(0)
-
-    const opts = {
-      maxOutboundStreams: 3
-    }
-
-    await conn.newStream(protocol, opts)
-    await conn.newStream(protocol, opts)
-    await conn.newStream(protocol, opts)
-
-    await expect(conn.newStream(protocol, opts)).to.eventually.be.rejected
-      .with.property('name', 'TooManyOutboundProtocolStreamsError')
-  })
-
   describe('early muxer selection', () => {
     let earlyMuxerProtocol: string
     let streamMuxerFactory: StreamMuxerFactory
     let upgrader: Upgrader
-    let maConn: MultiaddrConnection
     let encrypterProtocol: string
 
     beforeEach(async () => {
@@ -638,9 +555,7 @@ describe('upgrader', () => {
       streamMuxerFactory = stubInterface<StreamMuxerFactory>({
         protocol: earlyMuxerProtocol,
         createStreamMuxer: () => stubInterface<StreamMuxer>({
-          protocol: earlyMuxerProtocol,
-          sink: async (source) => drain(source),
-          source: (async function * () {})()
+          protocol: earlyMuxerProtocol
         })
       })
 
@@ -649,12 +564,12 @@ describe('upgrader', () => {
           stubInterface<ConnectionEncrypter>({
             protocol: encrypterProtocol,
             secureOutbound: async (connection) => ({
-              conn: connection,
+              connection,
               remotePeer,
               streamMuxer: streamMuxerFactory
             }),
             secureInbound: async (connection) => ({
-              conn: connection,
+              connection,
               remotePeer,
               streamMuxer: streamMuxerFactory
             })
@@ -664,31 +579,28 @@ describe('upgrader', () => {
           stubInterface<StreamMuxerFactory>({
             protocol: '/late-muxer',
             createStreamMuxer: () => stubInterface<StreamMuxer>({
-              protocol: '/late-muxer',
-              sink: async (source) => drain(source),
-              source: (async function * () {})()
+              protocol: '/late-muxer'
             })
           })
         ]
-      })
-
-      maConn = stubInterface<MultiaddrConnection>({
-        remoteAddr,
-        log: logger('test'),
-        sink: async (source) => drain(source),
-        source: map((async function * () {
-          yield '/multistream/1.0.0\n'
-          yield `${encrypterProtocol}\n`
-        })(), str => encode.single(uint8ArrayFromString(str)))
       })
     })
 
     it('should allow early muxer selection on inbound connection', async () => {
       const connectionPromise = pEvent<'connection:open', CustomEvent<Connection>>(components.events, 'connection:open')
+      const [outbound, inbound] = multiaddrConnectionPair()
 
-      await upgrader.upgradeInbound(maConn, {
-        signal: AbortSignal.timeout(5_000)
-      })
+      await Promise.all([
+        upgrader.upgradeInbound(inbound, {
+          signal: AbortSignal.timeout(5_000)
+        }),
+        (async () => {
+          await delay(10)
+
+          outbound.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+          outbound.send(encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)))
+        })()
+      ])
 
       const event = await connectionPromise
       const conn = event.detail
@@ -697,9 +609,19 @@ describe('upgrader', () => {
     })
 
     it('should allow early muxer selection on outbound connection', async () => {
-      const conn = await upgrader.upgradeOutbound(maConn, {
-        signal: AbortSignal.timeout(5_000)
-      })
+      const [outbound, inbound] = multiaddrConnectionPair()
+
+      const [conn] = await Promise.all([
+        upgrader.upgradeOutbound(outbound, {
+          signal: AbortSignal.timeout(5_000)
+        }),
+        (async () => {
+          await delay(10)
+
+          inbound.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+          inbound.send(encode.single(uint8ArrayFromString(`${encrypterProtocol}\n`)))
+        })()
+      ])
 
       expect(conn.multiplexer).to.equal(earlyMuxerProtocol)
     })

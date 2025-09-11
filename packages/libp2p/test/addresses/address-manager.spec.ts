@@ -266,8 +266,8 @@ describe('Address Manager', () => {
     expect(am.getObservedAddrs().map(ma => ma.toString())).to.include(ma.toString())
   })
 
-  it('should not add our peer id to path multiaddrs', () => {
-    const ma = '/unix/foo/bar/baz'
+  it('should add our peer id to path multiaddrs', () => {
+    const ma = '/unix/%2Ffoo%2Fbar%2Fbaz'
     const transportManager = stubInterface<TransportManager>()
     const am = new AddressManager({
       peerId,
@@ -284,7 +284,7 @@ describe('Address Manager', () => {
 
     const addrs = am.getAddresses()
     expect(addrs).to.have.lengthOf(1)
-    expect(addrs[0].toString()).to.not.include(`/p2p/${peerId.toString()}`)
+    expect(addrs[0].toString()).to.include(`/p2p/${peerId.toString()}`)
   })
 
   it('should add an IPv4 DNS mapping', () => {
@@ -322,7 +322,7 @@ describe('Address Manager', () => {
     am.addDNSMapping(domain, [externalIp])
     am.addPublicAddressMapping(internalIp, internalPort, externalIp, externalPort, 'tcp')
 
-    // have not verified DNS mapping so it is not included
+    // have not verified DNS or public IP mappings so they are not included
     expect(am.getAddresses()).to.deep.equal([
       multiaddr(`/ip4/127.0.0.1/${protocol}/${internalPort}/p2p/${peerId}`),
       multiaddr(`/ip4/${internalIp}/${protocol}/${internalPort}/p2p/${peerId}`),

@@ -1,23 +1,17 @@
-import type { Connection, Stream } from './connection.js'
-import type { AbortOptions } from './index.ts'
-
-export interface IncomingStreamData {
-  /**
-   * The newly opened stream
-   */
-  stream: Stream
-
-  /**
-   * The connection the stream was opened on
-   */
-  connection: Connection
-}
+import type { AbortOptions, Connection, Stream } from './index.ts'
 
 export interface StreamHandler {
   /**
    * A callback function that accepts the incoming stream data
    */
-  (data: IncomingStreamData): void
+  (stream: Stream, connection: Connection): void | Promise<void>
+}
+
+/**
+ * Stream middleware allows accessing stream data outside of the stream handler
+ */
+export interface StreamMiddleware {
+  (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void): void | Promise<void>
 }
 
 export interface StreamHandlerOptions extends AbortOptions {
@@ -46,6 +40,11 @@ export interface StreamHandlerOptions extends AbortOptions {
    * protocol(s), the existing handler will be discarded.
    */
   force?: true
+
+  /**
+   * Middleware allows accessing stream data outside of the stream handler
+   */
+  middleware?: StreamMiddleware[]
 }
 
 export interface StreamHandlerRecord {

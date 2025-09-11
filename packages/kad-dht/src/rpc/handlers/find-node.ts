@@ -1,5 +1,5 @@
 import { InvalidMessageError } from '@libp2p/interface'
-import { protocols } from '@multiformats/multiaddr'
+import { CODE_P2P } from '@multiformats/multiaddr'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
 import { MessageType } from '../../message/dht.js'
 import type { PeerInfoMapper } from '../../index.js'
@@ -42,38 +42,52 @@ export class FindNodeHandler implements DHTMessageHandler {
    * Process `FindNode` DHT messages
    */
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
-    this.log('incoming request from %p for peers closer to %b', peerId, msg.key)
+    this.log('incoming request from %p for peers close to %b', peerId, msg.key)
+    try {
+      if (msg.key == null) {
+        throw new InvalidMessageError('Invalid FIND_NODE message received - key was missing')
+      }
 
-    if (msg.key == null) {
-      throw new InvalidMessageError('Invalid FIND_NODE message received - key was missing')
-    }
+      const closer: PeerInfo[] = await this.peerRouting.getClosestPeersOffline(msg.key, {
+        exclude: [
+        // never tell a peer about itself
+          peerId,
 
-    const closer: PeerInfo[] = await this.peerRouting.getCloserPeersOffline(msg.key, peerId)
-
-    if (uint8ArrayEquals(this.peerId.toMultihash().bytes, msg.key)) {
-      closer.push({
-        id: this.peerId,
-        multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(protocols('p2p').code))
+          // do not include the server in the results
+          this.peerId
+        ]
       })
-    }
 
-    const response: Message = {
-      type: MessageType.FIND_NODE,
-      clusterLevel: msg.clusterLevel,
-      closer: closer
-        .map(this.peerInfoMapper)
-        .filter(({ multiaddrs }) => multiaddrs.length)
-        .map(peerInfo => ({
-          id: peerInfo.id.toMultihash().bytes,
-          multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
-        })),
-      providers: []
-    }
+      if (uint8ArrayEquals(this.peerId.toMultihash().bytes, msg.key)) {
+        closer.push({
+          id: this.peerId,
+          multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
+        })
+      }
 
-    if (response.closer.length === 0) {
-      this.log('could not find any peers closer to %b than %p', msg.key, peerId)
-    }
+      const response: Message = {
+        type: MessageType.FIND_NODE,
+        clusterLevel: msg.clusterLevel,
+        closer: closer
+          .map(this.peerInfoMapper)
+          .filter(({ multiaddrs }) => multiaddrs.length)
+          .map(peerInfo => ({
+            id: peerInfo.id.toMultihash().bytes,
+            multiaddrs: peerInfo.multiaddrs.map(ma => ma.bytes)
+          })),
+        providers: []
+      }
 
-    return response
+      if (response.closer.length === 0) {
+        this.log('could not find any peers closer to %b for %p', msg.key, peerId)
+      } else {
+        this.log('found %d peers close to %b for %p', response.closer.length, msg.key, peerId)
+      }
+
+      return response
+    } catch (err: any) {
+      this.log('error during finding peers closer to %b for %p - %e', msg.key, peerId, err)
+      throw err
+    }
   }
 }

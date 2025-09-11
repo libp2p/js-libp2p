@@ -1,4 +1,4 @@
-import type { MultiaddrConnection, Stream, Connection } from './connection.js'
+import type { MultiaddrConnection, Stream } from './index.js'
 
 /**
  * Create tracked metrics with these options. Loosely based on the
@@ -434,7 +434,7 @@ export interface Metrics {
   /**
    * Track a newly opened protocol stream
    */
-  trackProtocolStream(stream: Stream, connection: Connection): void
+  trackProtocolStream(stream: Stream): void
 
   /**
    * Register an arbitrary metric. Call this to set help/labels for metrics

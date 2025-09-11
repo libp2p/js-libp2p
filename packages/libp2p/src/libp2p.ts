@@ -4,7 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { isMultiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, isMultiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -24,7 +24,7 @@ import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
@@ -120,7 +120,8 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
       inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout,
       inboundStreamProtocolNegotiationTimeout: init.connectionManager?.inboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
-      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout
+      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
+      connectionCloseTimeout: init.connectionManager?.connectionCloseTimeout
     })
 
     // Setup the transport manager
@@ -304,9 +305,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       throw new InvalidParametersError('no protocols were provided to open a stream')
     }
 
-    const connection = await this.dial(peer, options)
-
-    return connection.newStream(protocols, options)
+    return this.components.connectionManager.openStream(peer, protocols, options)
   }
 
   getMultiaddrs (): Multiaddr[] {
@@ -319,7 +318,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
   async hangUp (peer: PeerId | Multiaddr, options: AbortOptions = {}): Promise<void> {
     if (isMultiaddr(peer)) {
-      peer = peerIdFromString(peer.getPeerId() ?? '')
+      peer = peerIdFromString(peer.getComponents().findLast(c => c.code === CODE_P2P)?.value ?? '')
     }
 
     await this.components.connectionManager.closeConnections(peer, options)
@@ -400,6 +399,14 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
   unregister (id: string): void {
     this.components.registrar.unregister(id)
+  }
+
+  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void {
+    this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware])
+  }
+
+  unuse (protocol: string): void {
+    this.components.registrar.unuse(protocol)
   }
 
   async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {

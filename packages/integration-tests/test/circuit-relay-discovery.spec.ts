@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ['error', 6] */
 
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { stop } from '@libp2p/interface'
 import { mplex } from '@libp2p/mplex'
+import { noise } from '@libp2p/noise'
 import { plaintext } from '@libp2p/plaintext'
 import { webSockets } from '@libp2p/websockets'
 import { webTransport } from '@libp2p/webtransport'
+import { yamux } from '@libp2p/yamux'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebTransport } from '@multiformats/multiaddr-matcher'
 import { createLibp2p } from 'libp2p'
@@ -75,8 +75,8 @@ describe('circuit-relay discovery', () => {
       return this.skip()
     }
 
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1986138
     if (isFirefox) {
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=1899812
       return this.skip()
     }
 

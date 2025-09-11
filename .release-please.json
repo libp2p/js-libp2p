@@ -32,6 +32,7 @@
     "packages/peer-store": {},
     "packages/pnet": {},
     "packages/protocol-autonat": {},
+    "packages/protocol-autonat-v2": {},
     "packages/protocol-dcutr": {},
     "packages/protocol-echo": {},
     "packages/protocol-fetch": {},

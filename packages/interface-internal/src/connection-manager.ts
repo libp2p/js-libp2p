@@ -1,4 +1,4 @@
-import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { AbortOptions, PendingDial, Connection, MultiaddrConnection, PeerId, IsDialableOptions, OpenConnectionProgressEvents, Stream, NewStreamOptions } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressOptions } from 'progress-events'
@@ -67,6 +67,13 @@ export interface ConnectionManager {
   getMaxConnections(): number
 
   /**
+   * Update the maximum number of connections that are accepted - setting this
+   * to a smaller value than the current setting will cause connections to be
+   * pruned.
+   */
+  setMaxConnections(maxConnections: number): void
+
+  /**
    * Open a connection to a remote peer
    *
    * @param peer - The target `PeerId`, `Multiaddr`, or an array of `Multiaddr`s.
@@ -74,6 +81,22 @@ export interface ConnectionManager {
    * @returns A promise that resolves to a `Connection` object.
    */
   openConnection(peer: PeerId | Multiaddr | Multiaddr[], options?: OpenConnectionOptions): Promise<Connection>
+
+  /**
+   * Open a protocol stream with a remote peer. If the peer is already connected
+   * an existing connection will be used to open the stream, otherwise they will
+   * be dialed first.
+   *
+   * This is preferable to opening a connection manually as it allows libp2p to
+   * decide what the "best" connection is, and in future, migrate streams across
+   * connections as better connections become available.
+   *
+   * @param peer - The target `PeerId`, `Multiaddr`, or an array of `Multiaddr`s.
+   * @param protocol - The protocol string or strings
+   * @param options - Optional parameters for connection handling.
+   * @returns A promise that resolves to a `Connection` object.
+   */
+  openStream(peer: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options?: OpenConnectionOptions & NewStreamOptions): Promise<Stream>
 
   /**
    * Close our connections to a peer
@@ -91,9 +114,9 @@ export interface ConnectionManager {
    * otherwise it will return false.
    *
    * @param maConn - The multiaddr connection to evaluate.
-   * @returns A promise that resolves to `true` if the connection can be accepted, `false` otherwise.
+   * @returns `true` if the connection can be accepted, `false` otherwise.
    */
-  acceptIncomingConnection(maConn: MultiaddrConnection): Promise<boolean>
+  acceptIncomingConnection(maConn: MultiaddrConnection): boolean
 
   /**
    * Invoked after upgrading an inbound multiaddr connection has finished

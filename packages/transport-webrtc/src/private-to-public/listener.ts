@@ -1,12 +1,11 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { InvalidParametersError } from '@libp2p/interface'
-import { getThinWaistAddresses } from '@libp2p/utils/get-thin-waist-addresses'
-import { multiaddr, fromStringTuples } from '@multiformats/multiaddr'
+import { getNetConfig, getThinWaistAddresses } from '@libp2p/utils'
+import { CODE_CERTHASH, CODE_WEBRTC_DIRECT, multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import getPort from 'get-port'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import pWaitFor from 'p-wait-for'
-import { CODEC_CERTHASH, CODEC_WEBRTC_DIRECT } from '../constants.js'
 import { connect } from './utils/connect.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import { stunListener } from './utils/stun-listener.js'
@@ -94,7 +93,11 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   async listen (ma: Multiaddr): Promise<void> {
-    const { host, port, family } = ma.toOptions()
+    const { host, port, type, protocol } = getNetConfig(ma)
+
+    if (port == null || protocol !== 'udp' || (type !== 'ip4' && type !== 'ip6')) {
+      throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address or was missing a UDP port`)
+    }
 
     let udpMuxServer: UDPMuxServer | undefined
 
@@ -106,7 +109,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       udpMuxServer = UDP_MUX_LISTENERS.find(s => s.port === port)
 
       // make sure the port is free for the given family
-      if (udpMuxServer != null && ((udpMuxServer.isIPv4 && family === 4) || (udpMuxServer.isIPv6 && family === 6))) {
+      if (udpMuxServer != null && ((udpMuxServer.isIPv4 && type === 'ip4') || (udpMuxServer.isIPv6 && type === 'ip6'))) {
         throw new InvalidParametersError(`There is already a listener for ${host}:${port}`)
       }
 
@@ -119,13 +122,13 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     // start the mux server if we don't have one already
     if (udpMuxServer == null) {
       this.log('starting UDP mux server on %s:%p', host, port)
-      udpMuxServer = this.startUDPMuxServer(host, port, family)
+      udpMuxServer = this.startUDPMuxServer(host, port, type === 'ip4' ? 4 : 6)
       UDP_MUX_LISTENERS.push(udpMuxServer)
     }
 
-    if (family === 4) {
+    if (type === 'ip4') {
       udpMuxServer.isIPv4 = true
-    } else if (family === 6) {
+    } else if (type === 'ip6') {
       udpMuxServer.isIPv6 = true
     }
 
@@ -205,7 +208,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
         metrics: this.components.metrics,
         events: this.metrics?.listenerEvents,
         signal,
-        remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}`),
+        remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}/webrtc-direct`),
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,
         peerId: this.components.peerId,
@@ -238,19 +241,23 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       }
 
       // add the certhash if it is missing
-      const tuples = ma.stringTuples()
+      const components = ma.getComponents()
 
-      for (let j = 0; j < tuples.length; j++) {
-        if (tuples[j][0] !== CODEC_WEBRTC_DIRECT) {
+      for (let j = 0; j < components.length; j++) {
+        if (components[j].code !== CODE_WEBRTC_DIRECT) {
           continue
         }
 
         const certhashIndex = j + 1
 
-        if (tuples[certhashIndex] == null || tuples[certhashIndex][0] !== CODEC_CERTHASH) {
-          tuples.splice(certhashIndex, 0, [CODEC_CERTHASH, this.certificate?.certhash])
+        if (components[certhashIndex] == null || components[certhashIndex].code !== CODE_CERTHASH) {
+          components.splice(certhashIndex, 0, {
+            code: CODE_CERTHASH,
+            name: 'certhash',
+            value: this.certificate?.certhash
+          })
 
-          ma = fromStringTuples(tuples)
+          ma = multiaddr(components)
           multiaddrs[i] = ma
         }
       }

@@ -58,7 +58,6 @@ import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import delay from 'delay'
-import { pipe } from 'it-pipe'
 import { createLibp2p } from 'libp2p'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -157,15 +156,11 @@ const stream = await dialer.dialProtocol(webRTCMultiaddr, dialer.services.echo.p
 await relay.stop()
 
 // send/receive some data from the remote peer via a direct connection
-await pipe(
-  [new TextEncoder().encode('hello world')],
-  stream,
-  async source => {
-    for await (const buf of source) {
-      console.info(new TextDecoder().decode(buf.subarray()))
-    }
-  }
-)
+stream.send(new TextEncoder().encode('hello world'))
+
+stream.addEventListener('message', (evt) => {
+  console.info(new TextDecoder().decode(evt.data.subarray()))
+})
 ```
 
 ## Example - WebRTC Direct
@@ -190,7 +185,6 @@ Node.js/go and rust-libp2p can listen on and dial WebRTC Direct addresses.
 ```TypeScript
 import { createLibp2p } from 'libp2p'
 import { multiaddr } from '@multiformats/multiaddr'
-import { pipe } from 'it-pipe'
 import { fromString, toString } from 'uint8arrays'
 import { webRTCDirect } from '@libp2p/webrtc'
 
@@ -219,15 +213,11 @@ const stream = await dialer.dialProtocol(listener.getMultiaddrs(), '/my-protocol
   signal: AbortSignal.timeout(10_000)
 })
 
-await pipe(
-  [fromString(`Hello js-libp2p-webrtc\n`)],
-  stream,
-  async function (source) {
-    for await (const buf of source) {
-      console.info(toString(buf.subarray()))
-    }
-  }
-)
+stream.send(new TextEncoder().encode('hello world'))
+
+stream.addEventListener('message', (evt) => {
+  console.info(new TextDecoder().decode(evt.data.subarray()))
+})
 ```
 
 ## WebRTC Direct certificate hashes

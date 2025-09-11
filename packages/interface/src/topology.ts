@@ -5,7 +5,7 @@ import type { PeerId } from './peer-id.js'
  * A topology filter - this can be used by topologies to ensure they do not
  * receive duplicate notifications of individual peers
  *
- * @see https://libp2p.github.io/js-libp2p/functions/_libp2p_peer_collections.peerFilter-1.html
+ * @see https://libp2p.github.io/js-libp2p/classes/_libp2p_peer-collections.PeerFilter.html
  */
 export interface TopologyFilter {
   has (peerId: PeerId): boolean
@@ -40,11 +40,11 @@ export interface Topology {
    * Invoked when a new connection is opened to a peer that supports the
    * registered protocol
    */
-  onConnect?(peerId: PeerId, conn: Connection): void
+  onConnect?(peerId: PeerId, conn: Connection): void | Promise<void>
 
   /**
    * Invoked when the last connection to a peer that supports the registered
    * protocol closes
    */
-  onDisconnect?(peerId: PeerId): void
+  onDisconnect?(peerId: PeerId): void | Promise<void>
 }

@@ -140,8 +140,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.false()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.false()
   })
 
   it('should allow connections from allowlist multiaddrs (IPv6)', async () => {
@@ -169,8 +169,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.true()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.true()
   })
 
   it('should deny connections from denylist multiaddrs (IPv6)', async () => {
@@ -187,8 +187,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.false()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.false()
   })
 
   it('should deny connections when maxConnections is exceeded', async () => {
@@ -212,8 +212,8 @@ describe('Connection Manager', () => {
       remoteAddr: multiaddr('/ip4/83.13.55.32/tcp/59283')
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.false()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.false()
   })
 
   it('should deny connections from peers that connect too frequently', async () => {
@@ -234,12 +234,12 @@ describe('Connection Manager', () => {
       remoteAddr: multiaddr('/ip4/34.4.63.125/tcp/4001')
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.true()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.true()
 
     // connect again within a second
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.false()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.false()
   })
 
   it('should allow connections from allowlist multiaddrs (IPv4)', async () => {
@@ -267,8 +267,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.true()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.true()
   })
 
   it('should allow connections from allowlist subnet (IPv4)', async () => {
@@ -286,8 +286,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.true()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.true()
   })
 
   it('should deny connections from denylist subnet (IPv4)', async () => {
@@ -304,8 +304,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.false()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.false()
   })
 
   it('should allow connections from allowlist subnet (IPv6)', async () => {
@@ -323,8 +323,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.true()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.true()
   })
 
   it('should deny connections from denylist subnet (IPv6)', async () => {
@@ -341,8 +341,8 @@ describe('Connection Manager', () => {
       remoteAddr
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn))
-      .to.eventually.be.false()
+    expect(connectionManager.acceptIncomingConnection(maConn))
+      .to.be.false()
   })
 
   it('should limit the number of inbound pending connections', async () => {
@@ -362,8 +362,8 @@ describe('Connection Manager', () => {
       remoteAddr: multiaddr('/ip4/34.4.63.125/tcp/4001')
     })
 
-    await expect(connectionManager.acceptIncomingConnection(maConn1))
-      .to.eventually.be.true()
+    expect(connectionManager.acceptIncomingConnection(maConn1))
+      .to.be.true()
 
     // start the upgrade
     const maConn2 = stubInterface<MultiaddrConnection>({
@@ -371,15 +371,15 @@ describe('Connection Manager', () => {
     })
 
     // should be false because we have not completed the upgrade of maConn1
-    await expect(connectionManager.acceptIncomingConnection(maConn2))
-      .to.eventually.be.false()
+    expect(connectionManager.acceptIncomingConnection(maConn2))
+      .to.be.false()
 
     // finish the maConn1 pending upgrade
     connectionManager.afterUpgradeInbound()
 
     // should be true because we have now completed the upgrade of maConn1
-    await expect(connectionManager.acceptIncomingConnection(maConn2))
-      .to.eventually.be.true()
+    expect(connectionManager.acceptIncomingConnection(maConn2))
+      .to.be.true()
   })
 
   it('should allow dialing peers when an existing limited connection exists', async () => {

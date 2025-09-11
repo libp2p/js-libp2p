@@ -250,7 +250,13 @@ If you want to know more about libp2p peer discovery, you should read the follow
 
 ## Debugging
 
-When running libp2p you may want to see what things are happening behind the scenes. You can see trace logs by setting the `DEBUG` environment variable when running in Node.js, and by setting `debug` as a localStorage item when running in the browser. Some examples:
+When running libp2p you may want to see what things are happening behind the scenes. You can see trace logs by setting the `DEBUG` environment variable when running in Node.js, and by setting `debug` as a localStorage item when running in the browser.
+
+You may wish to start with trace logging, then narrow down the scope to just the components you are interested in.
+
+Wildcards in components names are supported (`*`), and components can be excluded by prefxing their name with `-`.
+
+Some examples:
 
 ### Node
 
@@ -258,8 +264,14 @@ When running libp2p you may want to see what things are happening behind the sce
 # all libp2p debug logs
 DEBUG="libp2p:*" node my-script.js
 
-# networking debug logs
-DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer" node my-script.js
+# all libp2p debug logs, maximum detail
+DEBUG="libp2p:*,*:trace" node my-script.js
+
+# all libp2p debug logs including trace logs, exclude yamux
+DEBUG="libp2p:*,*:trace,-libp2p:yamux:*" node my-script.js
+
+# networking debug logs (here TCP and WebSocket transports are configured)
+DEBUG="libp2p:tcp:*,libp2p:websockets:*,libp2p:kad-dht,libp2p:connection-manager:*" node my-script.js
 ```
 
 ### Browser
@@ -269,8 +281,45 @@ DEBUG="libp2p:tcp,libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:di
 localStorage.setItem('debug', 'libp2p:*') // then refresh the page to ensure the libraries can read this when spinning up.
 
 // networking debug logs
-localStorage.setItem('debug', 'libp2p:websockets,libp2p:webtransport,libp2p:kad-dht,libp2p:dialer')
+localStorage.setItem('debug', 'libp2p:websockets*,libp2p:webtransport*,libp2p:kad-dht*,libp2p:connection-manager*')
 ```
+
+### Prefix logger
+
+If you are running multiple nodes in the same process (for example during a test run), separating their log output can be difficult.
+
+In this situation you can use the `prefixLogger` from the `@libp2p/logger` module:
+
+```ts
+import { prefixLogger } from '@libp2p/logger'
+import { createLibp2p } from 'libp2p'
+
+const dialer = await createLibp2p({
+  logger: prefixLogger('dialer')
+  // ... other options
+})
+
+const listener = await createLibp2p({
+  logger: prefixLogger('listener')
+  // ... other options
+})
+```
+
+All logs will be prefixed by the string passed to the prefix logger, so later you can do:
+
+```console
+DEBUG=dialer:*,listener:* node ./index.js
+listener:libp2p:transports adding transport @libp2p/tcp +0ms
+dialer:libp2p libp2p is starting +0ms
+listener:libp2p libp2p is starting +0ms
+dialer:libp2p:connection-manager started +0ms
+listener:libp2p:connection-manager started +0ms
+listener:libp2p:transports creating listener for @libp2p/tcp on /ip4/127.0.0.1/tcp/0 +6ms
+dialer:libp2p libp2p has started +7ms
+listener:libp2p libp2p has started +7ms
+```
+
+...and apply component log filters via the `DEBUG` env var as normal, e.g. `DEBUG=listener:libp2p:tcp:*` to just see TCP transport logs for the listener node, etc.
 
 ## React Native
 
