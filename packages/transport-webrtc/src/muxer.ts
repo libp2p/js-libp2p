@@ -95,7 +95,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       // 'init' channel is only used during connection establishment, it is
       // closed by the initiator
       if (channel.label === 'init') {
-        this.log.trace('closing init channel')
+        this.log.trace('closing init channel %d', channel.id)
         channel.close()
 
         return
@@ -106,8 +106,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
         ...this.dataChannelOptions,
         channel,
         direction: 'inbound',
-        log: this.log,
-        connection: this.peerConnection
+        log: this.log
       })
 
       this.onRemoteStream(stream)
@@ -133,6 +132,8 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       })
 
       this.log('outbound channel %d state is now "%s", returning new channel', channel.id, channel.readyState)
+    } else {
+      this.log('outbound channel %d state was "%s", returning new channel without waiting for "open" event', channel.id, channel.readyState)
     }
 
     const stream = createStream({
@@ -140,8 +141,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       ...this.dataChannelOptions,
       channel,
       direction: 'outbound',
-      log: this.log,
-      connection: this.peerConnection
+      log: this.log
     })
 
     return stream

@@ -96,7 +96,6 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       await common.teardown()
     })
 
-    // eslint-disable-next-line no-only-tests/no-only-tests
     it('simple', async () => {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 

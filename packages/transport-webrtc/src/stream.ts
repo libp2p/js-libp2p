@@ -20,8 +20,6 @@ export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions
   channel: RTCDataChannel
 
   log: Logger
-
-  connection: globalThis.RTCPeerConnection
 }
 
 export class WebRTCStream extends AbstractStream {
@@ -36,8 +34,6 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
-  private readonly receivedFinAck: PromiseWithResolvers<void>
-  private readonly connection: RTCPeerConnection
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -49,8 +45,6 @@ export class WebRTCStream extends AbstractStream {
     this.channel.binaryType = 'arraybuffer'
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
-    this.receivedFinAck = Promise.withResolvers()
-    this.connection = init.connection
 
     // handle RTCDataChannel events
     this.channel.onclose = () => {
@@ -61,9 +55,10 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onerror = (evt) => {
-      this.log.trace('received datachannel error event')
-
       const err = (evt as RTCErrorEvent).error
+
+      this.log.trace('received datachannel error event - %e', err)
+
       this.abort(err)
     }
 
@@ -100,15 +95,6 @@ export class WebRTCStream extends AbstractStream {
       .catch(err => {
         this.log.error('error processing incoming data channel messages', err)
       })
-
-    // clean up the datachannel when both ends have sent a FIN_ACK
-    this.receivedFinAck.promise.then(() => {
-      if (this.remoteWriteStatus === 'closed' && this.writeStatus === 'closed') {
-        this.log('closing datachannel as FIN_ACK was received and remote has already closed its writable end')
-
-        this.channel.close()
-      }
-    })
   }
 
   sendNewStream (): void {
@@ -145,8 +131,6 @@ export class WebRTCStream extends AbstractStream {
   }
 
   sendReset (): void {
-    this.receivedFinAck.resolve()
-
     try {
       this._sendFlag(Message.Flag.RESET)
     } catch (err) {
@@ -180,21 +164,20 @@ export class WebRTCStream extends AbstractStream {
         // We should expect no more data from the remote, stop reading
         this.onRemoteCloseWrite()
         this._sendFlag(Message.Flag.FIN_ACK)
+
+        if (this.writeStatus === 'closed') {
+          this.channel.close()
+        }
       }
 
       if (message.flag === Message.Flag.RESET) {
         // Stop reading and writing to the stream immediately
         this.onRemoteReset()
-        this.receivedFinAck.resolve()
       }
 
       if (message.flag === Message.Flag.STOP_SENDING) {
         // The remote has stopped reading
         this.onRemoteCloseRead()
-      }
-
-      if (message.flag === Message.Flag.FIN_ACK) {
-        this.receivedFinAck.resolve()
       }
     }
 
@@ -245,8 +228,6 @@ export interface WebRTCStreamOptions extends DataChannelOptions {
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCDataChannel}
    */
   channel: RTCDataChannel
-
-  connection: globalThis.RTCPeerConnection
 
   /**
    * The stream direction
