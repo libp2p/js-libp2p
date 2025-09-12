@@ -173,6 +173,7 @@ export class WebRTCStream extends AbstractStream {
       if (message.flag === Message.Flag.RESET) {
         // Stop reading and writing to the stream immediately
         this.onRemoteReset()
+        this.channel.close()
       }
 
       if (message.flag === Message.Flag.STOP_SENDING) {
