@@ -52,36 +52,12 @@ export class WebRTCStream extends AbstractStream {
     this.receivedFinAck = Promise.withResolvers()
     this.connection = init.connection
 
-    // set up initial state
-    switch (this.channel.readyState) {
-      case 'open':
-        break
-
-      case 'closed':
-      case 'closing':
-        if (this.timeline.close === undefined || this.timeline.close === 0) {
-          this.timeline.close = Date.now()
-        }
-        break
-      case 'connecting':
-        // noop
-        break
-
-      default:
-        this.log.error('unknown datachannel state %s', this.channel.readyState)
-        throw new StreamStateError('Unknown datachannel state')
-    }
-
     // handle RTCDataChannel events
     this.channel.onclose = () => {
       this.log.trace('received datachannel close event')
 
       this.onRemoteCloseWrite()
       this.onTransportClosed()
-    }
-
-    this.channel.onclosing = () => {
-      this.log.trace('received datachannel closing event')
     }
 
     this.channel.onerror = (evt) => {
@@ -103,20 +79,21 @@ export class WebRTCStream extends AbstractStream {
 
     // dispatch drain event when the buffered amount drops to zero
     this.channel.bufferedAmountLowThreshold = 0
-    this.channel.onbufferedamountlow = () => {
-      this.safeDispatchEvent('drain')
-    }
 
-    const self = this
+    this.channel.onbufferedamountlow = () => {
+      if (this.writableNeedsDrain) {
+        this.safeDispatchEvent('drain')
+      }
+    }
 
     // pipe framed protobuf messages through a length prefixed decoder, and
     // surface data from the `Message.message` field through a source.
     Promise.resolve().then(async () => {
       for await (const buf of lengthPrefixed.decode(this.incomingData)) {
-        const message = self.processIncomingProtobuf(buf)
+        const message = this.processIncomingProtobuf(buf)
 
         if (message != null) {
-          self.onData(new Uint8ArrayList(message))
+          this.onData(new Uint8ArrayList(message))
         }
       }
     })
@@ -128,6 +105,7 @@ export class WebRTCStream extends AbstractStream {
     this.receivedFinAck.promise.then(() => {
       if (this.remoteWriteStatus === 'closed' && this.writeStatus === 'closed') {
         this.log('closing datachannel as FIN_ACK was received and remote has already closed its writable end')
+
         this.channel.close()
       }
     })
@@ -138,7 +116,7 @@ export class WebRTCStream extends AbstractStream {
   }
 
   _sendMessage (data: Uint8ArrayList): void {
-    if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
+    if (this.channel.readyState !== 'open') {
       throw new StreamStateError(`Invalid datachannel state - ${this.channel.readyState}`)
     }
 
@@ -180,18 +158,12 @@ export class WebRTCStream extends AbstractStream {
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    if (this.channel.readyState === 'open') {
-      this._sendFlag(Message.Flag.FIN)
-    }
-
+    this._sendFlag(Message.Flag.FIN)
     options?.signal?.throwIfAborted()
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
-    if (this.channel.readyState === 'open') {
-      this._sendFlag(Message.Flag.STOP_SENDING)
-    }
-
+    this._sendFlag(Message.Flag.STOP_SENDING)
     options?.signal?.throwIfAborted()
   }
 

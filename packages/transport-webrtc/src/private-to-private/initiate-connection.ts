@@ -194,6 +194,15 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
     log.trace('closing init channel')
     channel.close()
 
+    // wait for init channel to close before proceeding, otherwise the channel
+    // id can be reused before both sides have seen the channel close
+    log.trace('waiting for init channel to close')
+    await pEvent(channel, 'close', {
+      rejectionEvents: [
+        'error'
+      ]
+    })
+
     onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'))
 
     log.trace('closing signaling channel')
