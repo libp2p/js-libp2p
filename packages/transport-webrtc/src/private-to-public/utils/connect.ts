@@ -118,7 +118,10 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
       direction: 'outbound',
       isHandshake: true,
       log: options.log,
-      ...(options.dataChannel ?? {})
+      ...(options.dataChannel ?? {}),
+
+      // @ts-expect-error types are broken
+      connection: peerConnection
     })
 
     // Creating the connection before completion of the noise

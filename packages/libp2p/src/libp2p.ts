@@ -237,7 +237,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
       this.status = 'started'
       this.safeDispatchEvent('start', { detail: this })
-      this.log('libp2p has started')
+      this.log('libp2p has started with peer id %p', this.peerId)
     } catch (err: any) {
       this.log.error('An error occurred starting libp2p', err)
       // set status to 'started' so this.stop() will stop any running components

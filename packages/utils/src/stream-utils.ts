@@ -177,7 +177,9 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
         }
 
         if (readBuffer.byteLength < options.bytes) {
-          throw new UnexpectedEOFError(`Unexpected EOF - stream closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`)
+          stream.log.error('closed after reading %d/%d bytes', readBuffer.byteLength, options.bytes)
+          // @ts-expect-error .id may not be present
+          throw new UnexpectedEOFError(`Unexpected EOF - ${stream.direction} stream ${stream.id != null ? `${stream.id} ` : ''}closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`)
         }
       }
 
@@ -210,7 +212,9 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
 
       if (readBuffer.byteLength < toRead) {
         if (isEOF(stream)) {
-          throw new UnexpectedEOFError(`Unexpected EOF - stream closed while reading ${readBuffer.byteLength}/${toRead} bytes`)
+          stream.log.error('closed while reading %d/%d bytes', readBuffer.byteLength, toRead)
+          // @ts-expect-error .id may not be present
+          throw new UnexpectedEOFError(`Unexpected EOF - ${stream.direction} stream ${stream.id != null ? `${stream.id} ` : ''}closed while reading ${readBuffer.byteLength}/${toRead} bytes`)
         }
 
         return byteStream.read(options)
@@ -352,10 +356,12 @@ export function lpStream <T extends MessageStream> (stream: T, opts: Partial<Len
       })
 
       if (buf == null) {
+        stream.log.error('tried to read %d bytes but the stream closed', dataLength)
         throw new UnexpectedEOFError(`Unexpected EOF - tried to read ${dataLength} bytes but the stream closed`)
       }
 
       if (buf.byteLength !== dataLength) {
+        stream.log.error('read %d/%d bytes before the stream closed', buf.byteLength, dataLength)
         throw new UnexpectedEOFError(`Unexpected EOF - read ${buf.byteLength}/${dataLength} bytes before the stream closed`)
       }
 

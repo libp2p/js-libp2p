@@ -2,7 +2,6 @@ import { StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
-import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
@@ -35,7 +34,6 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
-  private readonly receivedFinAck: PromiseWithResolvers<void>
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -47,40 +45,20 @@ export class WebRTCStream extends AbstractStream {
     this.channel.binaryType = 'arraybuffer'
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
-    this.receivedFinAck = Promise.withResolvers()
-
-    // set up initial state
-    switch (this.channel.readyState) {
-      case 'open':
-        break
-
-      case 'closed':
-      case 'closing':
-        if (this.timeline.close === undefined || this.timeline.close === 0) {
-          this.timeline.close = Date.now()
-        }
-        break
-      case 'connecting':
-        // noop
-        break
-
-      default:
-        this.log.error('unknown datachannel state %s', this.channel.readyState)
-        throw new StreamStateError('Unknown datachannel state')
-    }
 
     // handle RTCDataChannel events
-    this.channel.onclose = (_evt) => {
-      this.log.trace('received onclose event')
+    this.channel.onclose = () => {
+      this.log.trace('received datachannel close event')
 
       this.onRemoteCloseWrite()
       this.onTransportClosed()
     }
 
     this.channel.onerror = (evt) => {
-      this.log.trace('received onerror event')
-
       const err = (evt as RTCErrorEvent).error
+
+      this.log.trace('received datachannel error event - %e', err)
+
       this.abort(err)
     }
 
@@ -96,32 +74,27 @@ export class WebRTCStream extends AbstractStream {
 
     // dispatch drain event when the buffered amount drops to zero
     this.channel.bufferedAmountLowThreshold = 0
-    this.channel.onbufferedamountlow = () => {
-      this.safeDispatchEvent('drain')
-    }
 
-    const self = this
+    this.channel.onbufferedamountlow = () => {
+      if (this.writableNeedsDrain) {
+        this.safeDispatchEvent('drain')
+      }
+    }
 
     // pipe framed protobuf messages through a length prefixed decoder, and
     // surface data from the `Message.message` field through a source.
     Promise.resolve().then(async () => {
       for await (const buf of lengthPrefixed.decode(this.incomingData)) {
-        const message = self.processIncomingProtobuf(buf)
+        const message = this.processIncomingProtobuf(buf)
 
         if (message != null) {
-          self.onData(new Uint8ArrayList(message))
+          this.onData(new Uint8ArrayList(message))
         }
       }
     })
       .catch(err => {
         this.log.error('error processing incoming data channel messages', err)
       })
-
-    // clean up the datachannel when both ends have sent a FIN
-    const webRTCStreamOnClose = (): void => {
-      this.channel.close()
-    }
-    this.addEventListener('close', webRTCStreamOnClose)
   }
 
   sendNewStream (): void {
@@ -129,27 +102,27 @@ export class WebRTCStream extends AbstractStream {
   }
 
   _sendMessage (data: Uint8ArrayList): void {
-    if (this.channel.readyState === 'closed' || this.channel.readyState === 'closing') {
+    if (this.channel.readyState !== 'open') {
       throw new StreamStateError(`Invalid datachannel state - ${this.channel.readyState}`)
     }
 
-    try {
-      this.log.trace('sending message, channel state "%s"', this.channel.readyState)
-      // send message without copying data
-      for (const buf of data) {
-        this.channel.send(buf)
-      }
-    } catch (err: any) {
-      this.log.error('error while sending message', err)
+    this.log.trace('sending message, channel state "%s"', this.channel.readyState)
+
+    // send message without copying data
+    for (const buf of data) {
+      this.channel.send(buf)
     }
   }
 
   sendData (data: Uint8ArrayList): SendResult {
-    const messageBuf = Message.encode({
-      message: data.subarray()
-    })
-    const prefixedBuf = lengthPrefixed.encode.single(messageBuf)
-    this._sendMessage(prefixedBuf)
+    // send message without copying data
+    for (const message of data) {
+      this._sendMessage(
+        lengthPrefixed.encode.single(Message.encode({
+          message
+        }))
+      )
+    }
 
     return {
       sentBytes: data.byteLength,
@@ -158,30 +131,23 @@ export class WebRTCStream extends AbstractStream {
   }
 
   sendReset (): void {
-    this.receivedFinAck.resolve()
-
     try {
       this._sendFlag(Message.Flag.RESET)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
     } finally {
+      this.log('closing datachannel as have sent a reset message')
       this.channel.close()
     }
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
-    if (this.channel.readyState === 'open') {
-      this._sendFlag(Message.Flag.FIN)
-    }
-
-    await raceSignal(this.receivedFinAck.promise, options?.signal)
+    this._sendFlag(Message.Flag.FIN)
+    options?.signal?.throwIfAborted()
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
-    if (this.channel.readyState === 'open') {
-      this._sendFlag(Message.Flag.STOP_SENDING)
-    }
-
+    this._sendFlag(Message.Flag.STOP_SENDING)
     options?.signal?.throwIfAborted()
   }
 
@@ -198,21 +164,21 @@ export class WebRTCStream extends AbstractStream {
         // We should expect no more data from the remote, stop reading
         this.onRemoteCloseWrite()
         this._sendFlag(Message.Flag.FIN_ACK)
+
+        if (this.writeStatus === 'closed') {
+          this.channel.close()
+        }
       }
 
       if (message.flag === Message.Flag.RESET) {
-        this.receivedFinAck.resolve()
         // Stop reading and writing to the stream immediately
         this.onRemoteReset()
+        this.channel.close()
       }
 
       if (message.flag === Message.Flag.STOP_SENDING) {
         // The remote has stopped reading
         this.onRemoteCloseRead()
-      }
-
-      if (message.flag === Message.Flag.FIN_ACK) {
-        this.receivedFinAck.resolve()
       }
     }
 
