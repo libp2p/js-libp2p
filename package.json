@@ -46,5 +46,8 @@
     "doc",
     "interop",
     "packages/*"
-  ]
+  ],
+  "overrides": {
+     "playwright-core": "next"
+   }
 }
