@@ -5,6 +5,7 @@ import { pushable } from 'it-pushable'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
+import { isFirefox } from './util.js'
 import type { DataChannelOptions } from './index.js'
 import type { AbortOptions, MessageStreamDirection, Logger } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
@@ -95,6 +96,14 @@ export class WebRTCStream extends AbstractStream {
       .catch(err => {
         this.log.error('error processing incoming data channel messages', err)
       })
+
+    // close when both writable ends are closed or an error occurs
+    this.addEventListener('close', () => {
+      if (this.channel.readyState === 'open') {
+        this.log.trace('stream closed, closing underlying datachannel')
+        this.channel.close()
+      }
+    })
   }
 
   sendNewStream (): void {
@@ -108,6 +117,14 @@ export class WebRTCStream extends AbstractStream {
 
     this.log.trace('sending message, channel state "%s"', this.channel.readyState)
 
+    if (isFirefox) {
+      // TODO: firefox can deliver small messages out of order - remove once a
+      // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
+      // available in playwright-test
+      this.channel.send(data.subarray())
+      return
+    }
+
     // send message without copying data
     for (const buf of data) {
       this.channel.send(buf)
@@ -115,14 +132,27 @@ export class WebRTCStream extends AbstractStream {
   }
 
   sendData (data: Uint8ArrayList): SendResult {
-    // send message without copying data
-    for (const message of data) {
+    if (isFirefox) {
+      // TODO: firefox can deliver small messages out of order - remove once a
+      // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
+      // available in playwright-test
       this._sendMessage(
         lengthPrefixed.encode.single(Message.encode({
-          message
+          message: data.subarray()
         }))
       )
+    } else {
+      // send message without copying data
+      for (const message of data) {
+        this._sendMessage(
+          lengthPrefixed.encode.single(Message.encode({
+            message
+          }))
+        )
+      }
     }
+
+    this.log('did write, can send more %s', this.channel.bufferedAmount < this.maxBufferedAmount)
 
     return {
       sentBytes: data.byteLength,
@@ -130,14 +160,12 @@ export class WebRTCStream extends AbstractStream {
     }
   }
 
-  sendReset (): void {
+  sendReset (err: Error): void {
     try {
+      this.log.error('sending reset because - %e', err)
       this._sendFlag(Message.Flag.RESET)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
-    } finally {
-      this.log('closing datachannel as have sent a reset message')
-      this.channel.close()
     }
   }
 
@@ -162,18 +190,13 @@ export class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.FIN) {
         // We should expect no more data from the remote, stop reading
-        this.onRemoteCloseWrite()
         this._sendFlag(Message.Flag.FIN_ACK)
-
-        if (this.writeStatus === 'closed') {
-          this.channel.close()
-        }
+        this.onRemoteCloseWrite()
       }
 
       if (message.flag === Message.Flag.RESET) {
         // Stop reading and writing to the stream immediately
         this.onRemoteReset()
-        this.channel.close()
       }
 
       if (message.flag === Message.Flag.STOP_SENDING) {
