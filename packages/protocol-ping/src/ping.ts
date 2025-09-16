@@ -124,7 +124,6 @@ export class Ping implements Startable, PingInterface {
               .catch(err => {
                 stream.abort(err)
               })
-
           }
         }
       })
