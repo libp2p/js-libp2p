@@ -8,11 +8,11 @@ import { stubInterface } from 'sinon-ts'
 import { MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
 import { Message } from '../src/private-to-public/pb/message.js'
 import { createStream } from '../src/stream.js'
+import { isFirefox } from '../src/util.ts'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import { receiveFinAck, receiveRemoteCloseWrite } from './util.js'
 import type { WebRTCStream } from '../src/stream.js'
 import type { Stream } from '@libp2p/interface'
-import { isFirefox } from '../src/util.ts'
 
 describe('Max message size', () => {
   it(`sends messages smaller or equal to ${MAX_MESSAGE_SIZE} bytes in one`, async () => {
@@ -47,7 +47,6 @@ describe('Max message size', () => {
     } else {
       expect(channel.send).to.have.property('callCount', 2)
     }
-
 
     const bytes = channel.send.getCalls().reduce((acc, curr) => {
       return acc + curr.args[0].byteLength
