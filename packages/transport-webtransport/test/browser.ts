@@ -11,6 +11,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { webTransport } from '../src/index.js'
 import type { Ping } from '@libp2p/ping'
 import type { Libp2p } from 'libp2p'
+import { stop } from '@libp2p/interface'
 
 describe('libp2p-webtransport', () => {
   let node: Libp2p<{ ping: Ping }>
@@ -32,12 +33,7 @@ describe('libp2p-webtransport', () => {
   })
 
   afterEach(async () => {
-    if (node != null) {
-      await node.stop()
-
-      const conns = node.getConnections()
-      expect(conns.length).to.equal(0)
-    }
+    await stop(node)
   })
 
   it('webtransport connects to go-libp2p', async () => {
