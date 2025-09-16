@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { stop } from '@libp2p/interface'
 import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -11,7 +12,6 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { webTransport } from '../src/index.js'
 import type { Ping } from '@libp2p/ping'
 import type { Libp2p } from 'libp2p'
-import { stop } from '@libp2p/interface'
 
 describe('libp2p-webtransport', () => {
   let node: Libp2p<{ ping: Ping }>

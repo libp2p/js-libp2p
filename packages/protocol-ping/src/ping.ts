@@ -117,7 +117,14 @@ export class Ping implements Startable, PingInterface {
           if (!uint8ArrayEquals(data, received.subarray())) {
             finished.reject(new ProtocolError(`Received wrong ping ack after ${rtt}ms`))
           } else {
-            finished.resolve(rtt)
+            stream.closeRead(options)
+              .then(() => {
+                finished.resolve(rtt)
+              })
+              .catch(err => {
+                stream.abort(err)
+              })
+
           }
         }
       })
