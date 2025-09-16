@@ -42,8 +42,6 @@
  * }
  * ```
  *
- * ![key storage](https://github.com/libp2p/js-libp2p/blob/main/doc/private-key.png?raw=true)
- *
  * ## Physical storage
  *
  * The actual physical storage of an encrypted key is left to implementations of [interface-datastore](https://github.com/ipfs/interface-datastore/).
