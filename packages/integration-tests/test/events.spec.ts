@@ -69,10 +69,10 @@ describe('events', () => {
     await dialer.dial(listener.getMultiaddrs())
 
     // Verify onConnection is called with the connection
-    const connections = await Promise.all([
+    const connections = [
       ...dialer.getConnections(listener.peerId),
       ...listener.getConnections(dialer.peerId)
-    ])
+    ]
     expect(connections).to.have.lengthOf(2)
 
     await Promise.all([

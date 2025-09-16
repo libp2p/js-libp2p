@@ -261,7 +261,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     }
   }
 
-  onCreateStream (options: CreateStreamOptions): MockMuxedStream {
+  async onCreateStream (options: CreateStreamOptions): Promise<MockMuxedStream> {
     this.nextStreamId += 2
 
     return this._createStream(`${this.nextStreamId}`, 'outbound', options)

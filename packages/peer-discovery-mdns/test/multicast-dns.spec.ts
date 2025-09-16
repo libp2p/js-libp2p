@@ -37,11 +37,9 @@ describe('MulticastDNS', () => {
   before(async function () {
     this.timeout(80 * 1000)
 
-    ;[pA, pB, pD] = await Promise.all([
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    ])
+    pA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    pB = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    pD = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
     aMultiaddrs = [
       multiaddr('/ip4/192.168.1.142/tcp/20001'),
