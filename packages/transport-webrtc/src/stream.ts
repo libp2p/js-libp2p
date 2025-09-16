@@ -36,7 +36,7 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
-  private receivedFinAck: PromiseWithResolvers<void>
+  private receivedFinAck?: PromiseWithResolvers<void>
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -48,7 +48,6 @@ export class WebRTCStream extends AbstractStream {
     this.channel.binaryType = 'arraybuffer'
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
-    this.receivedFinAck = Promise.withResolvers<void>()
 
     // handle RTCDataChannel events
     this.channel.onclose = () => {
@@ -97,12 +96,13 @@ export class WebRTCStream extends AbstractStream {
       })
 
     // close when both writable ends are closed or an error occurs
-    this.addEventListener('close', () => {
+    const cleanUpDatachannelOnClose = () => {
       if (this.channel.readyState === 'open') {
         this.log.trace('stream closed, closing underlying datachannel')
         this.channel.close()
       }
-    })
+    }
+    this.addEventListener('close', cleanUpDatachannelOnClose)
   }
 
   sendNewStream (): void {
@@ -161,7 +161,7 @@ export class WebRTCStream extends AbstractStream {
     try {
       this.log.error('sending reset - %e', err)
       this._sendFlag(Message.Flag.RESET)
-      this.receivedFinAck.reject(err)
+      this.receivedFinAck?.reject(err)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
     }
@@ -169,6 +169,7 @@ export class WebRTCStream extends AbstractStream {
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
     this._sendFlag(Message.Flag.FIN)
+    this.receivedFinAck = Promise.withResolvers<void>()
     await raceSignal(this.receivedFinAck.promise, options?.signal)
   }
 
@@ -208,8 +209,8 @@ export class WebRTCStream extends AbstractStream {
       }
 
       if (message.flag === Message.Flag.FIN_ACK) {
-        // remove received our FIN
-        this.receivedFinAck.resolve()
+        // remote received our FIN
+        this.receivedFinAck?.resolve()
       }
     }
   }
