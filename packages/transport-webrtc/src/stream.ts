@@ -96,7 +96,7 @@ export class WebRTCStream extends AbstractStream {
       })
 
     // close when both writable ends are closed or an error occurs
-    const cleanUpDatachannelOnClose = () => {
+    const cleanUpDatachannelOnClose = (): void => {
       if (this.channel.readyState === 'open') {
         this.log.trace('stream closed, closing underlying datachannel')
         this.channel.close()
