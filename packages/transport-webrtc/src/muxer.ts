@@ -89,7 +89,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
      *
      * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/datachannel_event}
      */
-    this.peerConnection.addEventListener('datachannel', ({ channel }) => {
+    this.peerConnection.ondatachannel = ({ channel }) => {
       this.log.trace('incoming %s datachannel with channel id %d, protocol %s and status %s', channel.protocol, channel.id, channel.protocol, channel.readyState)
 
       // 'init' channel is only used during connection establishment, it is
@@ -110,7 +110,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       })
 
       this.onRemoteStream(stream)
-    })
+    }
   }
 
   async onCreateStream (options?: CreateStreamOptions): Promise<WebRTCStream> {

@@ -60,9 +60,7 @@ describe('Max message size', () => {
     const webrtcStream = createStream({
       channel,
       direction: 'outbound',
-      log: defaultLogger().forComponent('test'),
-      // @ts-expect-error types are broken
-      connection: peerConnection
+      log: defaultLogger().forComponent('test')
     })
 
     webrtcStream.send(data)

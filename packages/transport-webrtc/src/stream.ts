@@ -152,8 +152,6 @@ export class WebRTCStream extends AbstractStream {
       }
     }
 
-    this.log('did write, can send more %s', this.channel.bufferedAmount < this.maxBufferedAmount)
-
     return {
       sentBytes: data.byteLength,
       canSendMore: this.channel.bufferedAmount < this.maxBufferedAmount
@@ -162,7 +160,7 @@ export class WebRTCStream extends AbstractStream {
 
   sendReset (err: Error): void {
     try {
-      this.log.error('sending reset because - %e', err)
+      this.log.error('sending reset - %e', err)
       this._sendFlag(Message.Flag.RESET)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)

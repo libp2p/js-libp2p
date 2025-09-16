@@ -178,8 +178,7 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
 
         if (readBuffer.byteLength < options.bytes) {
           stream.log.error('closed after reading %d/%d bytes', readBuffer.byteLength, options.bytes)
-          // @ts-expect-error .id may not be present
-          throw new UnexpectedEOFError(`Unexpected EOF - ${stream.direction} stream ${stream.id != null ? `${stream.id} ` : ''}closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`)
+          throw new UnexpectedEOFError(`Unexpected EOF - stream closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`)
         }
       }
 
@@ -213,8 +212,7 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
       if (readBuffer.byteLength < toRead) {
         if (isEOF(stream)) {
           stream.log.error('closed while reading %d/%d bytes', readBuffer.byteLength, toRead)
-          // @ts-expect-error .id may not be present
-          throw new UnexpectedEOFError(`Unexpected EOF - ${stream.direction} stream ${stream.id != null ? `${stream.id} ` : ''}closed while reading ${readBuffer.byteLength}/${toRead} bytes`)
+          throw new UnexpectedEOFError(`Unexpected EOF - stream closed while reading ${readBuffer.byteLength}/${toRead} bytes`)
         }
 
         return byteStream.read(options)
