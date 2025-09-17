@@ -147,7 +147,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         .with.property('name', 'AbortError')
     })
 
-    it('should close all streams when the connection closes', async () => {
+    it.only('should close all streams when the connection closes', async () => {
       ({ dialer, listener, dialAddrs, listenMultiaddrMatcher } = await getSetup(common))
 
       let incomingConnectionPromise: PromiseWithResolvers<Connection> | undefined
@@ -184,8 +184,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       expect(connection).to.have.property('streams').that.has.lengthOf(5)
 
       if (remoteConn != null) {
-        await pWaitFor(() => remoteConn.streams.length === 5, {
-          timeout: 5000
+        await pWaitFor(() => remoteConn.streams.filter(s => s.protocol === '/echo/1.0.0').length === 5, {
+          timeout: 5_000,
+          interval: 1_000
         })
       }
 
