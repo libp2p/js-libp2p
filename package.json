@@ -49,8 +49,5 @@
   ],
   "overrides": {
     "playwright-core": "next"
-  },
-  "dependencies": {
-    "why-is-node-running": "^3.2.2"
   }
 }
