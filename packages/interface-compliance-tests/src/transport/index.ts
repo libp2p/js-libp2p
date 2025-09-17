@@ -213,7 +213,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         .with.property('name', 'AbortError')
     })
 
-    it.only('should close all streams when the connection closes', async () => {
+    it('should close all streams when the connection closes', async () => {
       ({ dialer, listener, dialAddrs, listenMultiaddrMatcher } = await getSetup(common))
 
       let incomingConnectionPromise: PromiseWithResolvers<Connection> | undefined
