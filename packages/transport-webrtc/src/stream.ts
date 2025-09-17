@@ -1,8 +1,7 @@
-import { StreamResetError, StreamStateError } from '@libp2p/interface'
+import { StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
-import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
@@ -210,10 +209,10 @@ export class WebRTCStream extends AbstractStream {
         this.onRemoteCloseRead()
       }
 
-      //if (message.flag === Message.Flag.FIN_ACK) {
-        // remote received our FIN
-        // this.receivedFinAck?.resolve()
-      //}
+      // if (message.flag === Message.Flag.FIN_ACK) {
+      // remote received our FIN
+      // this.receivedFinAck?.resolve()
+      // }
     }
   }
 
