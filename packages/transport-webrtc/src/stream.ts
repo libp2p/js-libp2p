@@ -1,4 +1,4 @@
-import { StreamStateError } from '@libp2p/interface'
+import { StreamResetError, StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
@@ -36,7 +36,7 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
-  private receivedFinAck?: PromiseWithResolvers<void>
+  // private receivedFinAck?: PromiseWithResolvers<void>
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -161,7 +161,7 @@ export class WebRTCStream extends AbstractStream {
     try {
       this.log.error('sending reset - %e', err)
       this._sendFlag(Message.Flag.RESET)
-      this.receivedFinAck?.reject(err)
+      // this.receivedFinAck?.reject(err)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
     }
@@ -169,8 +169,9 @@ export class WebRTCStream extends AbstractStream {
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
     this._sendFlag(Message.Flag.FIN)
-    this.receivedFinAck = Promise.withResolvers<void>()
-    await raceSignal(this.receivedFinAck.promise, options?.signal)
+    options?.signal?.throwIfAborted()
+    // this.receivedFinAck = Promise.withResolvers<void>()
+    // await raceSignal(this.receivedFinAck.promise, options?.signal)
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
@@ -194,12 +195,13 @@ export class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.FIN) {
         // we should expect no more data from the remote, stop reading
-        this._sendFlag(Message.Flag.FIN_ACK)
+        // this._sendFlag(Message.Flag.FIN_ACK)
         this.onRemoteCloseWrite()
       }
 
       if (message.flag === Message.Flag.RESET) {
         // stop reading and writing to the stream immediately
+        // this.receivedFinAck?.reject(new StreamResetError('The stream was reset'))
         this.onRemoteReset()
       }
 
@@ -208,10 +210,10 @@ export class WebRTCStream extends AbstractStream {
         this.onRemoteCloseRead()
       }
 
-      if (message.flag === Message.Flag.FIN_ACK) {
+      //if (message.flag === Message.Flag.FIN_ACK) {
         // remote received our FIN
-        this.receivedFinAck?.resolve()
-      }
+        // this.receivedFinAck?.resolve()
+      //}
     }
   }
 
