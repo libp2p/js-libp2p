@@ -55,7 +55,7 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "protons": "^7.7.0",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
