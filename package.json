@@ -48,6 +48,9 @@
     "packages/*"
   ],
   "overrides": {
-     "playwright-core": "next"
-   }
+    "playwright-core": "next"
+  },
+  "dependencies": {
+    "why-is-node-running": "^3.2.2"
+  }
 }

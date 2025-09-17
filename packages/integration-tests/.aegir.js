@@ -1,5 +1,10 @@
+import log from 'why-is-node-running'
 import { execa } from 'execa'
 import pDefer from 'p-defer'
+
+setTimeout(() => {
+  log()
+}, 60_000).unref()
 
 /** @type {import('aegir').PartialOptions} */
 export default {

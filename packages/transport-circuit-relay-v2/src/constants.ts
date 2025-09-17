@@ -21,7 +21,7 @@ export const DEFAULT_RESERVATION_CONCURRENCY = 1
 /**
  * How long to wait for a reservation attempt to finish
  */
-export const DEFAULT_RESERVATION_COMPLETION_TIMEOUT = 2000
+export const DEFAULT_RESERVATION_COMPLETION_TIMEOUT = 5_000
 
 /**
  * How long to let the reservation attempt queue to grow
@@ -31,7 +31,6 @@ export const DEFAULT_MAX_RESERVATION_QUEUE_LENGTH = 100
 export const RELAY_SOURCE_TAG = 'circuit-relay-source'
 
 export const KEEP_ALIVE_TAG = `${KEEP_ALIVE}-circuit-relay`
-export const KEEP_ALIVE_SOURCE_TAG = `${KEEP_ALIVE}-circuit-relay-source`
 
 // circuit v2 connection limits
 // https://github.com/libp2p/go-libp2p/blob/master/p2p/protocol/circuitv2/relay/resources.go#L61-L66
