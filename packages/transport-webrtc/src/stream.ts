@@ -66,6 +66,7 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.channel.onmessage = async (event: MessageEvent<ArrayBuffer>) => {
+      this.log('incoming message %d bytes', event.data.byteLength)
       const { data } = event
 
       if (data === null || data.byteLength === 0) {
@@ -155,17 +156,20 @@ export class WebRTCStream extends AbstractStream {
       }
     }
 
-    if (isFirefox) {
-      // TODO: firefox can deliver small messages out of order - remove once a
-      // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
-      // available in playwright-test
-      this._sendMessage(
-        lengthPrefixed.encode.single(Message.encode({
-          message: data.subarray()
-        }))
-      )
-    } else {
-      // send message without copying data
+    // TODO: firefox can deliver small messages out of order - remove once a
+    // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
+    // available in playwright-test
+    // ----
+    // this is also necessary to work with rust-libp2p 0.54 though 0.53 seems ok
+    this._sendMessage(
+      lengthPrefixed.encode.single(Message.encode({
+        message: data.subarray()
+      }))
+    )
+
+    /*
+    // TODO: enable this when FF and rust-libp2p are not broken
+    // send message without copying data
       for (const message of data) {
         this._sendMessage(
           lengthPrefixed.encode.single(Message.encode({
@@ -174,6 +178,7 @@ export class WebRTCStream extends AbstractStream {
         )
       }
     }
+    */
 
     return {
       sentBytes: data.byteLength,
