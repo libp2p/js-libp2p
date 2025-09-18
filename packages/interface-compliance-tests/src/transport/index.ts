@@ -361,8 +361,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const connection = await dialer.dial(dialAddrs[0])
       const echoProtocol = dialer.services.echo.protocol
 
-      // TODO: increase this back to 2_000
-      for (let i = 0; i < 200; i++) {
+      for (let i = 0; i < 2_000; i++) {
         const input = new Uint8Array(1024).fill(5)
         const output = await dialer.services.echo.echo(connection.remotePeer, input, {
           signal: AbortSignal.timeout(timeout)
@@ -572,10 +571,8 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       }
 
       const protocol = '/receive-data/1.0.0'
-      // TODO: restore to previous values (chunkSize = 1024, bytes = chunkSize * 1024 * 10)
-      // after https://github.com/murat-dogan/node-datachannel/issues/375 is fixed
-      const chunkSize = 1024 * 1024
-      const bytes = chunkSize * 10
+      const chunkSize = 1024
+      const bytes = chunkSize * 1024 * 10
 
       await listener.handle(protocol, async (stream) => {
         for (let i = 0; i < bytes; i += chunkSize) {

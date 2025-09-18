@@ -1,10 +1,11 @@
-import { StreamStateError } from '@libp2p/interface'
+import { StreamResetError, StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
+import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
+import { DEFAULT_FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
 import { isFirefox } from './util.js'
 import type { DataChannelOptions } from './index.js'
@@ -36,7 +37,8 @@ export class WebRTCStream extends AbstractStream {
    */
   private readonly incomingData: Pushable<Uint8Array>
   private readonly maxBufferedAmount: number
-  // private receivedFinAck?: PromiseWithResolvers<void>
+  private receivedFinAck?: PromiseWithResolvers<void>
+  private finAckTimeout: number
 
   constructor (init: WebRTCStreamInit) {
     super({
@@ -48,6 +50,7 @@ export class WebRTCStream extends AbstractStream {
     this.channel.binaryType = 'arraybuffer'
     this.incomingData = pushable<Uint8Array>()
     this.maxBufferedAmount = init.maxBufferedAmount ?? MAX_BUFFERED_AMOUNT
+    this.finAckTimeout = init.finAckTimeout ?? DEFAULT_FIN_ACK_TIMEOUT
 
     // handle RTCDataChannel events
     this.channel.onclose = () => {
@@ -190,7 +193,7 @@ export class WebRTCStream extends AbstractStream {
     try {
       this.log.error('sending reset - %e', err)
       this._sendFlag(Message.Flag.RESET)
-      // this.receivedFinAck?.reject(err)
+      this.receivedFinAck?.reject(err)
     } catch (err) {
       this.log.error('failed to send reset - %e', err)
     }
@@ -199,8 +202,17 @@ export class WebRTCStream extends AbstractStream {
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
     this._sendFlag(Message.Flag.FIN)
     options?.signal?.throwIfAborted()
-    // this.receivedFinAck = Promise.withResolvers<void>()
-    // await raceSignal(this.receivedFinAck.promise, options?.signal)
+    this.receivedFinAck = Promise.withResolvers<void>()
+
+    await Promise.any([
+      raceSignal(this.receivedFinAck.promise, options?.signal),
+      new Promise<void>(resolve => {
+        AbortSignal.timeout(this.finAckTimeout)
+          .addEventListener('abort', () => {
+            resolve()
+          })
+      })
+    ])
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
@@ -224,13 +236,13 @@ export class WebRTCStream extends AbstractStream {
 
       if (message.flag === Message.Flag.FIN) {
         // we should expect no more data from the remote, stop reading
-        // this._sendFlag(Message.Flag.FIN_ACK)
+        this._sendFlag(Message.Flag.FIN_ACK)
         this.onRemoteCloseWrite()
       }
 
       if (message.flag === Message.Flag.RESET) {
         // stop reading and writing to the stream immediately
-        // this.receivedFinAck?.reject(new StreamResetError('The stream was reset'))
+        this.receivedFinAck?.reject(new StreamResetError('The stream was reset'))
         this.onRemoteReset()
       }
 
@@ -239,10 +251,10 @@ export class WebRTCStream extends AbstractStream {
         this.onRemoteCloseRead()
       }
 
-      // if (message.flag === Message.Flag.FIN_ACK) {
-      // remote received our FIN
-      // this.receivedFinAck?.resolve()
-      // }
+      if (message.flag === Message.Flag.FIN_ACK) {
+        // remote received our FIN
+        this.receivedFinAck?.resolve()
+      }
     }
   }
 
