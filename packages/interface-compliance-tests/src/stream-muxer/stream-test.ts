@@ -259,6 +259,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       await Promise.all([
         pEvent(outboundStream, 'close'),
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         inboundStream.abort(new Error('Urk!'))
       ])
 

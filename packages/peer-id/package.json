@@ -53,7 +53,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "sinon": "^21.0.0"
   },
   "sideEffects": false

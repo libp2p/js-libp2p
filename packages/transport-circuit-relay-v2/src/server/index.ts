@@ -8,7 +8,6 @@ import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import {
   DEFAULT_HOP_TIMEOUT,
-  KEEP_ALIVE_SOURCE_TAG,
   MAX_CONNECTIONS,
   RELAY_SOURCE_TAG,
   RELAY_V2_HOP_CODEC,
@@ -188,8 +187,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
         const ttl = (result.expire * 1000) - Date.now()
         await this.components.peerStore.merge(connection.remotePeer, {
           tags: {
-            [RELAY_SOURCE_TAG]: { value: 1, ttl },
-            [KEEP_ALIVE_SOURCE_TAG]: { value: 1, ttl }
+            [RELAY_SOURCE_TAG]: { value: 1, ttl }
           }
         }, options)
       }
@@ -211,8 +209,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
       try {
         await this.components.peerStore.merge(connection.remotePeer, {
           tags: {
-            [RELAY_SOURCE_TAG]: undefined,
-            [KEEP_ALIVE_SOURCE_TAG]: undefined
+            [RELAY_SOURCE_TAG]: undefined
           }
         }, options)
       } catch (err) {

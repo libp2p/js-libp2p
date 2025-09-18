@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@types/yargs": "^17.0.33",
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "sinon": "^21.0.0"
   }
 }

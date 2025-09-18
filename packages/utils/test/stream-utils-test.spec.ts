@@ -76,6 +76,7 @@ describe('messageStreamToDuplex', () => {
     const [sinkError, sourceError] = await Promise.all([
       it.sink(source()).catch(err => err),
       drain(it.source).catch(err => err),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       outgoing.abort(err)
     ])
 

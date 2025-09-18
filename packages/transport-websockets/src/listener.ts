@@ -331,12 +331,20 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     // abort and in-flight connection upgrades
     this.shutdownController.abort()
 
-    await Promise.all([
+    const events = [
       pEvent(this.server, 'close'),
-      this.http == null ? null : pEvent(this.http, 'close'),
-      this.https == null ? null : pEvent(this.https, 'close'),
       pEvent(this.wsServer, 'close')
-    ])
+    ]
+
+    if (this.http != null) {
+      events.push(pEvent(this.http, 'close'))
+    }
+
+    if (this.https != null) {
+      events.push(pEvent(this.https, 'close'))
+    }
+
+    await Promise.all(events)
 
     this.safeDispatchEvent('close')
   }

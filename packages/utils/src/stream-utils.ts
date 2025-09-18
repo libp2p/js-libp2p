@@ -50,14 +50,6 @@ export interface ByteStreamOpts {
    * @default 4_194_304
    */
   maxBufferSize?: number
-
-  /**
-   * If true, prevent message events propagating after they have been received,
-   *
-   * This is useful for when there are be other observers of messages and the
-   * caller does not wish to them to receive anything
-   */
-  stopPropagation?: boolean
 }
 
 export interface ReadBytesOptions extends AbortOptions {
@@ -132,10 +124,6 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
   }
 
   const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
-    if (opts?.stopPropagation === true) {
-      // evt.stopImmediatePropagation()
-    }
-
     readBuffer.append(evt.data)
 
     if (readBuffer.byteLength > maxBufferSize) {
@@ -177,6 +165,7 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
         }
 
         if (readBuffer.byteLength < options.bytes) {
+          stream.log.error('closed after reading %d/%d bytes', readBuffer.byteLength, options.bytes)
           throw new UnexpectedEOFError(`Unexpected EOF - stream closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`)
         }
       }
@@ -210,6 +199,7 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
 
       if (readBuffer.byteLength < toRead) {
         if (isEOF(stream)) {
+          stream.log.error('closed while reading %d/%d bytes', readBuffer.byteLength, toRead)
           throw new UnexpectedEOFError(`Unexpected EOF - stream closed while reading ${readBuffer.byteLength}/${toRead} bytes`)
         }
 
@@ -352,10 +342,12 @@ export function lpStream <T extends MessageStream> (stream: T, opts: Partial<Len
       })
 
       if (buf == null) {
+        stream.log.error('tried to read %d bytes but the stream closed', dataLength)
         throw new UnexpectedEOFError(`Unexpected EOF - tried to read ${dataLength} bytes but the stream closed`)
       }
 
       if (buf.byteLength !== dataLength) {
+        stream.log.error('read %d/%d bytes before the stream closed', buf.byteLength, dataLength)
         throw new UnexpectedEOFError(`Unexpected EOF - read ${buf.byteLength}/${dataLength} bytes before the stream closed`)
       }
 
