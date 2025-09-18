@@ -9,7 +9,7 @@
     "test": "aegir test -- --exit",
     "clean": "aegir clean",
     "lint": "aegir lint",
-    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome": "aegir test -t browser --cov -- --exit",
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
