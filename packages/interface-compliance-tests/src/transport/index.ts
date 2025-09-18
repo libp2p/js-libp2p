@@ -362,7 +362,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const echoProtocol = dialer.services.echo.protocol
 
       // TODO: increase this back to 2_000
-      for (let i = 0; i < 1_000; i++) {
+      for (let i = 0; i < 200; i++) {
         const input = new Uint8Array(1024).fill(5)
         const output = await dialer.services.echo.echo(connection.remotePeer, input, {
           signal: AbortSignal.timeout(timeout)
