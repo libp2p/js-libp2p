@@ -572,8 +572,10 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       }
 
       const protocol = '/receive-data/1.0.0'
-      const chunkSize = 1024
-      const bytes = chunkSize * 1024 * 10
+      // TODO: restore to previous values (chunkSize = 1024, bytes = chunkSize * 1024 * 10)
+      // after https://github.com/murat-dogan/node-datachannel/issues/375 is fixed
+      const chunkSize = 1024 * 1024
+      const bytes = chunkSize * 10
 
       await listener.handle(protocol, async (stream) => {
         for (let i = 0; i < bytes; i += chunkSize) {
