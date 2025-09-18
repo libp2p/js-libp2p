@@ -124,7 +124,6 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
   }
 
   const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
-    stream.log('incoming %d bytes', evt.data.byteLength)
     readBuffer.append(evt.data)
 
     if (readBuffer.byteLength > maxBufferSize) {
