@@ -71,7 +71,7 @@
     "main-event": "^1.0.1",
     "multiformats": "^13.4.0",
     "p-defer": "^4.0.1",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
     "protons-runtime": "^5.6.0",
     "race-signal": "^2.0.0",

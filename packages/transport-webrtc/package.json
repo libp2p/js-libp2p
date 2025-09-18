@@ -67,7 +67,7 @@
     "multiformats": "^13.4.0",
     "node-datachannel": "^0.29.0",
     "p-defer": "^4.0.1",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "p-timeout": "^6.1.4",
     "p-wait-for": "^5.0.2",
     "progress-events": "^1.0.1",

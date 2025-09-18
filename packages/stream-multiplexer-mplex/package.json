@@ -74,7 +74,7 @@
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
     "it-stream-types": "^2.0.2",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "random-int": "^3.0.0"
   },
   "sideEffects": false
