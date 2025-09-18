@@ -2,6 +2,7 @@ import { StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
+import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
 import { Message } from './private-to-public/pb/message.js'
@@ -10,7 +11,6 @@ import type { DataChannelOptions } from './index.js'
 import type { AbortOptions, MessageStreamDirection, Logger } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { Pushable } from 'it-pushable'
-import { pEvent } from 'p-event'
 
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {
   /**
@@ -85,7 +85,7 @@ export class WebRTCStream extends AbstractStream {
     }
 
     if (this.channel.readyState !== 'open') {
-      this.log('channel ready state is "%s" and not "open", waiting for "open" event before sending data',this.channel.readyState)
+      this.log('channel ready state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
       pEvent(this.channel, 'open', {
         rejectionEvents: [
           'close',
@@ -97,7 +97,7 @@ export class WebRTCStream extends AbstractStream {
           this.safeDispatchEvent('drain')
         })
         .catch(err => {
-          this.abort(err)
+          this.abort(err.error ?? err)
         })
     }
 

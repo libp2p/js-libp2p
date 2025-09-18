@@ -1,5 +1,4 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
-import { pEvent } from 'p-event'
 import { MUXER_PROTOCOL } from './constants.js'
 import { createStream, WebRTCStream } from './stream.js'
 import type { DataChannelOptions } from './index.js'
