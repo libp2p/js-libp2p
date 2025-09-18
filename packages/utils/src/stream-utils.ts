@@ -50,14 +50,6 @@ export interface ByteStreamOpts {
    * @default 4_194_304
    */
   maxBufferSize?: number
-
-  /**
-   * If true, prevent message events propagating after they have been received,
-   *
-   * This is useful for when there are be other observers of messages and the
-   * caller does not wish to them to receive anything
-   */
-  stopPropagation?: boolean
 }
 
 export interface ReadBytesOptions extends AbortOptions {
@@ -132,10 +124,7 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
   }
 
   const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
-    if (opts?.stopPropagation === true) {
-      // evt.stopImmediatePropagation()
-    }
-
+    stream.log('incoming %d bytes', evt.data.byteLength)
     readBuffer.append(evt.data)
 
     if (readBuffer.byteLength > maxBufferSize) {

@@ -1,5 +1,5 @@
 # install node and browsers
-FROM mcr.microsoft.com/playwright:v1.50.1
+FROM mcr.microsoft.com/playwright:v1.55.0
 
 WORKDIR /app
 

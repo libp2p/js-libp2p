@@ -91,9 +91,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.processSendQueue = this.processSendQueue.bind(this)
 
     const continueSendingOnDrain = (): void => {
-      this.log.trace('drain event received, continue sending data')
-      this.writableNeedsDrain = false
-      this.processSendQueue()
+      if (this.writableNeedsDrain) {
+        this.log.trace('drain event received, continue sending data')
+        this.writableNeedsDrain = false
+        this.processSendQueue()
+      }
     }
     this.addEventListener('drain', continueSendingOnDrain)
   }

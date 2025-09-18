@@ -10,6 +10,7 @@ import type { DataChannelOptions } from './index.js'
 import type { AbortOptions, MessageStreamDirection, Logger } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { Pushable } from 'it-pushable'
+import { pEvent } from 'p-event'
 
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {
   /**
@@ -83,6 +84,23 @@ export class WebRTCStream extends AbstractStream {
       }
     }
 
+    if (this.channel.readyState !== 'open') {
+      this.log('channel ready state is "%s" and not "open", waiting for "open" event before sending data',this.channel.readyState)
+      pEvent(this.channel, 'open', {
+        rejectionEvents: [
+          'close',
+          'error'
+        ]
+      })
+        .then(() => {
+          this.log('channel ready state is now "%s", dispatching drain', this.channel.readyState)
+          this.safeDispatchEvent('drain')
+        })
+        .catch(err => {
+          this.abort(err)
+        })
+    }
+
     // pipe framed protobuf messages through a length prefixed decoder, and
     // surface data from the `Message.message` field through a source.
     Promise.resolve().then(async () => {
@@ -130,6 +148,13 @@ export class WebRTCStream extends AbstractStream {
   }
 
   sendData (data: Uint8ArrayList): SendResult {
+    if (this.channel.readyState !== 'open') {
+      return {
+        sentBytes: 0,
+        canSendMore: false
+      }
+    }
+
     if (isFirefox) {
       // TODO: firefox can deliver small messages out of order - remove once a
       // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
