@@ -24,7 +24,7 @@
  */
 
 import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@libp2p/interface'
-import { WebSockets as WebSocketsMatcher } from '@multiformats/multiaddr-matcher'
+import { WebSockets as WebSocketsMatcher, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
@@ -183,7 +183,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   }
 
   listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    return multiaddrs.filter(ma => WebSocketsMatcher.exactMatch(ma))
+    return multiaddrs.filter(ma => WebSocketsMatcher.exactMatch(ma) || WebSocketsSecure.exactMatch(ma))
   }
 
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
