@@ -17,7 +17,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Identify } from '@libp2p/identify'
 import type { Libp2p, PeerId } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -151,7 +151,7 @@ describe('DHT subsystem operates correctly', () => {
   it('kad-dht should discover other peers', async () => {
     const deferred = pDefer()
 
-    const getConfig = (): Libp2pOptions<{ dht: KadDHT, ping: PingService, identify: Identify }> => ({
+    const getConfig = (): Libp2pOptions<{ dht: KadDHT, ping: Ping, identify: Identify }> => ({
       addresses: {
         listen: [
           listenAddr.toString()

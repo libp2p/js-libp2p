@@ -270,15 +270,6 @@ export interface CircuitRelayTransportInit extends TransportReservationStoreInit
   maxOutboundStopStreams?: number
 
   /**
-   * Incoming STOP requests (e.g. when a remote peer wants to dial us via a
-   * relay) must finish the initial protocol negotiation within this timeout in
-   * ms
-   *
-   * @deprecated Configure `connectionManager.inboundUpgradeTimeout` instead
-   */
-  stopTimeout?: number
-
-  /**
    * When creating a reservation it must complete within this number of ms
    *
    * @default 10_000
