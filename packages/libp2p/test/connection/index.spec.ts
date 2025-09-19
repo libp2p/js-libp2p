@@ -1,4 +1,5 @@
 import { StreamCloseEvent } from '@libp2p/interface'
+import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { echoStream, streamPair, echo, multiaddrConnectionPair, mockMuxer } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -361,6 +362,7 @@ describe('connection', () => {
     }
 
     const incomingStream = stubInterface<Stream>({
+      log: defaultLogger().forComponent('stream'),
       protocol: streamProtocol
     })
 
@@ -371,24 +373,100 @@ describe('connection', () => {
     onIncomingStream(new CustomEvent('stream', {
       detail: incomingStream
     }))
-    /*
-    const incomingStream = stubInterface<Stream>({
-      id: 'stream-id',
-      log: logger('test-stream'),
-      direction: 'outbound',
-      sink: async (source) => drain(source),
-      source: map((async function * () {
-        yield '/multistream/1.0.0\n'
-        yield `${streamProtocol}\n`
-      })(), str => encode.single(uint8ArrayFromString(str)))
-    })
-*/
-    //    onIncomingStream?.(incomingStream)
 
     // incoming stream is opened asynchronously
     await delay(100)
 
     expect(middleware1.called).to.be.true()
     expect(middleware2.called).to.be.true()
+  })
+
+  it('should not call outbound middleware if previous middleware errors', async () => {
+    const streamProtocol = '/test/protocol'
+    const err = new Error('boom')
+
+    const middleware1 = Sinon.stub().callsFake((stream, connection, next) => {
+      throw err
+    })
+    const middleware2 = Sinon.stub().callsFake((stream, connection, next) => {
+      next(stream, connection)
+    })
+
+    const middleware = [
+      middleware1,
+      middleware2
+    ]
+
+    registrar.getMiddleware.withArgs(streamProtocol).returns(middleware)
+    registrar.getHandler.withArgs(streamProtocol).returns({
+      handler: () => {},
+      options: {}
+    })
+
+    const connection = createConnection(components, init)
+
+    await expect(connection.newStream(streamProtocol))
+      .to.eventually.be.rejectedWith(err)
+
+    expect(middleware1.called).to.be.true()
+    expect(middleware2.called).to.be.false()
+  })
+
+  it('should not call inbound middleware if previous middleware errors', async () => {
+    const streamProtocol = '/test/protocol'
+
+    const middleware1 = Sinon.stub().callsFake((stream, connection, next) => {
+      throw new Error('boom')
+    })
+    const middleware2 = Sinon.stub().callsFake((stream, connection, next) => {
+      next(stream, connection)
+    })
+
+    const middleware = [
+      middleware1,
+      middleware2
+    ]
+
+    registrar.getMiddleware.withArgs(streamProtocol).returns(middleware)
+    registrar.getHandler.withArgs(streamProtocol).returns({
+      handler: () => {},
+      options: {}
+    })
+
+    const muxer = stubInterface<StreamMuxer>({
+      streams: []
+    })
+
+    createConnection(components, {
+      ...init,
+      muxer
+    })
+
+    expect(muxer.addEventListener.getCall(0).args[0]).to.equal('stream')
+    const onIncomingStream = muxer.addEventListener.getCall(0).args[1]
+
+    if (onIncomingStream == null) {
+      throw new Error('No incoming stream handler registered')
+    }
+
+    const incomingStream = stubInterface<Stream>({
+      log: defaultLogger().forComponent('stream'),
+      protocol: streamProtocol
+    })
+
+    if (typeof onIncomingStream !== 'function') {
+      throw new Error('Stream handler was not function')
+    }
+
+    onIncomingStream(new CustomEvent('stream', {
+      detail: incomingStream
+    }))
+
+    // incoming stream is opened asynchronously
+    await delay(100)
+
+    expect(middleware1.called).to.be.true()
+    expect(middleware2.called).to.be.false()
+    expect(incomingStream).to.have.nested.property('abort.called', true)
   })
 })
