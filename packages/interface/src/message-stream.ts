@@ -117,7 +117,7 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    *
    * This value can be changed at runtime.
    */
-  maxWriteBufferLength: number
+  maxWriteBufferLength?: number
 
   /**
    * If no data is transmitted over the stream in this many ms, the stream will
