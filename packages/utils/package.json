@@ -63,7 +63,7 @@
     "main-event": "^1.0.1",
     "netmask": "^2.0.2",
     "p-defer": "^4.0.1",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "race-signal": "^2.0.0",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
