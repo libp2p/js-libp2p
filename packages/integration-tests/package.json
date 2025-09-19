@@ -18,7 +18,7 @@
     "dep-check": "aegir dep-check"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-gossipsub": "^14.1.1",
+    "@libp2p/gossipsub": "^14.1.1",
     "@libp2p/bootstrap": "^11.0.47",
     "@libp2p/circuit-relay-v2": "^3.2.24",
     "@libp2p/crypto": "^5.1.8",

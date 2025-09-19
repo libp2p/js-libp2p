@@ -1,8 +1,0 @@
-{
-  "readme": "none",
-  "entryPoints": [
-    "./src/index.ts",
-    "./src/peer-streams.ts",
-    "./src/utils.ts"
-  ]
-}

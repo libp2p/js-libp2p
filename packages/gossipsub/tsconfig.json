@@ -1,0 +1,13 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "importsNotUsedAsValues": "remove",
+    "noImplicitReturns": true,
+    "outDir": "dist",
+    "useUnknownInCatchVariables": true,
+  },
+  "include": [
+    "src",
+    "test"
+  ]
+}

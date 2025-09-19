@@ -75,7 +75,7 @@
       "path": "../protocol-ping"
     },
     {
-      "path": "../pubsub-floodsub"
+      "path": "../floodsub"
     },
     {
       "path": "../stream-multiplexer-mplex"

@@ -5,6 +5,7 @@ import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOpti
 import type { Logger } from '@libp2p/logger'
 
 const DEFAULT_MAX_READ_BUFFER_LENGTH = Math.pow(2, 20) * 4 // 4MB
+const DEFAULT_MAX_WRITE_BUFFER_LENGTH = Math.pow(2, 20) * 4 // 4MB
 
 export interface MessageStreamInit extends StreamOptions {
   /**
@@ -42,7 +43,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   public readonly timeline: Timeline
   public inactivityTimeout: number
   public maxReadBufferLength: number
-  public maxWriteBufferLength?: number
+  public maxWriteBufferLength: number
   public readonly log: Logger
   public direction: MessageStreamDirection
   public maxMessageSize?: number
@@ -71,7 +72,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.direction = init.direction ?? 'outbound'
     this.inactivityTimeout = init.inactivityTimeout ?? 120_000
     this.maxReadBufferLength = init.maxReadBufferLength ?? DEFAULT_MAX_READ_BUFFER_LENGTH
-    this.maxWriteBufferLength = init.maxWriteBufferLength
+    this.maxWriteBufferLength = init.maxWriteBufferLength ?? DEFAULT_MAX_WRITE_BUFFER_LENGTH
     this.maxMessageSize = init.maxMessageSize
     this.readBuffer = new Uint8ArrayList()
     this.writeBuffer = new Uint8ArrayList()

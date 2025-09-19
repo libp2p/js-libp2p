@@ -278,8 +278,8 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
       log: this.log.newScope(`stream:${direction}:${id}`),
       sendMessage: this.sendMessage,
       encoding: this.encoding,
-      maxMessageSize: this.maxMessageSize - MESSAGE_OVERHEAD,
-      protocol: ''
+      maxMessageSize: this.maxMessageSize - MESSAGE_OVERHEAD
+      // protocol: options.protocol ?? ''
     })
   }
 }
