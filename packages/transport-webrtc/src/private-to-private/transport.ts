@@ -31,14 +31,6 @@ export interface WebRTCTransportInit {
    * Any options here will be applied to any RTCDataChannels that are opened.
    */
   dataChannel?: DataChannelOptions
-
-  /**
-   * Inbound connections must complete the upgrade within this many ms
-   *
-   * @default 30_000
-   * @deprecated configure `connectionManager.inboundUpgradeTimeout` instead
-   */
-  inboundConnectionTimeout?: number
 }
 
 export interface WebRTCTransportComponents {

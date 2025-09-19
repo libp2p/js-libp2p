@@ -308,6 +308,15 @@ export interface DataChannelOptions {
    * @default 5_000
    */
   openTimeout?: number
+
+  /**
+   * Due to bugs in WebRTC implementations it's necessary for the remote end of
+   * the connection to acknowledge the FIN message we send during stream
+   * closing. A stream will wait for this many ms.
+   *
+   * @default 10_000
+   */
+  finAckTimeout?: number
 }
 
 /**

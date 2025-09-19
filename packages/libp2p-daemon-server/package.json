@@ -60,7 +60,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "sinon-ts": "^2.0.0"
   }
 }

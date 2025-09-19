@@ -86,7 +86,7 @@
     "@dapplion/benchmark": "^1.0.0",
     "@libp2p/interface-compliance-tests": "^6.5.0",
     "@libp2p/mplex": "^11.0.47",
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
     "it-pushable": "^3.2.3",

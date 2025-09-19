@@ -250,8 +250,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       expect(connection).to.have.property('streams').that.has.lengthOf(5)
 
       if (remoteConn != null) {
-        await pWaitFor(() => remoteConn.streams.length === 5, {
-          timeout: 5000
+        await pWaitFor(() => remoteConn.streams.filter(s => s.protocol === '/echo/1.0.0').length === 5, {
+          timeout: 5_000,
+          interval: 1_000
         })
       }
 
@@ -360,7 +361,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const connection = await dialer.dial(dialAddrs[0])
       const echoProtocol = dialer.services.echo.protocol
 
-      for (let i = 0; i < 2000; i++) {
+      for (let i = 0; i < 2_000; i++) {
         const input = new Uint8Array(1024).fill(5)
         const output = await dialer.services.echo.echo(connection.remotePeer, input, {
           signal: AbortSignal.timeout(timeout)

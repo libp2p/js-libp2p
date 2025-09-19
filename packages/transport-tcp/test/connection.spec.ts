@@ -81,7 +81,7 @@ describe('valid localAddr and remoteAddr', () => {
     // Close the dialer with two simultaneous calls to `close`
     await Promise.race([
       new Promise((resolve, reject) => setTimeout(() => { reject(new Error('Timed out waiting for connection close')) }, 500)),
-      await Promise.all([
+      Promise.all([
         dialerConn.close(),
         dialerConn.close()
       ])

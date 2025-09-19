@@ -119,8 +119,8 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       connectionEncrypters: (init.connectionEncrypters ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
       inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout,
-      inboundStreamProtocolNegotiationTimeout: init.connectionManager?.inboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
-      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
+      inboundStreamProtocolNegotiationTimeout: init.connectionManager?.inboundStreamProtocolNegotiationTimeout,
+      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout,
       connectionCloseTimeout: init.connectionManager?.connectionCloseTimeout
     })
 
@@ -237,7 +237,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
       this.status = 'started'
       this.safeDispatchEvent('start', { detail: this })
-      this.log('libp2p has started')
+      this.log('libp2p has started with peer id %p', this.peerId)
     } catch (err: any) {
       this.log.error('An error occurred starting libp2p', err)
       // set status to 'started' so this.stop() will stop any running components

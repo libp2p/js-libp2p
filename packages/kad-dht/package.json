@@ -86,7 +86,7 @@
     "@types/lodash.range": "^3.2.9",
     "@types/sinon": "^17.0.4",
     "@types/which": "^3.0.4",
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
     "datastore-core": "^10.0.4",
     "delay": "^6.0.0",

@@ -55,7 +55,7 @@
     "@chainsafe/libp2p-gossipsub": "^14.1.1",
     "@libp2p/daemon-server": "^8.0.6",
     "@libp2p/kad-dht": "^15.1.11",
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "it-all": "^3.0.9",
     "p-event": "^6.0.1",
     "sinon": "^21.0.0",

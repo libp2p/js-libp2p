@@ -55,7 +55,7 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.1.8",
     "@types/sinon": "^17.0.4",
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

@@ -106,6 +106,7 @@ describe('stream', () => {
 
     const [evt] = await Promise.all([
       pEvent<'close', StreamCloseEvent>(pair.initiatorStream, 'close'),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       pair.initiatorStream.abort(error)
     ])
 
@@ -270,6 +271,7 @@ describe('stream', () => {
 
     await Promise.all([
       pEvent(pair.receiverStream, 'close'),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       pair.initiatorStream.abort(error)
     ])
 
@@ -301,6 +303,7 @@ describe('stream', () => {
 
     await Promise.all([
       pEvent(pair.initiatorStream, 'close'),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       pair.receiverStream.abort(error)
     ])
 
@@ -442,6 +445,7 @@ describe('stream', () => {
 
     await Promise.all([
       pEvent(pair.receiverStream, 'close'),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       pair.initiatorStream.abort(new Error('wat'))
     ])
 
@@ -493,6 +497,7 @@ describe('stream', () => {
 
     await Promise.all([
       pEvent(pair.initiatorStream, 'close'),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       pair.receiverStream.abort(new Error('wat'))
     ])
 

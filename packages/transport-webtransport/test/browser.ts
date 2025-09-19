@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { stop } from '@libp2p/interface'
 import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -22,6 +23,9 @@ describe('libp2p-webtransport', () => {
       connectionGater: {
         denyDialMultiaddr: async () => false
       },
+      connectionMonitor: {
+        enabled: false
+      },
       services: {
         ping: ping()
       }
@@ -29,12 +33,7 @@ describe('libp2p-webtransport', () => {
   })
 
   afterEach(async () => {
-    if (node != null) {
-      await node.stop()
-
-      const conns = node.getConnections()
-      expect(conns.length).to.equal(0)
-    }
+    await stop(node)
   })
 
   it('webtransport connects to go-libp2p', async () => {

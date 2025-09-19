@@ -155,6 +155,9 @@ export default {
       await before.libp2p?.stop()
       await before.goLibp2pRelay?.proc.kill()
       await before.libp2pLimitedRelay?.stop()
+
+      // node-datachannel sometimes causes the process to hang
+      process.exit(0)
     }
   }
 }

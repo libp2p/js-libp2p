@@ -31,11 +31,8 @@ describe('bootstrap', () => {
   let libp2p: Libp2p
 
   beforeEach(async () => {
-    [remotePeerId1, remotePeerId2] = await Promise.all([
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-      peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    ])
+    remotePeerId1 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    remotePeerId2 = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   })
 
   afterEach(async () => {

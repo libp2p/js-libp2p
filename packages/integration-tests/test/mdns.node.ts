@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { randomBytes } from '@libp2p/crypto'
+import { start, stop } from '@libp2p/interface'
 import { mdns } from '@libp2p/mdns'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -70,15 +71,17 @@ describe('mdns', () => {
       }
     })
 
-    await Promise.all([
-      remoteLibp2p1.start(),
-      remoteLibp2p2.start(),
-      libp2p.start()
-    ])
+    await start(
+      remoteLibp2p1,
+      remoteLibp2p2,
+      libp2p
+    )
 
     await deferred.promise
 
-    await remoteLibp2p1.stop()
-    await remoteLibp2p2.stop()
+    await stop(
+      remoteLibp2p1,
+      remoteLibp2p2
+    )
   })
 })

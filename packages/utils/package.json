@@ -72,7 +72,7 @@
   "devDependencies": {
     "@libp2p/peer-id": "^5.1.9",
     "@types/netmask": "^2.0.5",
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
@@ -81,12 +81,10 @@
     "wherearewe": "^2.0.1"
   },
   "browser": {
-    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.browser.js",
-    "./dist/src/socket-writer.js": "./dist/src/socket-writer.browser.js"
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.browser.js"
   },
   "react-native": {
-    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.js",
-    "./dist/src/socket-writer.js": "./dist/src/socket-writer.js"
+    "./dist/src/get-thin-waist-addresses.js": "./dist/src/get-thin-waist-addresses.js"
   },
   "sideEffects": false
 }

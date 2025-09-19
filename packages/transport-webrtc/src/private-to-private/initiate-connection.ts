@@ -94,10 +94,20 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     // setup callback to write ICE candidates to the remote peer
     peerConnection.onicecandidate = ({ candidate }) => {
+      if (peerConnection.connectionState === 'connected') {
+        log.trace('ignore new ice candidate as peer connection is already connected')
+        return
+      }
+
       // a null candidate means end-of-candidates, an empty string candidate
       // means end-of-candidates for this generation, otherwise this should
       // be a valid candidate object
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      if (candidate == null || candidate?.candidate === '') {
+        log.trace('initiator detected end of ICE candidates')
+        return
+      }
+
       const data = JSON.stringify(candidate?.toJSON() ?? null)
 
       log.trace('initiator sending ICE candidate %o', candidate)
@@ -178,9 +188,15 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       })
     }
 
-    log.trace('closing init channel, starting status')
-
+    log.trace('closing init channel')
     channel.close()
+
+    // wait for init channel to close before proceeding, otherwise the channel
+    // id can be reused before both sides have seen the channel close
+    log.trace('waiting for init channel to close')
+    await pEvent(channel, 'close', {
+      signal
+    })
 
     onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'))
 
