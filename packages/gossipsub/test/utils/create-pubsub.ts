@@ -92,6 +92,9 @@ export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSub
   const localMuxer = mockMuxer().createStreamMuxer(outboundMultiaddrConnection)
   const remoteMuxer = mockMuxer().createStreamMuxer(inboundMultiaddrConnection)
 
+  // TODO: need to do multistream select here because gossipsub supports
+  // multiple protocols and one of a or b could be running floodsub
+
   localMuxer.addEventListener('stream', (evt) => {
     for (const call of a.components.registrar.handle.getCalls()) {
       if (call.args[0] === evt.detail.protocol) {
