@@ -279,6 +279,8 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
       sendMessage: this.sendMessage,
       encoding: this.encoding,
       maxMessageSize: this.maxMessageSize - MESSAGE_OVERHEAD,
+      // TODO: uncomment this after removing gossipsub from the codebase (post
+      // v3 release), then add multistream-select to gossipsub tests
       // protocol: ''
     })
   }
