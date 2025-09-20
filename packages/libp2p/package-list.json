@@ -51,6 +51,6 @@
 
     "pubsub",
     ["ChainSafe/js-libp2p-gossipsub", "@chainsafe/libp2p-gossipsub", "master", "main.yml"],
-    ["libp2p/js-libp2p/tree/main/packages/pubsub-floodsub", "@libp2p/floodsub", "main", "main.yml"]
+    ["libp2p/js-libp2p/tree/main/packages/floodsub", "@libp2p/floodsub", "main", "main.yml"]
   ]
 }

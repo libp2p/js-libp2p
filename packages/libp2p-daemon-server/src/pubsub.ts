@@ -8,7 +8,7 @@ import { logger } from '@libp2p/logger'
 import { pushable } from 'it-pushable'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { ErrorResponse, OkResponse } from './responses.js'
-import type { GossipSub } from '@chainsafe/libp2p-gossipsub'
+import type { GossipSub } from '@libp2p/gossipsub'
 
 const log = logger('libp2p:daemon-server:pubsub')
 

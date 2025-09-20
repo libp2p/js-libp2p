@@ -42,7 +42,7 @@
     "test:node": "aegir test -t node"
   },
   "dependencies": {
-    "@chainsafe/libp2p-gossipsub": "^14.1.1",
+    "@libp2p/gossipsub": "^14.1.1",
     "@libp2p/crypto": "^5.1.8",
     "@libp2p/daemon-protocol": "^7.0.6",
     "@libp2p/interface": "^2.11.0",

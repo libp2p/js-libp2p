@@ -100,9 +100,24 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
   /**
    * The maximum number of bytes to store when paused. If receipt of more bytes
    * from the remote end of the stream causes the buffer size to exceed this
-   * value the stream will be reset and an 'error' event emitted.
+   * value the stream will be reset and a 'close' event emitted.
+   *
+   * This value can be changed at runtime.
    */
   maxReadBufferLength: number
+
+  /**
+   * When the `.send` method returns false it means that the underlying resource
+   * has signalled that it's write buffer is full. If the user continues to call
+   * `.send`, outgoing bytes are stored in an internal buffer until the
+   * underlying resource signals that it can accept more data.
+   *
+   * If the size of that internal buffer exceed this value the stream will be
+   * reset and a 'close' event emitted.
+   *
+   * This value can be changed at runtime.
+   */
+  maxWriteBufferLength?: number
 
   /**
    * If no data is transmitted over the stream in this many ms, the stream will
