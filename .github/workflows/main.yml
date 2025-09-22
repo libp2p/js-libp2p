@@ -254,7 +254,7 @@ jobs:
       test-interop ,
       transport-interop
     ]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && ( github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/') )
     permissions:
       contents: write
       id-token: write
