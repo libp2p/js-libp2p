@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - release/*
   pull_request:
     branches:
       - '**'
@@ -263,6 +264,7 @@ jobs:
         id: release
         with:
           token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          target-branch: ${{ github.ref_name }}
           manifest-file: .release-please-manifest.json
           config-file: .release-please.json
       - uses: actions/checkout@v5
