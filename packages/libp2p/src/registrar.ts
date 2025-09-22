@@ -1,5 +1,5 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { mergeOptions, trackedMap } from '@libp2p/utils'
+import { trackedMap } from '@libp2p/utils'
 import { DuplicateProtocolHandlerError, UnhandledProtocolError } from './errors.js'
 import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
@@ -95,14 +95,13 @@ export class Registrar implements RegistrarInterface {
       throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 
-    const options = mergeOptions.bind({ ignoreUndefined: true })({
-      maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
-      maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
-    }, opts)
-
     this.handlers.set(protocol, {
       handler,
-      options
+      options: {
+        maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
+        maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS,
+        ...opts
+      }
     })
 
     // Add new protocol to self protocols in the peer store
