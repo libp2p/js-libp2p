@@ -17,10 +17,10 @@ describe('tls', () => {
   let encrypter: ConnectionEncrypter
 
   beforeEach(async () => {
-    [remotePeer, wrongPeer] = await Promise.all([
+    [remotePeer, wrongPeer] = [
       peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
       peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-    ])
+    ]
 
     const localKeyPair = await generateKeyPair('Ed25519')
     localPeer = peerIdFromPrivateKey(localKeyPair)

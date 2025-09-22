@@ -187,6 +187,7 @@ export const toMultiaddrConnection = (socket: Socket, options: ToConnectionOptio
           }),
 
           // all bytes have been sent we can destroy the socket
+          // eslint-disable-next-line @typescript-eslint/await-thenable
           socket.destroy()
         ])
       } catch (err: any) {

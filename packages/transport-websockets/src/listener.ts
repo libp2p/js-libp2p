@@ -336,7 +336,9 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
 
     await Promise.all([
       pEvent(this.server, 'close'),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       this.http == null ? null : pEvent(this.http, 'close'),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       this.https == null ? null : pEvent(this.https, 'close'),
       pEvent(this.wsServer, 'close')
     ])

@@ -2,6 +2,7 @@
 
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { identify } from '@libp2p/identify'
+import { start, stop } from '@libp2p/interface'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { mplex } from '@libp2p/mplex'
 import { ping } from '@libp2p/ping'
@@ -97,10 +98,10 @@ describe('DHT subsystem operates correctly', () => {
         }
       })
 
-      await Promise.all([
-        libp2p.start(),
-        remoteLibp2p.start()
-      ])
+      await start(
+        libp2p,
+        remoteLibp2p
+      )
 
       await libp2p.peerStore.patch(remoteLibp2p.peerId, {
         multiaddrs: [remoteListenAddr]
@@ -186,11 +187,11 @@ describe('DHT subsystem operates correctly', () => {
       }
     })
 
-    await Promise.all([
-      libp2p.start(),
-      remoteLibp2p1.start(),
-      remoteLibp2p2.start()
-    ])
+    await start(
+      libp2p,
+      remoteLibp2p1,
+      remoteLibp2p2
+    )
 
     await libp2p.peerStore.patch(remoteLibp2p1.peerId, {
       multiaddrs: remoteLibp2p1.getMultiaddrs()
@@ -208,9 +209,9 @@ describe('DHT subsystem operates correctly', () => {
     ])
 
     await deferred.promise
-    return Promise.all([
-      remoteLibp2p1.stop(),
-      remoteLibp2p2.stop()
-    ])
+    return stop(
+      remoteLibp2p1,
+      remoteLibp2p2
+    )
   })
 })
