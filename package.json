@@ -48,6 +48,6 @@
     "packages/*"
   ],
   "overrides": {
-    "playwright-core": "next"
+    "playwright-core": "1.56.0-alpha-1758292576000"
   }
 }
