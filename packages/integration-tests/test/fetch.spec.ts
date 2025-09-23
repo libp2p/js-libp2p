@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { fetch } from '@libp2p/fetch'
+import { identify } from '@libp2p/identify'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -12,7 +13,8 @@ import type { Libp2p } from '@libp2p/interface'
 async function createNode (): Promise<Libp2p<{ fetch: Fetch }>> {
   return createLibp2p(createBaseOptions({
     services: {
-      fetch: fetch()
+      fetch: fetch(),
+      identify: identify()
     }
   }))
 }

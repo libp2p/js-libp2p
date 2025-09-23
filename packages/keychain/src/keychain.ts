@@ -3,13 +3,13 @@
 import { pbkdf2, randomBytes } from '@libp2p/crypto'
 import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
-import { mergeOptions } from '@libp2p/utils'
 import { Key } from 'interface-datastore/key'
 import { base58btc } from 'multiformats/bases/base58'
 import { sha256 } from 'multiformats/hashes/sha2'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { DEK_INIT } from './constants.ts'
 import { exportPrivateKey } from './utils/export.js'
 import { importPrivateKey } from './utils/import.js'
 import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo } from './index.js'
@@ -24,16 +24,6 @@ const NIST = {
   minKeyLength: 112 / 8,
   minSaltLength: 128 / 8,
   minIterationCount: 1000
-}
-
-const defaultOptions = {
-  // See https://cryptosense.com/parametesr-choice-for-pbkdf2/
-  dek: {
-    keyLength: 512 / 8,
-    iterationCount: 10000,
-    salt: 'you should override this value with a crypto secure random number',
-    hash: 'sha2-512'
-  }
 }
 
 function validateKeyName (name: string): boolean {
@@ -101,7 +91,13 @@ export class Keychain implements KeychainInterface {
   constructor (components: KeychainComponents, init: KeychainInit) {
     this.components = components
     this.log = components.logger.forComponent('libp2p:keychain')
-    this.init = mergeOptions(defaultOptions, init)
+    this.init = {
+      ...init,
+      dek: {
+        ...DEK_INIT,
+        ...init.dek
+      }
+    }
     this.self = init.selfKey ?? 'self'
 
     // Enforce NIST SP 800-132
@@ -142,9 +138,13 @@ export class Keychain implements KeychainInterface {
    * @returns {object}
    */
   static generateOptions (): KeychainInit {
-    const options = Object.assign({}, defaultOptions)
+    const options = Object.assign({}, this.options)
     const saltLength = Math.ceil(NIST.minSaltLength / 3) * 3 // no base64 padding
-    options.dek.salt = uint8ArrayToString(randomBytes(saltLength), 'base64')
+
+    if (options.dek != null) {
+      options.dek.salt = uint8ArrayToString(randomBytes(saltLength), 'base64')
+    }
+
     return options
   }
 
@@ -154,8 +154,12 @@ export class Keychain implements KeychainInterface {
    *
    * @returns {object}
    */
-  static get options (): typeof defaultOptions {
-    return defaultOptions
+  static get options (): KeychainInit {
+    return {
+      dek: {
+        ...DEK_INIT
+      }
+    }
   }
 
   async findKeyByName (name: string): Promise<KeyInfo> {
