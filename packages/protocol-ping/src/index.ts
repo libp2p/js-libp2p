@@ -31,11 +31,6 @@ export interface Ping {
   ping(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<number>
 }
 
-/**
- * @deprecated Use the `Ping` export instead
- */
-export type PingService = Ping
-
 export interface PingInit {
   protocolPrefix?: string
   maxInboundStreams?: number
@@ -47,11 +42,6 @@ export interface PingInit {
    */
   timeout?: number
 }
-
-/**
- * @deprecated Use the `PingInit` export instead
- */
-export type PingServiceInit = PingInit
 
 export interface PingComponents {
   registrar: Registrar

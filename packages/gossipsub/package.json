@@ -1,0 +1,142 @@
+{
+  "name": "@libp2p/gossipsub",
+  "version": "14.1.1",
+  "description": "A typescript implementation of gossipsub",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "type": "module",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./metrics": {
+      "types": "./dist/src/metrics.d.ts",
+      "import": "./dist/src/metrics.js"
+    },
+    "./message": {
+      "types": "./dist/src/message/index.d.ts",
+      "import": "./dist/src/message/index.js"
+    },
+    "./score": {
+      "types": "./dist/src/score/index.d.ts",
+      "import": "./dist/src/score/index.js"
+    },
+    "./types": {
+      "types": "./dist/src/types.d.ts",
+      "import": "./dist/src/types.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "aegir lint",
+    "release": "aegir release --no-types",
+    "build": "aegir build",
+    "generate": "protons ./src/message/rpc.proto",
+    "pretest": "npm run build",
+    "pretest:e2e": "npm run build",
+    "benchmark": "yarn benchmark:files 'test/benchmark/**/*.test.ts'",
+    "benchmark:files": "NODE_OPTIONS='--max-old-space-size=4096 --loader=ts-node/esm' benchmark --config .benchrc.yaml --defaultBranch master",
+    "test": "aegir test -f './dist/test/*.spec.js'",
+    "test:unit": "aegir test -f './dist/test/unit/*.test.js' --target node",
+    "test:e2e": "aegir test -f './dist/test/e2e/*.spec.js'",
+    "test:browser": "npm run test -- --target browser"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChainSafe/js-libp2p-gossipsub.git"
+  },
+  "keywords": [
+    "libp2p",
+    "pubsub",
+    "gossip"
+  ],
+  "author": "Cayman Nava",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ChainSafe/js-libp2p-gossipsub/issues"
+  },
+  "homepage": "https://github.com/ChainSafe/js-libp2p-gossipsub#readme",
+  "dependencies": {
+    "@libp2p/crypto": "^5.0.0",
+    "@libp2p/interface": "^2.0.0",
+    "@libp2p/interface-internal": "^2.0.0",
+    "@libp2p/peer-id": "^5.0.0",
+    "@libp2p/pubsub": "^10.0.0",
+    "@multiformats/multiaddr": "^13.0.1",
+    "denque": "^2.1.0",
+    "it-length-prefixed": "^10.0.1",
+    "it-pipe": "^3.0.1",
+    "it-pushable": "^3.2.3",
+    "multiformats": "^13.0.1",
+    "protons-runtime": "^5.5.0",
+    "uint8arraylist": "^2.4.8",
+    "uint8arrays": "^5.0.1"
+  },
+  "devDependencies": {
+    "@chainsafe/as-sha256": "^1.2.0",
+    "@dapplion/benchmark": "^1.0.0",
+    "@libp2p/floodsub": "^10.0.0",
+    "@libp2p/interface-compliance-tests": "^6.0.0",
+    "@libp2p/logger": "^5.0.0",
+    "@libp2p/peer-store": "^11.0.0",
+    "@types/node": "^22.18.1",
+    "@types/sinon": "^17.0.3",
+    "abortable-iterator": "^5.1.0",
+    "aegir": "^47.0.21",
+    "datastore-core": "^10.0.0",
+    "delay": "^6.0.0",
+    "it-all": "^3.0.6",
+    "mkdirp": "^3.0.1",
+    "p-defer": "^4.0.0",
+    "p-event": "^6.0.0",
+    "p-retry": "^7.0.0",
+    "p-wait-for": "^5.0.2",
+    "protons": "^7.5.0",
+    "sinon": "^21.0.0",
+    "sinon-ts": "^2.0.0",
+    "time-cache": "^0.3.0"
+  },
+  "engines": {
+    "npm": ">=8.7.0"
+  },
+  "eslintConfig": {
+    "extends": "ipfs",
+    "ignorePatterns": [
+      "src/message/rpc*",
+      "!.aegir.js"
+    ]
+  },
+  "contributors": [
+    "Cayman <caymannava@gmail.com>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
+    "Mikerah <mikerahqc@protonmail.com>",
+    "Tuyen Nguyen <vutuyen2636@gmail.com>",
+    "Alex Potsides <alex@achingbrain.net>",
+    "Marin Petrunić <marin.petrunic@gmail.com>",
+    "Lion - dapplion <35266934+dapplion@users.noreply.github.com>",
+    "Gregory Markou <16929357+GregTheGreek@users.noreply.github.com>",
+    "Alan Shaw <alan.shaw@protocol.ai>",
+    "Tuyen <tuyen@wetrust.io>",
+    "Jacob Heun <jacobheun@gmail.com>",
+    "Patrick Michot <k0m0d0tr0n@gmail.com>",
+    "chainsafe <aidan@chainsafe.io>",
+    "Hugo Dias <hugomrdias@gmail.com>",
+    "Franck Royer <franck@royer.one>",
+    "ChainSafe <superadmin@chainsafe.io>"
+  ],
+  "sideEffects": false
+}

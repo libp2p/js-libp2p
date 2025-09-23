@@ -56,13 +56,6 @@ export interface IdentifyInit {
   protocolPrefix?: string
 
   /**
-   * What details we should send as part of an identify message
-   *
-   * @deprecated Use `nodeInfo.userAgent` in the main libp2p config instead
-   */
-  agentVersion?: string
-
-  /**
    * How long we should wait for a remote peer to send their identify response
    *
    * @default 5000

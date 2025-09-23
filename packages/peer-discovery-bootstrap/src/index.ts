@@ -107,7 +107,7 @@ class Bootstrap extends TypedEventEmitter<PeerDiscoveryEvents> implements PeerDi
       .map(str => multiaddr(str))
       .filter(ma => {
         if (!P2P.matches(ma)) {
-          this.log.error('invalid multiaddr')
+          this.log.error('invalid multiaddr %a', ma)
           return false
         }
 

@@ -61,8 +61,7 @@ export async function handle <Stream extends MessageStream = MultiaddrConnection
   const lp = lpStream(stream, {
     ...options,
     maxDataLength: MAX_PROTOCOL_LENGTH,
-    maxLengthLength: 2, // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
-    stopPropagation: true
+    maxLengthLength: 2 // 2 bytes is enough to length-prefix MAX_PROTOCOL_LENGTH
   })
 
   while (true) {

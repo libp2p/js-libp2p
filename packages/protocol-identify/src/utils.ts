@@ -7,7 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
 import type { Identify as IdentifyMessage } from './pb/message.js'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, NodeInfo, Startable, Stream } from '@libp2p/interface'
+import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
@@ -35,14 +35,6 @@ export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined)
 
     }
   }
-}
-
-export function getAgentVersion (nodeInfo: NodeInfo, agentVersion?: string): string {
-  if (agentVersion != null) {
-    return agentVersion
-  }
-
-  return nodeInfo.userAgent
 }
 
 export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
@@ -217,7 +209,7 @@ export abstract class AbstractIdentify implements Startable {
     // Store self host metadata
     this.host = {
       protocolVersion: `${init.protocolPrefix ?? defaultValues.protocolPrefix}/${IDENTIFY_PROTOCOL_VERSION}`,
-      agentVersion: getAgentVersion(components.nodeInfo, init.agentVersion)
+      agentVersion: components.nodeInfo.userAgent
     }
 
     this.handleProtocol = this.handleProtocol.bind(this)

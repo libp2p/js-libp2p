@@ -260,7 +260,7 @@ class Client implements DaemonClient {
           })
         listener.close()
           .catch(err => {
-            log.error('error closing connection - %e', err)
+            log.error('error closing listener - %e', err)
           })
       })
   }

@@ -19,6 +19,9 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
         '/webrtc'
       ]
     },
+    connectionMonitor: {
+      enabled: false
+    },
     transports: [
       tcp(),
       webRTC(),

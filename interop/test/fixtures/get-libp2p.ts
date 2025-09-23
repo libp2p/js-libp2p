@@ -15,7 +15,7 @@ import { yamux } from '@libp2p/yamux'
 import { createLibp2p } from 'libp2p'
 import type { Identify } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions } from 'libp2p'
 
 const isDialer: boolean = process.env.is_dialer === 'true'
@@ -26,8 +26,8 @@ const SECURE_CHANNEL = process.env.security
 const MUXER = process.env.muxer
 const IP = process.env.ip ?? '0.0.0.0'
 
-export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
-  const options: Libp2pOptions<{ ping: PingService, identify: Identify }> = {
+export async function getLibp2p (): Promise<Libp2p<{ ping: Ping }>> {
+  const options: Libp2pOptions<{ ping: Ping, identify: Identify }> = {
     start: true,
     connectionGater: {
       denyDialMultiaddr: async () => false

@@ -83,24 +83,6 @@ export interface ConnectionManagerInit {
   inboundUpgradeTimeout?: number
 
   /**
-   * When a new outbound connection is opened, the upgrade process (e.g.
-   * protect, encrypt, multiplex etc) must complete within this number of ms.
-   *
-   * Does not apply if an abort signal is passed to the `.dial` method.
-   *
-   * @deprecated This is handled by `dialTimeout`
-   */
-  outboundUpgradeTimeout?: number
-
-  /**
-   * Protocol negotiation must complete within this number of ms
-   *
-   * @default 2000
-   * @deprecated use outboundStreamProtocolNegotiationTimeout or inboundStreamProtocolNegotiationTimeout instead
-   */
-  protocolNegotiationTimeout?: number
-
-  /**
    * Outbound protocol negotiation must complete within this number of ms.
    *
    * Does not apply if an abort signal is passed to the `.dial` or

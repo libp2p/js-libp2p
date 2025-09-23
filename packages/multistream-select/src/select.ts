@@ -60,8 +60,7 @@ export async function select <Stream extends MessageStream> (stream: Stream, pro
   const log = stream.log.newScope('mss:select')
   const lp = lpStream(stream, {
     ...options,
-    maxDataLength: MAX_PROTOCOL_LENGTH,
-    stopPropagation: true
+    maxDataLength: MAX_PROTOCOL_LENGTH
   })
 
   for (let i = 0; i < protocols.length; i++) {

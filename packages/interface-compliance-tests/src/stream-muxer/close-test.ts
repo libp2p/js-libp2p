@@ -368,6 +368,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       await Promise.all([
         pEvent(listenerStream, 'close'),
+        // eslint-disable-next-line @typescript-eslint/await-thenable
         dialerStream.abort(new Error('Urk!'))
       ])
 

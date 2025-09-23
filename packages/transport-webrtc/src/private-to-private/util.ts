@@ -1,7 +1,6 @@
 import { ConnectionFailedError, InvalidMessageError, InvalidMultiaddrError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CustomProgressEvent } from 'progress-events'
-import { isFirefox } from '../util.js'
 import { RTCIceCandidate } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
 import type { WebRTCDialEvents } from './transport.js'
@@ -28,7 +27,7 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
         connectedPromise.promise,
         stream.read({
           signal: options.signal
-        }).catch(() => {})
+        })
       ])
 
       // stream ended or we became connected
@@ -69,26 +68,27 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
   } catch (err) {
     options.log.error('%s error parsing ICE candidate - %e', options.direction, err)
 
-    if (options.signal?.aborted === true && getConnectionState(pc) !== 'connected') {
+    if (options.signal?.aborted === true && pc.connectionState !== 'connected') {
       throw err
     }
   }
 }
 
-export function getConnectionState (pc: RTCPeerConnection): string {
-  return isFirefox ? pc.iceConnectionState : pc.connectionState
-}
-
 function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
-  pc[isFirefox ? 'oniceconnectionstatechange' : 'onconnectionstatechange'] = (_) => {
-    switch (getConnectionState(pc)) {
+  if (pc.connectionState === 'connected') {
+    promise.resolve()
+    return
+  }
+
+  pc.onconnectionstatechange = (_) => {
+    switch (pc.connectionState) {
       case 'connected':
         promise.resolve()
         break
       case 'failed':
       case 'disconnected':
       case 'closed':
-        promise.reject(new ConnectionFailedError('RTCPeerConnection was closed'))
+        promise.reject(new ConnectionFailedError(`RTCPeerConnection connection state became "${pc.connectionState}"`))
         break
       default:
         break

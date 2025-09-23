@@ -142,7 +142,7 @@ export interface StreamMuxer<MuxedStream extends Stream = Stream> extends TypedE
   /**
    * Create a new stream
    */
-  createStream(options?: CreateStreamOptions): MuxedStream | Promise<MuxedStream>
+  createStream(options?: CreateStreamOptions): Promise<MuxedStream>
 
   /**
    * Immediately close the muxer, abort every open stream and discard any

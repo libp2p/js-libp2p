@@ -73,7 +73,7 @@ export class DHTOperations {
         }
       }
     } catch (err: any) {
-      log.error('error getting value for key %o - %e', err)
+      log.error('missing key %b - %e', key, err)
       yield ErrorResponse(err)
     }
   }
@@ -84,7 +84,7 @@ export class DHTOperations {
 
       yield OkResponse()
     } catch (err: any) {
-      log.error('error putting value %o for key %o - %e', err)
+      log.error('missing key %b and value %b - %e', key, value, err)
       yield ErrorResponse(err)
     }
   }

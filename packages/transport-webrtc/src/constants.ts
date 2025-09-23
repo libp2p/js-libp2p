@@ -74,6 +74,11 @@ export const PROTOBUF_OVERHEAD = calculateProtobufOverhead()
 export const DATA_CHANNEL_DRAIN_TIMEOUT = 30_000
 
 /**
+ * Wait for the remote to acknowledge our FIN for this long
+ */
+export const DEFAULT_FIN_ACK_TIMEOUT = 10_000
+
+/**
  * Set as the 'negotiated' muxer protocol name
  */
 export const MUXER_PROTOCOL = '/webrtc'

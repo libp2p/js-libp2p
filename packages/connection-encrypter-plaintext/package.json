@@ -56,7 +56,7 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.1.8",
     "@libp2p/logger": "^5.2.0",
-    "aegir": "^47.0.21",
+    "aegir": "^47.0.22",
     "protons": "^7.7.0",
     "sinon": "^21.0.0"
   },
