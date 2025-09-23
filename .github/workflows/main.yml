@@ -259,7 +259,7 @@ jobs:
       id-token: write
       pull-requests: write
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: gvillo/release-please-action@v4.2.1-gvillo
         id: release
         with:
           token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}

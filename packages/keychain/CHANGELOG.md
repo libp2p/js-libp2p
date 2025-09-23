@@ -47,6 +47,39 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [6.0.0](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.9...keychain-v6.0.0) (2025-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* merge-options has been removed from `@libp2p/utils`
+* - Stream handlers accept `stream, connection`, not `{ stream, connection }`
+
+### Features
+
+* streams as EventTargets ([#3218](https://github.com/libp2p/js-libp2p/issues/3218)) ([0f68898](https://github.com/libp2p/js-libp2p/commit/0f68898e6503975aae6f2bb6ba36aff65dabdfe8)), closes [#3226](https://github.com/libp2p/js-libp2p/issues/3226)
+
+
+### Bug Fixes
+
+* remove merge-options ([#3294](https://github.com/libp2p/js-libp2p/issues/3294)) ([dc01b32](https://github.com/libp2p/js-libp2p/commit/dc01b3278f021c944594644629fbd449514aee35))
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
+
+### Documentation
+
+* fix broken links ([#3282](https://github.com/libp2p/js-libp2p/issues/3282)) ([71b4c41](https://github.com/libp2p/js-libp2p/commit/71b4c41e5990db2b65067663120b14de1ad72f9d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/interface bumped from ^2.11.0 to ^3.0.0
+  * devDependencies
+    * @libp2p/logger bumped from ^5.2.0 to ^6.0.0
+
 ## [5.2.9](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.8...keychain-v5.2.9) (2025-08-19)
 
 
