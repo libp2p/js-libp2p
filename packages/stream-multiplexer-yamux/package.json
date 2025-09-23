@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/yamux",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "description": "Yamux stream multiplexer for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-yamux#readme",
@@ -77,15 +77,15 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.0.0",
-    "@libp2p/utils": "^7.0.0",
+    "@libp2p/interface": "^4.0.0",
+    "@libp2p/utils": "^8.0.0",
     "race-signal": "^2.0.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
     "@dapplion/benchmark": "^1.0.0",
-    "@libp2p/interface-compliance-tests": "^7.0.0",
-    "@libp2p/mplex": "^12.0.0",
+    "@libp2p/interface-compliance-tests": "^8.0.0",
+    "@libp2p/mplex": "^13.0.0",
     "aegir": "^47.0.22",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
