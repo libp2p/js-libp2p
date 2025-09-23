@@ -8,11 +8,13 @@ import { isWebWorker } from 'wherearewe'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Fetch } from '@libp2p/fetch'
 import type { Libp2p } from '@libp2p/interface'
+import { identify } from '@libp2p/identify'
 
 async function createNode (): Promise<Libp2p<{ fetch: Fetch }>> {
   return createLibp2p(createBaseOptions({
     services: {
-      fetch: fetch()
+      fetch: fetch(),
+      identify: identify()
     }
   }))
 }

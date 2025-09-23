@@ -7,6 +7,7 @@ import { createLibp2p } from 'libp2p'
 import { createBaseOptions } from './fixtures/base-options.js'
 import type { Libp2p } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
+import { identify } from '@libp2p/identify'
 
 describe('ping', () => {
   let nodes: Array<Libp2p<{ ping: Ping }>>
@@ -15,17 +16,20 @@ describe('ping', () => {
     nodes = await Promise.all([
       createLibp2p(createBaseOptions({
         services: {
-          ping: ping()
+          ping: ping(),
+          identify: identify()
         }
       })),
       createLibp2p(createBaseOptions({
         services: {
-          ping: ping()
+          ping: ping(),
+          identify: identify()
         }
       })),
       createLibp2p(createBaseOptions({
         services: {
-          ping: ping()
+          ping: ping(),
+          identify: identify()
         }
       }))
     ])
@@ -80,7 +84,8 @@ describe('ping', () => {
           // Allow two outbound ping streams.
           // It is not allowed by the spec, but this test needs to open two concurrent streams.
           maxOutboundStreams: 2
-        })
+        }),
+        identify: identify()
       }
     }))
     await client.peerStore.patch(remote.peerId, {
