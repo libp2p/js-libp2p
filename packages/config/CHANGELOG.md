@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.2.0](https://github.com/libp2p/js-libp2p/compare/config-v1.1.15...config-v1.2.0) (2025-09-23)
+
+
+### Features
+
+* add @libp2p/config ([#2893](https://github.com/libp2p/js-libp2p/issues/2893)) ([f474745](https://github.com/libp2p/js-libp2p/commit/f4747450f1025df1dc31970355ceed2154c5b835))
+* allow configuring self-key name in config ([#2975](https://github.com/libp2p/js-libp2p/issues/2975)) ([56e5a2a](https://github.com/libp2p/js-libp2p/commit/56e5a2a87f2218d5c4d5b84f3941741a176b0cd7))
+
+
+### Bug Fixes
+
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
+
+### Documentation
+
+* update comments in interface module and elsewhere ([#3107](https://github.com/libp2p/js-libp2p/issues/3107)) ([32627c8](https://github.com/libp2p/js-libp2p/commit/32627c8767587f7e8df88a700933ece6d5f5c3c4)), closes [#2112](https://github.com/libp2p/js-libp2p/issues/2112)
+* update config docs ([#2917](https://github.com/libp2p/js-libp2p/issues/2917)) ([8582cc2](https://github.com/libp2p/js-libp2p/commit/8582cc24965b8636e466a259ed9f65a23e511ec6))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^6.0.0
+    * @libp2p/interface bumped from ^3.0.0 to ^4.0.0
+    * @libp2p/keychain bumped from ^6.0.0 to ^7.0.0
+    * @libp2p/logger bumped from ^6.0.0 to ^7.0.0
+
 ## [1.1.15](https://github.com/libp2p/js-libp2p/compare/config-v1.1.14...config-v1.1.15) (2025-09-23)
 
 

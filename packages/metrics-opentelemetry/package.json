@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/opentelemetry-metrics",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Opentelemetry metrics gathering for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-opentelemetry#readme",
@@ -40,12 +40,12 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.0.0",
-    "@libp2p/utils": "^7.0.0",
+    "@libp2p/interface": "^4.0.0",
+    "@libp2p/utils": "^8.0.0",
     "@opentelemetry/api": "^1.9.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.0.0",
+    "@libp2p/logger": "^7.0.0",
     "aegir": "^47.0.22"
   },
   "browser": {

@@ -64,6 +64,70 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [5.0.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v4.0.0...upnp-nat-v5.0.0) (2025-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires @mulitformats/multiaddr 13.x.x or later
+* - Stream handlers accept `stream, connection`, not `{ stream, connection }`
+* use ip/port mapping ([#2840](https://github.com/libp2p/js-libp2p/issues/2840))
+* - `@libp2p/peer-id-factory` has been removed, use `generateKeyPair` and `peerIdFromPrivateKey` instead
+* The `.code` property has been removed from most errors, use `.name` instead
+
+### Features
+
+* allow access to UPnP client from types ([#2449](https://github.com/libp2p/js-libp2p/issues/2449)) ([f6fe2cc](https://github.com/libp2p/js-libp2p/commit/f6fe2cc3cfb4a69520ede31874c94088a7e9b270))
+* allow specifying UPnP gateways and external address ([#2937](https://github.com/libp2p/js-libp2p/issues/2937)) ([26313e6](https://github.com/libp2p/js-libp2p/commit/26313e6959513eeb6235662ad4b5dc53cfb61470))
+* check service dependencies on startup ([#2586](https://github.com/libp2p/js-libp2p/issues/2586)) ([d1f1c2b](https://github.com/libp2p/js-libp2p/commit/d1f1c2be78bd195f404e62627c2c9f545845e5f5))
+* streams as EventTargets ([#3218](https://github.com/libp2p/js-libp2p/issues/3218)) ([0f68898](https://github.com/libp2p/js-libp2p/commit/0f68898e6503975aae6f2bb6ba36aff65dabdfe8)), closes [#3226](https://github.com/libp2p/js-libp2p/issues/3226)
+* use `.name` property instead of `.code` for errors ([#2655](https://github.com/libp2p/js-libp2p/issues/2655)) ([0d20426](https://github.com/libp2p/js-libp2p/commit/0d20426fd5ea19b03345c70289bbd692e4348e1f))
+
+
+### Bug Fixes
+
+* add browser polyfill to upnp-nat ([#2959](https://github.com/libp2p/js-libp2p/issues/2959)) ([d188511](https://github.com/libp2p/js-libp2p/commit/d188511b97ef9fc320233d284d16a6275b029b81))
+* confirm external ip ([#2895](https://github.com/libp2p/js-libp2p/issues/2895)) ([52f0f2f](https://github.com/libp2p/js-libp2p/commit/52f0f2f1324bb7316157c3bcdbbdb5f1b151e3ad))
+* deduplicate typed event target ([#3170](https://github.com/libp2p/js-libp2p/issues/3170)) ([cc7b34c](https://github.com/libp2p/js-libp2p/commit/cc7b34c0fe3ac5745fd082ae0198b8742371a412))
+* include platform in user agent ([#2942](https://github.com/libp2p/js-libp2p/issues/2942)) ([96f14e4](https://github.com/libp2p/js-libp2p/commit/96f14e429eac84d02504c4b97f183511c8af2add))
+* increase initial gateway search interval ([#2936](https://github.com/libp2p/js-libp2p/issues/2936)) ([66c3ec5](https://github.com/libp2p/js-libp2p/commit/66c3ec5e1de2706de53e9b5261df8b470d2294a4))
+* remove private key field from peer id ([#2660](https://github.com/libp2p/js-libp2p/issues/2660)) ([3eeb0c7](https://github.com/libp2p/js-libp2p/commit/3eeb0c705bd58285a6e1ec9fcbb6987c5959d504)), closes [#2659](https://github.com/libp2p/js-libp2p/issues/2659)
+* require autonat when not automatically confirming addresses ([#2824](https://github.com/libp2p/js-libp2p/issues/2824)) ([eee97c7](https://github.com/libp2p/js-libp2p/commit/eee97c7d4ced5763f6620e535f3c9a5619abf046))
+* require external confirmation of public addresses ([#2867](https://github.com/libp2p/js-libp2p/issues/2867)) ([d19974d](https://github.com/libp2p/js-libp2p/commit/d19974d93a1015acfca95c2155dbcffc5fd6a6c0))
+* run UPnP nat on address change, update nat port mapper ([#2797](https://github.com/libp2p/js-libp2p/issues/2797)) ([7626b22](https://github.com/libp2p/js-libp2p/commit/7626b224d23c474d1c885c8a7922977ab7e4bea6))
+* support IPv6 with IPv4 ([#2864](https://github.com/libp2p/js-libp2p/issues/2864)) ([406b391](https://github.com/libp2p/js-libp2p/commit/406b3916cac688cd98c02b61ee2e52a9cd041704))
+* unhandled promise rejection when finding gateway ([#2884](https://github.com/libp2p/js-libp2p/issues/2884)) ([127abe2](https://github.com/libp2p/js-libp2p/commit/127abe24b567e462b5fb8809960201635bee2202))
+* update multiaddr ([#3184](https://github.com/libp2p/js-libp2p/issues/3184)) ([6c42ea6](https://github.com/libp2p/js-libp2p/commit/6c42ea64a6e22028a87ecb3422e418e99ff09279))
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+* update race-signal ([#2986](https://github.com/libp2p/js-libp2p/issues/2986)) ([2a3cec9](https://github.com/libp2p/js-libp2p/commit/2a3cec9220f1250b7558635c4cb37d61f745645d)), closes [#2702](https://github.com/libp2p/js-libp2p/issues/2702)
+* use addresses with metadata to map ports ([#2878](https://github.com/libp2p/js-libp2p/issues/2878)) ([d51c21f](https://github.com/libp2p/js-libp2p/commit/d51c21f0b0e87d54841876a652fd9985dfafd030))
+* use ip/port mapping ([#2840](https://github.com/libp2p/js-libp2p/issues/2840)) ([a82b07d](https://github.com/libp2p/js-libp2p/commit/a82b07d8c69640b6c72824a584b55bb7c30ca06e))
+
+
+### Documentation
+
+* add spellcheck to gh actions ([#2994](https://github.com/libp2p/js-libp2p/issues/2994)) ([5b084e9](https://github.com/libp2p/js-libp2p/commit/5b084e9682a572e82f7907714d7807b3b9856326))
+* update spell check ([#2999](https://github.com/libp2p/js-libp2p/issues/2999)) ([6f8cfea](https://github.com/libp2p/js-libp2p/commit/6f8cfeafb2f6ddc231a85ca369fb33cf759940f7))
+* update typedoc config ([#3146](https://github.com/libp2p/js-libp2p/issues/3146)) ([14dbebe](https://github.com/libp2p/js-libp2p/commit/14dbebea8bd17addadac730afec0fa3b1cc6334a))
+
+
+### Dependencies
+
+* bump aegir from 43.0.3 to 44.0.1 ([#2603](https://github.com/libp2p/js-libp2p/issues/2603)) ([944935f](https://github.com/libp2p/js-libp2p/commit/944935f8dbcc1083e4cb4a02b49a0aab3083d3d9))
+* update @multiformats/multiaddr to 13.x.x ([#3268](https://github.com/libp2p/js-libp2p/issues/3268)) ([b8ecade](https://github.com/libp2p/js-libp2p/commit/b8ecade2a725d38d11dd8df888c5abb22e14f26b))
+* update @multiformats/multiaddr-matcher dep to 2.x.x ([#3208](https://github.com/libp2p/js-libp2p/issues/3208)) ([57e7fa4](https://github.com/libp2p/js-libp2p/commit/57e7fa4413a0e19799b5917bad6743800c77e1f7))
+* update aegir, fix all linting issues ([#3110](https://github.com/libp2p/js-libp2p/issues/3110)) ([510b033](https://github.com/libp2p/js-libp2p/commit/510b033f6b15358c7fae21486c3b09e730aa26cd))
+* update nat-port-mapper to v3 ([#2843](https://github.com/libp2p/js-libp2p/issues/2843)) ([b02ea9b](https://github.com/libp2p/js-libp2p/commit/b02ea9b6edf1a6ef2e059ea8570ba57cc9052229))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.0.0 to ^4.0.0
+    * @libp2p/interface-internal bumped from ^3.0.0 to ^4.0.0
+    * @libp2p/utils bumped from ^7.0.0 to ^8.0.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^6.0.0
+    * @libp2p/logger bumped from ^6.0.0 to ^7.0.0
+    * @libp2p/peer-id bumped from ^6.0.0 to ^7.0.0
+
 ## [4.0.0](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v3.1.22...upnp-nat-v4.0.0) (2025-09-23)
 
 
