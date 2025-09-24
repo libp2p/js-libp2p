@@ -1,4 +1,4 @@
-import { secp256k1 as secp } from '@noble/curves/secp256k1'
+import { secp256k1 as secp } from '@noble/curves/secp256k1.js'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { SigningError, VerificationError } from '../../errors.js'
 import { isPromise } from '../../util.js'
@@ -21,7 +21,10 @@ export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList, 
     return p
       .then(({ digest }) => {
         options?.signal?.throwIfAborted()
-        return secp.sign(digest, key).toDERRawBytes()
+        return secp.sign(digest, key, {
+          prehash: false,
+          format: 'der'
+        })
       })
       .catch(err => {
         if (err.name === 'AbortError') {
@@ -33,7 +36,10 @@ export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList, 
   }
 
   try {
-    return secp.sign(p.digest, key).toDERRawBytes()
+    return secp.sign(p.digest, key, {
+      prehash: false,
+      format: 'der'
+    })
   } catch (err) {
     throw new SigningError(String(err))
   }
@@ -49,7 +55,10 @@ export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array
     return p
       .then(({ digest }) => {
         options?.signal?.throwIfAborted()
-        return secp.verify(sig, digest, key)
+        return secp.verify(sig, digest, key, {
+          prehash: false,
+          format: 'der'
+        })
       })
       .catch(err => {
         if (err.name === 'AbortError') {
@@ -62,7 +71,10 @@ export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array
 
   try {
     options?.signal?.throwIfAborted()
-    return secp.verify(sig, p.digest, key)
+    return secp.verify(sig, p.digest, key, {
+      prehash: false,
+      format: 'der'
+    })
   } catch (err) {
     throw new VerificationError(String(err))
   }

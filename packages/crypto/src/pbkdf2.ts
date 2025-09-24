@@ -1,8 +1,7 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { pbkdf2 as pbkdf2Sync } from '@noble/hashes/pbkdf2'
-import { sha1 } from '@noble/hashes/sha1'
-import { sha256 } from '@noble/hashes/sha256'
-import { sha512 } from '@noble/hashes/sha512'
+import { sha1 } from '@noble/hashes/legacy.js'
+import { pbkdf2 as pbkdf2Sync } from '@noble/hashes/pbkdf2.js'
+import { sha256, sha512 } from '@noble/hashes/sha2.js'
 import { base64 } from 'multiformats/bases/base64'
 
 /**
