@@ -49,7 +49,7 @@
     "@libp2p/interface": "^3.0.0",
     "@libp2p/interface-internal": "^3.0.1",
     "@libp2p/keychain": "^6.0.1",
-    "@libp2p/noise": "^1.0.1",
+    "@libp2p/noise": "^17.0.1",
     "@libp2p/peer-id": "^6.0.1",
     "@libp2p/utils": "^7.0.1",
     "@multiformats/multiaddr": "^13.0.1",
