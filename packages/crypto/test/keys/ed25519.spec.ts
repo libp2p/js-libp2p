@@ -4,12 +4,12 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
+import { hashAndSignNoble, hashAndVerifyNoble } from '../../src/keys/ed25519/index.browser.ts'
 import { unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from '../../src/keys/ed25519/utils.js'
 import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
 import { testGarbage } from '../helpers/test-garbage-error-handling.js'
 import type { Ed25519PrivateKey } from '@libp2p/interface'
-import { hashAndSignNoble, hashAndVerifyNoble } from '../../src/keys/ed25519/index.browser.ts'
 
 describe('ed25519', function () {
   this.timeout(20 * 1000)
@@ -65,13 +65,13 @@ describe('ed25519', function () {
   it('signs using noble', async () => {
     const text = randomBytes(512)
     const sig = await key.sign(text)
-    const res = await hashAndVerifyNoble(key.publicKey.raw, sig, text)
+    const res = hashAndVerifyNoble(key.publicKey.raw, sig, text)
     expect(res).to.be.be.true()
   })
 
   it('verifies using noble', async () => {
     const text = randomBytes(512)
-    const sig = await hashAndSignNoble(key.raw, text)
+    const sig = hashAndSignNoble(key.raw, text)
     const res = await key.publicKey.verify(text, sig)
     expect(res).to.be.be.true()
   })
@@ -228,7 +228,7 @@ describe('ed25519', function () {
 
     it('verifies with data from go using noble', async () => {
       const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
-      const ok = await hashAndVerifyNoble(key.raw, fixtures.verify.signature, fixtures.verify.data)
+      const ok = hashAndVerifyNoble(key.raw, fixtures.verify.signature, fixtures.verify.data)
       expect(ok).to.be.true()
     })
 
@@ -253,7 +253,7 @@ describe('ed25519', function () {
 
     it('generates the same signature as go using nobel', async () => {
       const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
-      const sig = await hashAndSignNoble(key.raw, fixtures.verify.data)
+      const sig = hashAndSignNoble(key.raw, fixtures.verify.data)
       expect(sig).to.eql(fixtures.verify.signature)
     })
 

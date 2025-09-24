@@ -78,7 +78,7 @@ async function hashAndSignWebCrypto (privateKey: Uint8Array, msg: Uint8Array | U
   return new Uint8Array(sig, 0, sig.byteLength)
 }
 
-export  function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
+export function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
 
   return ed.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw)
