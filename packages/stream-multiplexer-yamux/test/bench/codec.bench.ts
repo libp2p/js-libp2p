@@ -1,4 +1,8 @@
-import { itBench } from '@dapplion/benchmark'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+// Use the CJS build so the CLI and tests share benchmark global state
+const benchmark = require('@dapplion/benchmark') as typeof import('@dapplion/benchmark')
+const { itBench } = benchmark
 import { decodeHeader } from '../../src/decode.js'
 import { encodeHeader } from '../../src/encode.js'
 import { Flag, FrameType } from '../../src/frame.js'
