@@ -17,6 +17,13 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.10](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.9...crypto-v5.1.10) (2025-09-24)
+
+
+### Dependencies
+
+* update p-event, p-wait-for and noble deps ([#3302](https://github.com/libp2p/js-libp2p/issues/3302)) ([55bbd8c](https://github.com/libp2p/js-libp2p/commit/55bbd8cde12fe1c05e8d264e6e2406ca9fe2f044))
+
 ## [5.1.9](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.8...crypto-v5.1.9) (2025-09-23)
 
 

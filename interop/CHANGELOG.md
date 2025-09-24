@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.1](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.0...transport-interop-libp2p-main-v1.0.1) (2025-09-24)
+
+
+### Dependencies
+
+* update p-event, p-wait-for and noble deps ([#3302](https://github.com/libp2p/js-libp2p/issues/3302)) ([55bbd8c](https://github.com/libp2p/js-libp2p/commit/55bbd8cde12fe1c05e8d264e6e2406ca9fe2f044))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/noise bumped from ^1.0.0 to ^1.0.1
+    * @libp2p/yamux bumped from ^8.0.0 to ^8.0.1
+    * @libp2p/circuit-relay-v2 bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/identify bumped from ^4.0.0 to ^4.0.1
+    * @libp2p/mplex bumped from ^12.0.0 to ^12.0.1
+    * @libp2p/ping bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/tcp bumped from ^11.0.0 to ^11.0.1
+    * @libp2p/tls bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/webrtc bumped from ^6.0.0 to ^6.0.1
+    * @libp2p/websockets bumped from ^10.0.0 to ^10.0.1
+    * @libp2p/webtransport bumped from ^6.0.0 to ^6.0.1
+    * libp2p bumped from ^3.0.0 to ^3.0.1
+
 ## 1.0.0 (2025-09-23)
 
 

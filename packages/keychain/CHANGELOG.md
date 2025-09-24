@@ -47,6 +47,18 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [6.0.1](https://github.com/libp2p/js-libp2p/compare/keychain-v6.0.0...keychain-v6.0.1) (2025-09-24)
+
+
+### Dependencies
+
+* update p-event, p-wait-for and noble deps ([#3302](https://github.com/libp2p/js-libp2p/issues/3302)) ([55bbd8c](https://github.com/libp2p/js-libp2p/commit/55bbd8cde12fe1c05e8d264e6e2406ca9fe2f044))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^5.1.10
+  * devDependencies
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+
 ## [6.0.0](https://github.com/libp2p/js-libp2p/compare/keychain-v5.2.9...keychain-v6.0.0) (2025-09-23)
 
 
