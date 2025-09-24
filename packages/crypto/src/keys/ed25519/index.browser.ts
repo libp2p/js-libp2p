@@ -78,7 +78,7 @@ async function hashAndSignWebCrypto (privateKey: Uint8Array, msg: Uint8Array | U
   return new Uint8Array(sig, 0, sig.byteLength)
 }
 
-function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
+export  function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
 
   return ed.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw)
@@ -106,7 +106,7 @@ async function hashAndVerifyWebCrypto (publicKey: Uint8Array, sig: Uint8Array, m
   throw new TypeError('WebCrypto does not support SharedArrayBuffer for Ed25519 keys')
 }
 
-function hashAndVerifyNoble (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
+export function hashAndVerifyNoble (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
   return ed.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey)
 }
 
