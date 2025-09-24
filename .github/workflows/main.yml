@@ -259,7 +259,10 @@ jobs:
       id-token: write
       pull-requests: write
     steps:
-      - uses: gvillo/release-please-action@v4.2.1-gvillo
+      # use fork to work around https://github.com/googleapis/release-please/issues/2265
+      # can probably be reverted once extra modules added to perform v3 release
+      # are removed (gossipsub, noise, yamux, libp2p-daemon-*, interop, etc).
+      - uses: gvillo/release-please-action@93642002875a0df65de8abeeeabcaeacb7c735f4 # v4.2.1-gvillo
         id: release
         with:
           token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
