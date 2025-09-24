@@ -72,6 +72,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/plaintext-v3.0.0...plaintext-v3.0.1) (2025-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/peer-id bumped from ^6.0.0 to ^6.0.1
+    * @libp2p/utils bumped from ^7.0.0 to ^7.0.1
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p/compare/plaintext-v2.0.29...plaintext-v3.0.0) (2025-09-23)
 
 

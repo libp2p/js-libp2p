@@ -36,6 +36,24 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.0...utils-v7.0.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* create hasBytes promise before await ([#3304](https://github.com/libp2p/js-libp2p/issues/3304)) ([55b7e5f](https://github.com/libp2p/js-libp2p/commit/55b7e5feadfc3cf7bccb674dae65b1c2827334d7))
+
+
+### Dependencies
+
+* update p-event, p-wait-for and noble deps ([#3302](https://github.com/libp2p/js-libp2p/issues/3302)) ([55bbd8c](https://github.com/libp2p/js-libp2p/commit/55bbd8cde12fe1c05e8d264e6e2406ca9fe2f044))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.0 to ^6.0.1
+
 ## [7.0.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.7.2...utils-v7.0.0) (2025-09-23)
 
 

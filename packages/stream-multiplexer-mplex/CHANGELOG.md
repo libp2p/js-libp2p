@@ -78,6 +78,19 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [12.0.1](https://github.com/libp2p/js-libp2p/compare/mplex-v12.0.0...mplex-v12.0.1) (2025-09-24)
+
+
+### Dependencies
+
+* update p-event, p-wait-for and noble deps ([#3302](https://github.com/libp2p/js-libp2p/issues/3302)) ([55bbd8c](https://github.com/libp2p/js-libp2p/commit/55bbd8cde12fe1c05e8d264e6e2406ca9fe2f044))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.0 to ^7.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.0 to ^7.0.1
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+
 ## [12.0.0](https://github.com/libp2p/js-libp2p/compare/mplex-v11.0.47...mplex-v12.0.0) (2025-09-23)
 
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.0.1](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.0...yamux-v8.0.1) (2025-09-24)
+
+
+### Dependencies
+
+* update p-event, p-wait-for and noble deps ([#3302](https://github.com/libp2p/js-libp2p/issues/3302)) ([55bbd8c](https://github.com/libp2p/js-libp2p/commit/55bbd8cde12fe1c05e8d264e6e2406ca9fe2f044))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.0 to ^7.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.0 to ^7.0.1
+    * @libp2p/mplex bumped from ^12.0.0 to ^12.0.1
+
 ## [8.0.0](https://github.com/libp2p/js-libp2p/compare/yamux-v7.0.4...yamux-v8.0.0) (2025-09-23)
 
 
