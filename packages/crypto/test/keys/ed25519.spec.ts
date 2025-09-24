@@ -4,6 +4,7 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { randomBytes } from '../../src/index.js'
+import { hashAndSignNoble, hashAndVerifyNoble } from '../../src/keys/ed25519/index.browser.ts'
 import { unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from '../../src/keys/ed25519/utils.js'
 import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
 import fixtures from '../fixtures/go-key-ed25519.js'
@@ -57,6 +58,20 @@ describe('ed25519', function () {
   it('signs', async () => {
     const text = randomBytes(512)
     const sig = await key.sign(text)
+    const res = await key.publicKey.verify(text, sig)
+    expect(res).to.be.be.true()
+  })
+
+  it('signs using noble', async () => {
+    const text = randomBytes(512)
+    const sig = await key.sign(text)
+    const res = hashAndVerifyNoble(key.publicKey.raw, sig, text)
+    expect(res).to.be.be.true()
+  })
+
+  it('verifies using noble', async () => {
+    const text = randomBytes(512)
+    const sig = hashAndSignNoble(key.raw, text)
     const res = await key.publicKey.verify(text, sig)
     expect(res).to.be.be.true()
   })
@@ -205,10 +220,15 @@ describe('ed25519', function () {
   })
 
   describe('go interop', () => {
-    // @ts-check
     it('verifies with data from go', async () => {
       const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
       const ok = await key.verify(fixtures.verify.data, fixtures.verify.signature)
+      expect(ok).to.be.true()
+    })
+
+    it('verifies with data from go using noble', async () => {
+      const key = publicKeyFromProtobuf(fixtures.verify.publicKey)
+      const ok = hashAndVerifyNoble(key.raw, fixtures.verify.signature, fixtures.verify.data)
       expect(ok).to.be.true()
     })
 
@@ -228,6 +248,12 @@ describe('ed25519', function () {
     it('generates the same signature as go', async () => {
       const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
       const sig = await key.sign(fixtures.verify.data)
+      expect(sig).to.eql(fixtures.verify.signature)
+    })
+
+    it('generates the same signature as go using nobel', async () => {
+      const key = privateKeyFromProtobuf(fixtures.verify.privateKey)
+      const sig = hashAndSignNoble(key.raw, fixtures.verify.data)
       expect(sig).to.eql(fixtures.verify.signature)
     })
 

@@ -51,7 +51,7 @@
     "it-first": "^3.0.9",
     "multiformats": "^13.4.0",
     "p-retry": "^7.0.0",
-    "p-wait-for": "^5.0.2",
+    "p-wait-for": "^6.0.0",
     "protons-runtime": "^5.6.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
