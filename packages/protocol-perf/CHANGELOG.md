@@ -82,6 +82,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [5.0.2](https://github.com/libp2p/js-libp2p/compare/perf-v5.0.1...perf-v5.0.2) (2025-09-25)
+
+
+### Bug Fixes
+
+* use @chainsafe/libp2p-noise and @chainsafe/libp2p-yamux ([#3308](https://github.com/libp2p/js-libp2p/issues/3308)) ([425a42c](https://github.com/libp2p/js-libp2p/commit/425a42cddac5aac4d0ac822295cc4c4817dcdc95))
+
 ## [5.0.1](https://github.com/libp2p/js-libp2p/compare/perf-v5.0.0...perf-v5.0.1) (2025-09-24)
 
 
