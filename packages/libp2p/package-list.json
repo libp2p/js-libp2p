@@ -19,12 +19,12 @@
     ["libp2p/js-libp2p/tree/main/packages/transport-webtransport", "@libp2p/webtransport", "main", "main.yml"],
 
     "secure channels",
-    ["ChainSafe/js-libp2p-noise", "@libp2p/noise", "master", "js-test-and-release.yml"],
+    ["ChainSafe/js-libp2p-noise", "@chainsafe/libp2p-noise", "master", "js-test-and-release.yml"],
     ["libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext", "@libp2p/plaintext", "main", "main.yml"],
     ["libp2p/js-libp2p/tree/main/packages/connection-encrypter-tls", "@libp2p/tls", "main", "main.yml"],
 
     "stream multiplexers",
-    ["ChainSafe/js-libp2p-yamux", "@libp2p/yamux", "master", "js-test-and-release.yml"],
+    ["ChainSafe/js-libp2p-yamux", "@chainsafe/libp2p-yamux", "master", "js-test-and-release.yml"],
     ["libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex", "@libp2p/mplex", "main", "main.yml"],
 
     "peer discovery",

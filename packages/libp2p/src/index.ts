@@ -184,8 +184,8 @@ export type Libp2pOptions<T extends ServiceMap = ServiceMap> = Libp2pInit<T> & {
  * import { createLibp2p } from 'libp2p'
  * import { tcp } from '@libp2p/tcp'
  * import { mplex } from '@libp2p/mplex'
- * import { noise } from '@libp2p/noise'
- * import { yamux } from '@libp2p/yamux'
+ * import { noise } from '@chainsafe/libp2p-noise'
+ * import { yamux } from '@chainsafe/libp2p-yamux'
  *
  * // specify options
  * const options = {

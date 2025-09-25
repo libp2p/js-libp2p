@@ -3,7 +3,7 @@
  *
  * This is a [simple stream multiplexer(https://docs.libp2p.io/concepts/multiplex/mplex/) that has been deprecated.
  *
- * Please use [@libp2p/yamux](https://www.npmjs.com/package/@libp2p/yamux) instead.
+ * Please use [@chainsafe/libp2p-yamux](https://www.npmjs.com/package/@chainsafe/libp2p-yamux) instead.
  *
  * @example
  *

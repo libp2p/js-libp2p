@@ -1,8 +1,8 @@
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
-import { noise } from '@libp2p/noise'
 import { webSockets } from '@libp2p/websockets'
-import { yamux } from '@libp2p/yamux'
 import { createLibp2p } from 'libp2p'
 import type { Libp2p } from '@libp2p/interface'
 
