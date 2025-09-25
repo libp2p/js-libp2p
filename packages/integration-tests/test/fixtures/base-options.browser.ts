@@ -1,11 +1,10 @@
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
 import { plaintext } from '@libp2p/plaintext'
-import { mergeOptions } from '@libp2p/utils'
 import { webRTC } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
-import { yamux } from '@libp2p/yamux'
 import { isWebWorker } from 'wherearewe'
 import type { ServiceMap } from '@libp2p/interface'
 import type { Libp2pOptions } from 'libp2p'
@@ -31,9 +30,11 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
     connectionGater: {
       denyDialMultiaddr: async () => false
     },
+    // @ts-expect-error overrides could cause services to have wrong type
     services: {
       identify: identify()
-    }
+    },
+    ...overrides
   }
 
   // WebWorkers cannot do WebRTC so only add support if we are not in a worker
@@ -43,5 +44,6 @@ export function createBaseOptions <T extends ServiceMap = Record<string, unknown
     options.transports?.push(webRTC())
   }
 
-  return mergeOptions(options, overrides)
+  // @ts-expect-error overrides could cause services to have wrong type
+  return options
 }

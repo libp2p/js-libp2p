@@ -1,5 +1,6 @@
 /* eslint-env mocha */
 
+import { identify } from '@libp2p/identify'
 import { ping, PING_PROTOCOL } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -15,17 +16,20 @@ describe('ping', () => {
     nodes = await Promise.all([
       createLibp2p(createBaseOptions({
         services: {
-          ping: ping()
+          ping: ping(),
+          identify: identify()
         }
       })),
       createLibp2p(createBaseOptions({
         services: {
-          ping: ping()
+          ping: ping(),
+          identify: identify()
         }
       })),
       createLibp2p(createBaseOptions({
         services: {
-          ping: ping()
+          ping: ping(),
+          identify: identify()
         }
       }))
     ])
@@ -80,7 +84,8 @@ describe('ping', () => {
           // Allow two outbound ping streams.
           // It is not allowed by the spec, but this test needs to open two concurrent streams.
           maxOutboundStreams: 2
-        })
+        }),
+        identify: identify()
       }
     }))
     await client.peerStore.patch(remote.peerId, {

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-store",
-  "version": "11.2.7",
+  "version": "12.0.1",
   "description": "Stores information about peers libp2p knows on the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store#readme",
@@ -48,11 +48,11 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.8",
-    "@libp2p/interface": "^2.11.0",
-    "@libp2p/peer-collections": "^6.0.35",
-    "@libp2p/peer-id": "^5.1.9",
-    "@libp2p/peer-record": "^8.0.35",
+    "@libp2p/crypto": "^5.1.10",
+    "@libp2p/interface": "^3.0.0",
+    "@libp2p/peer-collections": "^7.0.1",
+    "@libp2p/peer-id": "^6.0.1",
+    "@libp2p/peer-record": "^9.0.1",
     "@multiformats/multiaddr": "^13.0.1",
     "interface-datastore": "^8.3.2",
     "it-all": "^3.0.9",
@@ -64,14 +64,14 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^5.2.0",
+    "@libp2p/logger": "^6.0.1",
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
     "datastore-core": "^10.0.4",
     "delay": "^6.0.0",
     "p-defer": "^4.0.1",
-    "p-event": "^6.0.1",
+    "p-event": "^7.0.0",
     "protons": "^7.7.0",
     "sinon": "^21.0.0"
   },

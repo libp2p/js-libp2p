@@ -13,6 +13,7 @@ incrby
 microtask
 nothrow
 peerStore
+prehash
 reprovide
 reprovided
 reprovider

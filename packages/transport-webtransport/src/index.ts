@@ -14,7 +14,7 @@
  * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { webTransport } from '@libp2p/webtransport'
- * import { noise } from '@libp2p/noise'
+ * import { noise } from '@chainsafe/libp2p-noise'
  *
  * const node = await createLibp2p({
  *   transports: [
@@ -27,8 +27,8 @@
  * ```
  */
 
+import { noise } from '@chainsafe/libp2p-noise'
 import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
-import { noise } from '@libp2p/noise'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import createListener from './listener.js'

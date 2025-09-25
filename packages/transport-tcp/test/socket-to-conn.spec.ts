@@ -34,7 +34,7 @@ async function setup (opts?: TestOptions): Promise<TestFixture> {
   const [
     serverSocket
   ] = await Promise.all([
-    pEvent(server, 'connection'),
+    pEvent<'connection', Socket>(server, 'connection'),
     pEvent(client, 'connect')
   ])
 
