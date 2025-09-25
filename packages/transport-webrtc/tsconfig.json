@@ -10,9 +10,6 @@
   ],
   "references": [
     {
-      "path": "../connection-encrypter-noise"
-    },
-    {
       "path": "../crypto"
     },
     {

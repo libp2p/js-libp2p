@@ -1,8 +1,0 @@
-{
-  "readme": "none",
-  "entryPoints": [
-    "./src/index.ts",
-    "./src/config.ts",
-    "./src/stream.ts"
-  ]
-}

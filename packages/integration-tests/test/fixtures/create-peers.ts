@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { echo } from '@libp2p/echo'
 import { memory } from '@libp2p/memory'
 import { plaintext } from '@libp2p/plaintext'
-import { yamux } from '@libp2p/yamux'
 import { createLibp2p } from 'libp2p'
 import type { Echo } from '@libp2p/echo'
 import type { Libp2p, ServiceMap } from '@libp2p/interface'
