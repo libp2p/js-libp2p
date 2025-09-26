@@ -74,7 +74,7 @@ export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit {
   protocol: string
 
   /**
-   * Incoming datachannels that were opened by the remote before the peer
+   * Incoming data channels that were opened by the remote before the peer
    * connection was established
    */
   earlyDataChannels: RTCDataChannel[]
