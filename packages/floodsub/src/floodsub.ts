@@ -8,10 +8,10 @@ import { pubSubSymbol } from './constants.ts'
 import { RPC } from './message/rpc.js'
 import { PeerStreams } from './peer-streams.js'
 import { signMessage, verifySignature } from './sign.js'
-import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
+import { toMessage, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
 import { protocol, StrictNoSign, TopicValidatorResult, StrictSign } from './index.js'
 import type { FloodSubComponents, FloodSubEvents, FloodSubInit, FloodSub as FloodSubInterface, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.js'
-import type { Logger, Connection, PeerId, Stream, Topology } from '@libp2p/interface'
+import type { Logger, Connection, PeerId, Stream } from '@libp2p/interface'
 
 export interface PubSubRPCMessage {
   from?: Uint8Array
@@ -72,10 +72,10 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
    */
   public topicValidators: Map<string, TopicValidatorFn>
   public queue: Queue
-  public protocols: string[]
+  public protocol: string
   public components: FloodSubComponents
 
-  private _registrarTopologyIds: string[] | undefined
+  private _registrarTopologyId: string | undefined
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
   public seenCache: SimpleTimeCache<boolean>
@@ -85,7 +85,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
 
     this.log = components.logger.forComponent('libp2p:floodsub')
     this.components = components
-    this.protocols = ensureArray(init.protocols ?? protocol)
+    this.protocol = init.protocol ?? protocol
     this.started = false
     this.topics = new Map()
     this.subscriptions = new Set()
@@ -132,23 +132,19 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
 
     this.log('starting')
 
-    const registrar = this.components.registrar
     // Incoming streams
     // Called after a peer dials us
-    await Promise.all(this.protocols.map(async multicodec => {
-      await registrar.handle(multicodec, this._onIncomingStream, {
-        maxInboundStreams: this.maxInboundStreams,
-        maxOutboundStreams: this.maxOutboundStreams
-      })
-    }))
+    await this.components.registrar.handle(this.protocol, this._onIncomingStream, {
+      maxInboundStreams: this.maxInboundStreams,
+      maxOutboundStreams: this.maxOutboundStreams
+    })
 
     // register protocol with topology
-    // Topology callbacks called on connection manager changes
-    const topology: Topology = {
+    // Topology callbacks called after identify has run on a new connection
+    this._registrarTopologyId = await this.components.registrar.register(this.protocol, {
       onConnect: this._onPeerConnected,
       onDisconnect: this._onPeerDisconnected
-    }
-    this._registrarTopologyIds = await Promise.all(this.protocols.map(async multicodec => registrar.register(multicodec, topology)))
+    })
 
     this.log('started')
     this.started = true
@@ -165,15 +161,11 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     const registrar = this.components.registrar
 
     // unregister protocol and handlers
-    if (this._registrarTopologyIds != null) {
-      this._registrarTopologyIds?.forEach(id => {
-        registrar.unregister(id)
-      })
+    if (this._registrarTopologyId != null) {
+      registrar.unregister(this._registrarTopologyId)
     }
 
-    await Promise.all(this.protocols.map(async multicodec => {
-      await registrar.unhandle(multicodec)
-    }))
+    await registrar.unhandle(this.protocol)
 
     this.log('stopping')
     for (const peerStreams of this.peers.values()) {
@@ -196,6 +188,12 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   protected _onIncomingStream (stream: Stream, connection: Connection): void {
     const peerStreams = this.addPeer(connection.remotePeer, stream)
     peerStreams.attachInboundStream(stream)
+
+    // don't wait for identify
+    this._onPeerConnected(connection.remotePeer, connection)
+      .catch(err => {
+        this.log.error('could not set up outgoing stream - %e', err)
+      })
   }
 
   /**
@@ -205,12 +203,12 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     this.log('connected %p', peerId)
 
     // if this connection is already in use for pubsub, ignore it
-    if (conn.streams.find(stream => stream.direction === 'outbound' && stream.protocol != null && this.protocols.includes(stream.protocol)) != null) {
-      this.log('outbound pubsub streams already present on connection from %p', peerId)
+    if (conn.streams.find(stream => stream.direction === 'outbound' && stream.protocol === this.protocol)) {
+      this.log('outbound pubsub stream already present on connection from %p', peerId)
       return
     }
 
-    const stream = await conn.newStream(this.protocols)
+    const stream = await conn.newStream(this.protocol)
     const peerStreams = this.addPeer(peerId, stream)
     peerStreams.attachOutboundStream(stream)
 
@@ -243,10 +241,10 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     // else create a new peer streams
     this.log('new peer %p', peerId)
 
-    const peerStream: PeerStreams = new PeerStreams(peerId)
+    const peerStreams = new PeerStreams(peerId)
 
-    this.peers.set(peerId, peerStream)
-    peerStream.addEventListener('message', (evt) => {
+    this.peers.set(peerId, peerStreams)
+    peerStreams.addEventListener('message', (evt) => {
       const rpcMsg = evt.detail
       const messages: PubSubRPCMessage[] = []
 
@@ -270,7 +268,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
       // the simplest/safest option here is to wrap in a function and capture all errors
       // to prevent a top-level unhandled exception
       // This processing of rpc messages should happen without awaiting full validation/execution of prior messages
-      this.processRpc(peerStream, {
+      this.processRpc(peerStreams, {
         subscriptions: (rpcMsg.subscriptions ?? []).map(sub => ({
           subscribe: Boolean(sub.subscribe),
           topic: sub.topic ?? ''
@@ -279,11 +277,11 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
       })
         .catch(err => { this.log(err) })
     })
-    peerStream.addEventListener('close', () => this._removePeer(peerId), {
+    peerStreams.addEventListener('close', () => this._removePeer(peerId), {
       once: true
     })
 
-    return peerStream
+    return peerStreams
   }
 
   /**
@@ -312,11 +310,6 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
    * Handles an rpc request from a peer
    */
   async processRpc (peerStream: PeerStreams, rpc: PubSubRPC): Promise<boolean> {
-    if (!this.acceptFrom(peerStream.peerId)) {
-      this.log('received message from unacceptable peer %p', peerStream.peerId)
-      return false
-    }
-
     this.log('rpc from %p', peerStream.peerId)
 
     const { subscriptions, messages } = rpc
@@ -453,14 +446,6 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
       default:
         throw new InvalidMessageError('Cannot get message id: unhandled signature policy')
     }
-  }
-
-  /**
-   * Whether to accept a message from a peer
-   * Override to create a gray list
-   */
-  acceptFrom (id: PeerId): boolean {
-    return true
   }
 
   /**
@@ -682,14 +667,22 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
       throw new Error('Pubsub has not started')
     }
 
+    if (this.subscriptions.has(topic)) {
+      // already subscribed
+      return
+    }
+
     this.log('subscribe to topic: %s', topic)
 
-    if (!this.subscriptions.has(topic)) {
-      this.subscriptions.add(topic)
+    this.subscriptions.add(topic)
 
-      for (const peerId of this.peers.keys()) {
-        this.send(peerId, { subscriptions: [topic], subscribe: true })
-      }
+    for (const peerId of this.peers.keys()) {
+      this.send(peerId, {
+        subscriptions: [
+          topic
+        ],
+        subscribe: true
+      })
     }
   }
 
@@ -701,16 +694,22 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
       throw new Error('Pubsub is not started')
     }
 
-    const wasSubscribed = this.subscriptions.has(topic)
+    if (!this.subscriptions.has(topic)) {
+      // not subscribed
+      return
+    }
 
-    this.log('unsubscribe from %s - am subscribed %s', topic, wasSubscribed)
+    this.log('unsubscribe from %s', topic)
 
-    if (wasSubscribed) {
-      this.subscriptions.delete(topic)
+    this.subscriptions.delete(topic)
 
-      for (const peerId of this.peers.keys()) {
-        this.send(peerId, { subscriptions: [topic], subscribe: false })
-      }
+    for (const peerId of this.peers.keys()) {
+      this.send(peerId, {
+        subscriptions: [
+          topic
+        ],
+        subscribe: false
+      })
     }
   }
 

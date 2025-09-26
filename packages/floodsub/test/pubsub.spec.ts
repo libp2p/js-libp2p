@@ -176,21 +176,21 @@ describe('pubsub base implementation', () => {
         // start pubsub and connect nodes
         await start(pubsubA, pubsubB)
 
-        expect(registrarA.register.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarA.register.calledWith(pubsubA.protocol)).to.be.true()
         const topologyA = registrarA.register.getCall(0).args[1]
 
-        expect(registrarB.handle.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarB.handle.calledWith(pubsubA.protocol)).to.be.true()
         const handlerB = registrarB.handle.getCall(0).args[1]
 
         if (topologyA == null || handlerB == null) {
-          throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+          throw new Error(`No handler registered for ${pubsubA.protocol}`)
         }
 
         // Notify peers of connection
         const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
         topologyA.onConnect?.(peerIdB, c0)
-        await handlerB(await c1.newStream(pubsubA.protocols[0]), c1)
+        await handlerB(await c1.newStream(pubsubA.protocol), c1)
       })
 
       afterEach(async () => {
@@ -288,21 +288,21 @@ describe('pubsub base implementation', () => {
       beforeEach(async () => {
         await start(pubsubA, pubsubB)
 
-        expect(registrarA.register.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarA.register.calledWith(pubsubA.protocol)).to.be.true()
         const topologyA = registrarA.register.getCall(0).args[1]
 
-        expect(registrarB.handle.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarB.handle.calledWith(pubsubA.protocol)).to.be.true()
         const handlerB = registrarB.handle.getCall(0).args[1]
 
         if (topologyA == null || handlerB == null) {
-          throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+          throw new Error(`No handler registered for ${pubsubA.protocol}`)
         }
 
         // Notify peers of connection
         const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
         topologyA.onConnect?.(peerIdB, c0)
-        await handlerB(await c1.newStream(pubsubA.protocols[0]), c1)
+        await handlerB(await c1.newStream(pubsubA.protocol), c1)
       })
 
       afterEach(async () => {

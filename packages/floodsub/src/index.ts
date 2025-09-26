@@ -145,9 +145,9 @@ export interface FloodSub extends TypedEventTarget<FloodSubEvents> {
   globalSignaturePolicy: typeof StrictSign | typeof StrictNoSign
 
   /**
-   * A list of multicodecs that contain the pubsub protocol name.
+   * The protocol name used by FloodSub
    */
-  protocols: string[]
+  protocol: string
 
   /**
    * Pubsub routers support message validators per topic, which will validate the message
@@ -257,9 +257,9 @@ export interface FloodSubInit {
   /**
    * Override the protocol registered with the registrar
    *
-   * @default ['/floodsub/1.0.0']
+   * @default '/floodsub/1.0.0'
    */
-  protocols?: string[]
+  protocol?: string
 
   /**
    * defines how signatures should be handled

@@ -97,5 +97,8 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamsEvents> {
           this.inboundPb?.unwrap().unwrap().abort(err)
         })
     ])
+      .finally(() => {
+        this.safeDispatchEvent('close')
+      })
   }
 }

@@ -36,11 +36,6 @@ describe('utils', () => {
     })
   })
 
-  it('ensureArray', () => {
-    expect(utils.ensureArray('hello')).to.be.eql(['hello'])
-    expect(utils.ensureArray([1, 2])).to.be.eql([1, 2])
-  })
-
   it('converts an OUT msg.from to binary', async () => {
     const edKey = await generateKeyPair('Ed25519')
     const edPeer = peerIdFromPrivateKey(edKey)
