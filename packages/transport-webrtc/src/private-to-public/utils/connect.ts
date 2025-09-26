@@ -40,6 +40,13 @@ const CONNECTION_STATE_CHANGE_EVENT = isFirefox ? 'iceconnectionstatechange' : '
 export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ClientOptions): Promise<Connection>
 export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ServerOptions): Promise<void>
 export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ConnectOptions): Promise<any> {
+  const muxerFactory = new DataChannelMuxerFactory({
+    // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
+    peerConnection,
+    metrics: options.events,
+    dataChannelOptions: options.dataChannel
+  })
+
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the listener will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
@@ -148,13 +155,6 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
 
     // Track opened peer connection
     options.events?.increment({ peer_connection: true })
-
-    const muxerFactory = new DataChannelMuxerFactory({
-      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
-      peerConnection,
-      metrics: options.events,
-      dataChannelOptions: options.dataChannel
-    })
 
     if (options.role === 'client') {
       // For outbound connections, the remote is expected to start the noise
