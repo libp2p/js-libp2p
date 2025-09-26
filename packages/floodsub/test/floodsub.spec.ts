@@ -14,10 +14,9 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { FloodSub } from '../src/floodsub.js'
 import { protocol, StrictNoSign } from '../src/index.js'
-import { PeerStream } from '../src/peer-stream.js'
+import { PeerStreams } from '../src/peer-streams.js'
 import type { PubSubRPC } from '../src/floodsub.js'
 import type { Message } from '../src/index.js'
-import type { Stream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -61,7 +60,7 @@ describe('floodsub', () => {
     const key = uint8ArrayToString(sig, 'base64')
     let callCount = 0
 
-    const peerStream = new PeerStream(otherPeer, stubInterface<Stream>())
+    const peerStream = new PeerStreams(otherPeer)
     const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
@@ -131,7 +130,7 @@ describe('floodsub', () => {
 
     const sender = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    const peerStream = new PeerStream(sender, stubInterface<Stream>())
+    const peerStream = new PeerStreams(sender)
     const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{

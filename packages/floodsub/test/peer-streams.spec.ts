@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import * as lp from 'it-length-prefixed'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { RPC } from '../src/message/rpc.ts'
-import { PeerStream } from '../src/peer-stream.js'
+import { PeerStreams } from '../src/peer-streams.js'
 import type { PubSubRPC } from '../src/floodsub.ts'
 import type { PeerId } from '@libp2p/interface'
 
@@ -49,7 +49,8 @@ describe('peer-streams', () => {
     })
 
     // Create PeerStreams with increased maxDataLength
-    const peer = new PeerStream(remotePeerId, inbound, {
+    const peer = new PeerStreams(remotePeerId)
+    peer.attachInboundStream(inbound, {
       maxDataLength,
       maxBufferSize: maxDataLength
     })

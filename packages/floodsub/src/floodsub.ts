@@ -6,7 +6,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
 import { pubSubSymbol } from './constants.ts'
 import { RPC } from './message/rpc.js'
-import { PeerStream } from './peer-stream.js'
+import { PeerStreams } from './peer-streams.js'
 import { signMessage, verifySignature } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
 import { protocol, StrictNoSign, TopicValidatorResult, StrictSign } from './index.js'
@@ -51,7 +51,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   /**
    * Map of peer streams
    */
-  public peers: PeerMap<PeerStream>
+  public peers: PeerMap<PeerStreams>
   /**
    * The signature policy to follow by default
    */
@@ -89,7 +89,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     this.started = false
     this.topics = new Map()
     this.subscriptions = new Set()
-    this.peers = new PeerMap<PeerStream>()
+    this.peers = new PeerMap<PeerStreams>()
     this.globalSignaturePolicy = init.globalSignaturePolicy === 'StrictNoSign' ? 'StrictNoSign' : 'StrictSign'
     this.canRelayMessage = init.canRelayMessage ?? true
     this.emitSelf = init.emitSelf ?? false
@@ -194,7 +194,8 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
    * On an inbound stream opened
    */
   protected _onIncomingStream (stream: Stream, connection: Connection): void {
-    this.addPeer(connection.remotePeer, stream)
+    const peerStreams = this.addPeer(connection.remotePeer, stream)
+    peerStreams.attachInboundStream(stream)
   }
 
   /**
@@ -210,7 +211,8 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     }
 
     const stream = await conn.newStream(this.protocols)
-    this.addPeer(peerId, stream)
+    const peerStreams = this.addPeer(peerId, stream)
+    peerStreams.attachOutboundStream(stream)
 
     // Immediately send my own subscriptions to the newly established conn
     this.send(peerId, {
@@ -230,7 +232,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   /**
    * Notifies the router that a peer has been connected
    */
-  addPeer (peerId: PeerId, stream: Stream): PeerStream {
+  addPeer (peerId: PeerId, stream: Stream): PeerStreams {
     const existing = this.peers.get(peerId)
 
     // If peer streams already exists, do nothing
@@ -241,7 +243,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     // else create a new peer streams
     this.log('new peer %p', peerId)
 
-    const peerStream: PeerStream = new PeerStream(peerId, stream)
+    const peerStream: PeerStreams = new PeerStreams(peerId)
 
     this.peers.set(peerId, peerStream)
     peerStream.addEventListener('message', (evt) => {
@@ -287,7 +289,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   /**
    * Notifies the router that a peer has been disconnected
    */
-  protected _removePeer (peerId: PeerId): PeerStream | undefined {
+  protected _removePeer (peerId: PeerId): void {
     const peerStreams = this.peers.get(peerId)
     if (peerStreams == null) {
       return
@@ -304,14 +306,12 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     for (const peers of this.topics.values()) {
       peers.delete(peerId)
     }
-
-    return peerStreams
   }
 
   /**
    * Handles an rpc request from a peer
    */
-  async processRpc (peerStream: PeerStream, rpc: PubSubRPC): Promise<boolean> {
+  async processRpc (peerStream: PeerStreams, rpc: PubSubRPC): Promise<boolean> {
     if (!this.acceptFrom(peerStream.peerId)) {
       this.log('received message from unacceptable peer %p', peerStream.peerId)
       return false

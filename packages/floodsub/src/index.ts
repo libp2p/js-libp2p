@@ -120,7 +120,7 @@ export interface TopicValidatorFn {
   (peer: PeerId, message: Message): TopicValidatorResult | Promise<TopicValidatorResult>
 }
 
-export interface PeerStreamEvents {
+export interface PeerStreamsEvents {
   message: CustomEvent<PubSubRPC>
   close: CustomEvent<never>
 }

@@ -9,10 +9,10 @@ import { stubInterface } from 'sinon-ts'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { floodsub, TopicValidatorResult } from '../src/index.js'
-import { PeerStream } from '../src/peer-stream.js'
+import { PeerStreams } from '../src/peer-streams.js'
 import type { PubSubRPC } from '../src/floodsub.js'
 import type { FloodSub } from '../src/index.js'
-import type { PeerId, Stream } from '@libp2p/interface'
+import type { PeerId } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 describe('topic validators', () => {
@@ -47,7 +47,7 @@ describe('topic validators', () => {
     // @ts-expect-error not all fields are implemented in return value
     sinon.stub(pubsub.peers, 'get').returns({})
     const filteredTopic = 't'
-    const peer = new PeerStream(otherPeerId, stubInterface<Stream>())
+    const peer = new PeerStreams(otherPeerId)
 
     // Set a trivial topic validator
     pubsub.topicValidators.set(filteredTopic, async (_otherPeerId, message) => {
