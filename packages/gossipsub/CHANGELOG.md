@@ -1,5 +1,14 @@
 # Changelog
 
+## [15.0.3](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.2...gossipsub-v15.0.3) (2025-09-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.1 to ^11.0.2
+
 ## [15.0.2](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.1...gossipsub-v15.0.2) (2025-09-25)
 
 
