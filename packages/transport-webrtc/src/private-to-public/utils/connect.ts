@@ -9,13 +9,12 @@ import { generateNoisePrologue } from './generate-noise-prologue.js'
 import * as sdp from './sdp.js'
 import type { DirectRTCPeerConnection } from './get-rtcpeerconnection.js'
 import type { DataChannelOptions } from '../../index.js'
-import type { ComponentLogger, Connection, CounterGroup, Logger, Metrics, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, Connection, CounterGroup, Logger, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface ConnectOptions {
   log: Logger
   logger: ComponentLogger
-  metrics?: Metrics
   events?: CounterGroup
   remoteAddr: Multiaddr
   role: 'client' | 'server'
@@ -37,16 +36,13 @@ export interface ServerOptions extends ConnectOptions {
 
 const CONNECTION_STATE_CHANGE_EVENT = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
-export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ClientOptions): Promise<Connection>
-export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ServerOptions): Promise<void>
-export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: string, options: ConnectOptions): Promise<any> {
-  const muxerFactory = new DataChannelMuxerFactory({
-    // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
-    peerConnection,
-    metrics: options.events,
-    dataChannelOptions: options.dataChannel
-  })
+function isServer (options: ClientOptions | ServerOptions, peerConnection: any): peerConnection is DirectRTCPeerConnection {
+  return options.role === 'server'
+}
 
+export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions): Promise<Connection>
+export async function connect (peerConnection: DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ServerOptions): Promise<void>
+export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions | ServerOptions): Promise<any> {
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the listener will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
@@ -95,7 +91,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
 
     options.log.trace('%s handshake channel opened', options.role)
 
-    if (options.role === 'server') {
+    if (isServer(options, peerConnection)) {
       // now that the connection has been opened, add the remote's certhash to
       // it's multiaddr so we can complete the noise handshake
       const remoteFingerprint = peerConnection.remoteFingerprint()?.value ?? ''
@@ -131,6 +127,7 @@ export async function connect (peerConnection: DirectRTCPeerConnection, ufrag: s
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
     const maConn = toMultiaddrConnection({
+      // @ts-expect-error types are broken
       peerConnection,
       remoteAddr: options.remoteAddr,
       metrics: options.events,
