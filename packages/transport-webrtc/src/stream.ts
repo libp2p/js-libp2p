@@ -2,6 +2,7 @@ import { StreamResetError, StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
+import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { DEFAULT_FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
@@ -186,8 +187,13 @@ export class WebRTCStream extends AbstractStream {
     options?.signal?.throwIfAborted()
     this.receivedFinAck = Promise.withResolvers<void>()
 
+    // wait for either:
+    // 1. the FIN_ACK to be received
+    // 2. the datachannel to close
+    // 3. timeout
     await Promise.any([
       raceSignal(this.receivedFinAck.promise, options?.signal),
+      pEvent(this.channel, 'close'),
       new Promise<void>(resolve => {
         AbortSignal.timeout(this.finAckTimeout)
           .addEventListener('abort', () => {

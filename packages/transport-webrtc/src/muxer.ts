@@ -72,6 +72,11 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
 
 export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit {
   protocol: string
+
+  /**
+   * Incoming datachannels that were opened by the remote before the peer
+   * connection was established
+   */
   earlyDataChannels: RTCDataChannel[]
 }
 
@@ -107,6 +112,13 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
     }
 
     queueMicrotask(() => {
+      if (this.status !== 'open') {
+        init.earlyDataChannels.forEach(channel => {
+          channel.close()
+        })
+        return
+      }
+
       init.earlyDataChannels.forEach(channel => {
         this.onDataChannel(channel)
       })
