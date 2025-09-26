@@ -2,7 +2,6 @@ import { StreamResetError, StreamStateError } from '@libp2p/interface'
 import { AbstractStream } from '@libp2p/utils'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { pushable } from 'it-pushable'
-import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { DEFAULT_FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.js'
@@ -86,23 +85,6 @@ export class WebRTCStream extends AbstractStream {
       if (this.writableNeedsDrain) {
         this.safeDispatchEvent('drain')
       }
-    }
-
-    if (this.channel.readyState !== 'open') {
-      this.log('channel ready state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
-      pEvent(this.channel, 'open', {
-        rejectionEvents: [
-          'close',
-          'error'
-        ]
-      })
-        .then(() => {
-          this.log('channel ready state is now "%s", dispatching drain', this.channel.readyState)
-          this.safeDispatchEvent('drain')
-        })
-        .catch(err => {
-          this.abort(err.error ?? err)
-        })
     }
 
     // pipe framed protobuf messages through a length prefixed decoder, and

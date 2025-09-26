@@ -1,4 +1,5 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
+import { pEvent } from 'p-event'
 import { MUXER_PROTOCOL } from './constants.js'
 import { createStream, WebRTCStream } from './stream.js'
 import type { DataChannelOptions } from './index.js'
@@ -89,7 +90,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
      * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/datachannel_event}
      */
     this.peerConnection.ondatachannel = ({ channel }) => {
-      this.log.trace('incoming %s datachannel with channel id %d, protocol %s and status %s', channel.protocol, channel.id, channel.protocol, channel.readyState)
+      this.log('incoming datachannel with channel id %d, protocol %s and status %s', channel.id, channel.protocol, channel.readyState)
 
       // 'init' channel is only used during connection establishment, it is
       // closed by the initiator
@@ -120,6 +121,16 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
     })
 
     this.log('open channel %d for protocol %s', channel.id, options?.protocol)
+
+    if (channel.readyState !== 'open') {
+      this.log('channel ready state is "%s" and not "open", waiting for "open" event before creating stream', channel.readyState)
+      await pEvent(channel, 'open', {
+        rejectionEvents: [
+          'close',
+          'error'
+        ]
+      })
+    }
 
     const stream = createStream({
       ...options,
