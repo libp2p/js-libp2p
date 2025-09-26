@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/daemon-server",
-  "version": "9.0.2",
+  "version": "9.0.3",
   "description": "API server for libp2p-daemon instances",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p-daemon-server#readme",
@@ -42,7 +42,7 @@
     "test:node": "aegir test -t node"
   },
   "dependencies": {
-    "@libp2p/gossipsub": "^15.0.2",
+    "@libp2p/gossipsub": "^15.0.3",
     "@libp2p/crypto": "^5.1.10",
     "@libp2p/daemon-protocol": "^8.0.0",
     "@libp2p/interface": "^3.0.0",
