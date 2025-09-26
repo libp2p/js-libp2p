@@ -188,12 +188,6 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   protected _onIncomingStream (stream: Stream, connection: Connection): void {
     const peerStreams = this.addPeer(connection.remotePeer, stream)
     peerStreams.attachInboundStream(stream)
-
-    // don't wait for identify
-    this._onPeerConnected(connection.remotePeer, connection)
-      .catch(err => {
-        this.log.error('could not set up outgoing stream - %e', err)
-      })
   }
 
   /**
