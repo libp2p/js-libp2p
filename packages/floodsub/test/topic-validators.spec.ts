@@ -9,10 +9,10 @@ import { stubInterface } from 'sinon-ts'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { floodsub, TopicValidatorResult } from '../src/index.js'
-import { PeerStreams } from '../src/peer-streams.js'
+import { PeerStream } from '../src/peer-stream.js'
 import type { PubSubRPC } from '../src/floodsub.js'
 import type { FloodSub } from '../src/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { PeerId, Stream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 describe('topic validators', () => {
@@ -47,9 +47,7 @@ describe('topic validators', () => {
     // @ts-expect-error not all fields are implemented in return value
     sinon.stub(pubsub.peers, 'get').returns({})
     const filteredTopic = 't'
-    const peer = new PeerStreams({
-      logger: defaultLogger()
-    }, { id: otherPeerId, protocol: 'a-protocol' })
+    const peer = new PeerStream(otherPeerId, stubInterface<Stream>())
 
     // Set a trivial topic validator
     pubsub.topicValidators.set(filteredTopic, async (_otherPeerId, message) => {
@@ -72,7 +70,7 @@ describe('topic validators', () => {
     // process valid message
     pubsub.subscribe(filteredTopic)
     // @ts-expect-error private method
-    void pubsub.processRpc(peer.id, peer, validRpc)
+    void pubsub.processRpc(peer, validRpc)
 
     // @ts-expect-error .callCount is a property added by sinon
     await pWaitFor(() => pubsub.publishMessage.callCount === 1)
@@ -87,7 +85,7 @@ describe('topic validators', () => {
     }
 
     // @ts-expect-error private method
-    void pubsub.processRpc(peer.id, peer, invalidRpc)
+    void pubsub.processRpc(peer, invalidRpc)
 
     // @ts-expect-error .callCount is a property added by sinon
     expect(pubsub.publishMessage.callCount).to.eql(1)
@@ -107,7 +105,7 @@ describe('topic validators', () => {
 
     // process previously invalid message, now is valid
     // @ts-expect-error private method
-    void pubsub.processRpc(peer.id, peer, invalidRpc2)
+    void pubsub.processRpc(peer, invalidRpc2)
     pubsub.unsubscribe(filteredTopic)
 
     await pWaitFor(() => publishMessageSpy.callCount === 2)

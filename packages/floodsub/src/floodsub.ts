@@ -1,19 +1,17 @@
 import { InvalidMessageError, NotStartedError, InvalidParametersError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { PeerMap, PeerSet } from '@libp2p/peer-collections'
-import { pipe } from 'it-pipe'
 import { TypedEventEmitter } from 'main-event'
 import Queue from 'p-queue'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.js'
 import { pubSubSymbol } from './constants.ts'
 import { RPC } from './message/rpc.js'
-import { PeerStreams, PeerStreams as PeerStreamsImpl } from './peer-streams.js'
+import { PeerStream } from './peer-stream.js'
 import { signMessage, verifySignature } from './sign.js'
 import { toMessage, ensureArray, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.js'
 import { protocol, StrictNoSign, TopicValidatorResult, StrictSign } from './index.js'
 import type { FloodSubComponents, FloodSubEvents, FloodSubInit, FloodSub as FloodSubInterface, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.js'
 import type { Logger, Connection, PeerId, Stream, Topology } from '@libp2p/interface'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface PubSubRPCMessage {
   from?: Uint8Array
@@ -53,7 +51,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   /**
    * Map of peer streams
    */
-  public peers: PeerMap<PeerStreams>
+  public peers: PeerMap<PeerStream>
   /**
    * The signature policy to follow by default
    */
@@ -91,7 +89,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     this.started = false
     this.topics = new Map()
     this.subscriptions = new Set()
-    this.peers = new PeerMap<PeerStreams>()
+    this.peers = new PeerMap<PeerStream>()
     this.globalSignaturePolicy = init.globalSignaturePolicy === 'StrictNoSign' ? 'StrictNoSign' : 'StrictSign'
     this.canRelayMessage = init.canRelayMessage ?? true
     this.emitSelf = init.emitSelf ?? false
@@ -196,18 +194,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
    * On an inbound stream opened
    */
   protected _onIncomingStream (stream: Stream, connection: Connection): void {
-    const peerId = connection.remotePeer
-
-    if (stream.protocol == null) {
-      stream.abort(new Error('Stream was not multiplexed'))
-      return
-    }
-
-    const peer = this.addPeer(peerId, stream.protocol)
-    const inboundStream = peer.attachInboundStream(stream)
-
-    this.processMessages(peerId, inboundStream, peer)
-      .catch(err => { this.log(err) })
+    this.addPeer(connection.remotePeer, stream)
   }
 
   /**
@@ -223,17 +210,13 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     }
 
     const stream = await conn.newStream(this.protocols)
-
-    if (stream.protocol == null) {
-      stream.abort(new Error('Stream was not multiplexed'))
-      return
-    }
-
-    const peer = this.addPeer(peerId, stream.protocol)
-    await peer.attachOutboundStream(stream)
+    this.addPeer(peerId, stream)
 
     // Immediately send my own subscriptions to the newly established conn
-    this.send(peerId, { subscriptions: Array.from(this.subscriptions).map(sub => sub.toString()), subscribe: true })
+    this.send(peerId, {
+      subscriptions: Array.from(this.subscriptions).map(sub => sub.toString()),
+      subscribe: true
+    })
   }
 
   /**
@@ -247,7 +230,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   /**
    * Notifies the router that a peer has been connected
    */
-  addPeer (peerId: PeerId, protocol: string): PeerStreams {
+  addPeer (peerId: PeerId, stream: Stream): PeerStream {
     const existing = this.peers.get(peerId)
 
     // If peer streams already exists, do nothing
@@ -258,23 +241,53 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     // else create a new peer streams
     this.log('new peer %p', peerId)
 
-    const peerStreams: PeerStreams = new PeerStreamsImpl(this.components, {
-      id: peerId,
-      protocol
-    })
+    const peerStream: PeerStream = new PeerStream(peerId, stream)
 
-    this.peers.set(peerId, peerStreams)
-    peerStreams.addEventListener('close', () => this._removePeer(peerId), {
+    this.peers.set(peerId, peerStream)
+    peerStream.addEventListener('message', (evt) => {
+      const rpcMsg = evt.detail
+      const messages: PubSubRPCMessage[] = []
+
+      for (const msg of (rpcMsg.messages ?? [])) {
+        if (msg.from == null || msg.data == null || msg.topic == null) {
+          this.log('message from %p was missing from, data or topic fields, dropping', peerId)
+          continue
+        }
+
+        messages.push({
+          from: msg.from,
+          data: msg.data,
+          topic: msg.topic,
+          sequenceNumber: msg.sequenceNumber ?? undefined,
+          signature: msg.signature ?? undefined,
+          key: msg.key ?? undefined
+        })
+      }
+
+      // Since processRpc may be overridden entirely in unsafe ways,
+      // the simplest/safest option here is to wrap in a function and capture all errors
+      // to prevent a top-level unhandled exception
+      // This processing of rpc messages should happen without awaiting full validation/execution of prior messages
+      this.processRpc(peerStream, {
+        subscriptions: (rpcMsg.subscriptions ?? []).map(sub => ({
+          subscribe: Boolean(sub.subscribe),
+          topic: sub.topic ?? ''
+        })),
+        messages
+      })
+        .catch(err => { this.log(err) })
+    })
+    peerStream.addEventListener('close', () => this._removePeer(peerId), {
       once: true
     })
 
-    return peerStreams
+    return peerStream
   }
 
   /**
    * Notifies the router that a peer has been disconnected
    */
-  protected _removePeer (peerId: PeerId): PeerStreams | undefined {
+  protected _removePeer (peerId: PeerId): PeerStream | undefined {
     const peerStreams = this.peers.get(peerId)
     if (peerStreams == null) {
       return
@@ -295,80 +308,30 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     return peerStreams
   }
 
-  // MESSAGE METHODS
-
-  /**
-   * Responsible for processing each RPC message received by other peers.
-   */
-  async processMessages (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>, peerStreams: PeerStreams): Promise<void> {
-    try {
-      await pipe(
-        stream,
-        async (source) => {
-          for await (const data of source) {
-            const rpcMsg = this.decodeRpc(data)
-            const messages: PubSubRPCMessage[] = []
-
-            for (const msg of (rpcMsg.messages ?? [])) {
-              if (msg.from == null || msg.data == null || msg.topic == null) {
-                this.log('message from %p was missing from, data or topic fields, dropping', peerId)
-                continue
-              }
-
-              messages.push({
-                from: msg.from,
-                data: msg.data,
-                topic: msg.topic,
-                sequenceNumber: msg.sequenceNumber ?? undefined,
-                signature: msg.signature ?? undefined,
-                key: msg.key ?? undefined
-              })
-            }
-
-            // Since processRpc may be overridden entirely in unsafe ways,
-            // the simplest/safest option here is to wrap in a function and capture all errors
-            // to prevent a top-level unhandled exception
-            // This processing of rpc messages should happen without awaiting full validation/execution of prior messages
-            this.processRpc(peerId, peerStreams, {
-              subscriptions: (rpcMsg.subscriptions ?? []).map(sub => ({
-                subscribe: Boolean(sub.subscribe),
-                topic: sub.topic ?? ''
-              })),
-              messages
-            })
-              .catch(err => { this.log(err) })
-          }
-        }
-      )
-    } catch (err: any) {
-      this._onPeerDisconnected(peerStreams.id, err)
-    }
-  }
-
   /**
    * Handles an rpc request from a peer
    */
-  async processRpc (from: PeerId, peerStreams: PeerStreams, rpc: PubSubRPC): Promise<boolean> {
-    if (!this.acceptFrom(from)) {
-      this.log('received message from unacceptable peer %p', from)
+  async processRpc (peerStream: PeerStream, rpc: PubSubRPC): Promise<boolean> {
+    if (!this.acceptFrom(peerStream.peerId)) {
+      this.log('received message from unacceptable peer %p', peerStream.peerId)
       return false
     }
 
-    this.log('rpc from %p', from)
+    this.log('rpc from %p', peerStream.peerId)
 
     const { subscriptions, messages } = rpc
 
     if (subscriptions != null && subscriptions.length > 0) {
-      this.log('subscription update from %p', from)
+      this.log('subscription update from %p', peerStream.peerId)
 
       // update peer subscriptions
       subscriptions.forEach((subOpt) => {
-        this.processRpcSubOpt(from, subOpt)
+        this.processRpcSubOpt(peerStream.peerId, subOpt)
       })
 
       super.dispatchEvent(new CustomEvent<SubscriptionChangeData>('subscription-change', {
         detail: {
-          peerId: peerStreams.id,
+          peerId: peerStream.peerId,
           subscriptions: subscriptions.map(({ topic, subscribe }) => ({
             topic: `${topic ?? ''}`,
             subscribe: Boolean(subscribe)
@@ -378,7 +341,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     }
 
     if (messages != null && messages.length > 0) {
-      this.log('messages from %p', from)
+      this.log('messages from %p', peerStream.peerId)
 
       this.queue.addAll(messages.map(message => async () => {
         if (message.topic == null || (!this.subscriptions.has(message.topic) && !this.canRelayMessage)) {
@@ -389,7 +352,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
         try {
           const msg = await toMessage(message)
 
-          await this.processMessage(from, msg)
+          await this.processMessage(peerStream.peerId, msg)
         } catch (err: any) {
           this.log.error(err)
         }
@@ -501,22 +464,6 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   }
 
   /**
-   * Decode Uint8Array into an RPC object.
-   * This can be override to use a custom router protobuf.
-   */
-  decodeRpc (bytes: Uint8Array | Uint8ArrayList): PubSubRPC {
-    return RPC.decode(bytes)
-  }
-
-  /**
-   * Encode RPC object into a Uint8Array.
-   * This can be override to use a custom router protobuf.
-   */
-  encodeRpc (rpc: PubSubRPC): Uint8Array {
-    return RPC.encode(rpc)
-  }
-
-  /**
    * Encode RPC object into a Uint8Array.
    * This can be override to use a custom router protobuf.
    */
@@ -540,21 +487,15 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
    * Send an rpc object to a peer
    */
   sendRpc (peer: PeerId, rpc: PubSubRPC): void {
-    const peerStreams = this.peers.get(peer)
+    const peerStream = this.peers.get(peer)
 
-    if (peerStreams == null) {
+    if (peerStream == null) {
       this.log.error('Cannot send RPC to %p as there are no streams to it available', peer)
 
       return
     }
 
-    if (!peerStreams.isWritable) {
-      this.log.error('Cannot send RPC to %p as there is no outbound stream to it available', peer)
-
-      return
-    }
-
-    peerStreams.write(this.encodeRpc(rpc))
+    peerStream.write(rpc)
   }
 
   /**

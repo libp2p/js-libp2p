@@ -12,10 +12,12 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { floodsub, protocol, StrictNoSign } from '../src/index.js'
-import { PeerStreams } from '../src/peer-streams.js'
+import { FloodSub } from '../src/floodsub.js'
+import { protocol, StrictNoSign } from '../src/index.js'
+import { PeerStream } from '../src/peer-stream.js'
 import type { PubSubRPC } from '../src/floodsub.js'
 import type { Message } from '../src/index.js'
+import type { Stream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -23,7 +25,7 @@ const topic = 'my-topic'
 const message = uint8ArrayFromString('a neat message')
 
 describe('floodsub', () => {
-  let pubsub: any
+  let pubsub: FloodSub
   let registrar: StubbedInstance<Registrar>
 
   before(async () => {
@@ -33,14 +35,14 @@ describe('floodsub', () => {
     const peerId = peerIdFromPrivateKey(privateKey)
     registrar = stubInterface()
 
-    pubsub = floodsub({
-      emitSelf: true,
-      globalSignaturePolicy: StrictNoSign
-    })({
+    pubsub = new FloodSub({
       peerId,
       privateKey,
       registrar,
       logger: defaultLogger()
+    }, {
+      emitSelf: true,
+      globalSignaturePolicy: StrictNoSign
     })
   })
 
@@ -59,12 +61,7 @@ describe('floodsub', () => {
     const key = uint8ArrayToString(sig, 'base64')
     let callCount = 0
 
-    const peerStream = new PeerStreams({
-      logger: defaultLogger()
-    }, {
-      id: otherPeer,
-      protocol: 'test'
-    })
+    const peerStream = new PeerStream(otherPeer, stubInterface<Stream>())
     const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
@@ -85,7 +82,7 @@ describe('floodsub', () => {
     expect(pubsub.seenCache.has(key)).to.be.false()
 
     // receive the message once
-    await pubsub.processRpc(peerStream.id, peerStream, rpc)
+    await pubsub.processRpc(peerStream, rpc)
     await pubsub.queue.onIdle()
 
     // should have received the message
@@ -95,9 +92,9 @@ describe('floodsub', () => {
     expect(pubsub.seenCache.has(key)).to.be.true()
 
     // receive the message multiple times
-    await pubsub.processRpc(peerStream.id, peerStream, rpc)
-    await pubsub.processRpc(peerStream.id, peerStream, rpc)
-    await pubsub.processRpc(peerStream.id, peerStream, rpc)
+    await pubsub.processRpc(peerStream, rpc)
+    await pubsub.processRpc(peerStream, rpc)
+    await pubsub.processRpc(peerStream, rpc)
 
     // should only have emitted the message once
     expect(callCount).to.equal(1)
@@ -134,12 +131,7 @@ describe('floodsub', () => {
 
     const sender = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
-    const peerStream = new PeerStreams({
-      logger: defaultLogger()
-    }, {
-      id: sender,
-      protocol: 'test'
-    })
+    const peerStream = new PeerStream(sender, stubInterface<Stream>())
     const rpc: PubSubRPC = {
       subscriptions: [],
       messages: [{
@@ -155,7 +147,7 @@ describe('floodsub', () => {
     pubsub.topics.set(topic, peerSet)
 
     // receive the message
-    await pubsub.processRpc(peerStream.id, peerStream, rpc)
+    await pubsub.processRpc(peerStream, rpc)
 
     // should not forward back to the sender
     expect(pubsub.sendRpc).to.have.property('called', false)

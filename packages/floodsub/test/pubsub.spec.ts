@@ -11,12 +11,12 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { floodsub } from '../src/index.js'
-import { PeerStreams } from '../src/peer-streams.js'
+import { PeerStream } from '../src/peer-stream.js'
 import { noSignMsgId } from '../src/utils.js'
 import { connectionPair } from './fixtures/connection.js'
 import type { PubSubRPC } from '../src/floodsub.js'
 import type { FloodSub, FloodSubComponents, Message } from '../src/index.js'
-import type { PeerId } from '@libp2p/interface'
+import type { PeerId, Stream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -446,10 +446,8 @@ describe('pubsub base implementation', () => {
       expect(peersSubscribed).to.be.empty()
 
       // Set mock peer subscribed
-      const peer = new PeerStreams({
-        logger: defaultLogger()
-      }, { id: peerId, protocol: 'a-protocol' })
-      const id = peer.id
+      const peer = new PeerStream(peerId, stubInterface<Stream>())
+      const id = peer.peerId
 
       const set = new PeerSet()
       set.add(id)
@@ -457,7 +455,7 @@ describe('pubsub base implementation', () => {
       // @ts-expect-error private method
       pubsub['topics'].set(topic, set)
       // @ts-expect-error private method
-      pubsub['peers'].set(peer.id, peer)
+      pubsub['peers'].set(peer.peerId, peer)
 
       peersSubscribed = pubsub.getSubscribers(topic)
 
@@ -491,16 +489,11 @@ describe('pubsub base implementation', () => {
       // @ts-expect-error private method
       sinon.spy(pubsub, 'validate')
 
-      const peerStream = new PeerStreams({
-        logger: defaultLogger()
-      }, {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        protocol: 'test'
-      })
+      const peerStream = new PeerStream(peerIdFromPrivateKey(await generateKeyPair('Ed25519')), stubInterface<Stream>())
       const rpc: PubSubRPC = {
         subscriptions: [],
         messages: [{
-          from: peerStream.id.toMultihash().bytes,
+          from: peerStream.peerId.toMultihash().bytes,
           data,
           sequenceNumber: await noSignMsgId(data),
           topic
@@ -510,7 +503,7 @@ describe('pubsub base implementation', () => {
       pubsub.subscribe(topic)
 
       // @ts-expect-error private method
-      await pubsub['processRpc'](peerStream.id, peerStream, rpc)
+      await pubsub['processRpc'](peerStream, rpc)
 
       // message should not be delivered
       await delay(1000)
@@ -526,17 +519,11 @@ describe('pubsub base implementation', () => {
       // @ts-expect-error private method
       const validateSpy = sinon.spy(pubsub, 'validate')
 
-      const peerStream = new PeerStreams({
-        logger: defaultLogger()
-      }, {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        protocol: 'test'
-      })
-
+      const peerStream = new PeerStream(peerIdFromPrivateKey(await generateKeyPair('Ed25519')), stubInterface<Stream>())
       const rpc: PubSubRPC = {
         subscriptions: [],
         messages: [{
-          from: peerStream.id.toMultihash().bytes,
+          from: peerStream.peerId.toMultihash().bytes,
           data,
           topic
         }]
@@ -553,7 +540,7 @@ describe('pubsub base implementation', () => {
       })
 
       // @ts-expect-error private method
-      await pubsub['processRpc'](peerStream.id, peerStream, rpc)
+      await pubsub['processRpc'](peerStream, rpc)
 
       // await message delivery
       await deferred.promise

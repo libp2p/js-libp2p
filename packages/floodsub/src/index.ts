@@ -34,6 +34,7 @@
 
 import { pubSubSymbol } from './constants.ts'
 import { FloodSub as FloodSubClass } from './floodsub.js'
+import type { PubSubRPC } from './floodsub.js'
 import type { ComponentLogger, PeerId, PrivateKey, PublicKey, TypedEventTarget } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
@@ -120,8 +121,7 @@ export interface TopicValidatorFn {
 }
 
 export interface PeerStreamEvents {
-  'stream:inbound': CustomEvent<never>
-  'stream:outbound': CustomEvent<never>
+  message: CustomEvent<PubSubRPC>
   close: CustomEvent<never>
 }
 
