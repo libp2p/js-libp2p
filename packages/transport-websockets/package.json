@@ -72,8 +72,6 @@
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
     "@multiformats/multiaddr-to-uri": "^12.0.0",
-    "@types/ws": "^8.18.1",
-    "it-ws": "^6.1.5",
     "main-event": "^1.0.1",
     "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
@@ -83,6 +81,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.0.1",
+    "@types/ws": "^8.18.1",
     "aegir": "^47.0.22",
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^6.0.0",
