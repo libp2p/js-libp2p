@@ -47,9 +47,7 @@ describe('topic validators', () => {
     // @ts-expect-error not all fields are implemented in return value
     sinon.stub(pubsub.peers, 'get').returns({})
     const filteredTopic = 't'
-    const peer = new PeerStreams({
-      logger: defaultLogger()
-    }, { id: otherPeerId, protocol: 'a-protocol' })
+    const peer = new PeerStreams(otherPeerId)
 
     // Set a trivial topic validator
     pubsub.topicValidators.set(filteredTopic, async (_otherPeerId, message) => {
@@ -72,7 +70,7 @@ describe('topic validators', () => {
     // process valid message
     pubsub.subscribe(filteredTopic)
     // @ts-expect-error private method
-    void pubsub.processRpc(peer.id, peer, validRpc)
+    void pubsub.processRpc(peer, validRpc)
 
     // @ts-expect-error .callCount is a property added by sinon
     await pWaitFor(() => pubsub.publishMessage.callCount === 1)
@@ -87,7 +85,7 @@ describe('topic validators', () => {
     }
 
     // @ts-expect-error private method
-    void pubsub.processRpc(peer.id, peer, invalidRpc)
+    void pubsub.processRpc(peer, invalidRpc)
 
     // @ts-expect-error .callCount is a property added by sinon
     expect(pubsub.publishMessage.callCount).to.eql(1)
@@ -107,7 +105,7 @@ describe('topic validators', () => {
 
     // process previously invalid message, now is valid
     // @ts-expect-error private method
-    void pubsub.processRpc(peer.id, peer, invalidRpc2)
+    void pubsub.processRpc(peer, invalidRpc2)
     pubsub.unsubscribe(filteredTopic)
 
     await pWaitFor(() => publishMessageSpy.callCount === 2)

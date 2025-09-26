@@ -34,6 +34,7 @@
 
 import { pubSubSymbol } from './constants.ts'
 import { FloodSub as FloodSubClass } from './floodsub.js'
+import type { PubSubRPC } from './floodsub.js'
 import type { ComponentLogger, PeerId, PrivateKey, PublicKey, TypedEventTarget } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
@@ -119,9 +120,8 @@ export interface TopicValidatorFn {
   (peer: PeerId, message: Message): TopicValidatorResult | Promise<TopicValidatorResult>
 }
 
-export interface PeerStreamEvents {
-  'stream:inbound': CustomEvent<never>
-  'stream:outbound': CustomEvent<never>
+export interface PeerStreamsEvents {
+  message: CustomEvent<PubSubRPC>
   close: CustomEvent<never>
 }
 
@@ -145,9 +145,9 @@ export interface FloodSub extends TypedEventTarget<FloodSubEvents> {
   globalSignaturePolicy: typeof StrictSign | typeof StrictNoSign
 
   /**
-   * A list of multicodecs that contain the pubsub protocol name.
+   * The protocol name used by FloodSub
    */
-  protocols: string[]
+  protocol: string
 
   /**
    * Pubsub routers support message validators per topic, which will validate the message
@@ -257,9 +257,9 @@ export interface FloodSubInit {
   /**
    * Override the protocol registered with the registrar
    *
-   * @default ['/floodsub/1.0.0']
+   * @default '/floodsub/1.0.0'
    */
-  protocols?: string[]
+  protocol?: string
 
   /**
    * defines how signatures should be handled
