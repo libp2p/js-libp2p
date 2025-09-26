@@ -250,7 +250,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         })
       }
 
-      expect(connection).to.have.property('streams').that.has.lengthOf(5)
+      expect(
+        connection.streams.filter(s => s.protocol === '/echo/1.0.0')
+      ).to.have.lengthOf(5)
 
       if (remoteConn != null) {
         await pWaitFor(() => remoteConn.streams.filter(s => s.protocol === '/echo/1.0.0').length === 5, {
