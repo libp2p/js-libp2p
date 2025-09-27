@@ -144,7 +144,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
       localNonce,
       remoteNonce,
       psk: this.psk,
-      maConn: connection,
+      maConn: bytes.unwrap(),
       log
     })
   }
