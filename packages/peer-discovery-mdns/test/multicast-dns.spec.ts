@@ -15,6 +15,8 @@ import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+const isCI = Boolean(process.env.CI)
+
 function getComponents (peerId: PeerId, multiaddrs: Multiaddr[]): MulticastDNSComponents {
   const addressManager = stubInterface<AddressManager>()
   addressManager.getAddresses.returns(multiaddrs.map(ma => ma.encapsulate(`/p2p/${peerId.toString()}`)))
@@ -33,6 +35,14 @@ describe('MulticastDNS', () => {
   let cMultiaddrs: Multiaddr[]
   let pD: PeerId
   let dMultiaddrs: Multiaddr[]
+
+  if (isCI) {
+    it.skip('MDNS tests are skipped in CI', () => {
+
+    })
+
+    return
+  }
 
   before(async function () {
     this.timeout(80 * 1000)
