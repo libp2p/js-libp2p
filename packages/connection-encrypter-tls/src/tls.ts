@@ -179,7 +179,7 @@ export class TLS implements ConnectionEncrypter {
 
               if (streamMuxer == null) {
                 const err = new InvalidCryptoExchangeError(`Selected muxer ${socket.alpnProtocol} did not exist`)
-                log.error(`selected muxer %s did not exist - %e`, socket.alpnProtocol, err)
+                log.error('selected muxer %s did not exist - %e', socket.alpnProtocol, err)
 
                 connection.abort(err)
                 reject(err)
