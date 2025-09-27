@@ -239,7 +239,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       this.safeDispatchEvent('start', { detail: this })
       this.log('libp2p has started with peer id %p', this.peerId)
     } catch (err: any) {
-      this.log.error('An error occurred starting libp2p', err)
+      this.log.error('an error occurred starting libp2p - %e', err)
       // set status to 'started' so this.stop() will stop any running components
       this.status = 'started'
       await this.stop()
@@ -428,6 +428,6 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     void this.components.peerStore.merge(peer.id, {
       multiaddrs: peer.multiaddrs
     })
-      .catch(err => { this.log.error(err) })
+      .catch(err => { this.log.error('could not update multiaddrs of discovered peer - %e', err) })
   }
 }

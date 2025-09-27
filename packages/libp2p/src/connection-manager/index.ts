@@ -440,7 +440,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
   onConnect (evt: CustomEvent<Connection>): void {
     void this._onConnect(evt).catch(err => {
-      this.log.error(err)
+      this.log.error('could not connect - %e', err)
     })
   }
 

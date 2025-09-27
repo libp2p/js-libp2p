@@ -171,7 +171,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         log: this.context.logger.forComponent('libp2p:tcp:connection')
       })
     } catch (err: any) {
-      this.log.error('inbound connection failed', err)
+      this.log.error('inbound connection failed - %e', err)
       this.metrics.errors?.increment({ [`${this.addr} inbound_to_connection`]: true })
       socket.destroy()
       return
@@ -199,9 +199,9 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
             // resume() will be called again every time a connection is
             // dropped, which acts as an eventual retry mechanism.
             // onListenError allows the consumer act on this.
-            this.resume().catch(e => {
-              this.log.error('error attempting to listen server once connection count under limit', e)
-              this.context.closeServerOnMaxConnections?.onListenError?.(e as Error)
+            this.resume().catch(err => {
+              this.log.error('error attempting to listen server once connection count under limit - %e', err)
+              this.context.closeServerOnMaxConnections?.onListenError?.(err as Error)
             })
           }
         })
@@ -215,7 +215,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         }
       })
       .catch(async err => {
-        this.log.error('inbound connection upgrade failed', err)
+        this.log.error('inbound connection upgrade failed - %e', err)
         this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
         this.sockets.delete(socket)
         maConn.abort(err)

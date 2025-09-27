@@ -136,7 +136,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
         request
       }, options)
     } catch (err: any) {
-      this.log.error('error while handling hop', err)
+      this.log.error('error while handling hop - %e', err)
       await pbstr.pb(HopMessage).write({
         type: HopMessage.Type.STATUS,
         status: Status.MALFORMED_MESSAGE
@@ -276,7 +276,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
       request.peer.addrs.forEach(multiaddr)
       dstPeer = peerIdFromMultihash(Digest.decode(request.peer.id))
     } catch (err) {
-      this.log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
+      this.log.error('invalid hop connect request via peer %p - %e', connection.remotePeer, err)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, options)
       return
     }
@@ -355,7 +355,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
     try {
       response = await stopstr.read(options)
     } catch (err) {
-      this.log.error('error parsing stop message response from %p', connection.remotePeer)
+      this.log.error('error parsing stop message response from %p - %e', connection.remotePeer, err)
     }
 
     if (response == null) {

@@ -341,7 +341,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
 
           await this.processMessage(peerStream.peerId, msg)
         } catch (err: any) {
-          this.log.error(err)
+          this.log.error('failed to queue messages from %p - %e', peerStream.peerId, err)
         }
       }))
         .catch(err => { this.log(err) })
@@ -466,15 +466,15 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
    * Send an rpc object to a peer
    */
   sendRpc (peer: PeerId, rpc: PubSubRPC): void {
-    const peerStream = this.peers.get(peer)
+    const peerStreams = this.peers.get(peer)
 
-    if (peerStream == null) {
-      this.log.error('Cannot send RPC to %p as there are no streams to it available', peer)
+    if (peerStreams == null) {
+      this.log.error('cannot send RPC to %p as there are no streams to it available', peer)
 
       return
     }
 
-    peerStream.write(rpc)
+    peerStreams.write(rpc)
   }
 
   /**

@@ -30,7 +30,7 @@ export class DHTOperations {
       await drain(this.dht.provide(cid))
       yield OkResponse()
     } catch (err: any) {
-      log.error(err)
+      log.error('failed to provide CID %s - %e', cid, err)
       yield ErrorResponse(err)
     }
   }
@@ -73,7 +73,7 @@ export class DHTOperations {
         }
       }
     } catch (err: any) {
-      log.error(err)
+      log.error('error getting value for key %b - %e', key, err)
       yield ErrorResponse(err)
     }
   }
@@ -84,7 +84,7 @@ export class DHTOperations {
 
       yield OkResponse()
     } catch (err: any) {
-      log.error(err)
+      log.error('error putting value %b for key %b - %e', value, key, err)
       yield ErrorResponse(err)
     }
   }
@@ -107,7 +107,7 @@ export class DHTOperations {
 
       throw new Error('Peer not found')
     } catch (err: any) {
-      log.error(err)
+      log.error('peer not found %p - %e', peerId, err)
       yield ErrorResponse(err)
     }
   }

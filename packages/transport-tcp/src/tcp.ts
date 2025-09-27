@@ -102,7 +102,7 @@ export class TCP implements Transport<TCPDialEvents> {
       return await options.upgrader.upgradeOutbound(maConn, options)
     } catch (err: any) {
       this.metrics?.errors.increment({ outbound_upgrade: true })
-      this.log.error('error upgrading outbound connection', err)
+      this.log.error('error upgrading outbound connection - %e', err)
       maConn.abort(err)
       throw err
     }

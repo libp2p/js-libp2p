@@ -463,7 +463,7 @@ export class Upgrader implements UpgraderInterface {
       maConn.log('selected %s as muxer protocol', protocol)
       return muxerFactory
     } catch (err: any) {
-      maConn.log.error('error multiplexing outbound connection', err)
+      maConn.log.error('error multiplexing outbound connection - %e', err)
       throw new MuxerUnavailableError(String(err))
     }
   }
@@ -487,7 +487,7 @@ export class Upgrader implements UpgraderInterface {
       maConn.log('selected %s as muxer protocol', protocol)
       return muxerFactory
     } catch (err: any) {
-      maConn.log.error('error multiplexing inbound connection', err)
+      maConn.log.error('error multiplexing inbound connection - %e', err)
       throw err
     }
   }

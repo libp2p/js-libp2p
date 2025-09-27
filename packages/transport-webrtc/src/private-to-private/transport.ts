@@ -114,7 +114,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
 
       this._onProtocol(stream, connection, signal)
         .catch(err => {
-          this.log.error('failed to handle incoming connect from %p', connection.remotePeer, err)
+          this.log.error('failed to handle incoming connect from %p - %e', connection.remotePeer, err)
         })
         .finally(() => {
           signal.clear()
@@ -249,7 +249,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
-      this.log.error('incoming signaling error', err)
+      this.log.error('incoming signaling error - %e', err)
 
       peerConnection.close()
       stream.abort(err)
@@ -262,7 +262,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     const shutDownListener = (): void => {
       webRTCConn.close()
         .catch(err => {
-          this.log.error('could not close WebRTCMultiaddrConnection', err)
+          this.log.error('could not close WebRTCMultiaddrConnection - %e', err)
         })
     }
 

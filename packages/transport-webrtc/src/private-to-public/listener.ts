@@ -160,7 +160,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
             this.incomingConnection(ufrag, remoteHost, remotePort, signal)
               .catch(err => {
-                this.log.error('error processing incoming STUN request', err)
+                this.log.error('error processing incoming STUN request - %e', err)
               })
               .finally(() => {
                 signal.clear()
