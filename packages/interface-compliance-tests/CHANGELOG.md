@@ -75,6 +75,26 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [7.0.3](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v7.0.2...interface-compliance-tests-v7.0.3) (2025-09-27)
+
+
+### Bug Fixes
+
+* capture early datachannels ([#3312](https://github.com/libp2p/js-libp2p/issues/3312)) ([8d66d5f](https://github.com/libp2p/js-libp2p/commit/8d66d5ff1c28298ac1bef3b68fb757eeba1d3bfa))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/echo bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/interface-internal bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/logger bumped from ^6.0.1 to ^6.0.2
+    * @libp2p/memory bumped from ^2.0.1 to ^2.0.2
+    * @libp2p/plaintext bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/utils bumped from ^7.0.1 to ^7.0.2
+    * libp2p bumped from ^3.0.2 to ^3.0.3
+
 ## [7.0.2](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v7.0.1...interface-compliance-tests-v7.0.2) (2025-09-25)
 
 
