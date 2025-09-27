@@ -446,7 +446,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     }
 
     const errMsg = `reservation failed with status ${response.status ?? 'undefined'}`
-    this.log.error('%s', errMsg)
+    this.log.error(errMsg)
 
     throw new Error(errMsg)
   }
