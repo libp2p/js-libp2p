@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.3](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.2...pnet-v3.0.3) (2025-09-27)
+
+
+### Bug Fixes
+
+* unwrap connection for boxed stream ([#3314](https://github.com/libp2p/js-libp2p/issues/3314)) ([de2ad9c](https://github.com/libp2p/js-libp2p/commit/de2ad9ca559ffa31caf040f1702193dc530a4db2))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.1...pnet-v3.0.2) (2025-09-27)
 
 

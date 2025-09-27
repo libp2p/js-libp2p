@@ -27,7 +27,7 @@
   "packages/peer-id": "6.0.1",
   "packages/peer-record": "9.0.1",
   "packages/peer-store": "12.0.2",
-  "packages/pnet": "3.0.2",
+  "packages/pnet": "3.0.3",
   "packages/protocol-autonat": "3.0.2",
   "packages/protocol-autonat-v2": "2.0.2",
   "packages/protocol-dcutr": "3.0.2",
