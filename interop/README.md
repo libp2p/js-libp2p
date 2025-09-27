@@ -40,14 +40,14 @@ This must be repeated every time you make a change to the js-libp2p source code.
 
 ```console
 $ npm run build
-$ docker build . -f ./interop/Dockerfile -t js-libp2p-node
+$ docker build . -f ./interop/Dockerfile -t node-js-libp2p-head
 ```
 
 #### Browsers
 
 ```console
 $ npm run build
-$ docker build . -f ./interop/BrowserDockerfile -t js-libp2p-browsers
+$ docker build . -f ./interop/BrowserDockerfile -t browsers-js-libp2p-head
 ```
 
 ### Build another libp2p implementation
@@ -93,13 +93,13 @@ $ docker run --name redis --rm -p 6379:6379 redis:7-alpine
 #### node.js
 
 ```console
-$ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=true -e redis_addr=redis:6379 --link redis:redis js-libp2p-node
+$ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=true -e redis_addr=redis:6379 --link redis:redis node-js-libp2p-head
 ```
 
 #### Browsers
 
 ```console
-$ docker run -e transport=webtransport -e muxer=yamux -e security=noise -e is_dialer=true -e redis_addr=redis:6379 --link redis:redis js-libp2p-browsers
+$ docker run -e transport=webtransport -e muxer=yamux -e security=noise -e is_dialer=true -e redis_addr=redis:6379 --link redis:redis browsers-js-libp2p-head
 ```
 
 ### Start another libp2p implementation
@@ -110,6 +110,9 @@ $ docker run -e transport=webtransport -e muxer=yamux -e security=noise -e is_di
 
 ```console
 $ docker run -e transport=tcp -e muxer=yamux -e security=noise -e is_dialer=false -e redis_addr=redis:6379 --link redis:redis go-v0.29
+
+
+docker run -e transport=webrtc-direct -e is_dialer=false -e redis_addr=redis:6379 --link redis:redis go-v0.42
 ```
 
 # License
