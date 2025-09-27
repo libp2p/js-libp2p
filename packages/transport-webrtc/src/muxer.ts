@@ -1,5 +1,4 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
-import { pEvent } from 'p-event'
 import { MUXER_PROTOCOL } from './constants.js'
 import { createStream, WebRTCStream } from './stream.js'
 import type { DataChannelOptions } from './index.js'
@@ -156,16 +155,6 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
     })
 
     this.log('open channel %d for protocol %s', channel.id, options?.protocol)
-
-    if (channel.readyState !== 'open') {
-      this.log('channel ready state is "%s" and not "open", waiting for "open" event before creating stream', channel.readyState)
-      await pEvent(channel, 'open', {
-        rejectionEvents: [
-          'close',
-          'error'
-        ]
-      })
-    }
 
     const stream = createStream({
       ...options,

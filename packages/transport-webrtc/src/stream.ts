@@ -107,6 +107,26 @@ export class WebRTCStream extends AbstractStream {
       }
     }
     this.addEventListener('close', cleanUpDatachannelOnClose)
+
+    // chrome can receive message events before the open even is fired - calling
+    // code needs to attach message event listeners before these events occur
+    // but we need to wait before sending any data so this has to be done async
+    if (this.channel.readyState !== 'open') {
+      this.log('channel ready state is "%s" and not "open", waiting for "open" event before sending data', this.channel.readyState)
+      pEvent(this.channel, 'open', {
+        rejectionEvents: [
+          'close',
+          'error'
+        ]
+      })
+        .then(() => {
+          this.log('channel ready state is now "%s", dispatching drain', this.channel.readyState)
+          this.safeDispatchEvent('drain')
+        })
+        .catch(err => {
+          this.abort(err.error ?? err)
+        })
+    }
   }
 
   sendNewStream (): void {
