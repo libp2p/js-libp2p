@@ -36,6 +36,20 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.2](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.1...utils-v7.0.2) (2025-09-27)
+
+
+### Bug Fixes
+
+* update error logs to use %e token ([#3261](https://github.com/libp2p/js-libp2p/issues/3261)) ([e10c5c0](https://github.com/libp2p/js-libp2p/commit/e10c5c0c51876ab83da51d558ee4789fc3c38a49))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.0.1 to ^6.0.2
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.0...utils-v7.0.1) (2025-09-24)
 
 

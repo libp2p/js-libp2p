@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -48,7 +48,7 @@
     "@chainsafe/netmask": "^2.0.0",
     "@libp2p/crypto": "^5.1.10",
     "@libp2p/interface": "^3.0.0",
-    "@libp2p/logger": "^6.0.1",
+    "@libp2p/logger": "^6.0.2",
     "@multiformats/multiaddr": "^13.0.1",
     "@sindresorhus/fnv1a": "^3.1.0",
     "any-signal": "^4.1.1",
