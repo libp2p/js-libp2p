@@ -1,0 +1,7 @@
+ARG BASE_IMAGE=node-js-libp2p-head
+
+FROM ${BASE_IMAGE}
+
+WORKDIR /app/interop
+
+ENTRYPOINT ["xvfb-run", "-a", "npm", "test", "--", "-t", "electron-main"]
