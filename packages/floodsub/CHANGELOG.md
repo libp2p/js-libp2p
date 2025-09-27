@@ -98,6 +98,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.2](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.1...floodsub-v11.0.2) (2025-09-26)
+
+
+### Bug Fixes
+
+* remove pipe from floodsub ([#3310](https://github.com/libp2p/js-libp2p/issues/3310)) ([39e2e54](https://github.com/libp2p/js-libp2p/commit/39e2e541ad534e3c214b09b7055e71118648a77b))
+
 ## [11.0.1](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.0...floodsub-v11.0.1) (2025-09-24)
 
 

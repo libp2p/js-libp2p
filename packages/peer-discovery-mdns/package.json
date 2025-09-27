@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/mdns",
-  "version": "12.0.1",
+  "version": "12.0.2",
   "description": "Node.js libp2p mDNS discovery implementation for peer discovery",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-mdns#readme",
@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.10",
-    "@libp2p/interface-compliance-tests": "^7.0.1",
+    "@libp2p/interface-compliance-tests": "^7.0.2",
     "@libp2p/logger": "^6.0.1",
     "aegir": "^47.0.22",
     "p-event": "^7.0.0",

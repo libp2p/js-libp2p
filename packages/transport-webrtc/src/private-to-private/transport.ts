@@ -229,6 +229,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       const webRTCConn = toMultiaddrConnection({
+        // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
         peerConnection,
         remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents,
@@ -245,6 +246,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       // close the connection on shut down
+      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
       this.log.error('incoming signaling error - %e', err)
@@ -255,7 +257,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     }
   }
 
-  private _closeOnShutdown (pc: RTCPeerConnection, webRTCConn: MultiaddrConnection): void {
+  private _closeOnShutdown (pc: globalThis.RTCPeerConnection, webRTCConn: MultiaddrConnection): void {
     // close the connection on shut down
     const shutDownListener = (): void => {
       webRTCConn.close()

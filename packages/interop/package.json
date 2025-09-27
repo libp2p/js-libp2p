@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interop",
-  "version": "14.0.1",
+  "version": "14.0.3",
   "description": "Interoperability Tests for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interop#readme",
@@ -42,7 +42,7 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/daemon-client": "^10.0.1",
+    "@libp2p/daemon-client": "^10.0.3",
     "@libp2p/interface": "^3.0.0",
     "@libp2p/utils": "^7.0.1",
     "@multiformats/multiaddr": "^13.0.1",

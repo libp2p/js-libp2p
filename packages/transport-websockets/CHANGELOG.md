@@ -70,6 +70,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.0.2](https://github.com/libp2p/js-libp2p/compare/websockets-v10.0.1...websockets-v10.0.2) (2025-09-26)
+
+
+### Bug Fixes
+
+* remove it-ws ([#3309](https://github.com/libp2p/js-libp2p/issues/3309)) ([8543df0](https://github.com/libp2p/js-libp2p/commit/8543df06bef3ee363de4777aa09e9a3bd036fdc6))
+
 ## [10.0.1](https://github.com/libp2p/js-libp2p/compare/websockets-v10.0.0...websockets-v10.0.1) (2025-09-24)
 
 

@@ -59,17 +59,6 @@ export const anyMatch = (a: Set<number> | number[], b: Set<number> | number[]): 
   return false
 }
 
-/**
- * Make everything an array
- */
-export const ensureArray = function <T> (maybeArray: T | T[]): T[] {
-  if (!Array.isArray(maybeArray)) {
-    return [maybeArray]
-  }
-
-  return maybeArray
-}
-
 const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
   if ((message.sequenceNumber == null) || (message.from == null) || (message.signature == null)) {
     return false

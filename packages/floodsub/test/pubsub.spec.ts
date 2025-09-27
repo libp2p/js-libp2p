@@ -176,21 +176,21 @@ describe('pubsub base implementation', () => {
         // start pubsub and connect nodes
         await start(pubsubA, pubsubB)
 
-        expect(registrarA.register.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarA.register.calledWith(pubsubA.protocol)).to.be.true()
         const topologyA = registrarA.register.getCall(0).args[1]
 
-        expect(registrarB.handle.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarB.handle.calledWith(pubsubA.protocol)).to.be.true()
         const handlerB = registrarB.handle.getCall(0).args[1]
 
         if (topologyA == null || handlerB == null) {
-          throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+          throw new Error(`No handler registered for ${pubsubA.protocol}`)
         }
 
         // Notify peers of connection
         const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
         topologyA.onConnect?.(peerIdB, c0)
-        await handlerB(await c1.newStream(pubsubA.protocols[0]), c1)
+        await handlerB(await c1.newStream(pubsubA.protocol), c1)
       })
 
       afterEach(async () => {
@@ -288,21 +288,21 @@ describe('pubsub base implementation', () => {
       beforeEach(async () => {
         await start(pubsubA, pubsubB)
 
-        expect(registrarA.register.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarA.register.calledWith(pubsubA.protocol)).to.be.true()
         const topologyA = registrarA.register.getCall(0).args[1]
 
-        expect(registrarB.handle.calledWith(pubsubA.protocols[0])).to.be.true()
+        expect(registrarB.handle.calledWith(pubsubA.protocol)).to.be.true()
         const handlerB = registrarB.handle.getCall(0).args[1]
 
         if (topologyA == null || handlerB == null) {
-          throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+          throw new Error(`No handler registered for ${pubsubA.protocol}`)
         }
 
         // Notify peers of connection
         const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
         topologyA.onConnect?.(peerIdB, c0)
-        await handlerB(await c1.newStream(pubsubA.protocols[0]), c1)
+        await handlerB(await c1.newStream(pubsubA.protocol), c1)
       })
 
       afterEach(async () => {
@@ -446,10 +446,8 @@ describe('pubsub base implementation', () => {
       expect(peersSubscribed).to.be.empty()
 
       // Set mock peer subscribed
-      const peer = new PeerStreams({
-        logger: defaultLogger()
-      }, { id: peerId, protocol: 'a-protocol' })
-      const id = peer.id
+      const peer = new PeerStreams(peerId)
+      const id = peer.peerId
 
       const set = new PeerSet()
       set.add(id)
@@ -457,7 +455,7 @@ describe('pubsub base implementation', () => {
       // @ts-expect-error private method
       pubsub['topics'].set(topic, set)
       // @ts-expect-error private method
-      pubsub['peers'].set(peer.id, peer)
+      pubsub['peers'].set(peer.peerId, peer)
 
       peersSubscribed = pubsub.getSubscribers(topic)
 
@@ -491,16 +489,11 @@ describe('pubsub base implementation', () => {
       // @ts-expect-error private method
       sinon.spy(pubsub, 'validate')
 
-      const peerStream = new PeerStreams({
-        logger: defaultLogger()
-      }, {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        protocol: 'test'
-      })
+      const peerStream = new PeerStreams(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
       const rpc: PubSubRPC = {
         subscriptions: [],
         messages: [{
-          from: peerStream.id.toMultihash().bytes,
+          from: peerStream.peerId.toMultihash().bytes,
           data,
           sequenceNumber: await noSignMsgId(data),
           topic
@@ -510,7 +503,7 @@ describe('pubsub base implementation', () => {
       pubsub.subscribe(topic)
 
       // @ts-expect-error private method
-      await pubsub['processRpc'](peerStream.id, peerStream, rpc)
+      await pubsub['processRpc'](peerStream, rpc)
 
       // message should not be delivered
       await delay(1000)
@@ -526,17 +519,11 @@ describe('pubsub base implementation', () => {
       // @ts-expect-error private method
       const validateSpy = sinon.spy(pubsub, 'validate')
 
-      const peerStream = new PeerStreams({
-        logger: defaultLogger()
-      }, {
-        id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
-        protocol: 'test'
-      })
-
+      const peerStream = new PeerStreams(peerIdFromPrivateKey(await generateKeyPair('Ed25519')))
       const rpc: PubSubRPC = {
         subscriptions: [],
         messages: [{
-          from: peerStream.id.toMultihash().bytes,
+          from: peerStream.peerId.toMultihash().bytes,
           data,
           topic
         }]
@@ -553,7 +540,7 @@ describe('pubsub base implementation', () => {
       })
 
       // @ts-expect-error private method
-      await pubsub['processRpc'](peerStream.id, peerStream, rpc)
+      await pubsub['processRpc'](peerStream, rpc)
 
       // await message delivery
       await deferred.promise

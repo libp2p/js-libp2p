@@ -51,6 +51,8 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       }
     }
 
+    this.log('run identify on new connection %a', connection.remoteAddr)
+
     try {
       stream = await connection.newStream(this.protocol, {
         ...options,
@@ -62,10 +64,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
-      log('read response')
       const message = await pb.read(options)
-
-      log('close write')
       await pb.unwrap().unwrap().close(options)
 
       return message
@@ -146,6 +145,8 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
    */
   async handleProtocol (stream: Stream, connection: Connection): Promise<void> {
     const log = stream.log.newScope('identify')
+
+    log('responding to identify')
 
     const signal = AbortSignal.timeout(this.timeout)
     setMaxListeners(Infinity, signal)

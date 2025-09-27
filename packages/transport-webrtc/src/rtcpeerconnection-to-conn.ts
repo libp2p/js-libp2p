@@ -1,5 +1,4 @@
 import { AbstractMultiaddrConnection } from '@libp2p/utils'
-import type { RTCPeerConnection } from './webrtc/index.js'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
 import type { Uint8ArrayList } from 'uint8arraylist'

@@ -167,7 +167,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const input = Uint8Array.from([0, 1, 2, 3, 4])
       const output = await dialer.services.echo.echo(dialAddrs[0], input, {
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(5_000)
       })
 
       expect(output.subarray()).to.equalBytes(input)
@@ -179,12 +179,12 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const input = Uint8Array.from([0, 1, 2, 3, 4])
 
       const output1 = await dialer.services.echo.echo(dialAddrs[0], input, {
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(5_000)
       })
       expect(output1.subarray()).to.equalBytes(input)
 
       const output2 = await dialer.services.echo.echo(dialAddrs[1], input, {
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(5_000),
         force: true
       })
       expect(output2.subarray()).to.equalBytes(input)
@@ -194,10 +194,13 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       ({ dialer, listener, dialAddrs } = await getSetup(common))
 
       const conn = await dialer.dial(dialAddrs[0], {
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(5_000)
       })
 
-      await conn.close()
+      await conn.close({
+        signal: AbortSignal.timeout(5_000)
+      })
+
       expect(isValidTick(conn.timeline.close)).to.equal(true)
     })
 
@@ -247,7 +250,9 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
         })
       }
 
-      expect(connection).to.have.property('streams').that.has.lengthOf(5)
+      expect(
+        connection.streams.filter(s => s.protocol === '/echo/1.0.0')
+      ).to.have.lengthOf(5)
 
       if (remoteConn != null) {
         await pWaitFor(() => remoteConn.streams.filter(s => s.protocol === '/echo/1.0.0').length === 5, {

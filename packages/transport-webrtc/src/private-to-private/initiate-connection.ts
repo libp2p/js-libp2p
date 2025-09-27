@@ -32,7 +32,7 @@ export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDia
   logger: ComponentLogger
 }
 
-export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
+export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   const { circuitAddress, targetPeer } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
@@ -209,6 +209,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     return {
       remoteAddress: ma,
+      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       muxerFactory
     }

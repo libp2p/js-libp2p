@@ -78,6 +78,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [12.0.2](https://github.com/libp2p/js-libp2p/compare/mplex-v12.0.1...mplex-v12.0.2) (2025-09-25)
+
+
+### Bug Fixes
+
+* use @chainsafe/libp2p-noise and @chainsafe/libp2p-yamux ([#3308](https://github.com/libp2p/js-libp2p/issues/3308)) ([425a42c](https://github.com/libp2p/js-libp2p/commit/425a42cddac5aac4d0ac822295cc4c4817dcdc95))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.1 to ^7.0.2
+
 ## [12.0.1](https://github.com/libp2p/js-libp2p/compare/mplex-v12.0.0...mplex-v12.0.1) (2025-09-24)
 
 

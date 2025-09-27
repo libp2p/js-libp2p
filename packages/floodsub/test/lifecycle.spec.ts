@@ -105,8 +105,8 @@ describe('pubsub base life cycle', () => {
     beforeEach(async () => {
       await start(pubsubA, pubsubB)
 
-      expect(registrarA.handle.calledWith(pubsubA.protocols[0])).to.be.true()
-      expect(registrarB.handle.calledWith(pubsubB.protocols[0])).to.be.true()
+      expect(registrarA.handle.calledWith(pubsubA.protocol)).to.be.true()
+      expect(registrarB.handle.calledWith(pubsubB.protocol)).to.be.true()
     })
 
     afterEach(async () => {
@@ -120,14 +120,14 @@ describe('pubsub base life cycle', () => {
       const handlerB = registrarB.handle.getCall(0).args[1]
 
       if (topologyA == null || handlerB == null) {
-        throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+        throw new Error(`No handler registered for ${pubsubA.protocol}`)
       }
 
       const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
       // Notify peers of connection
       topologyA.onConnect?.(peerIdB, c0)
-      await handlerB(await c1.newStream([pubsubA.protocols[0]]), c1)
+      await handlerB(await c1.newStream([pubsubA.protocol]), c1)
 
       expect(pubsubA.getPeers()).to.have.lengthOf(1)
       expect(pubsubB.getPeers()).to.have.lengthOf(1)
@@ -138,7 +138,7 @@ describe('pubsub base life cycle', () => {
       const handlerB = registrarB.handle.getCall(0).args[1]
 
       if (topologyA == null || handlerB == null) {
-        throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+        throw new Error(`No handler registered for ${pubsubA.protocol}`)
       }
 
       // Notify peers of connection
@@ -148,7 +148,7 @@ describe('pubsub base life cycle', () => {
       sinon.spy(c0, 'newStream')
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB(await c1.newStream(pubsubA.protocols[0]), c1)
+      handlerB(await c1.newStream(pubsubA.protocol), c1)
       expect(c0.newStream).to.have.property('callCount', 1)
 
       // @ts-expect-error _removePeer is a protected method
@@ -180,7 +180,7 @@ describe('pubsub base life cycle', () => {
       const handlerB = registrarB.handle.getCall(0).args[1]
 
       if (topologyA == null || handlerB == null) {
-        throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+        throw new Error(`No handler registered for ${pubsubA.protocol}`)
       }
 
       // Notify peers of connection
@@ -189,7 +189,7 @@ describe('pubsub base life cycle', () => {
       sinon.stub(c0, 'newStream').throws(error)
 
       topologyA.onConnect?.(peerIdB, c0)
-      handlerB(await c1.newStream(pubsubA.protocols[0]), c1)
+      handlerB(await c1.newStream(pubsubA.protocol), c1)
 
       expect(c0.newStream).to.have.property('callCount', 1)
     })
@@ -200,14 +200,14 @@ describe('pubsub base life cycle', () => {
       const handlerB = registrarB.handle.getCall(0).args[1]
 
       if (topologyA == null || handlerB == null) {
-        throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+        throw new Error(`No handler registered for ${pubsubA.protocol}`)
       }
 
       // Notify peers of connection
       const [c0, c1] = await connectionPair(peerIdA, peerIdB)
 
       topologyA.onConnect?.(peerIdB, c0)
-      await handlerB(await c1.newStream(pubsubA.protocols[0]), c1)
+      await handlerB(await c1.newStream(pubsubA.protocol), c1)
 
       // Notify peers of disconnect
       topologyA?.onDisconnect?.(peerIdB)
@@ -221,7 +221,7 @@ describe('pubsub base life cycle', () => {
       const topologyA = registrarA.register.getCall(0).args[1]
 
       if (topologyA == null) {
-        throw new Error(`No handler registered for ${pubsubA.protocols[0]}`)
+        throw new Error(`No handler registered for ${pubsubA.protocol}`)
       }
 
       expect(pubsubA.getPeers()).to.be.empty()
