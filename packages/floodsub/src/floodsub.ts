@@ -341,7 +341,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
 
           await this.processMessage(peerStream.peerId, msg)
         } catch (err: any) {
-          this.log.error('failed to queue messages from %p - %e', from, err)
+          this.log.error('failed to queue messages from %p - %e', peerStream.peerId, err)
         }
       }))
         .catch(err => { this.log(err) })
