@@ -30,7 +30,7 @@ export class DHTOperations {
       await drain(this.dht.provide(cid))
       yield OkResponse()
     } catch (err: any) {
-      log.error('failed to provide CID %s - %o', cid, err)
+      log.error('failed to provide CID %s - %e', cid, err)
       yield ErrorResponse(err)
     }
   }
