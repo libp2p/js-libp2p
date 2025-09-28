@@ -31,7 +31,7 @@ jobs:
             repo: https://github.com/libp2p/js-libp2p-example-browser-pubsub.git
             deps:
               - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
-              - '@libp2p/dcutr@$PWD/packages/protocol-dcutr'
+              - '@libp2p/floodsub@$PWD/packages/floodsub'
               - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/webrtc@$PWD/packages/transport-webrtc'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
@@ -41,6 +41,7 @@ jobs:
             deps:
               - '@libp2p/mdns@$PWD/packages/peer-discovery-mdns'
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
+              - '@libp2p/utils@$PWD/packages/utils'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
               - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-circuit-relay
@@ -60,17 +61,18 @@ jobs:
             repo: https://github.com/libp2p/js-libp2p-example-custom-protocols.git
             deps:
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
-              - '@libp2p/websockets@$PWD/packages/transport-websockets'
+              - '@libp2p/utils@$PWD/packages/utils'
               - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-delegated-routing
             repo: https://github.com/libp2p/js-libp2p-example-delegated-routing.git
             deps:
+              - '@libp2p/peer-id@$PWD/packages/peer-id'
               - 'libp2p@$PWD/packages/libp2p'
           - name: js-libp2p-example-discovery-mechanisms
             repo: https://github.com/libp2p/js-libp2p-example-discovery-mechanisms.git
             deps:
               - '@libp2p/bootstrap@$PWD/packages/peer-discovery-bootstrap'
-              - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
+              - '@libp2p/floodsub@$PWD/packages/floodsub'
               - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/kad-dht@$PWD/packages/kad-dht'
               - '@libp2p/mdns@$PWD/packages/peer-discovery-mdns'
@@ -99,6 +101,7 @@ jobs:
           - name: js-libp2p-example-pubsub
             repo: https://github.com/libp2p/js-libp2p-example-pubsub.git
             deps:
+              - '@libp2p/floodsub@$PWD/packages/floodsub'
               - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/tcp@$PWD/packages/transport-tcp'
               - 'libp2p@$PWD/packages/libp2p'
@@ -114,8 +117,14 @@ jobs:
               - '@libp2p/circuit-relay-v2@$PWD/packages/transport-circuit-relay-v2'
               - '@libp2p/identify@$PWD/packages/protocol-identify'
               - '@libp2p/ping@$PWD/packages/protocol-ping'
+              - '@libp2p/utils@$PWD/packages/utils'
               - '@libp2p/webrtc@$PWD/packages/transport-webrtc'
               - '@libp2p/websockets@$PWD/packages/transport-websockets'
+              - 'libp2p@$PWD/packages/libp2p'
+          - name: js-libp2p-example-webrtc-private-to-public
+            repo: https://github.com/libp2p/js-libp2p-example-webrtc-private-to-public.git
+            deps:
+              - '@libp2p/webrtc@$PWD/packages/transport-webrtc'
               - 'libp2p@$PWD/packages/libp2p'
     steps:
       - uses: actions/checkout@v5
