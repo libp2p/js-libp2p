@@ -5,6 +5,14 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.0...interface-v3.0.1) (2025-10-01)
+
+
+### Bug Fixes
+
+* allow stream unshift ([#3320](https://github.com/libp2p/js-libp2p/issues/3320)) ([14e87cd](https://github.com/libp2p/js-libp2p/commit/14e87cd152a6f8bf38966071b9e7aa30d56d8978))
+* byte stream should return null when remote closes ([#3319](https://github.com/libp2p/js-libp2p/issues/3319)) ([7e1c0ba](https://github.com/libp2p/js-libp2p/commit/7e1c0badab2098addab964ea97e2ee9d9236267c))
+
 ## [3.0.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.11.0...interface-v3.0.0) (2025-09-23)
 
 
