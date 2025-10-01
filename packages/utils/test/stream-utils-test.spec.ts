@@ -259,3 +259,43 @@ describe('stream-pair', () => {
     expect(incomingCloseEvent.error).to.be.ok()
   })
 })
+
+describe('stream-pair', () => {
+  it('should push data', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    await delay(1)
+    incoming.push(Uint8Array.from([4, 5, 6, 7]))
+
+    const [
+      read
+    ] = await Promise.all([
+      all(incoming),
+      outgoing.close()
+    ])
+
+    expect(new Uint8ArrayList(...read).subarray()).to.equalBytes(
+      Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7])
+    )
+  })
+
+  it('should unshift data', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    await delay(1)
+    incoming.unshift(Uint8Array.from([4, 5, 6, 7]))
+
+    const [
+      read
+    ] = await Promise.all([
+      all(incoming),
+      outgoing.close()
+    ])
+
+    expect(new Uint8ArrayList(...read).subarray()).to.equalBytes(
+      Uint8Array.from([4, 5, 6, 7, 0, 1, 2, 3])
+    )
+  })
+})

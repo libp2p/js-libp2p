@@ -180,4 +180,10 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * next tick or sooner if data is received from the underlying resource.
    */
   push (buf: Uint8Array | Uint8ArrayList): void
+
+  /**
+   * Similar to the `.push` method, except this ensures the passed data is
+   * emitted before any other queued data.
+   */
+  unshift (data: Uint8Array | Uint8ArrayList): void
 }
