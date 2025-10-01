@@ -207,20 +207,30 @@ export class WebRTCStream extends AbstractStream {
     options?.signal?.throwIfAborted()
     this.receivedFinAck = Promise.withResolvers<void>()
 
+    // don't wait for FIN_ACK forever
+    const signal = options?.signal ?? AbortSignal.timeout(this.finAckTimeout)
+
+    // allow cleaning up event promises
+    const eventPromises = [
+      pEvent(this.channel, 'close', {
+        signal
+      }),
+      pEvent(this.channel, 'error', {
+        signal
+      })
+    ]
+
     // wait for either:
     // 1. the FIN_ACK to be received
     // 2. the datachannel to close
     // 3. timeout
     await Promise.any([
-      raceSignal(this.receivedFinAck.promise, options?.signal),
-      pEvent(this.channel, 'close'),
-      new Promise<void>(resolve => {
-        AbortSignal.timeout(this.finAckTimeout)
-          .addEventListener('abort', () => {
-            resolve()
-          })
-      })
+      raceSignal(this.receivedFinAck.promise, signal),
+      ...eventPromises
     ])
+      .finally(() => {
+        eventPromises.forEach(p => p.cancel())
+      })
   }
 
   async sendCloseRead (options?: AbortOptions): Promise<void> {
