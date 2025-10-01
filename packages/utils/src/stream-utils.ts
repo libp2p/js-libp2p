@@ -96,7 +96,7 @@ function isMultiaddrConnection (obj?: any): obj is MultiaddrConnection {
 
 function isEOF (obj?: any): boolean {
   if (isStream(obj)) {
-    return obj.remoteWriteStatus !== 'writable'
+    return obj.readStatus === 'closing' || obj.readStatus === 'closed' || obj.remoteWriteStatus !== 'writable'
   }
 
   if (isMultiaddrConnection(obj)) {
