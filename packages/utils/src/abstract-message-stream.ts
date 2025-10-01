@@ -100,6 +100,14 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.addEventListener('drain', continueSendingOnDrain)
   }
 
+  get readBufferLength (): number {
+    return this.readBuffer.byteLength
+  }
+
+  get writeBufferLength (): number {
+    return this.writeBuffer.byteLength
+  }
+
   async * [Symbol.asyncIterator] (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
     if (this.readStatus !== 'readable' && this.readStatus !== 'paused') {
       return

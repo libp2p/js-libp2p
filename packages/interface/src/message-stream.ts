@@ -135,6 +135,16 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
   writableNeedsDrain: boolean
 
   /**
+   * Returns the number of bytes that are queued to be read
+   */
+  readBufferLength: number
+
+  /**
+   * Returns the number of bytes that are queued to be written
+   */
+  writeBufferLength: number
+
+  /**
    * Write data to the stream. If the method returns false it means the
    * internal buffer is now full and the caller should wait for the 'drain'
    * event before sending more data.
