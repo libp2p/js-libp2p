@@ -181,6 +181,21 @@ describe('byte-stream', () => {
     expect(readIncoming).to.deep.equal(writtenOutgoing)
     expect(readOutgoing).to.deep.equal(writtenIncoming)
   })
+
+  it('should return null when the remote closes it\'s writable end', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const incomingBytes = byteStream(incoming)
+
+    const [
+      bytes
+    ] = await Promise.all([
+      incomingBytes.read(),
+      outgoing.close()
+    ])
+
+    expect(bytes).to.be.null()
+  })
 })
 
 describe('stream-pair', () => {
