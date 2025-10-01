@@ -238,6 +238,30 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }, 0)
   }
 
+  unshift (data: Uint8Array | Uint8ArrayList): void {
+    if (this.readStatus === 'closed' || this.readStatus === 'closing') {
+      throw new StreamStateError(`Cannot push data onto a stream that is ${this.readStatus}`)
+    }
+
+    if (data.byteLength === 0) {
+      return
+    }
+
+    this.readBuffer.prepend(data)
+
+    if (this.readStatus === 'paused' || this.listenerCount('message') === 0) {
+      // abort if the read buffer is too large
+      this.checkReadBufferLength()
+
+      return
+    }
+
+    // TODO: use a microtask instead?
+    setTimeout(() => {
+      this.dispatchReadBuffer()
+    }, 0)
+  }
+
   /**
    * When an extending class reads data from it's implementation-specific source,
    * call this method to allow the stream consumer to read the data.
