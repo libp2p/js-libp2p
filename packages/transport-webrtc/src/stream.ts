@@ -214,12 +214,8 @@ export class WebRTCStream extends AbstractStream {
     await Promise.any([
       raceSignal(this.receivedFinAck.promise, options?.signal),
       pEvent(this.channel, 'close'),
-      new Promise<void>(resolve => {
-        AbortSignal.timeout(this.finAckTimeout)
-          .addEventListener('abort', () => {
-            resolve()
-          })
-      })
+      pEvent(this.channel, 'error'),
+      pEvent(AbortSignal.timeout(this.finAckTimeout), 'abort')
     ])
   }
 
