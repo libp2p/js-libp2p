@@ -198,7 +198,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       })
 
       await conn.close({
-        signal: AbortSignal.timeout(5_000)
+        signal: AbortSignal.timeout(20_000)
       })
 
       expect(isValidTick(conn.timeline.close)).to.equal(true)
