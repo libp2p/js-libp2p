@@ -211,7 +211,6 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       }
     })
     const muxerFactory = new DataChannelMuxerFactory({
-      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       dataChannelOptions: this.init.dataChannel
     })
@@ -229,7 +228,6 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       const webRTCConn = toMultiaddrConnection({
-        // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
         peerConnection,
         remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents,
@@ -246,7 +244,6 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       // close the connection on shut down
-      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
       this.log.error('incoming signaling error - %e', err)
