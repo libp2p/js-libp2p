@@ -313,4 +313,82 @@ describe('stream-pair', () => {
       Uint8Array.from([4, 5, 6, 7, 0, 1, 2, 3])
     )
   })
+
+  it('should return a promise from onDrain', async () => {
+    const [outgoing] = await streamPair({
+      delay: 100
+    })
+
+    // should resolve immediately when backpressure is not being applied
+    await expect(outgoing.onDrain()).to.eventually.be.undefined()
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    await expect(outgoing.onDrain()).to.eventually.be.undefined()
+  })
+
+  it('should abort a promise from onDrain via signal', async () => {
+    const [outgoing] = await streamPair({
+      delay: 100
+    })
+
+    // should resolve immediately when backpressure is not being applied
+    await expect(outgoing.onDrain()).to.eventually.be.undefined()
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(outgoing.onDrain({
+      signal: controller.signal
+    })).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
+  it('should abort a promise from onDrain via abort', async () => {
+    const [outgoing] = await streamPair({
+      delay: 100
+    })
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    await expect(
+      Promise.all([
+        outgoing.onDrain(),
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        outgoing.abort(new Error('Abort!'))
+      ])
+    ).to.eventually.be.rejected
+      .with.property('message', 'Abort!')
+  })
+
+  it('should abort a promise from onDrain via reset', async () => {
+    const [outgoing, incoming] = await streamPair({
+      delay: 100
+    })
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    incoming.abort(new Error('Reset!'))
+
+    await expect(outgoing.onDrain()).to.eventually.be.rejected
+      .with.property('name', 'StreamResetError')
+  })
 })

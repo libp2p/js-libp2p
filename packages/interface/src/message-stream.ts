@@ -196,4 +196,10 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * emitted before any other queued data.
    */
   unshift (data: Uint8Array | Uint8ArrayList): void
+
+  /**
+   * Returns a promise that resolves when the stream can accept new data or
+   * rejects if the stream is closed or reset before this occurs.
+   */
+  onDrain (options?: AbortOptions): Promise<void>
 }
