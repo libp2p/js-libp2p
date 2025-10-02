@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.0.2](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.1...interface-v3.0.2) (2025-10-02)
+
+
+### Bug Fixes
+
+* allow aborting drain waiting ([72a7ea1](https://github.com/libp2p/js-libp2p/commit/72a7ea10a622221c4d850e8eaaf17da8b73e318d))
+
 ## [3.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.0...interface-v3.0.1) (2025-10-01)
 
 
