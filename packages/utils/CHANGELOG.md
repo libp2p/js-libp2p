@@ -36,6 +36,24 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.4](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.3...utils-v7.0.4) (2025-10-02)
+
+
+### Bug Fixes
+
+* allow aborting drain waiting ([72a7ea1](https://github.com/libp2p/js-libp2p/commit/72a7ea10a622221c4d850e8eaaf17da8b73e318d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/interface bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/logger bumped from ^6.0.3 to ^6.0.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.2 to ^6.0.3
+
 ## [7.0.3](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.2...utils-v7.0.3) (2025-10-01)
 
 

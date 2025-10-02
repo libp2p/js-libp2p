@@ -1,5 +1,16 @@
 # Changelog
 
+## [14.0.6](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.5...interop-v14.0.6) (2025-10-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.5 to ^10.0.6
+    * @libp2p/interface bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/utils bumped from ^7.0.3 to ^7.0.4
+
 ## [14.0.5](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.4...interop-v14.0.5) (2025-10-01)
 
 
