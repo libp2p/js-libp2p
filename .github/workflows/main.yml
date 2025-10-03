@@ -212,8 +212,12 @@ jobs:
 
   transport-interop:
     needs: build
-    runs-on: ${{ fromJSON(github.repository == 'libp2p/js-libp2p' && '["self-hosted", "linux", "x64", "4xlarge"]' || '"ubuntu-latest"') }}
+    runs-on: ubuntu-latest
     steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
+        with:
+          tool-cache: true
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
