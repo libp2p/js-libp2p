@@ -56,7 +56,7 @@
     "@libp2p/interface": "^3.0.2",
     "@noble/hashes": "^2.0.1",
     "asn1js": "^3.0.6",
-    "interface-datastore": "^8.3.2",
+    "interface-datastore": "^9.0.1",
     "multiformats": "^13.4.0",
     "sanitize-filename": "^1.6.3",
     "uint8arrays": "^5.1.0"
@@ -64,7 +64,7 @@
   "devDependencies": {
     "@libp2p/logger": "^6.0.4",
     "aegir": "^47.0.22",
-    "datastore-core": "^10.0.4"
+    "datastore-core": "^11.0.1"
   },
   "sideEffects": false
 }
