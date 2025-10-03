@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.20](https://github.com/libp2p/js-libp2p/compare/config-v1.1.19...config-v1.1.20) (2025-10-03)
+
+
+### Dependencies
+
+* update datastore ([#3326](https://github.com/libp2p/js-libp2p/issues/3326)) ([a0f9da2](https://github.com/libp2p/js-libp2p/commit/a0f9da212fcc8ac8d21da835e87c9225ae138fdd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/keychain bumped from ^6.0.4 to ^6.0.5
+    * @libp2p/logger bumped from ^6.0.4 to ^6.0.5
+
 ## [1.1.19](https://github.com/libp2p/js-libp2p/compare/config-v1.1.18...config-v1.1.19) (2025-10-02)
 
 

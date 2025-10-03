@@ -68,6 +68,18 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [12.0.5](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.4...peer-store-v12.0.5) (2025-10-03)
+
+
+### Dependencies
+
+* update datastore ([#3326](https://github.com/libp2p/js-libp2p/issues/3326)) ([a0f9da2](https://github.com/libp2p/js-libp2p/commit/a0f9da212fcc8ac8d21da835e87c9225ae138fdd))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.4 to ^7.0.5
+  * devDependencies
+    * @libp2p/logger bumped from ^6.0.4 to ^6.0.5
+
 ## [12.0.4](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.3...peer-store-v12.0.4) (2025-10-02)
 
 
