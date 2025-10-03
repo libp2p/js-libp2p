@@ -83,6 +83,97 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [12.0.5](https://github.com/libp2p/js-libp2p/compare/bootstrap-v12.0.4...bootstrap-v12.0.5) (2025-10-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/interface-internal bumped from ^3.0.3 to ^3.0.4
+    * @libp2p/peer-id bumped from ^6.0.2 to ^6.0.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.4 to ^7.0.5
+    * @libp2p/logger bumped from ^6.0.3 to ^6.0.4
+
+## [12.0.4](https://github.com/libp2p/js-libp2p/compare/bootstrap-v12.0.3...bootstrap-v12.0.4) (2025-10-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/interface-internal bumped from ^3.0.2 to ^3.0.3
+    * @libp2p/peer-id bumped from ^6.0.1 to ^6.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.3 to ^7.0.4
+    * @libp2p/logger bumped from ^6.0.2 to ^6.0.3
+
+## [12.0.3](https://github.com/libp2p/js-libp2p/compare/bootstrap-v12.0.2...bootstrap-v12.0.3) (2025-09-27)
+
+
+### Bug Fixes
+
+* update error logs to use %e token ([#3261](https://github.com/libp2p/js-libp2p/issues/3261)) ([e10c5c0](https://github.com/libp2p/js-libp2p/commit/e10c5c0c51876ab83da51d558ee4789fc3c38a49))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.1 to ^3.0.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.2 to ^7.0.3
+    * @libp2p/logger bumped from ^6.0.1 to ^6.0.2
+
+## [12.0.2](https://github.com/libp2p/js-libp2p/compare/bootstrap-v12.0.1...bootstrap-v12.0.2) (2025-09-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.1 to ^7.0.2
+
+## [12.0.1](https://github.com/libp2p/js-libp2p/compare/bootstrap-v12.0.0...bootstrap-v12.0.1) (2025-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/peer-id bumped from ^6.0.0 to ^6.0.1
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.0 to ^7.0.1
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+
+## [12.0.0](https://github.com/libp2p/js-libp2p/compare/bootstrap-v11.0.47...bootstrap-v12.0.0) (2025-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* requires @mulitformats/multiaddr 13.x.x or later
+
+### Bug Fixes
+
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 13.x.x ([#3268](https://github.com/libp2p/js-libp2p/issues/3268)) ([b8ecade](https://github.com/libp2p/js-libp2p/commit/b8ecade2a725d38d11dd8df888c5abb22e14f26b))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.11.0 to ^3.0.0
+    * @libp2p/interface-internal bumped from ^2.3.19 to ^3.0.0
+    * @libp2p/peer-id bumped from ^5.1.9 to ^6.0.0
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^6.5.0 to ^7.0.0
+    * @libp2p/logger bumped from ^5.2.0 to ^6.0.0
+
 ## [11.0.47](https://github.com/libp2p/js-libp2p/compare/bootstrap-v11.0.46...bootstrap-v11.0.47) (2025-08-19)
 
 

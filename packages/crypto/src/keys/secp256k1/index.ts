@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { secp256k1 as secp } from '@noble/curves/secp256k1'
+import { secp256k1 as secp } from '@noble/curves/secp256k1.js'
 import { SigningError, VerificationError } from '../../errors.js'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -29,8 +29,10 @@ export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList, 
   const digest = hash.digest()
 
   try {
-    const signature = secp.sign(digest, key)
-    return signature.toDERRawBytes()
+    return secp.sign(digest, key, {
+      prehash: false,
+      format: 'der'
+    })
   } catch (err) {
     throw new SigningError(String(err))
   }
@@ -54,7 +56,10 @@ export function hashAndVerify (key: Uint8Array, sig: Uint8Array, msg: Uint8Array
   const digest = hash.digest()
 
   try {
-    return secp.verify(sig, digest, key)
+    return secp.verify(sig, digest, key, {
+      prehash: false,
+      format: 'der'
+    })
   } catch (err) {
     throw new VerificationError(String(err))
   }

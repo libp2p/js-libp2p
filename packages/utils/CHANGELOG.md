@@ -36,6 +36,108 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.4](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.3...utils-v7.0.4) (2025-10-02)
+
+
+### Bug Fixes
+
+* allow aborting drain waiting ([72a7ea1](https://github.com/libp2p/js-libp2p/commit/72a7ea10a622221c4d850e8eaaf17da8b73e318d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/interface bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/logger bumped from ^6.0.3 to ^6.0.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.2 to ^6.0.3
+
+## [7.0.3](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.2...utils-v7.0.3) (2025-10-01)
+
+
+### Bug Fixes
+
+* allow stream unshift ([#3320](https://github.com/libp2p/js-libp2p/issues/3320)) ([14e87cd](https://github.com/libp2p/js-libp2p/commit/14e87cd152a6f8bf38966071b9e7aa30d56d8978))
+* byte stream should return null when remote closes ([#3319](https://github.com/libp2p/js-libp2p/issues/3319)) ([7e1c0ba](https://github.com/libp2p/js-libp2p/commit/7e1c0badab2098addab964ea97e2ee9d9236267c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/interface bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/logger bumped from ^6.0.2 to ^6.0.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.1 to ^6.0.2
+
+## [7.0.2](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.1...utils-v7.0.2) (2025-09-27)
+
+
+### Bug Fixes
+
+* update error logs to use %e token ([#3261](https://github.com/libp2p/js-libp2p/issues/3261)) ([e10c5c0](https://github.com/libp2p/js-libp2p/commit/e10c5c0c51876ab83da51d558ee4789fc3c38a49))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.0.1 to ^6.0.2
+
+## [7.0.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.0...utils-v7.0.1) (2025-09-24)
+
+
+### Bug Fixes
+
+* create hasBytes promise before await ([#3304](https://github.com/libp2p/js-libp2p/issues/3304)) ([55b7e5f](https://github.com/libp2p/js-libp2p/commit/55b7e5feadfc3cf7bccb674dae65b1c2827334d7))
+
+
+### Dependencies
+
+* update p-event, p-wait-for and noble deps ([#3302](https://github.com/libp2p/js-libp2p/issues/3302)) ([55bbd8c](https://github.com/libp2p/js-libp2p/commit/55bbd8cde12fe1c05e8d264e6e2406ca9fe2f044))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.0 to ^6.0.1
+
+## [7.0.0](https://github.com/libp2p/js-libp2p/compare/utils-v6.7.2...utils-v7.0.0) (2025-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* merge-options has been removed from `@libp2p/utils`
+* All props and methods flagged as deprecated and for removal have been removed
+* requires @mulitformats/multiaddr 13.x.x or later
+* - Stream handlers accept `stream, connection`, not `{ stream, connection }`
+
+### Features
+
+* streams as EventTargets ([#3218](https://github.com/libp2p/js-libp2p/issues/3218)) ([0f68898](https://github.com/libp2p/js-libp2p/commit/0f68898e6503975aae6f2bb6ba36aff65dabdfe8)), closes [#3226](https://github.com/libp2p/js-libp2p/issues/3226)
+
+
+### Bug Fixes
+
+* remove deprecated code ([#3271](https://github.com/libp2p/js-libp2p/issues/3271)) ([6332556](https://github.com/libp2p/js-libp2p/commit/633255644eefb6bf9f739123b9cbd002c3d5a351))
+* remove merge-options ([#3294](https://github.com/libp2p/js-libp2p/issues/3294)) ([dc01b32](https://github.com/libp2p/js-libp2p/commit/dc01b3278f021c944594644629fbd449514aee35))
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 13.x.x ([#3268](https://github.com/libp2p/js-libp2p/issues/3268)) ([b8ecade](https://github.com/libp2p/js-libp2p/commit/b8ecade2a725d38d11dd8df888c5abb22e14f26b))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/interface bumped from ^2.11.0 to ^3.0.0
+    * @libp2p/logger bumped from ^5.2.0 to ^6.0.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^5.1.9 to ^6.0.0
+
 ## [6.7.2](https://github.com/libp2p/js-libp2p/compare/utils-v6.7.1...utils-v6.7.2) (2025-08-19)
 
 

@@ -31,14 +31,6 @@ export interface WebRTCTransportInit {
    * Any options here will be applied to any RTCDataChannels that are opened.
    */
   dataChannel?: DataChannelOptions
-
-  /**
-   * Inbound connections must complete the upgrade within this many ms
-   *
-   * @default 30_000
-   * @deprecated configure `connectionManager.inboundUpgradeTimeout` instead
-   */
-  inboundConnectionTimeout?: number
 }
 
 export interface WebRTCTransportComponents {
@@ -122,7 +114,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
 
       this._onProtocol(stream, connection, signal)
         .catch(err => {
-          this.log.error('failed to handle incoming connect from %p', connection.remotePeer, err)
+          this.log.error('failed to handle incoming connect from %p - %e', connection.remotePeer, err)
         })
         .finally(() => {
           signal.clear()
@@ -237,6 +229,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       const webRTCConn = toMultiaddrConnection({
+        // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
         peerConnection,
         remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents,
@@ -253,9 +246,10 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       // close the connection on shut down
+      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
-      this.log.error('incoming signaling error', err)
+      this.log.error('incoming signaling error - %e', err)
 
       peerConnection.close()
       stream.abort(err)
@@ -263,12 +257,12 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     }
   }
 
-  private _closeOnShutdown (pc: RTCPeerConnection, webRTCConn: MultiaddrConnection): void {
+  private _closeOnShutdown (pc: globalThis.RTCPeerConnection, webRTCConn: MultiaddrConnection): void {
     // close the connection on shut down
     const shutDownListener = (): void => {
       webRTCConn.close()
         .catch(err => {
-          this.log.error('could not close WebRTCMultiaddrConnection', err)
+          this.log.error('could not close WebRTCMultiaddrConnection - %e', err)
         })
     }
 

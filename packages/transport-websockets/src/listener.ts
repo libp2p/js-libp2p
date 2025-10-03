@@ -208,7 +208,7 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
         bufferedAmountPollInterval: this.bufferedAmountPollInterval
       })
     } catch (err: any) {
-      this.log.error('inbound connection failed', err)
+      this.log.error('inbound connection failed - %e', err)
       this.metrics.errors?.increment({ [`${this.addr} inbound_to_connection`]: true })
       socket.close()
       return
@@ -331,12 +331,20 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     // abort and in-flight connection upgrades
     this.shutdownController.abort()
 
-    await Promise.all([
+    const events = [
       pEvent(this.server, 'close'),
-      this.http == null ? null : pEvent(this.http, 'close'),
-      this.https == null ? null : pEvent(this.https, 'close'),
       pEvent(this.wsServer, 'close')
-    ])
+    ]
+
+    if (this.http != null) {
+      events.push(pEvent(this.http, 'close'))
+    }
+
+    if (this.https != null) {
+      events.push(pEvent(this.https, 'close'))
+    }
+
+    await Promise.all(events)
 
     this.safeDispatchEvent('close')
   }

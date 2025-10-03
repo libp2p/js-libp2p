@@ -88,7 +88,7 @@ export class DefaultDCUtRService implements Startable {
 
         this.upgradeInbound(connection)
           .catch(err => {
-            this.log.error('error during outgoing DCUtR attempt', err)
+            this.log.error('error during outgoing DCUtR attempt - %e', err)
           })
       }
     })
@@ -204,7 +204,7 @@ export class DefaultDCUtRService implements Startable {
 
         break
       } catch (err: any) {
-        this.log.error('error while attempting DCUtR on attempt %d of %d', i + 1, this.retries, err)
+        this.log.error('error while attempting DCUtR on attempt %d of %d - %e', i + 1, this.retries, err)
         stream?.abort(err)
 
         if (i === this.retries) {
@@ -270,7 +270,7 @@ export class DefaultDCUtRService implements Startable {
 
         return true
       } catch (err) {
-        this.log.error('unilateral connection upgrade to %p on addresses %a failed', relayedConnection.remotePeer, publicAddresses, err)
+        this.log.error('unilateral connection upgrade to %p on addresses %a failed - %e', relayedConnection.remotePeer, publicAddresses, err)
       }
     } else {
       this.log('peer %p has no public addresses, not attempting unilateral connection upgrade', relayedConnection.remotePeer)

@@ -1,4 +1,10 @@
-export async function createDialerRTCPeerConnection (role: 'client' | 'server', ufrag: string, rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>), certificate?: RTCCertificate): Promise<RTCPeerConnection> {
+import { DataChannelMuxerFactory } from '../../muxer.ts'
+import type { CreateDialerRTCPeerConnectionOptions } from './get-rtcpeerconnection.ts'
+
+export async function createDialerRTCPeerConnection (role: 'client' | 'server', ufrag: string, options: CreateDialerRTCPeerConnectionOptions = {}): Promise<{ peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
+  // @ts-expect-error options type is wrong
+  let certificate: RTCCertificate = options.certificate
+
   if (certificate == null) {
     // ECDSA is preferred over RSA here. From our testing we find that P-256 elliptic
     // curve is supported by Pion, webrtc-rs, as well as Chromium (P-228 and P-384
@@ -13,10 +19,21 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
     })
   }
 
-  const rtcConfig = typeof rtcConfiguration === 'function' ? await rtcConfiguration() : rtcConfiguration
+  const rtcConfig = typeof options.rtcConfiguration === 'function' ? await options.rtcConfiguration() : options.rtcConfiguration
 
-  return new RTCPeerConnection({
+  const peerConnection = new RTCPeerConnection({
     ...(rtcConfig ?? {}),
     certificates: [certificate]
   })
+
+  const muxerFactory = new DataChannelMuxerFactory({
+    peerConnection,
+    metrics: options.events,
+    dataChannelOptions: options.dataChannel
+  })
+
+  return {
+    peerConnection,
+    muxerFactory
+  }
 }

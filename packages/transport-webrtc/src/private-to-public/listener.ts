@@ -27,6 +27,7 @@ export interface WebRTCDirectListenerComponents {
   keychain?: Keychain
   datastore: Datastore
   metrics?: Metrics
+  events?: CounterGroup
 }
 
 export interface WebRTCDirectListenerInit {
@@ -159,7 +160,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
 
             this.incomingConnection(ufrag, remoteHost, remotePort, signal)
               .catch(err => {
-                this.log.error('error processing incoming STUN request', err)
+                this.log.error('error processing incoming STUN request - %e', err)
               })
               .finally(() => {
                 signal.clear()
@@ -184,7 +185,13 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     signal.throwIfAborted()
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    peerConnection = await createDialerRTCPeerConnection('server', ufrag, this.init.rtcConfiguration, this.certificate)
+    const results = await createDialerRTCPeerConnection('server', ufrag, {
+      rtcConfiguration: this.init.rtcConfiguration,
+      certificate: this.certificate,
+      events: this.metrics?.listenerEvents,
+      dataChannel: this.init.dataChannel
+    })
+    peerConnection = results.peerConnection
 
     this.connections.set(key, peerConnection)
 
@@ -201,11 +208,10 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     })
 
     try {
-      await connect(peerConnection, ufrag, {
+      await connect(peerConnection, results.muxerFactory, ufrag, {
         role: 'server',
         log: this.log,
         logger: this.components.logger,
-        metrics: this.components.metrics,
         events: this.metrics?.listenerEvents,
         signal,
         remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}/webrtc-direct`),

@@ -1,5 +1,67 @@
 # Changelog
 
+## [1.1.19](https://github.com/libp2p/js-libp2p/compare/config-v1.1.18...config-v1.1.19) (2025-10-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/interface bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/keychain bumped from ^6.0.3 to ^6.0.4
+    * @libp2p/logger bumped from ^6.0.3 to ^6.0.4
+
+## [1.1.18](https://github.com/libp2p/js-libp2p/compare/config-v1.1.17...config-v1.1.18) (2025-10-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/interface bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/keychain bumped from ^6.0.2 to ^6.0.3
+    * @libp2p/logger bumped from ^6.0.2 to ^6.0.3
+
+## [1.1.17](https://github.com/libp2p/js-libp2p/compare/config-v1.1.16...config-v1.1.17) (2025-09-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/keychain bumped from ^6.0.1 to ^6.0.2
+    * @libp2p/logger bumped from ^6.0.1 to ^6.0.2
+
+## [1.1.16](https://github.com/libp2p/js-libp2p/compare/config-v1.1.15...config-v1.1.16) (2025-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.9 to ^5.1.10
+    * @libp2p/keychain bumped from ^6.0.0 to ^6.0.1
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+
+## [1.1.15](https://github.com/libp2p/js-libp2p/compare/config-v1.1.14...config-v1.1.15) (2025-09-23)
+
+
+### Bug Fixes
+
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.8 to ^5.1.9
+    * @libp2p/interface bumped from ^2.11.0 to ^3.0.0
+    * @libp2p/keychain bumped from ^5.2.9 to ^6.0.0
+    * @libp2p/logger bumped from ^5.2.0 to ^6.0.0
+
 ## [1.1.14](https://github.com/libp2p/js-libp2p/compare/config-v1.1.13...config-v1.1.14) (2025-08-19)
 
 

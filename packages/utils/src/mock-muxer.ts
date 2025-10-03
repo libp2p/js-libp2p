@@ -242,7 +242,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     }
 
     if (stream == null) {
-      this.log.error(`No stream found for ${message.id}`)
+      this.log.error(`no stream found for ${message.id}`)
       return
     }
 
@@ -261,7 +261,7 @@ class MockMuxer extends AbstractStreamMuxer<MockMuxedStream> {
     }
   }
 
-  onCreateStream (options: CreateStreamOptions): MockMuxedStream {
+  async onCreateStream (options: CreateStreamOptions): Promise<MockMuxedStream> {
     this.nextStreamId += 2
 
     return this._createStream(`${this.nextStreamId}`, 'outbound', options)

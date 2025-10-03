@@ -397,7 +397,7 @@ class SimpleMetrics implements Metrics, Startable {
       this.onMetrics(structuredClone(output))
     })
       .catch(err => {
-        log.error('could not invoke onMetrics callback', err)
+        log.error('could not invoke onMetrics callback - %e', err)
       })
   }
 

@@ -5,7 +5,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { createServer } from '../src/index.js'
-import type { GossipSub } from '@chainsafe/libp2p-gossipsub'
+import type { GossipSub } from '@libp2p/gossipsub'
 import type { Libp2p } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 

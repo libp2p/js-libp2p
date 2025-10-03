@@ -3,7 +3,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { SDPHandshakeFailedError } from '../error.js'
 import { RTCSessionDescription } from '../webrtc/index.js'
 import { Message } from './pb/message.js'
-import { getConnectionState, getRemotePeer, readCandidatesUntilConnected } from './util.js'
+import { getRemotePeer, readCandidatesUntilConnected } from './util.js'
 import type { RTCPeerConnection } from '../webrtc/index.js'
 import type { AbortOptions, Connection, Logger, PeerId, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -21,10 +21,20 @@ export async function handleIncomingStream (stream: Stream, connection: Connecti
   try {
     // candidate callbacks
     peerConnection.onicecandidate = ({ candidate }) => {
+      if (peerConnection.connectionState === 'connected') {
+        log.trace('ignore new ice candidate as peer connection is already connected')
+        return
+      }
+
       // a null candidate means end-of-candidates, an empty string candidate
       // means end-of-candidates for this generation, otherwise this should
       // be a valid candidate object
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      if (candidate == null || candidate?.candidate === '') {
+        log.trace('recipient detected end of ICE candidates')
+        return
+      }
+
       const data = JSON.stringify(candidate?.toJSON() ?? null)
 
       log.trace('recipient sending ICE candidate %s', data)
@@ -59,13 +69,13 @@ export async function handleIncomingStream (stream: Stream, connection: Connecti
     })
 
     await peerConnection.setRemoteDescription(offer).catch(err => {
-      log.error('could not execute setRemoteDescription', err)
+      log.error('could not execute setRemoteDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set remoteDescription')
     })
 
     // create and write an SDP answer
     const answer = await peerConnection.createAnswer().catch(err => {
-      log.error('could not execute createAnswer', err)
+      log.error('could not execute createAnswer - %e', err)
       throw new SDPHandshakeFailedError('Failed to create answer')
     })
 
@@ -77,7 +87,7 @@ export async function handleIncomingStream (stream: Stream, connection: Connecti
     })
 
     await peerConnection.setLocalDescription(answer).catch(err => {
-      log.error('could not execute setLocalDescription', err)
+      log.error('could not execute setLocalDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set localDescription')
     })
 
@@ -90,8 +100,8 @@ export async function handleIncomingStream (stream: Stream, connection: Connecti
       log
     })
   } catch (err: any) {
-    if (getConnectionState(peerConnection) !== 'connected') {
-      log.error('error while handling signaling stream from peer %a', connection.remoteAddr, err)
+    if (peerConnection.connectionState !== 'connected') {
+      log.error('error while handling signaling stream from peer %a - %e', connection.remoteAddr, err)
 
       peerConnection.close()
       throw err

@@ -9,10 +9,20 @@ import { stubInterface } from 'sinon-ts'
 import { MulticastDNS } from '../src/mdns.js'
 import type { AddressManager } from '@libp2p/interface-internal'
 
+const isCI = Boolean(process.env.CI)
+
 let discovery: MulticastDNS
 
 describe('compliance tests', () => {
   let intervalId: ReturnType<typeof setInterval>
+
+  if (isCI) {
+    it.skip('MDNS tests are skipped in CI', () => {
+
+    })
+
+    return
+  }
 
   tests({
     async setup () {

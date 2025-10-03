@@ -186,7 +186,7 @@ export class AddressManager implements AddressManagerInterface {
       multiaddrs: addrs
     })
       .catch(err => {
-        this.log.error('error updating addresses', err)
+        this.log.error('error updating addresses - %e', err)
       })
   }
 

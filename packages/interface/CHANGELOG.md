@@ -5,6 +5,52 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.0.2](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.1...interface-v3.0.2) (2025-10-02)
+
+
+### Bug Fixes
+
+* allow aborting drain waiting ([72a7ea1](https://github.com/libp2p/js-libp2p/commit/72a7ea10a622221c4d850e8eaaf17da8b73e318d))
+
+## [3.0.1](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.0...interface-v3.0.1) (2025-10-01)
+
+
+### Bug Fixes
+
+* allow stream unshift ([#3320](https://github.com/libp2p/js-libp2p/issues/3320)) ([14e87cd](https://github.com/libp2p/js-libp2p/commit/14e87cd152a6f8bf38966071b9e7aa30d56d8978))
+* byte stream should return null when remote closes ([#3319](https://github.com/libp2p/js-libp2p/issues/3319)) ([7e1c0ba](https://github.com/libp2p/js-libp2p/commit/7e1c0badab2098addab964ea97e2ee9d9236267c))
+
+## [3.0.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.11.0...interface-v3.0.0) (2025-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `@libp2p/pubsub` module has been removed
+* All props and methods flagged as deprecated and for removal have been removed
+* requires @mulitformats/multiaddr 13.x.x or later
+* - Stream handlers accept `stream, connection`, not `{ stream, connection }`
+
+### Features
+
+* streams as EventTargets ([#3218](https://github.com/libp2p/js-libp2p/issues/3218)) ([0f68898](https://github.com/libp2p/js-libp2p/commit/0f68898e6503975aae6f2bb6ba36aff65dabdfe8)), closes [#3226](https://github.com/libp2p/js-libp2p/issues/3226)
+
+
+### Bug Fixes
+
+* remove deprecated code ([#3271](https://github.com/libp2p/js-libp2p/issues/3271)) ([6332556](https://github.com/libp2p/js-libp2p/commit/633255644eefb6bf9f739123b9cbd002c3d5a351))
+* remove pubsub ([#3291](https://github.com/libp2p/js-libp2p/issues/3291)) ([9a9b11f](https://github.com/libp2p/js-libp2p/commit/9a9b11fd44cf91a67a85805882e210ab1bff7ef2))
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
+
+### Documentation
+
+* fix broken links ([#3282](https://github.com/libp2p/js-libp2p/issues/3282)) ([71b4c41](https://github.com/libp2p/js-libp2p/commit/71b4c41e5990db2b65067663120b14de1ad72f9d))
+
+
+### Dependencies
+
+* update @multiformats/multiaddr to 13.x.x ([#3268](https://github.com/libp2p/js-libp2p/issues/3268)) ([b8ecade](https://github.com/libp2p/js-libp2p/commit/b8ecade2a725d38d11dd8df888c5abb22e14f26b))
+
 ## [2.11.0](https://github.com/libp2p/js-libp2p/compare/interface-v2.10.5...interface-v2.11.0) (2025-08-19)
 
 

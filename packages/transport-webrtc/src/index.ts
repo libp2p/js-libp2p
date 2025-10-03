@@ -26,8 +26,8 @@
  * WebRTC requires use of a relay to connect two nodes. The listener first discovers a relay server and makes a reservation, then the dialer can connect via the relayed address.
  *
  * ```TypeScript
- * import { noise } from '@libp2p/noise'
- * import { yamux } from '@libp2p/yamux'
+ * import { noise } from '@chainsafe/libp2p-noise'
+ * import { yamux } from '@chainsafe/libp2p-yamux'
  * import { echo } from '@libp2p/echo'
  * import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay-v2'
  * import { identify } from '@libp2p/identify'
@@ -308,6 +308,15 @@ export interface DataChannelOptions {
    * @default 5_000
    */
   openTimeout?: number
+
+  /**
+   * Due to bugs in WebRTC implementations it's necessary for the remote end of
+   * the connection to acknowledge the FIN message we send during stream
+   * closing. A stream will wait for this many ms.
+   *
+   * @default 10_000
+   */
+  finAckTimeout?: number
 }
 
 /**

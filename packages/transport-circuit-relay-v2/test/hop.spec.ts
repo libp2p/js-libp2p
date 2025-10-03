@@ -8,7 +8,7 @@ import { expect } from 'aegir/chai'
 import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { DEFAULT_MAX_RESERVATION_STORE_SIZE, KEEP_ALIVE_SOURCE_TAG, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../src/constants.js'
+import { DEFAULT_MAX_RESERVATION_STORE_SIZE, RELAY_SOURCE_TAG, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../src/constants.js'
 import { HopMessage, Status } from '../src/pb/index.js'
 import { CircuitRelayServer } from '../src/server/index.js'
 import { CircuitRelayTransport } from '../src/transport/index.ts'
@@ -281,10 +281,6 @@ describe('circuit-relay hop protocol', function () {
       expect(relayNode.components.peerStore.merge.calledWith(clientNode.components.peerId, {
         tags: {
           [RELAY_SOURCE_TAG]: {
-            value: 1,
-            ttl: Sinon.match.number as unknown as number
-          },
-          [KEEP_ALIVE_SOURCE_TAG]: {
             value: 1,
             ttl: Sinon.match.number as unknown as number
           }

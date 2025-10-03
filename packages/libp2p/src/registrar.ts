@@ -1,7 +1,7 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { mergeOptions, trackedMap } from '@libp2p/utils'
+import { trackedMap } from '@libp2p/utils'
 import { DuplicateProtocolHandlerError, UnhandledProtocolError } from './errors.js'
-import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'
 import type { TypedEventTarget } from 'main-event'
@@ -25,10 +25,12 @@ export class Registrar implements RegistrarInterface {
   private readonly topologies: Map<string, Map<string, Topology>>
   private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: RegistrarComponents
+  private readonly middleware: Map<string, StreamMiddleware[]>
 
   constructor (components: RegistrarComponents) {
     this.components = components
     this.log = components.logger.forComponent('libp2p:registrar')
+    this.middleware = new Map()
     this.topologies = new Map()
     components.metrics?.registerMetricGroup('libp2p_registrar_topologies', {
       calculate: () => {
@@ -93,14 +95,13 @@ export class Registrar implements RegistrarInterface {
       throw new DuplicateProtocolHandlerError(`Handler already registered for protocol ${protocol}`)
     }
 
-    const options = mergeOptions.bind({ ignoreUndefined: true })({
-      maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
-      maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS
-    }, opts)
-
     this.handlers.set(protocol, {
       handler,
-      options
+      options: {
+        maxInboundStreams: DEFAULT_MAX_INBOUND_STREAMS,
+        maxOutboundStreams: DEFAULT_MAX_OUTBOUND_STREAMS,
+        ...opts
+      }
     })
 
     // Add new protocol to self protocols in the peer store
@@ -162,6 +163,18 @@ export class Registrar implements RegistrarInterface {
         }
       }
     }
+  }
+
+  use (protocol: string, middleware: StreamMiddleware[]): void {
+    this.middleware.set(protocol, middleware)
+  }
+
+  unuse (protocol: string): void {
+    this.middleware.delete(protocol)
+  }
+
+  getMiddleware (protocol: string): StreamMiddleware[] {
+    return this.middleware.get(protocol) ?? []
   }
 
   /**

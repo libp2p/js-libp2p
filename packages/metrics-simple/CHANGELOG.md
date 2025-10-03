@@ -5,6 +5,73 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [2.0.4](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.3...simple-metrics-v2.0.4) (2025-10-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/logger bumped from ^6.0.3 to ^6.0.4
+
+## [2.0.3](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.2...simple-metrics-v2.0.3) (2025-10-01)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/logger bumped from ^6.0.2 to ^6.0.3
+
+## [2.0.2](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.1...simple-metrics-v2.0.2) (2025-09-27)
+
+
+### Bug Fixes
+
+* update error logs to use %e token ([#3261](https://github.com/libp2p/js-libp2p/issues/3261)) ([e10c5c0](https://github.com/libp2p/js-libp2p/commit/e10c5c0c51876ab83da51d558ee4789fc3c38a49))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.0.1 to ^6.0.2
+
+## [2.0.1](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.0...simple-metrics-v2.0.1) (2025-09-24)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.0.0 to ^6.0.1
+
+## [2.0.0](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.3.16...simple-metrics-v2.0.0) (2025-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* - Stream handlers accept `stream, connection`, not `{ stream, connection }`
+
+### Features
+
+* streams as EventTargets ([#3218](https://github.com/libp2p/js-libp2p/issues/3218)) ([0f68898](https://github.com/libp2p/js-libp2p/commit/0f68898e6503975aae6f2bb6ba36aff65dabdfe8)), closes [#3226](https://github.com/libp2p/js-libp2p/issues/3226)
+
+
+### Bug Fixes
+
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^2.11.0 to ^3.0.0
+    * @libp2p/logger bumped from ^5.2.0 to ^6.0.0
+
 ## [1.3.16](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v1.3.15...simple-metrics-v1.3.16) (2025-08-19)
 
 

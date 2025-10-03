@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.8](https://github.com/libp2p/js-libp2p/compare/record-v4.0.7...record-v4.0.8) (2025-09-23)
+
+
+### Bug Fixes
+
+* update project ([db9f40c](https://github.com/libp2p/js-libp2p/commit/db9f40c4fc4c230444d0f3ca79b65a0053bc35f7))
+
 ## [4.0.7](https://github.com/libp2p/js-libp2p/compare/record-v4.0.6...record-v4.0.7) (2025-06-03)
 
 

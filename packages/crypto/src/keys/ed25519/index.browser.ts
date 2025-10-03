@@ -1,4 +1,4 @@
-import { ed25519 as ed } from '@noble/curves/ed25519'
+import { ed25519 as ed } from '@noble/curves/ed25519.js'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import crypto from '../../webcrypto/index.js'
 import type { Uint8ArrayKeyPair } from '../interface.js'
@@ -24,7 +24,7 @@ const webCryptoEd25519SupportedPromise = (async () => {
 
 export function generateKey (): Uint8ArrayKeyPair {
   // the actual private key (32 bytes)
-  const privateKeyRaw = ed.utils.randomPrivateKey()
+  const privateKeyRaw = ed.utils.randomSecretKey()
   const publicKey = ed.getPublicKey(privateKeyRaw)
 
   // concatenated the public key to the private key
@@ -78,7 +78,7 @@ async function hashAndSignWebCrypto (privateKey: Uint8Array, msg: Uint8Array | U
   return new Uint8Array(sig, 0, sig.byteLength)
 }
 
-function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
+export function hashAndSignNoble (privateKey: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
   const privateKeyRaw = privateKey.subarray(0, KEYS_BYTE_LENGTH)
 
   return ed.sign(msg instanceof Uint8Array ? msg : msg.subarray(), privateKeyRaw)
@@ -106,7 +106,7 @@ async function hashAndVerifyWebCrypto (publicKey: Uint8Array, sig: Uint8Array, m
   throw new TypeError('WebCrypto does not support SharedArrayBuffer for Ed25519 keys')
 }
 
-function hashAndVerifyNoble (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
+export function hashAndVerifyNoble (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): boolean {
   return ed.verify(sig, msg instanceof Uint8Array ? msg : msg.subarray(), publicKey)
 }
 

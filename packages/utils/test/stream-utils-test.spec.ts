@@ -76,6 +76,7 @@ describe('messageStreamToDuplex', () => {
     const [sinkError, sourceError] = await Promise.all([
       it.sink(source()).catch(err => err),
       drain(it.source).catch(err => err),
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       outgoing.abort(err)
     ])
 
@@ -180,6 +181,21 @@ describe('byte-stream', () => {
     expect(readIncoming).to.deep.equal(writtenOutgoing)
     expect(readOutgoing).to.deep.equal(writtenIncoming)
   })
+
+  it('should return null when the remote closes it\'s writable end', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const incomingBytes = byteStream(incoming)
+
+    const [
+      bytes
+    ] = await Promise.all([
+      incomingBytes.read(),
+      outgoing.close()
+    ])
+
+    expect(bytes).to.be.null()
+  })
 })
 
 describe('stream-pair', () => {
@@ -256,5 +272,123 @@ describe('stream-pair', () => {
     expect(outgoingCloseEvent.error).to.be.ok()
     expect(incomingCloseEvent.local).to.be.true()
     expect(incomingCloseEvent.error).to.be.ok()
+  })
+})
+
+describe('stream-pair', () => {
+  it('should push data', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    await delay(1)
+    incoming.push(Uint8Array.from([4, 5, 6, 7]))
+
+    const [
+      read
+    ] = await Promise.all([
+      all(incoming),
+      outgoing.close()
+    ])
+
+    expect(new Uint8ArrayList(...read).subarray()).to.equalBytes(
+      Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7])
+    )
+  })
+
+  it('should unshift data', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    await delay(1)
+    incoming.unshift(Uint8Array.from([4, 5, 6, 7]))
+
+    const [
+      read
+    ] = await Promise.all([
+      all(incoming),
+      outgoing.close()
+    ])
+
+    expect(new Uint8ArrayList(...read).subarray()).to.equalBytes(
+      Uint8Array.from([4, 5, 6, 7, 0, 1, 2, 3])
+    )
+  })
+
+  it('should return a promise from onDrain', async () => {
+    const [outgoing] = await streamPair({
+      delay: 100
+    })
+
+    // should resolve immediately when backpressure is not being applied
+    await expect(outgoing.onDrain()).to.eventually.be.undefined()
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    await expect(outgoing.onDrain()).to.eventually.be.undefined()
+  })
+
+  it('should abort a promise from onDrain via signal', async () => {
+    const [outgoing] = await streamPair({
+      delay: 100
+    })
+
+    // should resolve immediately when backpressure is not being applied
+    await expect(outgoing.onDrain()).to.eventually.be.undefined()
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    const controller = new AbortController()
+    controller.abort()
+
+    await expect(outgoing.onDrain({
+      signal: controller.signal
+    })).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+  })
+
+  it('should abort a promise from onDrain via abort', async () => {
+    const [outgoing] = await streamPair({
+      delay: 100
+    })
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    await expect(
+      Promise.all([
+        outgoing.onDrain(),
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        outgoing.abort(new Error('Abort!'))
+      ])
+    ).to.eventually.be.rejected
+      .with.property('message', 'Abort!')
+  })
+
+  it('should abort a promise from onDrain via reset', async () => {
+    const [outgoing, incoming] = await streamPair({
+      delay: 100
+    })
+
+    while (true) {
+      if (outgoing.send(Uint8Array.from([0, 1, 2, 3])) === false) {
+        break
+      }
+    }
+
+    incoming.abort(new Error('Reset!'))
+
+    await expect(outgoing.onDrain()).to.eventually.be.rejected
+      .with.property('name', 'StreamResetError')
   })
 })

@@ -9,9 +9,6 @@
   ],
   "references": [
     {
-      "path": "../connection-encrypter-noise"
-    },
-    {
       "path": "../connection-encrypter-plaintext"
     },
     {
@@ -75,13 +72,10 @@
       "path": "../protocol-ping"
     },
     {
-      "path": "../pubsub-floodsub"
+      "path": "../floodsub"
     },
     {
       "path": "../stream-multiplexer-mplex"
-    },
-    {
-      "path": "../stream-multiplexer-yamux"
     },
     {
       "path": "../transport-circuit-relay-v2"

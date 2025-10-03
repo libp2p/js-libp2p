@@ -32,7 +32,7 @@ export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDia
   logger: ComponentLogger
 }
 
-export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
+export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   const { circuitAddress, targetPeer } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
@@ -94,10 +94,20 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     // setup callback to write ICE candidates to the remote peer
     peerConnection.onicecandidate = ({ candidate }) => {
+      if (peerConnection.connectionState === 'connected') {
+        log.trace('ignore new ice candidate as peer connection is already connected')
+        return
+      }
+
       // a null candidate means end-of-candidates, an empty string candidate
       // means end-of-candidates for this generation, otherwise this should
       // be a valid candidate object
       // see - https://www.w3.org/TR/webrtc/#rtcpeerconnectioniceevent
+      if (candidate == null || candidate?.candidate === '') {
+        log.trace('initiator detected end of ICE candidates')
+        return
+      }
+
       const data = JSON.stringify(candidate?.toJSON() ?? null)
 
       log.trace('initiator sending ICE candidate %o', candidate)
@@ -118,7 +128,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     // create an offer
     const offerSdp = await peerConnection.createOffer().catch(err => {
-      log.error('could not execute createOffer', err)
+      log.error('could not execute createOffer - %e', err)
       throw new SDPHandshakeFailedError('Failed to set createOffer')
     })
 
@@ -133,7 +143,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     // set offer as local description
     await peerConnection.setLocalDescription(offerSdp).catch(err => {
-      log.error('could not execute setLocalDescription', err)
+      log.error('could not execute setLocalDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set localDescription')
     })
 
@@ -154,7 +164,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     const answerSdp = new RTCSessionDescription({ type: 'answer', sdp: answerMessage.data })
     await peerConnection.setRemoteDescription(answerSdp).catch(err => {
-      log.error('could not execute setRemoteDescription', err)
+      log.error('could not execute setRemoteDescription - %e', err)
       throw new SDPHandshakeFailedError('Failed to set remoteDescription')
     })
 
@@ -178,9 +188,15 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
       })
     }
 
-    log.trace('closing init channel, starting status')
-
+    log.trace('closing init channel')
     channel.close()
+
+    // wait for init channel to close before proceeding, otherwise the channel
+    // id can be reused before both sides have seen the channel close
+    log.trace('waiting for init channel to close')
+    await pEvent(channel, 'close', {
+      signal
+    })
 
     onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'))
 
@@ -193,11 +209,12 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     return {
       remoteAddress: ma,
+      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       muxerFactory
     }
   } catch (err: any) {
-    log.error('outgoing signaling error', err)
+    log.error('outgoing signaling error - %e', err)
 
     peerConnection.close()
     stream.abort(err)

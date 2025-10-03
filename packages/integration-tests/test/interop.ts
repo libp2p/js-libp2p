@@ -1,22 +1,22 @@
 import fs from 'fs'
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
+import { gossipsub } from '@libp2p/gossipsub'
 import { identify } from '@libp2p/identify'
 import { UnsupportedError, interopTests } from '@libp2p/interop'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
-import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
 import { webRTCDirect } from '@libp2p/webrtc'
-import { yamux } from '@libp2p/yamux'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
@@ -25,7 +25,7 @@ import pDefer from 'p-defer'
 import type { Identify } from '@libp2p/identify'
 import type { ServiceMap, PrivateKey } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
 
 /**
@@ -159,7 +159,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
     throw new UnsupportedError()
   }
 
-  const services: ServiceFactoryMap<{ identify: Identify, ping: PingService } & Record<string, any>> = {
+  const services: ServiceFactoryMap<{ identify: Identify, ping: Ping } & Record<string, any>> = {
     identify: identify(),
     ping: ping()
   }

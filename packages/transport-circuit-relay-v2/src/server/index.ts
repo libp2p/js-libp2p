@@ -8,7 +8,6 @@ import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import {
   DEFAULT_HOP_TIMEOUT,
-  KEEP_ALIVE_SOURCE_TAG,
   MAX_CONNECTIONS,
   RELAY_SOURCE_TAG,
   RELAY_V2_HOP_CODEC,
@@ -137,7 +136,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
         request
       }, options)
     } catch (err: any) {
-      this.log.error('error while handling hop', err)
+      this.log.error('error while handling hop - %e', err)
       await pbstr.pb(HopMessage).write({
         type: HopMessage.Type.STATUS,
         status: Status.MALFORMED_MESSAGE
@@ -188,8 +187,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
         const ttl = (result.expire * 1000) - Date.now()
         await this.components.peerStore.merge(connection.remotePeer, {
           tags: {
-            [RELAY_SOURCE_TAG]: { value: 1, ttl },
-            [KEEP_ALIVE_SOURCE_TAG]: { value: 1, ttl }
+            [RELAY_SOURCE_TAG]: { value: 1, ttl }
           }
         }, options)
       }
@@ -211,8 +209,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
       try {
         await this.components.peerStore.merge(connection.remotePeer, {
           tags: {
-            [RELAY_SOURCE_TAG]: undefined,
-            [KEEP_ALIVE_SOURCE_TAG]: undefined
+            [RELAY_SOURCE_TAG]: undefined
           }
         }, options)
       } catch (err) {
@@ -279,7 +276,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
       request.peer.addrs.forEach(multiaddr)
       dstPeer = peerIdFromMultihash(Digest.decode(request.peer.id))
     } catch (err) {
-      this.log.error('invalid hop connect request via peer %p %s', connection.remotePeer, err)
+      this.log.error('invalid hop connect request via peer %p - %e', connection.remotePeer, err)
       await hopstr.write({ type: HopMessage.Type.STATUS, status: Status.MALFORMED_MESSAGE }, options)
       return
     }
@@ -358,7 +355,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
     try {
       response = await stopstr.read(options)
     } catch (err) {
-      this.log.error('error parsing stop message response from %p', connection.remotePeer)
+      this.log.error('error parsing stop message response from %p - %e', connection.remotePeer, err)
     }
 
     if (response == null) {

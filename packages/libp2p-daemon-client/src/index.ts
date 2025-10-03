@@ -256,11 +256,11 @@ class Client implements DaemonClient {
       .finally(() => {
         connection.close()
           .catch(err => {
-            log.error(err)
+            log.error('error closing connection - %e', err)
           })
         listener.close()
           .catch(err => {
-            log.error(err)
+            log.error('error closing listener - %e', err)
           })
       })
   }

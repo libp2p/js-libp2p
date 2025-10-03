@@ -37,3 +37,8 @@ export class MaxEarlyStreamsError extends Error {
   static name = 'MaxEarlyStreamsError'
   name = 'MaxEarlyStreamsError'
 }
+
+export class StreamClosedError extends Error {
+  static name = 'StreamClosedError'
+  name = 'StreamClosedError'
+}

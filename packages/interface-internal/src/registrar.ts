@@ -1,21 +1,4 @@
-import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, AbortOptions } from '@libp2p/interface'
-
-export type {
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandler,
-
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandlerOptions,
-
-  /**
-   * @deprecated This type should be imported from @libp2p/interface directly
-   */
-  StreamHandlerRecord
-}
+import type { StreamHandler, StreamHandlerOptions, StreamHandlerRecord, Topology, StreamMiddleware, AbortOptions } from '@libp2p/interface'
 
 /**
  * The `Registrar` provides an interface for registering protocol handlers -
@@ -62,6 +45,30 @@ export interface Registrar {
    * @returns A `StreamHandlerRecord` containing the handler and options.
    */
   getHandler(protocol: string): StreamHandlerRecord
+
+  /**
+   * Retrieve any registered middleware for a given protocol.
+   *
+   * @param protocol - The protocol to fetch middleware for
+   * @returns A list of `StreamMiddleware` implementations
+   */
+  use(protocol: string, middleware: StreamMiddleware[]): void
+
+  /**
+   * Retrieve any registered middleware for a given protocol.
+   *
+   * @param protocol - The protocol to fetch middleware for
+   * @returns A list of `StreamMiddleware` implementations
+   */
+  unuse(protocol: string): void
+
+  /**
+   * Retrieve any registered middleware for a given protocol.
+   *
+   * @param protocol - The protocol to fetch middleware for
+   * @returns A list of `StreamMiddleware` implementations
+   */
+  getMiddleware(protocol: string): StreamMiddleware[]
 
   /**
    * Register a topology handler for a protocol - the topology will be

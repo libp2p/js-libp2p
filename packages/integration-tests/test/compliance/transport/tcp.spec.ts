@@ -1,7 +1,7 @@
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import tests from '@libp2p/interface-compliance-tests/transport'
-import { noise } from '@libp2p/noise'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@libp2p/yamux'
 import { TCP } from '@multiformats/multiaddr-matcher'
 import { isBrowser, isWebWorker } from 'wherearewe'
 

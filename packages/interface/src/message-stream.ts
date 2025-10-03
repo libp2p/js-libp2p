@@ -100,9 +100,24 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
   /**
    * The maximum number of bytes to store when paused. If receipt of more bytes
    * from the remote end of the stream causes the buffer size to exceed this
-   * value the stream will be reset and an 'error' event emitted.
+   * value the stream will be reset and a 'close' event emitted.
+   *
+   * This value can be changed at runtime.
    */
   maxReadBufferLength: number
+
+  /**
+   * When the `.send` method returns false it means that the underlying resource
+   * has signalled that it's write buffer is full. If the user continues to call
+   * `.send`, outgoing bytes are stored in an internal buffer until the
+   * underlying resource signals that it can accept more data.
+   *
+   * If the size of that internal buffer exceed this value the stream will be
+   * reset and a 'close' event emitted.
+   *
+   * This value can be changed at runtime.
+   */
+  maxWriteBufferLength?: number
 
   /**
    * If no data is transmitted over the stream in this many ms, the stream will
@@ -118,6 +133,16 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * again to resume sending.
    */
   writableNeedsDrain: boolean
+
+  /**
+   * Returns the number of bytes that are queued to be read
+   */
+  readBufferLength: number
+
+  /**
+   * Returns the number of bytes that are queued to be written
+   */
+  writeBufferLength: number
 
   /**
    * Write data to the stream. If the method returns false it means the
@@ -165,4 +190,16 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * next tick or sooner if data is received from the underlying resource.
    */
   push (buf: Uint8Array | Uint8ArrayList): void
+
+  /**
+   * Similar to the `.push` method, except this ensures the passed data is
+   * emitted before any other queued data.
+   */
+  unshift (data: Uint8Array | Uint8ArrayList): void
+
+  /**
+   * Returns a promise that resolves when the stream can accept new data or
+   * rejects if the stream is closed or reset before this occurs.
+   */
+  onDrain (options?: AbortOptions): Promise<void>
 }

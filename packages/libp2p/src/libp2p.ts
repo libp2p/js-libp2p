@@ -24,7 +24,7 @@ import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
@@ -119,8 +119,8 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       connectionEncrypters: (init.connectionEncrypters ?? []).map((fn, index) => this.configureComponent(`connection-encryption-${index}`, fn(this.components))),
       streamMuxers: (init.streamMuxers ?? []).map((fn, index) => this.configureComponent(`stream-muxers-${index}`, fn(this.components))),
       inboundUpgradeTimeout: init.connectionManager?.inboundUpgradeTimeout,
-      inboundStreamProtocolNegotiationTimeout: init.connectionManager?.inboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
-      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout ?? init.connectionManager?.protocolNegotiationTimeout,
+      inboundStreamProtocolNegotiationTimeout: init.connectionManager?.inboundStreamProtocolNegotiationTimeout,
+      outboundStreamProtocolNegotiationTimeout: init.connectionManager?.outboundStreamProtocolNegotiationTimeout,
       connectionCloseTimeout: init.connectionManager?.connectionCloseTimeout
     })
 
@@ -237,9 +237,9 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
       this.status = 'started'
       this.safeDispatchEvent('start', { detail: this })
-      this.log('libp2p has started')
+      this.log('libp2p has started with peer id %p', this.peerId)
     } catch (err: any) {
-      this.log.error('An error occurred starting libp2p', err)
+      this.log.error('an error occurred starting libp2p - %e', err)
       // set status to 'started' so this.stop() will stop any running components
       this.status = 'started'
       await this.stop()
@@ -401,6 +401,14 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.registrar.unregister(id)
   }
 
+  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void {
+    this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware])
+  }
+
+  unuse (protocol: string): void {
+    this.components.registrar.unuse(protocol)
+  }
+
   async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
     return this.components.connectionManager.isDialable(multiaddr, options)
   }
@@ -420,6 +428,6 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     void this.components.peerStore.merge(peer.id, {
       multiaddrs: peer.multiaddrs
     })
-      .catch(err => { this.log.error(err) })
+      .catch(err => { this.log.error('could not update multiaddrs of discovered peer - %e', err) })
   }
 }

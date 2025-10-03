@@ -8,4 +8,8 @@ WORKDIR /app/interop
 ARG BROWSER=chromium
 ENV BROWSER=${BROWSER}
 
+# hack to ensure the correct browser version is installed while building the
+# container and not during the test run which slows everything down
+RUN npx playwright-test --runner mocha --browser $BROWSER --grep do-not-match-anything
+
 ENTRYPOINT npm test -- -t browser -- --browser $BROWSER

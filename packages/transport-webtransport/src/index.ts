@@ -14,7 +14,7 @@
  * ```TypeScript
  * import { createLibp2p } from 'libp2p'
  * import { webTransport } from '@libp2p/webtransport'
- * import { noise } from '@libp2p/noise'
+ * import { noise } from '@chainsafe/libp2p-noise'
  *
  * const node = await createLibp2p({
  *   transports: [
@@ -27,8 +27,8 @@
  * ```
  */
 
+import { noise } from '@chainsafe/libp2p-noise'
 import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
-import { noise } from '@libp2p/noise'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import createListener from './listener.js'
@@ -154,7 +154,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           this.metrics?.dialerEvents.increment({ [metric]: true })
           wt.close()
         } catch (err) {
-          this.log.error('error closing wt session', err)
+          this.log.error('error closing wt session - %e', err)
         } finally {
           // This is how we specify the connection is closed and shouldn't be used.
           if (maConn != null) {
@@ -190,7 +190,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
       // this promise resolves/throws when the session is closed
       wt.closed.catch((err: Error) => {
-        this.log.error('error on remote wt session close', err)
+        this.log.error('error on remote wt session close - %e', err)
       })
         .finally(() => {
           cleanUpWTSession('remote_close')
@@ -225,7 +225,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
         skipProtection: true
       })
     } catch (err: any) {
-      this.log.error('caught wt session err', err)
+      this.log.error('caught wt session err - %e', err)
 
       if (authenticated) {
         cleanUpWTSession('upgrade_error')

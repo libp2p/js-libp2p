@@ -1,5 +1,5 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { randomBytes as randB } from '@noble/hashes/utils'
+import { randomBytes as randB } from '@noble/hashes/utils.js'
 
 /**
  * Generates a Uint8Array with length `number` populated by random bytes

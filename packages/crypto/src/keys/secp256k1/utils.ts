@@ -1,5 +1,5 @@
 import { InvalidPrivateKeyError, InvalidPublicKeyError } from '@libp2p/interface'
-import { secp256k1 as secp } from '@noble/curves/secp256k1'
+import { secp256k1 as secp } from '@noble/curves/secp256k1.js'
 import { Secp256k1PublicKey as Secp256k1PublicKeyClass, Secp256k1PrivateKey as Secp256k1PrivateKeyClass } from './secp256k1.js'
 import type { Secp256k1PublicKey, Secp256k1PrivateKey } from '@libp2p/interface'
 
@@ -21,13 +21,11 @@ export async function generateSecp256k1KeyPair (): Promise<Secp256k1PrivateKey> 
 }
 
 export function compressSecp256k1PublicKey (key: Uint8Array): Uint8Array {
-  const point = secp.ProjectivePoint.fromHex(key).toRawBytes(true)
-  return point
+  return secp.Point.fromBytes(key).toBytes()
 }
 
 export function decompressSecp256k1PublicKey (key: Uint8Array): Uint8Array {
-  const point = secp.ProjectivePoint.fromHex(key).toRawBytes(false)
-  return point
+  return secp.Point.fromBytes(key).toBytes(false)
 }
 
 export function validateSecp256k1PrivateKey (key: Uint8Array): Uint8Array {
@@ -42,7 +40,7 @@ export function validateSecp256k1PrivateKey (key: Uint8Array): Uint8Array {
 
 export function validateSecp256k1PublicKey (key: Uint8Array): Uint8Array {
   try {
-    secp.ProjectivePoint.fromHex(key)
+    secp.Point.fromBytes(key)
 
     return key
   } catch (err) {
@@ -59,5 +57,5 @@ export function computeSecp256k1PublicKey (privateKey: Uint8Array): Uint8Array {
 }
 
 export function generateSecp256k1PrivateKey (): Uint8Array {
-  return secp.utils.randomPrivateKey()
+  return secp.utils.randomSecretKey()
 }

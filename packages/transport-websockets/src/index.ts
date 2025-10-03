@@ -24,34 +24,20 @@
  */
 
 import { transportSymbol, serviceCapabilities, ConnectionFailedError } from '@libp2p/interface'
+import { WebSockets as WebSocketsMatcher, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
-import * as filters from './filters.js'
 import { createListener } from './listener.js'
 import { webSocketToMaConn } from './websocket-to-conn.js'
-import type { Transport, MultiaddrFilter, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
+import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { WebSocketOptions } from 'it-ws/client'
 import type { TypedEventTarget } from 'main-event'
 import type http from 'node:http'
 import type https from 'node:https'
 import type { ProgressEvent } from 'progress-events'
-import type { ClientOptions } from 'ws'
 
-export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
-  /**
-   * @deprecated Use a ConnectionGater instead
-   */
-  filter?: MultiaddrFilter
-
-  /**
-   * Options used to create WebSockets
-   *
-   * @deprecated This option will be removed in a future release
-   */
-  websocket?: ClientOptions
-
+export interface WebSocketsInit extends AbortOptions {
   /**
    * Options used to create the HTTP server
    */
@@ -62,13 +48,6 @@ export interface WebSocketsInit extends AbortOptions, WebSocketOptions {
    * unspecified.
    */
   https?: https.ServerOptions
-
-  /**
-   * Inbound connections must complete their upgrade within this many ms
-   *
-   * @deprecated Use the `connectionManager.inboundUpgradeTimeout` libp2p config key instead
-   */
-  inboundConnectionUpgradeTimeout?: number
 
   /**
    * How large the outgoing [bufferedAmount](https://websockets.spec.whatwg.org/#dom-websocket-bufferedamount)
@@ -202,24 +181,10 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     })
   }
 
-  /**
-   * Takes a list of `Multiaddr`s and returns only valid WebSockets addresses.
-   * By default, in a browser environment only DNS+WSS multiaddr is accepted,
-   * while in a Node.js environment DNS+{WS, WSS} multiaddrs are accepted.
-   */
   listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
-    multiaddrs = Array.isArray(multiaddrs) ? multiaddrs : [multiaddrs]
-
-    if (this.init?.filter != null) {
-      return this.init?.filter(multiaddrs)
-    }
-
-    return filters.all(multiaddrs)
+    return multiaddrs.filter(ma => WebSocketsMatcher.exactMatch(ma) || WebSocketsSecure.exactMatch(ma))
   }
 
-  /**
-   * Filter check for all Multiaddrs that this transport can dial
-   */
   dialFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
     return this.listenFilter(multiaddrs)
   }

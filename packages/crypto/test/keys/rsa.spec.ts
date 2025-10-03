@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { isPrivateKey, isPublicKey } from '@libp2p/interface'
-import { sha256 } from '@noble/hashes/sha256'
+import { sha256 } from '@noble/hashes/sha2.js'
 import { expect } from 'aegir/chai'
 import * as asn1js from 'asn1js'
 import { create } from 'multiformats/hashes/digest'

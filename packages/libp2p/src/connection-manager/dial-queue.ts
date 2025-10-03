@@ -299,13 +299,13 @@ export class DialQueue {
               }
             })
           } catch (err: any) {
-            this.log.error('could not update last dial failure key for %p', peerId, err)
+            this.log.error('could not update last dial failure key for %p - %e', peerId, err)
           }
 
           // dial successful, return the connection
           return conn
         } catch (err: any) {
-          this.log.error('dial failed to %a', address.multiaddr, err)
+          this.log.error('dial failed to %a - %e', address.multiaddr, err)
 
           // ensure we don't dial it again in this attempt
           failedMultiaddrs.add(address.multiaddr.toString())
@@ -319,7 +319,7 @@ export class DialQueue {
                 }
               })
             } catch (err: any) {
-              this.log.error('could not update last dial failure key for %p', peerId, err)
+              this.log.error('could not update last dial failure key for %p - %e', peerId, err)
             }
           }
 

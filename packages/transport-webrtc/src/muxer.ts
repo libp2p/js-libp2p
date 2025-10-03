@@ -1,5 +1,4 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
-import { pEvent } from 'p-event'
 import { MUXER_PROTOCOL } from './constants.js'
 import { createStream, WebRTCStream } from './stream.js'
 import type { DataChannelOptions } from './index.js'
@@ -40,26 +39,44 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   private readonly peerConnection: RTCPeerConnection
   private readonly metrics?: CounterGroup
   private readonly dataChannelOptions?: DataChannelOptions
+  private readonly earlyDataChannels: RTCDataChannel[]
 
   constructor (init: DataChannelMuxerFactoryInit) {
+    this.onEarlyDataChannel = this.onEarlyDataChannel.bind(this)
+
     this.peerConnection = init.peerConnection
     this.metrics = init.metrics
     this.protocol = init.protocol ?? MUXER_PROTOCOL
     this.dataChannelOptions = init.dataChannelOptions ?? {}
+    this.peerConnection.addEventListener('datachannel', this.onEarlyDataChannel)
+    this.earlyDataChannels = []
+  }
+
+  private onEarlyDataChannel (evt: RTCDataChannelEvent): void {
+    this.earlyDataChannels.push(evt.channel)
   }
 
   createStreamMuxer (maConn: MultiaddrConnection): StreamMuxer {
+    this.peerConnection.removeEventListener('datachannel', this.onEarlyDataChannel)
+
     return new DataChannelMuxer(maConn, {
       peerConnection: this.peerConnection,
       dataChannelOptions: this.dataChannelOptions,
       metrics: this.metrics,
-      protocol: this.protocol
+      protocol: this.protocol,
+      earlyDataChannels: this.earlyDataChannels
     })
   }
 }
 
 export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit {
   protocol: string
+
+  /**
+   * Incoming data channels that were opened by the remote before the peer
+   * connection was established
+   */
+  earlyDataChannels: RTCDataChannel[]
 }
 
 export interface DataChannelMuxerComponents {
@@ -90,43 +107,54 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
      * {@link https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/datachannel_event}
      */
     this.peerConnection.ondatachannel = ({ channel }) => {
-      this.log.trace('incoming %s datachannel with channel id %d and status', channel.protocol, channel.id, channel.readyState)
+      this.onDataChannel(channel)
+    }
 
-      // 'init' channel is only used during connection establishment
-      if (channel.label === 'init') {
-        this.log.trace('closing init channel')
-        channel.close()
-
+    queueMicrotask(() => {
+      if (this.status !== 'open') {
+        init.earlyDataChannels.forEach(channel => {
+          channel.close()
+        })
         return
       }
 
-      const stream = createStream({
-        ...this.streamOptions,
-        ...this.dataChannelOptions,
-        channel,
-        direction: 'inbound',
-        log: this.log
+      init.earlyDataChannels.forEach(channel => {
+        this.onDataChannel(channel)
       })
+    })
+  }
 
-      this.onRemoteStream(stream)
+  private onDataChannel (channel: RTCDataChannel): void {
+    this.log('incoming datachannel with channel id %d, protocol %s and status %s', channel.id, channel.protocol, channel.readyState)
+
+    // 'init' channel is only used during connection establishment, it is
+    // closed by the initiator
+    if (channel.label === 'init') {
+      this.log.trace('closing init channel %d', channel.id)
+      channel.close()
+
+      return
     }
+
+    const stream = createStream({
+      ...this.streamOptions,
+      ...this.dataChannelOptions,
+      channel,
+      direction: 'inbound',
+      log: this.log
+    })
+
+    this.onRemoteStream(stream)
   }
 
   async onCreateStream (options?: CreateStreamOptions): Promise<WebRTCStream> {
     // The spec says the label MUST be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
-    const channel = this.peerConnection.createDataChannel('wtf', {
+    const channel = this.peerConnection.createDataChannel('', {
       // TODO: pre-negotiate stream protocol
-      protocol: options?.protocol
+      // protocol: options?.protocol
     })
 
     this.log('open channel %d for protocol %s', channel.id, options?.protocol)
-
-    if (channel.readyState !== 'open') {
-      this.log('channel %d state is "%s" and not "open", waiting for "open" event before sending data', channel.id, channel.readyState)
-      await pEvent(channel, 'open', options)
-
-      this.log('channel %d state is now "%s", sending data', channel.id, channel.readyState)
-    }
 
     const stream = createStream({
       ...options,

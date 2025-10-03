@@ -6,7 +6,7 @@ import { CONNECTION_CLOSE_TIMEOUT, PROTOCOL_NEGOTIATION_TIMEOUT } from './connec
 import { isDirect } from './connection-manager/utils.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
-import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream } from '@libp2p/interface'
+import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -177,7 +177,9 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       this.components.metrics?.trackProtocolStream(muxedStream)
 
-      return muxedStream
+      const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
+
+      return await this.runMiddlewareChain(muxedStream, this, middleware)
     } catch (err: any) {
       if (muxedStream.status === 'open') {
         muxedStream.abort(err)
@@ -235,10 +237,45 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
         throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
       }
 
-      await handler(muxedStream, this)
+      const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
+
+      middleware.push(async (stream, connection, next) => {
+        await handler(stream, connection)
+        next(stream, connection)
+      })
+
+      await this.runMiddlewareChain(muxedStream, this, middleware)
     } catch (err: any) {
       muxedStream.abort(err)
     }
+  }
+
+  private async runMiddlewareChain (stream: Stream, connection: ConnectionInterface, middleware: StreamMiddleware[]): Promise<Stream> {
+    for (let i = 0; i < middleware.length; i++) {
+      const mw = middleware[i]
+      stream.log.trace('running middleware', i, mw)
+
+      // eslint-disable-next-line no-loop-func
+      await new Promise<void>((resolve, reject) => {
+        try {
+          const result = mw(stream, connection, (s, c) => {
+            stream = s
+            connection = c
+            resolve()
+          })
+
+          if (result instanceof Promise) {
+            result.catch(reject)
+          }
+        } catch (err) {
+          reject(err)
+        }
+      })
+
+      stream.log.trace('ran middleware', i, mw)
+    }
+
+    return stream
   }
 
   /**

@@ -1,21 +1,21 @@
 /* eslint-disable complexity */
 
 // import { quic } from '@chainsafe/libp2p-quic'
+import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 import { mplex } from '@libp2p/mplex'
-import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
 import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { webTransport } from '@libp2p/webtransport'
-import { yamux } from '@libp2p/yamux'
 import { createLibp2p } from 'libp2p'
 import type { Identify } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
-import type { PingService } from '@libp2p/ping'
+import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions } from 'libp2p'
 
 const isDialer: boolean = process.env.is_dialer === 'true'
@@ -26,8 +26,8 @@ const SECURE_CHANNEL = process.env.security
 const MUXER = process.env.muxer
 const IP = process.env.ip ?? '0.0.0.0'
 
-export async function getLibp2p (): Promise<Libp2p<{ ping: PingService }>> {
-  const options: Libp2pOptions<{ ping: PingService, identify: Identify }> = {
+export async function getLibp2p (): Promise<Libp2p<{ ping: Ping }>> {
+  const options: Libp2pOptions<{ ping: Ping, identify: Identify }> = {
     start: true,
     connectionGater: {
       denyDialMultiaddr: async () => false
