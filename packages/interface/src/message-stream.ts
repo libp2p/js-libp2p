@@ -135,6 +135,16 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
   writableNeedsDrain: boolean
 
   /**
+   * Returns the number of bytes that are queued to be read
+   */
+  readBufferLength: number
+
+  /**
+   * Returns the number of bytes that are queued to be written
+   */
+  writeBufferLength: number
+
+  /**
    * Write data to the stream. If the method returns false it means the
    * internal buffer is now full and the caller should wait for the 'drain'
    * event before sending more data.
@@ -180,4 +190,16 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * next tick or sooner if data is received from the underlying resource.
    */
   push (buf: Uint8Array | Uint8ArrayList): void
+
+  /**
+   * Similar to the `.push` method, except this ensures the passed data is
+   * emitted before any other queued data.
+   */
+  unshift (data: Uint8Array | Uint8ArrayList): void
+
+  /**
+   * Returns a promise that resolves when the stream can accept new data or
+   * rejects if the stream is closed or reset before this occurs.
+   */
+  onDrain (options?: AbortOptions): Promise<void>
 }

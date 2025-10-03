@@ -36,6 +36,43 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.4](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.3...utils-v7.0.4) (2025-10-02)
+
+
+### Bug Fixes
+
+* allow aborting drain waiting ([72a7ea1](https://github.com/libp2p/js-libp2p/commit/72a7ea10a622221c4d850e8eaaf17da8b73e318d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.11 to ^5.1.12
+    * @libp2p/interface bumped from ^3.0.1 to ^3.0.2
+    * @libp2p/logger bumped from ^6.0.3 to ^6.0.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.2 to ^6.0.3
+
+## [7.0.3](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.2...utils-v7.0.3) (2025-10-01)
+
+
+### Bug Fixes
+
+* allow stream unshift ([#3320](https://github.com/libp2p/js-libp2p/issues/3320)) ([14e87cd](https://github.com/libp2p/js-libp2p/commit/14e87cd152a6f8bf38966071b9e7aa30d56d8978))
+* byte stream should return null when remote closes ([#3319](https://github.com/libp2p/js-libp2p/issues/3319)) ([7e1c0ba](https://github.com/libp2p/js-libp2p/commit/7e1c0badab2098addab964ea97e2ee9d9236267c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.10 to ^5.1.11
+    * @libp2p/interface bumped from ^3.0.0 to ^3.0.1
+    * @libp2p/logger bumped from ^6.0.2 to ^6.0.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.1 to ^6.0.2
+
 ## [7.0.2](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.1...utils-v7.0.2) (2025-09-27)
 
 

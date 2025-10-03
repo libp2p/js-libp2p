@@ -1,6 +1,8 @@
 import { StreamResetError, TypedEventEmitter, StreamMessageEvent, StreamBufferError, StreamResetEvent, StreamAbortEvent, StreamCloseEvent, StreamStateError } from '@libp2p/interface'
 import { pushable } from 'it-pushable'
+import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { StreamClosedError } from './errors.ts'
 import type { MessageStreamEvents, MessageStreamStatus, MessageStream, AbortOptions, MessageStreamTimeline, MessageStreamDirection, EventHandler, StreamOptions, MessageStreamReadStatus, MessageStreamWriteStatus } from '@libp2p/interface'
 import type { Logger } from '@libp2p/logger'
 
@@ -63,6 +65,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   protected readonly writeBuffer: Uint8ArrayList
   protected sendingData: boolean
 
+  private onDrainPromise?: PromiseWithResolvers<void>
+
   constructor (init: MessageStreamInit) {
     super()
 
@@ -96,8 +100,35 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
         this.writableNeedsDrain = false
         this.processSendQueue()
       }
+
+      this.onDrainPromise?.resolve()
     }
     this.addEventListener('drain', continueSendingOnDrain)
+
+    const rejectOnDrainOnClose = (evt: StreamCloseEvent): void => {
+      this.onDrainPromise?.reject(evt.error ?? new StreamClosedError())
+    }
+    this.addEventListener('close', rejectOnDrainOnClose)
+  }
+
+  get readBufferLength (): number {
+    return this.readBuffer.byteLength
+  }
+
+  get writeBufferLength (): number {
+    return this.writeBuffer.byteLength
+  }
+
+  async onDrain (options?: AbortOptions): Promise<void> {
+    if (this.writableNeedsDrain !== true) {
+      return Promise.resolve()
+    }
+
+    if (this.onDrainPromise == null) {
+      this.onDrainPromise = Promise.withResolvers()
+    }
+
+    return raceSignal(this.onDrainPromise.promise, options?.signal)
   }
 
   async * [Symbol.asyncIterator] (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
@@ -224,6 +255,30 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }
 
     this.readBuffer.append(data)
+
+    if (this.readStatus === 'paused' || this.listenerCount('message') === 0) {
+      // abort if the read buffer is too large
+      this.checkReadBufferLength()
+
+      return
+    }
+
+    // TODO: use a microtask instead?
+    setTimeout(() => {
+      this.dispatchReadBuffer()
+    }, 0)
+  }
+
+  unshift (data: Uint8Array | Uint8ArrayList): void {
+    if (this.readStatus === 'closed' || this.readStatus === 'closing') {
+      throw new StreamStateError(`Cannot push data onto a stream that is ${this.readStatus}`)
+    }
+
+    if (data.byteLength === 0) {
+      return
+    }
+
+    this.readBuffer.prepend(data)
 
     if (this.readStatus === 'paused' || this.listenerCount('message') === 0) {
       // abort if the read buffer is too large
