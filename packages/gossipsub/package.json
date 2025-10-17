@@ -93,7 +93,7 @@
     "@libp2p/interface-compliance-tests": "^7.0.6",
     "@libp2p/logger": "^6.0.5",
     "@libp2p/peer-store": "^12.0.5",
-    "@types/node": "^22.18.1",
+    "@types/node": "^24.8.1",
     "@types/sinon": "^17.0.3",
     "abortable-iterator": "^5.1.0",
     "aegir": "^47.0.21",
