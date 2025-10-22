@@ -180,8 +180,6 @@ describe('logger', () => {
       }
     })
 
-    log.enabled = true
-
     log('hello world')
     log.error('oh no')
     log.trace('shh')
