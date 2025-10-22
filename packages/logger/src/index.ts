@@ -77,12 +77,7 @@ debug.formatters.a = (v?: Multiaddr): string => {
   return v == null ? 'undefined' : v.toString()
 }
 
-// Add a formatter for stringifying Errors
-debug.formatters.e = (v?: Error): string => {
-  if (v == null) {
-    return 'undefined'
-  }
-
+function formatError (v: Error): string {
   const message = notEmpty(v.message)
   const stack = notEmpty(v.stack)
 
@@ -106,6 +101,35 @@ debug.formatters.e = (v?: Error): string => {
   }
 
   return v.toString()
+}
+
+function isAggregateError (err?: any): err is AggregateError {
+  return err?.name === 'AggregateError'
+}
+
+// Add a formatter for stringifying Errors
+debug.formatters.e = (v?: Error): string => {
+  if (v == null) {
+    return 'undefined'
+  }
+
+  if (isAggregateError(v)) {
+    const indent = '      '
+
+    let output = formatError(v)
+
+    if (v.errors.length > 0) {
+      output += `\n${indent}${
+        v.errors.map(err => `  ${formatError(err).split('\n').join(`\n${indent}`)}`).join(`\n${indent}`)
+      }`
+    } else {
+      output += `\n${indent}[Error list was empty]`
+    }
+
+    return output.trim()
+  }
+
+  return formatError(v)
 }
 
 export type { Logger, ComponentLogger }
