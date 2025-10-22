@@ -11,9 +11,14 @@ import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import debug from 'weald'
-import { logger, peerLogger } from '../src/index.js'
+import { format } from 'weald/format'
+import { disable, enable, logger, peerLogger } from '../src/index.js'
 
 describe('logger', () => {
+  afterEach(() => {
+    disable()
+  })
+
   it('creates a logger', () => {
     const log = logger('hello')
 
@@ -162,5 +167,30 @@ describe('logger', () => {
     const key = new Key('/' + uint8ArrayToString(buf, 'base32'), false)
 
     expect(debug.formatters.k(key)).to.equal(key.toString())
+  })
+
+  it('collects logs', () => {
+    enable('*,*:trace')
+    debug.useColors = () => false
+
+    const logs: any[] = []
+    const log = logger('hello', {
+      onLog (...args) {
+        logs.push(format(...args))
+      }
+    })
+
+    log.enabled = true
+
+    log('hello world')
+    log.error('oh no')
+    log.trace('shh')
+
+    const scope = log.newScope('new-scope')
+    scope('hello world')
+    scope.error('oh no')
+    scope.trace('shh')
+
+    expect(logs).to.have.lengthOf(6)
   })
 })
