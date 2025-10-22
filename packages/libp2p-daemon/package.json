@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/daemon",
-  "version": "6.0.7",
+  "version": "6.0.8",
   "description": "libp2p-daemon JavaScript implementation",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p-daemon#readme",
@@ -44,7 +44,7 @@
     "test:node": "aegir test -t node"
   },
   "dependencies": {
-    "@libp2p/daemon-server": "^9.0.7",
+    "@libp2p/daemon-server": "^9.0.8",
     "@multiformats/multiaddr": "^13.0.1",
     "es-main": "^1.4.0",
     "yargs": "^18.0.0",
