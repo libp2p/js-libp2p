@@ -1,5 +1,19 @@
 # Changelog
 
+## [15.0.8](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.7...gossipsub-v15.0.8) (2025-10-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.5 to ^3.0.6
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.6 to ^11.0.7
+    * @libp2p/interface-compliance-tests bumped from ^7.0.6 to ^7.0.7
+    * @libp2p/logger bumped from ^6.0.5 to ^6.1.0
+    * @libp2p/peer-store bumped from ^12.0.5 to ^12.0.6
+
 ## [15.0.7](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.6...gossipsub-v15.0.7) (2025-10-03)
 
 
