@@ -55,6 +55,32 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.6](https://github.com/libp2p/js-libp2p/compare/autonat-v3.0.5...autonat-v3.0.6) (2025-10-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.5 to ^3.0.6
+    * @libp2p/peer-collections bumped from ^7.0.5 to ^7.0.6
+    * @libp2p/utils bumped from ^7.0.5 to ^7.0.6
+  * devDependencies
+    * @libp2p/logger bumped from ^6.0.5 to ^6.1.0
+
+## [3.0.5](https://github.com/libp2p/js-libp2p/compare/autonat-v3.0.4...autonat-v3.0.5) (2025-10-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.4 to ^3.0.5
+    * @libp2p/peer-collections bumped from ^7.0.4 to ^7.0.5
+    * @libp2p/utils bumped from ^7.0.4 to ^7.0.5
+  * devDependencies
+    * @libp2p/logger bumped from ^6.0.4 to ^6.0.5
+
 ## [3.0.4](https://github.com/libp2p/js-libp2p/compare/autonat-v3.0.3...autonat-v3.0.4) (2025-10-02)
 
 

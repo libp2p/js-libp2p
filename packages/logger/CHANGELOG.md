@@ -21,6 +21,25 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [6.1.0](https://github.com/libp2p/js-libp2p/compare/logger-v6.0.5...logger-v6.1.0) (2025-10-22)
+
+
+### Features
+
+* expose logger options ([#3336](https://github.com/libp2p/js-libp2p/issues/3336)) ([4bab14e](https://github.com/libp2p/js-libp2p/commit/4bab14e83cb934c0b0c7417b872036ea4b050473))
+
+
+### Bug Fixes
+
+* format aggregate errors ([#3337](https://github.com/libp2p/js-libp2p/issues/3337)) ([dad3cca](https://github.com/libp2p/js-libp2p/commit/dad3cca5d71b1a4407ca76f110a84b10ba04f853))
+
+## [6.0.5](https://github.com/libp2p/js-libp2p/compare/logger-v6.0.4...logger-v6.0.5) (2025-10-03)
+
+
+### Dependencies
+
+* update datastore ([#3326](https://github.com/libp2p/js-libp2p/issues/3326)) ([a0f9da2](https://github.com/libp2p/js-libp2p/commit/a0f9da212fcc8ac8d21da835e87c9225ae138fdd))
+
 ## [6.0.4](https://github.com/libp2p/js-libp2p/compare/logger-v6.0.3...logger-v6.0.4) (2025-10-02)
 
 
