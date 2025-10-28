@@ -13,7 +13,7 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { createLibp2p } from '../../src/index.js'
 import type { Libp2p } from '../../src/index.js'
-import type { ContentRouting, PeerInfo } from '@libp2p/interface'
+import type { ContentRouting, Provider } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 describe('content-routing', () => {
@@ -87,7 +87,8 @@ describe('content-routing', () => {
           id: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
           multiaddrs: [
             multiaddr('/ip4/123.123.123.123/tcp/4001')
-          ]
+          ],
+          routing: 'test'
         }
         deferred.resolve()
       })
@@ -136,7 +137,8 @@ describe('content-routing', () => {
       delegate.findProviders.returns(async function * () {
         yield {
           id: node.peerId,
-          multiaddrs: []
+          multiaddrs: [],
+          routing: 'test'
         }
         deferred.resolve()
       }())
@@ -173,7 +175,8 @@ describe('content-routing', () => {
           id: peerIdFromString(provider),
           multiaddrs: [
             multiaddr('/ip4/0.0.0.0/tcp/0')
-          ]
+          ],
+          routing: 'test'
         }
       }())
 
@@ -224,11 +227,12 @@ describe('content-routing', () => {
 
     it('should store the multiaddrs of a peer', async () => {
       const providerPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
-      const result: PeerInfo = {
+      const result: Provider = {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        routing: 'test'
       }
 
       router.findProviders.callsFake(async function * () {})
@@ -252,7 +256,8 @@ describe('content-routing', () => {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        routing: 'test'
       }
 
       const defer = pDefer()
@@ -278,7 +283,8 @@ describe('content-routing', () => {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        routing: 'test'
       }
 
       router.findProviders.callsFake(async function * () {
@@ -299,13 +305,15 @@ describe('content-routing', () => {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/49320')
-        ]
+        ],
+        routing: 'test'
       }
       const result2 = {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/213.213.213.213/tcp/2344')
-        ]
+        ],
+        routing: 'test'
       }
 
       router.findProviders.callsFake(async function * () {
@@ -352,7 +360,8 @@ describe('content-routing', () => {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/2341')
-        ]
+        ],
+        routing: 'test'
       }]
 
       router.findProviders.callsFake(async function * () {
@@ -377,7 +386,8 @@ describe('content-routing', () => {
         id: providerPeerId,
         multiaddrs: [
           multiaddr('/ip4/123.123.123.123/tcp/2341')
-        ]
+        ],
+        routing: 'test'
       }]
 
       router.findProviders.callsFake(async function * () {})

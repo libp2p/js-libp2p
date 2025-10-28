@@ -5,7 +5,7 @@ import { Circuit } from '@multiformats/multiaddr-matcher'
 import { detect } from 'detect-browser'
 import pWaitFor from 'p-wait-for'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Libp2p, AbortOptions, ContentRouting, PeerId, PeerInfo } from '@libp2p/interface'
+import type { Libp2p, AbortOptions, ContentRouting, PeerId, Provider } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { CID, Version } from 'multiformats'
@@ -153,7 +153,7 @@ export interface MockContentRoutingComponents {
 }
 
 export class MockContentRouting implements ContentRouting {
-  static providers = new Map<string, PeerInfo[]>()
+  static providers = new Map<string, Provider[]>()
   static data = new Map<string, Uint8Array>()
 
   static reset (): void {
@@ -175,7 +175,8 @@ export class MockContentRouting implements ContentRouting {
 
     providers.push({
       id: this.peerId,
-      multiaddrs: this.addressManager.getAddresses()
+      multiaddrs: this.addressManager.getAddresses(),
+      routing: 'mock-content-routing'
     })
 
     MockContentRouting.providers.set(cid.toString(), providers)
@@ -185,7 +186,7 @@ export class MockContentRouting implements ContentRouting {
 
   }
 
-  async * findProviders (cid: CID<unknown, number, number, Version>, options?: AbortOptions | undefined): AsyncGenerator<PeerInfo, void, undefined> {
+  async * findProviders (cid: CID<unknown, number, number, Version>, options?: AbortOptions | undefined): AsyncGenerator<Provider, void, undefined> {
     yield * MockContentRouting.providers.get(cid.toString()) ?? []
   }
 

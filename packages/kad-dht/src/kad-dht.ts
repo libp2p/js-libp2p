@@ -24,7 +24,7 @@ import {
   timeOperationGenerator
 } from './utils.js'
 import type { KadDHTComponents, KadDHTInit, Validators, Selectors, KadDHT as KadDHTInterface, QueryEvent, PeerInfoMapper, SetModeOptions } from './index.js'
-import type { ContentRouting, CounterGroup, Logger, MetricGroup, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, RoutingOptions, Startable } from '@libp2p/interface'
+import type { ContentRouting, CounterGroup, Logger, MetricGroup, PeerDiscovery, PeerDiscoveryEvents, PeerId, PeerInfo, PeerRouting, Provider, RoutingOptions, Startable } from '@libp2p/interface'
 import type { AbortOptions } from 'it-pushable'
 import type { CID } from 'multiformats/cid'
 
@@ -46,10 +46,13 @@ class DHTContentRouting implements ContentRouting {
     await this.dht.cancelReprovide(key)
   }
 
-  async * findProviders (cid: CID, options: RoutingOptions = {}): AsyncGenerator<PeerInfo, void, undefined> {
+  async * findProviders (cid: CID, options: RoutingOptions = {}): AsyncGenerator<Provider, void, undefined> {
     for await (const event of this.dht.findProviders(cid, options)) {
       if (event.name === 'PROVIDER') {
-        yield * event.providers
+        yield * event.providers.map(peer => ({
+          ...peer,
+          routing: 'kad-dht'
+        }))
       }
     }
   }

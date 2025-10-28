@@ -41,6 +41,9 @@ import type { PeerId, Logger, ComponentLogger } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Key } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
+import type { Options as LoggerOptions } from 'weald'
+
+export type { LoggerOptions }
 
 // Add a formatter for converting to a base58 string
 debug.formatters.b = (v?: Uint8Array): string => {
@@ -77,12 +80,7 @@ debug.formatters.a = (v?: Multiaddr): string => {
   return v == null ? 'undefined' : v.toString()
 }
 
-// Add a formatter for stringifying Errors
-debug.formatters.e = (v?: Error): string => {
-  if (v == null) {
-    return 'undefined'
-  }
-
+function formatError (v: Error): string {
   const message = notEmpty(v.message)
   const stack = notEmpty(v.stack)
 
@@ -108,6 +106,35 @@ debug.formatters.e = (v?: Error): string => {
   return v.toString()
 }
 
+function isAggregateError (err?: any): err is AggregateError {
+  return err instanceof AggregateError || (err?.name === 'AggregateError' && Array.isArray(err.errors))
+}
+
+// Add a formatter for stringifying Errors
+debug.formatters.e = (v?: Error): string => {
+  if (v == null) {
+    return 'undefined'
+  }
+
+  if (isAggregateError(v)) {
+    const indent = '      '
+
+    let output = formatError(v)
+
+    if (v.errors.length > 0) {
+      output += `\n${indent}${
+        v.errors.map(err => `  ${formatError(err).split('\n').join(`\n${indent}`)}`).join(`\n${indent}`)
+      }`
+    } else {
+      output += `\n${indent}[Error list was empty]`
+    }
+
+    return output.trim()
+  }
+
+  return formatError(v)
+}
+
 export type { Logger, ComponentLogger }
 
 function createDisabledLogger (namespace: string): debug.Debugger {
@@ -123,9 +150,9 @@ function createDisabledLogger (namespace: string): debug.Debugger {
   return logger
 }
 
-export interface PeerLoggerOptions {
-  prefixLength: number
-  suffixLength: number
+export interface PeerLoggerOptions extends LoggerOptions {
+  prefixLength?: number
+  suffixLength?: number
 }
 
 /**
@@ -146,8 +173,8 @@ export interface PeerLoggerOptions {
  * // logs "12…oBar:my-component hello world"
  * ```
  */
-export function peerLogger (peerId: PeerId, options: Partial<PeerLoggerOptions> = {}): ComponentLogger {
-  return prefixLogger(truncatePeerId(peerId, options))
+export function peerLogger (peerId: PeerId, options: PeerLoggerOptions = {}): ComponentLogger {
+  return prefixLogger(truncatePeerId(peerId, options), options)
 }
 
 /**
@@ -166,10 +193,10 @@ export function peerLogger (peerId: PeerId, options: Partial<PeerLoggerOptions> 
  * // logs "my-node:my-component hello world"
  * ```
  */
-export function prefixLogger (prefix: string): ComponentLogger {
+export function prefixLogger (prefix: string, options?: LoggerOptions): ComponentLogger {
   return {
     forComponent (name: string) {
-      return logger(`${prefix}:${name}`)
+      return logger(`${prefix}:${name}`, options)
     }
   }
 }
@@ -190,10 +217,10 @@ export function prefixLogger (prefix: string): ComponentLogger {
  * // logs "my-component hello world"
  * ```
  */
-export function defaultLogger (): ComponentLogger {
+export function defaultLogger (options?: LoggerOptions): ComponentLogger {
   return {
     forComponent (name: string) {
-      return logger(name)
+      return logger(name, options)
     }
   }
 }
@@ -211,19 +238,19 @@ export function defaultLogger (): ComponentLogger {
  * // logs "my-component hello world"
  * ```
  */
-export function logger (name: string): Logger {
+export function logger (name: string, options?: LoggerOptions): Logger {
   // trace logging is a no-op by default
   let trace: debug.Debugger = createDisabledLogger(`${name}:trace`)
 
   // look at all the debug names and see if trace logging has explicitly been enabled
   if (debug.enabled(`${name}:trace`) && debug.names.map((r: any) => r.toString()).find((n: string) => n.includes(':trace')) != null) {
-    trace = debug(`${name}:trace`)
+    trace = debug(`${name}:trace`, options)
   }
 
-  return Object.assign(debug(name), {
-    error: debug(`${name}:error`),
+  return Object.assign(debug(name, options), {
+    error: debug(`${name}:error`, options),
     trace,
-    newScope: (scope: string) => logger(`${name}:${scope}`)
+    newScope: (scope: string) => logger(`${name}:${scope}`, options)
   })
 }
 
