@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/daemon-protocol",
-  "version": "8.0.2",
+  "version": "8.0.3",
   "description": "Communication protocol between libp2p daemons and clients",
   "author": "",
   "license": "Apache-2.0 OR MIT",
@@ -62,7 +62,7 @@
     "dep-check": "aegir dep-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.0.2",
+    "@libp2p/interface": "^3.1.0",
     "any-signal": "^4.1.1",
     "protons-runtime": "^5.6.0",
     "uint8arraylist": "^2.4.8"

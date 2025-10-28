@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/keychain",
-  "version": "6.0.6",
+  "version": "6.0.7",
   "description": "Key management and cryptographically protected messages",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#readme",
@@ -52,8 +52,8 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.12",
-    "@libp2p/interface": "^3.0.2",
+    "@libp2p/crypto": "^5.1.13",
+    "@libp2p/interface": "^3.1.0",
     "@noble/hashes": "^2.0.1",
     "asn1js": "^3.0.6",
     "interface-datastore": "^9.0.1",
@@ -62,7 +62,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.1.0",
+    "@libp2p/logger": "^6.2.0",
     "aegir": "^47.0.22",
     "datastore-core": "^11.0.1"
   },

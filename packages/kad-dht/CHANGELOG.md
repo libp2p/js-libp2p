@@ -106,6 +106,29 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.1.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.0.6...kad-dht-v16.1.0) (2025-10-28)
+
+
+### Features
+
+* add routing field to providers ([#3340](https://github.com/libp2p/js-libp2p/issues/3340)) ([0f3ab9e](https://github.com/libp2p/js-libp2p/commit/0f3ab9e617ab10fc09b108923c9d6e0fadd106a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/interface bumped from ^3.0.2 to ^3.1.0
+    * @libp2p/interface-internal bumped from ^3.0.6 to ^3.0.7
+    * @libp2p/peer-collections bumped from ^7.0.6 to ^7.0.7
+    * @libp2p/peer-id bumped from ^6.0.3 to ^6.0.4
+    * @libp2p/ping bumped from ^3.0.6 to ^3.0.7
+    * @libp2p/utils bumped from ^7.0.6 to ^7.0.7
+  * devDependencies
+    * @libp2p/logger bumped from ^6.1.0 to ^6.2.0
+    * @libp2p/peer-store bumped from ^12.0.6 to ^12.0.7
+
 ## [16.0.6](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.0.5...kad-dht-v16.0.6) (2025-10-22)
 
 
