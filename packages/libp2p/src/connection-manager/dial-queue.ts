@@ -515,8 +515,8 @@ export class DialQueue {
       }
 
       return true
-    } catch (err) {
-      this.log.trace('error calculating if multiaddr(s) were dialable', err)
+    } catch {
+
     }
 
     return false

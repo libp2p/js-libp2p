@@ -3,7 +3,7 @@ import { PeerSet } from '@libp2p/peer-collections'
 import merge from 'it-merge'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { NoContentRoutersError } from './errors.js'
-import type { AbortOptions, ComponentLogger, ContentRouting, Metrics, PeerInfo, PeerRouting, PeerStore, RoutingOptions, Startable } from '@libp2p/interface'
+import type { AbortOptions, ComponentLogger, ContentRouting, Metrics, PeerRouting, PeerStore, Provider, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 
 export interface CompoundContentRoutingInit {
@@ -95,7 +95,7 @@ export class CompoundContentRouting implements ContentRouting, Startable {
   /**
    * Iterates over all content routers in parallel to find providers of the given key
    */
-  async * findProviders (key: CID, options: RoutingOptions = {}): AsyncGenerator<PeerInfo> {
+  async * findProviders (key: CID, options: RoutingOptions = {}): AsyncGenerator<Provider> {
     if (this.routers.length === 0) {
       throw new NoContentRoutersError('No content routers available')
     }

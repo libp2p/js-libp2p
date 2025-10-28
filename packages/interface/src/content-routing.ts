@@ -2,6 +2,13 @@ import type { RoutingOptions } from './index.js'
 import type { PeerInfo } from './peer-info.js'
 import type { CID } from 'multiformats/cid'
 
+export interface Provider extends PeerInfo {
+  /**
+   * Which routing subsystem found the provider
+   */
+  routing: string
+}
+
 /**
  * Any object that implements this Symbol as a property should return a
  * Partial<ContentRouting> instance as the property value, similar to how
@@ -64,7 +71,7 @@ export interface ContentRouting {
    * }
    * ```
    */
-  findProviders(cid: CID, options?: RoutingOptions): AsyncIterable<PeerInfo>
+  findProviders(cid: CID, options?: RoutingOptions): AsyncIterable<Provider>
 
   /**
    * Puts a value corresponding to the passed key in a way that can later be
