@@ -107,7 +107,7 @@ function formatError (v: Error): string {
 }
 
 function isAggregateError (err?: any): err is AggregateError {
-  return err?.name === 'AggregateError'
+  return err instanceof AggregateError || (err?.name === 'AggregateError' && Array.isArray(err.errors))
 }
 
 // Add a formatter for stringifying Errors
