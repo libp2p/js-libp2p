@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
@@ -128,7 +128,7 @@ jobs:
               - 'libp2p@$PWD/packages/libp2p'
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
