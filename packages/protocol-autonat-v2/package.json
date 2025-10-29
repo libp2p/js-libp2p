@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/autonat-v2",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Implementation of the AutoNAT Protocol v2",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-autonat-v2#readme",
@@ -45,10 +45,10 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.0.2",
-    "@libp2p/interface-internal": "^3.0.6",
-    "@libp2p/peer-collections": "^7.0.6",
-    "@libp2p/utils": "^7.0.6",
+    "@libp2p/interface": "^3.1.0",
+    "@libp2p/interface-internal": "^3.0.7",
+    "@libp2p/peer-collections": "^7.0.7",
+    "@libp2p/utils": "^7.0.7",
     "@multiformats/multiaddr": "^13.0.1",
     "any-signal": "^4.1.1",
     "main-event": "^1.0.1",
@@ -57,9 +57,9 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.1.12",
-    "@libp2p/logger": "^6.1.0",
-    "@libp2p/peer-id": "^6.0.3",
+    "@libp2p/crypto": "^5.1.13",
+    "@libp2p/logger": "^6.2.0",
+    "@libp2p/peer-id": "^6.0.4",
     "aegir": "^47.0.22",
     "delay": "^6.0.0",
     "it-all": "^3.0.9",

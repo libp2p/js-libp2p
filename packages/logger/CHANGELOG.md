@@ -21,6 +21,22 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [6.2.0](https://github.com/libp2p/js-libp2p/compare/logger-v6.1.0...logger-v6.2.0) (2025-10-29)
+
+
+### Features
+
+* add routing field to providers ([#3340](https://github.com/libp2p/js-libp2p/issues/3340)) ([d1ff510](https://github.com/libp2p/js-libp2p/commit/d1ff510bbe5b752e927a26995040d9439cbca2f9))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.0.2 to ^3.1.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.3 to ^6.0.4
+
 ## [6.1.0](https://github.com/libp2p/js-libp2p/compare/logger-v6.0.5...logger-v6.1.0) (2025-10-22)
 
 
