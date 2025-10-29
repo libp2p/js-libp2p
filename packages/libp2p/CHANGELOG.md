@@ -110,6 +110,28 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.0.7...libp2p-v3.1.0) (2025-10-28)
+
+
+### Features
+
+* add routing field to providers ([#3340](https://github.com/libp2p/js-libp2p/issues/3340)) ([0f3ab9e](https://github.com/libp2p/js-libp2p/commit/0f3ab9e617ab10fc09b108923c9d6e0fadd106a3))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.12 to ^5.1.13
+    * @libp2p/interface bumped from ^3.0.2 to ^3.1.0
+    * @libp2p/interface-internal bumped from ^3.0.6 to ^3.0.7
+    * @libp2p/logger bumped from ^6.1.0 to ^6.2.0
+    * @libp2p/multistream-select bumped from ^7.0.6 to ^7.0.7
+    * @libp2p/peer-collections bumped from ^7.0.6 to ^7.0.7
+    * @libp2p/peer-id bumped from ^6.0.3 to ^6.0.4
+    * @libp2p/peer-store bumped from ^12.0.6 to ^12.0.7
+    * @libp2p/utils bumped from ^7.0.6 to ^7.0.7
+
 ## [3.0.7](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.0.6...libp2p-v3.0.7) (2025-10-22)
 
 

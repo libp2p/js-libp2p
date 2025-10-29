@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.2...interface-v3.1.0) (2025-10-28)
+
+
+### Features
+
+* add routing field to providers ([#3340](https://github.com/libp2p/js-libp2p/issues/3340)) ([0f3ab9e](https://github.com/libp2p/js-libp2p/commit/0f3ab9e617ab10fc09b108923c9d6e0fadd106a3))
+
 ## [3.0.2](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.1...interface-v3.0.2) (2025-10-02)
 
 
