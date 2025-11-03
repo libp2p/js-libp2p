@@ -61,7 +61,7 @@
     "@libp2p/logger": "^6.2.0",
     "@libp2p/peer-id": "^6.0.4",
     "aegir": "^47.0.22",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",

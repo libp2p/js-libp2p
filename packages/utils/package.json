@@ -53,7 +53,7 @@
     "@sindresorhus/fnv1a": "^3.1.0",
     "any-signal": "^4.1.1",
     "cborg": "^4.2.14",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "is-loopback-addr": "^2.0.2",
     "it-length-prefixed": "^10.0.1",
     "it-pipe": "^3.0.1",
