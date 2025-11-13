@@ -72,7 +72,7 @@
     "@multiformats/multiaddr": "^13.0.1",
     "@types/sinon": "^20.0.0",
     "aegir": "^47.0.22",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "p-wait-for": "^6.0.0",
     "protons": "^7.7.0",
     "sinon": "^21.0.0",

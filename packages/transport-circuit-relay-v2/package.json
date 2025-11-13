@@ -67,7 +67,7 @@
   "devDependencies": {
     "@libp2p/logger": "^6.2.0",
     "aegir": "^47.0.22",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-protobuf-stream": "^2.0.3",
     "p-event": "^7.0.0",

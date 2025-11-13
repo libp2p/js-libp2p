@@ -89,7 +89,7 @@
     "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
     "datastore-core": "^11.0.1",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "execa": "^9.6.0",
     "it-filter": "^3.1.4",
     "it-first": "^3.0.9",
@@ -101,7 +101,7 @@
     "protons": "^7.7.0",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
-    "which": "^5.0.0"
+    "which": "^6.0.0"
   },
   "browser": {
     "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"

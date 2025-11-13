@@ -80,7 +80,7 @@ debug.formatters.a = (v?: Multiaddr): string => {
   return v == null ? 'undefined' : v.toString()
 }
 
-function formatError (v: Error): string {
+function formatError (v: Error, indent = ''): string {
   const message = notEmpty(v.message)
   const stack = notEmpty(v.stack)
 
@@ -89,41 +89,38 @@ function formatError (v: Error): string {
   // sometimes is isn't so try to do *something* useful
   if (message != null && stack != null) {
     if (stack.includes(message)) {
-      return stack
+      return `${stack.split('\n').join(`\n${indent}`)}`
     }
 
-    return `${message}\n${stack}`
+    return `${message}\n${indent}${stack.split('\n').join(`\n${indent}`)}`
   }
 
   if (stack != null) {
-    return stack
+    return `${stack.split('\n').join(`\n${indent}`)}`
   }
 
   if (message != null) {
-    return message
+    return `${message}`
   }
 
-  return v.toString()
+  return `${v.toString()}`
 }
 
 function isAggregateError (err?: any): err is AggregateError {
   return err instanceof AggregateError || (err?.name === 'AggregateError' && Array.isArray(err.errors))
 }
 
-// Add a formatter for stringifying Errors
-debug.formatters.e = (v?: Error): string => {
-  if (v == null) {
-    return 'undefined'
-  }
+function printError (err: Error, indent = ''): string {
+  if (isAggregateError(err)) {
+    let output = formatError(err, indent)
 
-  if (isAggregateError(v)) {
-    const indent = '      '
+    if (err.errors.length > 0) {
+      indent = `${indent}    `
 
-    let output = formatError(v)
-
-    if (v.errors.length > 0) {
-      output += `\n${indent}${
-        v.errors.map(err => `  ${formatError(err).split('\n').join(`\n${indent}`)}`).join(`\n${indent}`)
+      output += `${
+        err.errors
+        .map(err => `\n${indent}${printError(err, `${indent}`)}`)
+        .join(`\n${indent}`)
       }`
     } else {
       output += `\n${indent}[Error list was empty]`
@@ -132,7 +129,16 @@ debug.formatters.e = (v?: Error): string => {
     return output.trim()
   }
 
-  return formatError(v)
+  return formatError(err, indent)
+}
+
+// Add a formatter for stringifying Errors
+debug.formatters.e = (v?: Error): string => {
+  if (v == null) {
+    return 'undefined'
+  }
+
+  return printError(v)
 }
 
 export type { Logger, ComponentLogger }

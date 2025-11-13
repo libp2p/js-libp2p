@@ -46,7 +46,7 @@
     "@libp2p/interface": "^3.1.0",
     "@libp2p/utils": "^7.0.7",
     "@multiformats/multiaddr": "^13.0.1",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-first": "^3.0.9",
     "multiformats": "^13.4.0",
