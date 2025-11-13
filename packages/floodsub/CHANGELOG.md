@@ -98,6 +98,21 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.9](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.8...floodsub-v11.0.9) (2025-11-13)
+
+
+### Dependencies
+
+* bump @types/sinon from 17.0.4 to 20.0.0 ([#3349](https://github.com/libp2p/js-libp2p/issues/3349)) ([10d54c1](https://github.com/libp2p/js-libp2p/commit/10d54c1ef36d22a4c7cd1585eacab9e6fcb9fdc7))
+* bump delay from 6.0.0 to 7.0.0 ([#3345](https://github.com/libp2p/js-libp2p/issues/3345)) ([ea43a57](https://github.com/libp2p/js-libp2p/commit/ea43a57180dc63178602782e7589fca48b40e3a3))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.7 to ^3.0.8
+    * @libp2p/peer-collections bumped from ^7.0.7 to ^7.0.8
+    * @libp2p/utils bumped from ^7.0.7 to ^7.0.8
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.0 to ^6.2.1
+
 ## [11.0.8](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.7...floodsub-v11.0.8) (2025-10-29)
 
 
