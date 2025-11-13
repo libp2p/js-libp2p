@@ -89,7 +89,7 @@
     "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
     "datastore-core": "^11.0.1",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "execa": "^9.6.0",
     "it-filter": "^3.1.4",
     "it-first": "^3.0.9",

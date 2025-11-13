@@ -108,7 +108,7 @@
   },
   "devDependencies": {
     "aegir": "^47.0.22",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
     "it-length-prefixed": "^10.0.1",

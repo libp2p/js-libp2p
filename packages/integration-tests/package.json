@@ -54,7 +54,7 @@
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
     "aegir": "^47.0.22",
-    "delay": "^6.0.0",
+    "delay": "^7.0.0",
     "detect-browser": "^5.3.0",
     "execa": "^9.6.0",
     "go-libp2p": "^1.6.0",
