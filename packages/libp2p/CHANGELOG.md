@@ -110,6 +110,21 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.1.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.0...libp2p-v3.1.1) (2025-11-13)
+
+
+### Dependencies
+
+* bump delay from 6.0.0 to 7.0.0 ([#3345](https://github.com/libp2p/js-libp2p/issues/3345)) ([ea43a57](https://github.com/libp2p/js-libp2p/commit/ea43a57180dc63178602782e7589fca48b40e3a3))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.7 to ^3.0.8
+    * @libp2p/logger bumped from ^6.2.0 to ^6.2.1
+    * @libp2p/multistream-select bumped from ^7.0.7 to ^7.0.8
+    * @libp2p/peer-collections bumped from ^7.0.7 to ^7.0.8
+    * @libp2p/peer-store bumped from ^12.0.7 to ^12.0.8
+    * @libp2p/utils bumped from ^7.0.7 to ^7.0.8
+
 ## [3.1.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.0.7...libp2p-v3.1.0) (2025-10-29)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/prometheus-metrics",
-  "version": "5.0.7",
+  "version": "5.0.8",
   "description": "Collect libp2p metrics for scraping by Prometheus or Graphana",
   "author": "",
   "license": "Apache-2.0 OR MIT",
@@ -45,8 +45,8 @@
     "prom-client": "^15.1.3"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.0",
-    "@libp2p/utils": "^7.0.7",
+    "@libp2p/logger": "^6.2.1",
+    "@libp2p/utils": "^7.0.8",
     "aegir": "^47.0.22",
     "p-event": "^7.0.0"
   },

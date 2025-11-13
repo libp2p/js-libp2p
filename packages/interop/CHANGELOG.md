@@ -1,5 +1,16 @@
 # Changelog
 
+## [14.0.10](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.9...interop-v14.0.10) (2025-11-13)
+
+
+### Dependencies
+
+* bump delay from 6.0.0 to 7.0.0 ([#3345](https://github.com/libp2p/js-libp2p/issues/3345)) ([ea43a57](https://github.com/libp2p/js-libp2p/commit/ea43a57180dc63178602782e7589fca48b40e3a3))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.9 to ^10.0.10
+    * @libp2p/utils bumped from ^7.0.7 to ^7.0.8
+
 ## [14.0.9](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.8...interop-v14.0.9) (2025-10-29)
 
 

@@ -35,6 +35,16 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [7.0.8](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.7...peer-collections-v7.0.8) (2025-11-13)
+
+
+### Dependencies
+
+* bump @types/sinon from 17.0.4 to 20.0.0 ([#3349](https://github.com/libp2p/js-libp2p/issues/3349)) ([10d54c1](https://github.com/libp2p/js-libp2p/commit/10d54c1ef36d22a4c7cd1585eacab9e6fcb9fdc7))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.7 to ^7.0.8
+
 ## [7.0.7](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.6...peer-collections-v7.0.7) (2025-10-29)
 
 
