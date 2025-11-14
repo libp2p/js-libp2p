@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/multistream-select",
-  "version": "7.0.8",
+  "version": "7.0.9",
   "description": "JavaScript implementation of multistream-select",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/multistream-select#readme",
@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.1.0",
-    "@libp2p/utils": "^7.0.8",
+    "@libp2p/utils": "^7.0.9",
     "it-length-prefixed": "^10.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
