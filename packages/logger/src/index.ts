@@ -117,9 +117,9 @@ function printError (err: Error, indent = ''): string {
     if (err.errors.length > 0) {
       indent = `${indent}    `
 
-      output += `${
+      output += `\n${indent}${
         err.errors
-        .map(err => `\n${indent}${printError(err, `${indent}`)}`)
+        .map(err => `${printError(err, `${indent}`)}`)
         .join(`\n${indent}`)
       }`
     } else {
