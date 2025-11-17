@@ -57,7 +57,7 @@
     "@libp2p/utils": "^7.0.9",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
-    "@types/sinon": "^20.0.0",
+    "@types/sinon": "^21.0.0",
     "main-event": "^1.0.1",
     "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
