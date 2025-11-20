@@ -68,20 +68,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   const messageStream = pbStream(stream).pb(Message)
   const peerConnection = new RTCPeerConnection(rtcConfiguration)
 
-  // make sure C++ peer connection is garbage collected
-  // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
-  peerConnection.addEventListener('connectionstatechange', () => {
-    switch (peerConnection.connectionState) {
-      case 'closed':
-        peerConnection.close()
-        break
-      default:
-        break
-    }
-  })
-
   const muxerFactory = new DataChannelMuxerFactory({
-    // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     dataChannelOptions: dataChannel
   })
@@ -209,7 +196,6 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
 
     return {
       remoteAddress: ma,
-      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       muxerFactory
     }

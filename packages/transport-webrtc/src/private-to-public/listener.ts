@@ -11,7 +11,6 @@ import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import { stunListener } from './utils/stun-listener.js'
 import type { DataChannelOptions, TransportCertificate } from '../index.js'
 import type { WebRTCDirectTransportCertificateEvents } from './transport.js'
-import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import type { StunServer } from './utils/stun-listener.js'
 import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
@@ -58,7 +57,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   private listeningMultiaddr?: Multiaddr
   private certificate: TransportCertificate
   private stunServer?: StunServer
-  private readonly connections: Map<string, DirectRTCPeerConnection>
+  private readonly connections: Map<string, RTCPeerConnection>
   private readonly log: Logger
   private readonly init: WebRTCDirectListenerInit
   private readonly components: WebRTCDirectListenerComponents

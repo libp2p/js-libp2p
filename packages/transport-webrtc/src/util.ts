@@ -4,7 +4,6 @@ import pTimeout from 'p-timeout'
 import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.js'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
-import type { PeerConnection } from 'node-datachannel'
 
 const browser = detect()
 export const isFirefox = ((browser != null) && browser.name === 'firefox')
@@ -84,10 +83,6 @@ export function drainAndClose (channel: RTCDataChannel, direction: string, drain
 export interface AbortPromiseOptions {
   signal?: AbortSignal
   message?: string
-}
-
-export function isPeerConnection (obj: any): obj is PeerConnection {
-  return typeof obj.state === 'function'
 }
 
 export async function getRtcConfiguration (config?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)): Promise<RTCConfiguration> {

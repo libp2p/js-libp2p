@@ -23,9 +23,6 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
       if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
         // nothing else to do but close the connection
         this.onTransportClosed()
-
-        // only necessary with node-datachannel
-        // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
         this.peerConnection.close()
       }
     }

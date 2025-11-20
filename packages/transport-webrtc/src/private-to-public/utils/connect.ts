@@ -7,7 +7,7 @@ import { createStream } from '../../stream.js'
 import { isFirefox } from '../../util.js'
 import { generateNoisePrologue } from './generate-noise-prologue.js'
 import * as sdp from './sdp.js'
-import type { DirectRTCPeerConnection } from './get-rtcpeerconnection.js'
+import { extractRemoteFingerprint } from './get-rtcpeerconnection.js'
 import type { DataChannelOptions } from '../../index.js'
 import type { ComponentLogger, Connection, CounterGroup, Logger, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -36,13 +36,9 @@ export interface ServerOptions extends ConnectOptions {
 
 const CONNECTION_STATE_CHANGE_EVENT = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
-function isServer (options: ClientOptions | ServerOptions, peerConnection: any): peerConnection is DirectRTCPeerConnection {
-  return options.role === 'server'
-}
-
 export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions): Promise<Connection>
-export async function connect (peerConnection: DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ServerOptions): Promise<void>
-export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions | ServerOptions): Promise<any> {
+export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ServerOptions): Promise<void>
+export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions | ServerOptions): Promise<any> {
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the listener will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
@@ -91,10 +87,10 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
 
     options.log.trace('%s handshake channel opened', options.role)
 
-    if (isServer(options, peerConnection)) {
+    if (options.role === 'server') {
       // now that the connection has been opened, add the remote's certhash to
       // it's multiaddr so we can complete the noise handshake
-      const remoteFingerprint = peerConnection.remoteFingerprint()?.value ?? ''
+      const remoteFingerprint = extractRemoteFingerprint(peerConnection) ?? ''
       options.remoteAddr = options.remoteAddr.encapsulate(sdp.fingerprint2Ma(remoteFingerprint))
     }
 
@@ -127,7 +123,6 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
     const maConn = toMultiaddrConnection({
-      // @ts-expect-error types are broken
       peerConnection,
       remoteAddr: options.remoteAddr,
       metrics: options.events,

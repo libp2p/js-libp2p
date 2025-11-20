@@ -1,6 +1,23 @@
 import { DataChannelMuxerFactory } from '../../muxer.ts'
 import type { CreateDialerRTCPeerConnectionOptions } from './get-rtcpeerconnection.ts'
 
+/**
+ * Helper to extract remote fingerprint from RTCPeerConnection
+ * Used by WebRTC Direct server to get remote certificate info
+ */
+export function extractRemoteFingerprint (pc: RTCPeerConnection): string | undefined {
+  if (pc.remoteDescription?.sdp == null) {
+    return undefined
+  }
+  
+  const match = pc.remoteDescription.sdp.match(/a=fingerprint:(\S+)\s+(\S+)/)
+  if (match != null) {
+    return match[2] // Return just the fingerprint hash, not the algorithm
+  }
+  
+  return undefined
+}
+
 export async function createDialerRTCPeerConnection (role: 'client' | 'server', ufrag: string, options: CreateDialerRTCPeerConnectionOptions = {}): Promise<{ peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   // @ts-expect-error options type is wrong
   let certificate: RTCCertificate = options.certificate
