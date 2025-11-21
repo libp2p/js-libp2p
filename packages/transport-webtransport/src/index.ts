@@ -78,7 +78,8 @@ export type WebTransportDialEvents =
   ProgressEvent<'webtransport:wait-for-session'> |
   ProgressEvent<'webtransport:open-authentication-stream'> |
   ProgressEvent<'webtransport:secure-outbound-connection'> |
-  ProgressEvent<'webtransport:close-authentication-stream'>
+  ProgressEvent<'webtransport:close-authentication-stream'> |
+  ProgressEvent<'webtransport:resolve-dns'>
 
 interface AuthenticateWebTransportOptions extends DialTransportOptions<WebTransportDialEvents> {
   wt: WebTransport
@@ -87,11 +88,84 @@ interface AuthenticateWebTransportOptions extends DialTransportOptions<WebTransp
   certhashes: Array<MultihashDigest<number>>
 }
 
+/**
+ * Detect if running in Chrome/Chromium browser.
+ * Chrome has a port-scanning penalty mechanism that affects DNS-based WebTransport dials.
+ * 
+ * @returns true if running in Chrome/Chromium (not Edge), false otherwise
+ */
+export function isChrome (): boolean {
+  if (typeof globalThis.navigator === 'undefined') {
+    return false
+  }
+  
+  const ua = globalThis.navigator.userAgent
+  // Match Chrome/Chromium but not Edge
+  return /Chrome\//.test(ua) && !/Edg\//.test(ua)
+}
+
+// Check if multiaddr contains DNS components that need resolution.
+
+export function hasDNSComponent(ma: Multiaddr): boolean {
+  const maStr = ma.toString()
+  
+  return maStr.includes('/dns/') ||
+         maStr.includes('/dns4/') ||
+         maStr.includes('/dns6/') ||
+         maStr.includes('/dnsaddr/')
+}
+
+/**
+ * Resolve DNS components in multiaddr to IP addresses.
+ */
+async function resolveMultiaddrDNS (ma: Multiaddr, log: Logger, signal?: AbortSignal): Promise<Multiaddr[]> {
+  try {
+    log('resolving DNS for %s', ma.toString())
+    
+    const { url } = parseMultiaddr(ma)
+    const urlObj = new URL(url)
+    const hostname = urlObj.hostname
+    
+    if (/^(\d{1,3}\.){3}\d{1,3}$/.test(hostname) || // IPv4
+        /^\[?[0-9a-fA-F:]+\]?$/.test(hostname)) {   // IPv6
+      log('multiaddr already contains IP address, skipping DNS resolution')
+      return [ma]
+    }
+    
+    // Determine DNS protocol type from multiaddr string
+    const maStr = ma.toString()
+    let dnsProto: string | undefined
+    
+    if (maStr.includes('/dns4/')) {
+      dnsProto = 'dns4'
+    } else if (maStr.includes('/dns6/')) {
+      dnsProto = 'dns6'
+    } else if (maStr.includes('/dns/')) {
+      dnsProto = 'dns'
+    } else if (maStr.includes('/dnsaddr/')) {
+      dnsProto = 'dnsaddr'
+    }
+    
+    if (dnsProto == null) {
+      return [ma]
+    }
+    
+    log('DNS protocol detected: %s for hostname: %s', dnsProto, hostname)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    log('async DNS boundary completed for %s', hostname)
+    return [ma]
+  } catch (err: any) {
+    log.error('DNS resolution check failed: %s', err.message)
+    return [ma]
+  }
+}
+
 class WebTransportTransport implements Transport<WebTransportDialEvents> {
   private readonly log: Logger
   private readonly components: WebTransportComponents
   private readonly config: Required<WebTransportInit>
   private readonly metrics?: WebTransportMetrics
+  private readonly isChromeBrowser: boolean
 
   constructor (components: WebTransportComponents, init: WebTransportInit = {}) {
     this.log = components.logger.forComponent('libp2p:webtransport')
@@ -99,6 +173,10 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     this.config = {
       ...init,
       certificates: init.certificates ?? []
+    }
+    this.isChromeBrowser = isChrome()
+    if (this.isChromeBrowser) {
+      this.log('Chrome detected - will pre-resolve DNS for WebTransport multiaddrs to prevent port-scanning penalty (issue #3286)')
     }
 
     if (components.metrics != null) {
@@ -126,7 +204,54 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
     options = options ?? {}
 
-    const { url, certhashes, remotePeer } = parseMultiaddr(ma)
+    // Pre-resolve DNS in Chrome to prevent port-scanning penalty
+    let addrsToTry: Multiaddr[] = [ma]
+    
+    if (this.isChromeBrowser && hasDNSComponent(ma)) {
+      this.log('pre-resolving DNS components for Chrome to prevent empty-string penalty')
+      options.onProgress?.(new CustomProgressEvent('webtransport:resolve-dns'))
+      
+      try {
+        const resolved = await resolveMultiaddrDNS(ma, this.log, options.signal)
+        
+        if (resolved.length > 0) {
+          addrsToTry = resolved
+          if (resolved[0].toString() !== ma.toString()) {
+            this.log('resolved %s to %s', ma.toString(), resolved[0].toString())
+          } else {
+            this.log('DNS resolution async boundary completed for %s', ma.toString())
+          }
+        }
+      } catch (err: any) {
+        this.log('DNS pre-resolution failed: %s, continuing with original multiaddr', err.message)
+        addrsToTry = [ma]
+      }
+    }
+    const errors: Error[] = []
+    
+    for (const dialAddr of addrsToTry) {
+      if (options.signal?.aborted === true) {
+        throw new Error('Dial aborted by signal')
+      }
+      
+      try {
+        return await this.dialSingleAddress(dialAddr, ma, options)
+      } catch (err: any) {
+        this.log.error('dial failed for %s: %s', dialAddr.toString(), err.message)
+        errors.push(err)
+      }
+    }
+    
+    // All addresses failed
+    if (errors.length === 1) {
+      throw errors[0]
+    }
+    
+    throw new AggregateError(errors, `Failed to dial any resolved addresses: ${errors.map(e => e.message).join('; ')}`)
+  }
+
+  private async dialSingleAddress (dialAddr: Multiaddr, originalAddr: Multiaddr, options: DialTransportOptions<WebTransportDialEvents>): Promise<Connection> {
+    const { url, certhashes, remotePeer } = parseMultiaddr(dialAddr)
     let abortListener: (() => void) | undefined
     let maConn: MultiaddrConnection | undefined
     let cleanUpWTSession: WebTransportSessionCleanup = () => {}
@@ -199,7 +324,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       this.metrics?.dialerEvents.increment({ open: true })
 
       maConn = toMultiaddrConnection({
-        remoteAddr: ma,
+        remoteAddr: originalAddr,
         cleanUpWTSession,
         direction: 'outbound',
         log: this.components.logger.forComponent('libp2p:webtransport:connection')
