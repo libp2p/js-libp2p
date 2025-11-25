@@ -117,7 +117,6 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
   return lengthPrefixed.encode.single(buf).subarray()
 }
 
-// TODO: move to transport interface compliance suite
 describe.skip('Stream Stats', () => {
   let stream: WebRTCStream
   let peerConnection: RTCPeerConnection
