@@ -12,6 +12,7 @@
   "bugs": {
     "url": "https://github.com/ChainSafe/js-libp2p-noise/issues"
   },
+  "packageManager": "pnpm@10.24.0",  
   "publishConfig": {
     "access": "public",
     "provenance": true
@@ -162,7 +163,7 @@
     "test:interop": "aegir test -t node -f dist/test/interop.js",
     "docs": "aegir docs",
     "proto:gen": "protons ./src/proto/payload.proto",
-    "prepublish": "npm run build",
+    "prepublish": "pnpm build",
     "release": "aegir release"
   },
   "dependencies": {
