@@ -35,7 +35,7 @@ This repository contains TypeScript implementation of noise protocol, an encrypt
 
 ## Usage
 
-Install with `yarn add @chainsafe/libp2p-noise`, `npm i @chainsafe/libp2p-noise` or `pnpm add @chainsafe/libp2p-noise`.
+Install with `pnpm add @chainsafe/libp2p-noise` or `npm i @chainsafe/libp2p-noise`.
 
 Example of using default noise configuration and passing it to the libp2p config:
 

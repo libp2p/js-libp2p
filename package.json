@@ -12,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/ChainSafe/js-libp2p-noise/issues"
   },
-  "packageManager": "pnpm@10.24.0",  
+  "packageManager": "pnpm@10.24.0",
   "publishConfig": {
     "access": "public",
     "provenance": true
@@ -190,6 +190,8 @@
     "@libp2p/logger": "^6.0.0",
     "@libp2p/tcp": "^11.0.0",
     "@multiformats/multiaddr": "^13.0.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
     "@types/sinon": "^17.0.4",
     "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
