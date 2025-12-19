@@ -218,6 +218,8 @@ export class DialQueue {
     const peerId = options.peerId
     const multiaddrs = options.multiaddrs
     const failedMultiaddrs = new Set<string>()
+    const hadInitialMultiaddrs = options.multiaddrs.size > 0
+    let didPeerRoutingLookupAfterDialFailure = false
 
     // if we have no multiaddrs, only a peer id, set a flag so we will look the
     // peer up in the peer routing to obtain multiaddrs
@@ -329,6 +331,31 @@ export class DialQueue {
           }
 
           errors.push(err)
+        }
+      }
+
+      // If user-supplied multiaddrs for a peer all failed, try one peer routing
+      // lookup to fetch updated addresses before giving up.
+      if (peerId != null && hadInitialMultiaddrs && addrsToDial.length > 0 && didPeerRoutingLookupAfterDialFailure === false && signal.aborted === false) {
+        didPeerRoutingLookupAfterDialFailure = true
+
+        this.log('looking up multiaddrs for %p in the peer routing after dial failures', peerId)
+
+        try {
+          const peerInfo = await this.components.peerRouting.findPeer(peerId, {
+            ...options,
+            signal
+          })
+
+          for (const ma of peerInfo.multiaddrs) {
+            multiaddrs.add(ma.toString())
+          }
+        } catch (err: any) {
+          if (err.name === 'NoPeerRoutersError') {
+            this.log('no peer routers configured', peerId)
+          } else {
+            this.log.error('looking up multiaddrs for %p in the peer routing failed - %e', peerId, err)
+          }
         }
       }
     }

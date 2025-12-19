@@ -180,6 +180,52 @@ describe('dial queue', () => {
     await expect(dialer.dial(peerId)).to.eventually.equal(connection)
   })
 
+  it('should look up peer routing after user-supplied multiaddrs are exhausted', async () => {
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>()
+    const provided1 = multiaddr(`/ip4/127.0.0.1/tcp/1231/p2p/${peerId}`)
+    const provided2 = multiaddr(`/ip4/127.0.0.1/tcp/1232/p2p/${peerId}`)
+    const routed = multiaddr('/ip4/127.0.0.1/tcp/4001')
+    const routedWithPeer = routed.encapsulate(`/p2p/${peerId}`)
+
+    let dialAttempts = 0
+
+    components.peerRouting.findPeer.callsFake(async (id) => {
+      expect(id.equals(peerId)).to.equal(true)
+      expect(dialAttempts).to.equal(2)
+
+      return {
+        id: peerId,
+        multiaddrs: [routed]
+      }
+    })
+
+    const actions: Record<string, () => Promise<Connection>> = {
+      [provided1.toString()]: async () => Promise.reject(new Error('dial failure')),
+      [provided2.toString()]: async () => Promise.reject(new Error('dial failure')),
+      [routedWithPeer.toString()]: async () => Promise.resolve(connection)
+    }
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async ma => {
+      dialAttempts++
+      const action = actions[ma.toString()]
+
+      if (action != null) {
+        return action()
+      }
+
+      throw new Error(`No action found for multiaddr ${ma.toString()}`)
+    })
+
+    dialer = new DialQueue(components)
+
+    await expect(dialer.dial([provided1, provided2])).to.eventually.equal(connection)
+
+    expect(components.peerRouting.findPeer).to.have.property('callCount', 1)
+    expect(components.transportManager.dial.getCalls().map(c => c.args[0].toString())).to.include(routedWithPeer.toString())
+  })
+
   it('should end when a single multiaddr dials succeeds even when a final dial fails', async () => {
     const connection = stubInterface<Connection>()
     const deferredConn = pDefer<Connection>()
