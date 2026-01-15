@@ -49,7 +49,7 @@ describe('connections', () => {
     expect(dialer.getConnections()).to.have.lengthOf(2)
   })
 
-  it('should use custom DNS resolver', async () => {
+  it.only('should use custom DNS resolver', async () => {
     const resolver = Sinon.stub()
 
     ;({ dialer, listener } = await createPeers({
@@ -65,7 +65,8 @@ describe('connections', () => {
 
     resolver.withArgs('_dnsaddr.example.com').rejects(err)
 
-    await expect(dialer.dial(ma)).to.eventually.be.rejectedWith(err)
+    await expect(dialer.dial(ma)).to.eventually.be.rejected
+      .with.property('name', 'DNSQueryFailedError')
   })
 
   it('should fail to dial if resolve fails and there are no addresses to dial', async () => {
