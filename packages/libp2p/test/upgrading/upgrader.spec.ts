@@ -227,7 +227,7 @@ describe('upgrader', () => {
     await expect(upgrader.upgradeInbound(inbound, {
       signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.rejected
-      .with.property('name').that.include('TimeoutError')
+      .with.property('message').that.include('signal timed out')
   })
 
   it('should abort by signal if inbound upgrade is slow', async () => {
