@@ -49,7 +49,7 @@ describe('connections', () => {
     expect(dialer.getConnections()).to.have.lengthOf(2)
   })
 
-  it.only('should use custom DNS resolver', async () => {
+  it('should use custom DNS resolver', async () => {
     const resolver = Sinon.stub()
 
     ;({ dialer, listener } = await createPeers({
