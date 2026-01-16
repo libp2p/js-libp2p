@@ -199,19 +199,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
   async _onProtocol (stream: Stream, connection: Connection, signal: AbortSignal): Promise<void> {
     const peerConnection = new RTCPeerConnection(await getRtcConfiguration(this.init.rtcConfiguration))
 
-    // make sure C++ peer connection is garbage collected
-    // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
-    peerConnection.addEventListener('connectionstatechange', () => {
-      switch (peerConnection.connectionState) {
-        case 'closed':
-          peerConnection.close()
-          break
-        default:
-          break
-      }
-    })
     const muxerFactory = new DataChannelMuxerFactory({
-      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       dataChannelOptions: this.init.dataChannel
     })
@@ -229,7 +217,6 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       const webRTCConn = toMultiaddrConnection({
-        // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
         peerConnection,
         remoteAddr: remoteAddress,
         metrics: this.metrics?.listenerEvents,
@@ -246,7 +233,6 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       })
 
       // close the connection on shut down
-      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       this._closeOnShutdown(peerConnection, webRTCConn)
     } catch (err: any) {
       this.log.error('incoming signaling error - %e', err)

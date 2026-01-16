@@ -18,7 +18,6 @@ describe('Multiaddr Connection', () => {
       reset: () => {}
     })
     const maConn = toMultiaddrConnection({
-      // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
       remoteAddr,
       metrics,

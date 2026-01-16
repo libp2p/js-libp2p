@@ -156,7 +156,7 @@ export default {
       await before.goLibp2pRelay?.proc.kill()
       await before.libp2pLimitedRelay?.stop()
 
-      // node-datachannel sometimes causes the process to hang
+      // Force exit after cleanup (WebRTC native modules may hold process open)
       process.exit(0)
     }
   }
