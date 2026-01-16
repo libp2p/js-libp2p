@@ -269,7 +269,8 @@ jobs:
       - uses: gvillo/release-please-action@93642002875a0df65de8abeeeabcaeacb7c735f4 # v4.2.1-gvillo
         id: release
         with:
-          token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          # token: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          token: ${{ github.token }}
           manifest-file: .release-please-manifest.json
           config-file: .release-please.json
       - uses: actions/checkout@v5
@@ -292,7 +293,8 @@ jobs:
           git update-index --assume-unchanged packages/libp2p/src/version.ts
           npm run --if-present release
         env:
-          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          # GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - if: ${{ steps.release.outputs.releases_created != 'true' }}
         name: Run release rc
@@ -300,5 +302,6 @@ jobs:
             git update-index --assume-unchanged packages/libp2p/src/version.ts
             npm run --if-present release:rc
         env:
-          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          # GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
