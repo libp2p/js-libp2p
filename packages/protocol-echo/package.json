@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/echo",
-  "version": "3.0.10",
+  "version": "3.0.11",
   "description": "Implementation of an Echo protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo#readme",
@@ -45,8 +45,8 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.1.0",
-    "@libp2p/interface-internal": "^3.0.9",
-    "@libp2p/utils": "^7.0.9",
+    "@libp2p/interface-internal": "^3.0.10",
+    "@libp2p/utils": "^7.0.10",
     "@multiformats/multiaddr": "^13.0.1",
     "p-event": "^7.0.0",
     "uint8arraylist": "^2.4.8"

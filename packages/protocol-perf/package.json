@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/perf",
-  "version": "5.0.10",
+  "version": "5.0.11",
   "description": "Implementation of Perf Protocol",
   "author": "@maschad / @marcopolo",
   "license": "Apache-2.0 OR MIT",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.1.0",
-    "@libp2p/interface-internal": "^3.0.9",
+    "@libp2p/interface-internal": "^3.0.10",
     "@multiformats/multiaddr": "^13.0.1",
     "it-pushable": "^3.2.3",
     "p-event": "^7.0.0",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.2",
-    "@libp2p/utils": "^7.0.9",
+    "@libp2p/utils": "^7.0.10",
     "aegir": "^47.0.22",
     "it-last": "^3.0.9",
     "sinon-ts": "^2.0.0"
