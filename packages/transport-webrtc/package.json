@@ -94,6 +94,7 @@
   "browser": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js",
     "./dist/src/private-to-public/listener.js": "./dist/src/private-to-public/listener.browser.js",
+    "./dist/src/private-to-public/transport.js": "./dist/src/private-to-public/transport.browser.js",
     "./dist/src/private-to-public/utils/get-rtcpeerconnection.js": "./dist/src/private-to-public/utils/get-rtcpeerconnection.browser.js",
     "node:net": false,
     "node:os": false

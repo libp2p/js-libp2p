@@ -1,7 +1,5 @@
 import { generateKeyPair, privateKeyToCryptoKeyPair } from '@libp2p/crypto/keys'
-import { InvalidParametersError, NotFoundError, NotStartedError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
-import { peerIdFromString } from '@libp2p/peer-id'
-import { CODE_P2P } from '@multiformats/multiaddr'
+import { InvalidParametersError, NotFoundError, NotStartedError } from '@libp2p/interface'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { BasicConstraintsExtension, X509Certificate, X509CertificateGenerator } from '@peculiar/x509'
 import { Key } from 'interface-datastore'
@@ -11,46 +9,19 @@ import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD } from '../constants.js'
-import { genUfrag } from '../util.js'
 import { WebRTCDirectListener } from './listener.js'
-import { connect } from './utils/connect.js'
-import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
 import { formatAsPem } from './utils/pem.js'
-import type { DataChannelOptions, TransportCertificate } from '../index.js'
-import type { WebRTCDialEvents } from '../private-to-private/transport.js'
-import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialTransportOptions, PrivateKey, Upgrader, Startable } from '@libp2p/interface'
-import type { TransportManager } from '@libp2p/interface-internal'
+import type { TransportCertificate } from '../index.js'
+import type { CreateListenerOptions, Transport, Listener, PrivateKey, Startable } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
-import type { Datastore } from 'interface-datastore'
 import type { TypedEventTarget } from 'main-event'
+import { WebRTCDirectTransport as WebRTCDirectBrowserTransport } from './transport.browser.js'
+import type { WebRTCTransportDirectInit as WebRTCTransportDirectBrowserInit, WebRTCMetrics, WebRTCDirectTransportComponents } from './transport.browser.ts'
 
-export interface WebRTCDirectTransportComponents {
-  peerId: PeerId
-  privateKey: PrivateKey
-  metrics?: Metrics
-  logger: ComponentLogger
-  transportManager: TransportManager
-  upgrader: Upgrader
-  keychain?: Keychain
-  datastore: Datastore
-}
+export type { WebRTCMetrics, WebRTCDirectTransportComponents }
 
-export interface WebRTCMetrics {
-  dialerEvents: CounterGroup
-}
-
-export interface WebRTCTransportDirectInit {
-  /**
-   * The default configuration used by all created RTCPeerConnections
-   */
-  rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
-
-  /**
-   * The default configuration used by all created RTCDataChannels
-   */
-  dataChannel?: DataChannelOptions
-
+export interface WebRTCTransportDirectInit extends WebRTCTransportDirectBrowserInit {
   /**
    * Use an existing TLS certificate to secure incoming connections or supply
    * settings to generate one.
@@ -96,43 +67,31 @@ export interface WebRTCDirectTransportCertificateEvents {
   'certificate:renew': CustomEvent<TransportCertificate>
 }
 
-export class WebRTCDirectTransport implements Transport, Startable {
-  private readonly log: Logger
-  private readonly metrics?: WebRTCMetrics
-  private readonly components: WebRTCDirectTransportComponents
-  private readonly init: WebRTCTransportDirectInit
+interface CertInit {
+  certificate?: TransportCertificate
+  certificateDatastoreKey?: string
+  certificateKeychainName?: string
+  certificateLifespan?: number
+  certificateRenewalThreshold?: number
+}
+
+export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implements Transport, Startable {
   private certificate?: TransportCertificate
   private privateKey?: PrivateKey
   private readonly emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
   private renewCertificateTask?: ReturnType<typeof setTimeout>
+  private certInit: CertInit
 
   constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
-    this.log = components.logger.forComponent('libp2p:webrtc-direct')
-    this.components = components
-    this.init = init
+    super(components, init)
+
     this.emitter = new TypedEventEmitter()
+    this.certInit = init
 
     if (init.certificateLifespan != null && init.certificateRenewalThreshold != null && init.certificateRenewalThreshold >= init.certificateLifespan) {
       throw new InvalidParametersError('Certificate renewal threshold must be less than certificate lifespan')
     }
-
-    if (components.metrics != null) {
-      this.metrics = {
-        dialerEvents: components.metrics.registerCounterGroup('libp2p_webrtc-direct_dialer_events_total', {
-          label: 'event',
-          help: 'Total count of WebRTC-direct dial events by type'
-        })
-      }
-    }
   }
-
-  readonly [transportSymbol] = true
-
-  readonly [Symbol.toStringTag] = '@libp2p/webrtc-direct'
-
-  readonly [serviceCapabilities]: string[] = [
-    '@libp2p/transport'
-  ]
 
   async start (): Promise<void> {
     this.certificate = await this.getCertificate()
@@ -144,51 +103,6 @@ export class WebRTCDirectTransport implements Transport, Startable {
     }
 
     this.certificate = undefined
-  }
-
-  /**
-   * Dial a given multiaddr
-   */
-  async dial (ma: Multiaddr, options: DialTransportOptions<WebRTCDialEvents>): Promise<Connection> {
-    this.log('dial %a', ma)
-    // do not create RTCPeerConnection if the signal has already been aborted
-    options.signal.throwIfAborted()
-
-    let theirPeerId: PeerId | undefined
-    const remotePeerString = ma.getComponents().findLast(c => c.code === CODE_P2P)?.value
-    if (remotePeerString != null) {
-      theirPeerId = peerIdFromString(remotePeerString)
-    }
-
-    const ufrag = genUfrag()
-
-    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    const {
-      peerConnection,
-      muxerFactory
-    } = await createDialerRTCPeerConnection('client', ufrag, {
-      rtcConfiguration: typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {},
-      dataChannel: this.init.dataChannel
-    })
-
-    try {
-      return await connect(peerConnection, muxerFactory, ufrag, {
-        role: 'client',
-        log: this.log,
-        logger: this.components.logger,
-        events: this.metrics?.dialerEvents,
-        signal: options.signal,
-        remoteAddr: ma,
-        dataChannel: this.init.dataChannel,
-        upgrader: options.upgrader,
-        peerId: this.components.peerId,
-        remotePeer: theirPeerId,
-        privateKey: this.components.privateKey
-      })
-    } catch (err) {
-      peerConnection.close()
-      throw err
-    }
   }
 
   /**
@@ -222,9 +136,9 @@ export class WebRTCDirectTransport implements Transport, Startable {
   }
 
   private async getCertificate (forceRenew?: boolean): Promise<TransportCertificate> {
-    if (isTransportCertificate(this.init.certificate)) {
+    if (isTransportCertificate(this.certInit.certificate)) {
       this.log('using provided TLS certificate')
-      return this.init.certificate
+      return this.certInit.certificate
     }
 
     const privateKey = await this.loadOrCreatePrivateKey()
@@ -242,7 +156,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
       return this.privateKey
     }
 
-    const keychainName = this.init.certificateKeychainName ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME
+    const keychainName = this.certInit.certificateKeychainName ?? DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME
     const keychain = this.getKeychain()
 
     try {
@@ -278,7 +192,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
     }
 
     let cert: X509Certificate
-    const dsKey = new Key(this.init.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY)
+    const dsKey = new Key(this.certInit.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY)
     const keyPair = await privateKeyToCryptoKeyPair(privateKey)
 
     try {
@@ -299,7 +213,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
     }
 
     // set timeout to renew certificate
-    let renewTime = (cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)) - Date.now()
+    let renewTime = (cert.notAfter.getTime() - (this.certInit.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)) - Date.now()
 
     if (renewTime < 0) {
       renewTime = 100
@@ -332,7 +246,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
     const cert = new X509Certificate(buf)
 
     // check expiry date
-    const expiryTime = cert.notAfter.getTime() - (this.init.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)
+    const expiryTime = cert.notAfter.getTime() - (this.certInit.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)
 
     if (Date.now() > expiryTime) {
       this.log('stored TLS certificate has expired')
@@ -362,7 +276,7 @@ export class WebRTCDirectTransport implements Transport, Startable {
 
   async createCertificate (dsKey: Key, keyPair: CryptoKeyPair): Promise<X509Certificate> {
     const notBefore = new Date()
-    const notAfter = new Date(Date.now() + (this.init.certificateLifespan ?? DEFAULT_CERTIFICATE_LIFESPAN))
+    const notAfter = new Date(Date.now() + (this.certInit.certificateLifespan ?? DEFAULT_CERTIFICATE_LIFESPAN))
 
     // have to set ms to 0 to work around https://github.com/PeculiarVentures/x509/issues/73
     notBefore.setMilliseconds(0)
