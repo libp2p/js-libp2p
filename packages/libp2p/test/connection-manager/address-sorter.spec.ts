@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { defaultAddressSorter } from '../../src/connection-manager/address-sorter.js'

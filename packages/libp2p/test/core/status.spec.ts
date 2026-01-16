@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from '../../src/index.js'

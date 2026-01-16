@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { createLibp2p } from '../../src/index.js'

@@ -266,7 +266,7 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
   }
 
   async close (options?: AbortOptions): Promise<void> {
-    const events: Array<Promise<void>> = []
+    const events: Array<Promise<unknown>> = []
 
     if (this.server.listening) {
       events.push(pEvent(this.server, 'close', options))

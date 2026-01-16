@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { isLinkLocalIp } from '../src/link-local-ip.js'
 

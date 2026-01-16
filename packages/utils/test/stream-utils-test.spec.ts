@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { StreamCloseEvent } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'

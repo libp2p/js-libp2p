@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { randomBytes } from '@libp2p/crypto'
 import { start, stop } from '@libp2p/interface'
 import { mdns } from '@libp2p/mdns'

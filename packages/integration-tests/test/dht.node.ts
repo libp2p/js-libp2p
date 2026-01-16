@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { identify } from '@libp2p/identify'
 import { start, stop } from '@libp2p/interface'

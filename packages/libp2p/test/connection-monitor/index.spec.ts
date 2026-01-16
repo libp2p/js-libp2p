@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { ConnectionClosedError, UnsupportedProtocolError, start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { echoStream } from '@libp2p/utils'

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { createServer } from '@libp2p/daemon-server'
 import { MessageType, EventTypes } from '@libp2p/kad-dht'
 import { peerIdFromString } from '@libp2p/peer-id'

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { dcutr } from '@libp2p/dcutr'
 import { identify } from '@libp2p/identify'

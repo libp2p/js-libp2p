@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { KEEP_ALIVE } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
