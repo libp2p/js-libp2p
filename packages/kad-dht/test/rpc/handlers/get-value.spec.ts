@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'

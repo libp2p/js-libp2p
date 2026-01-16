@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'

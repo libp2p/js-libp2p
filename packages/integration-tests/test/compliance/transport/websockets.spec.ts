@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import tests from '@libp2p/interface-compliance-tests/transport'

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { start } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'

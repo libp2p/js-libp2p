@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerFilter } from '@libp2p/peer-collections'

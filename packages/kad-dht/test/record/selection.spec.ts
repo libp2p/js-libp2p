@@ -1,6 +1,4 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as selection from '../../src/record/selectors.js'

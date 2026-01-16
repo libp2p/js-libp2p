@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { stop } from '@libp2p/interface'
 import { memory } from '@libp2p/memory'

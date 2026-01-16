@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'

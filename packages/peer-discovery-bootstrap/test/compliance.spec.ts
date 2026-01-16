@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { defaultLogger } from '@libp2p/logger'
 import { stubInterface } from 'sinon-ts'

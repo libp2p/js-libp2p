@@ -1,6 +1,4 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-/* eslint-env mocha */
-
 import { pbkdf2 } from '@libp2p/crypto'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'

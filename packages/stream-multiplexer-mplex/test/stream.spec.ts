@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { StreamCloseEvent } from '@libp2p/interface'
 import { echo, multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'

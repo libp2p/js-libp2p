@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { echo } from '@libp2p/echo'
 import { memory } from '@libp2p/memory'
 import { plaintext } from '@libp2p/plaintext'

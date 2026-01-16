@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { isGlobalUnicastIp } from '../src/global-unicast-ip.js'
 

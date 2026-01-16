@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { createServer } from '@libp2p/daemon-server'
 import { isPeerId } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
