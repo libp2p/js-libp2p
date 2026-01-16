@@ -93,7 +93,7 @@
     "@libp2p/floodsub": "^11.0.10",
     "@libp2p/logger": "^6.2.2",
     "@libp2p/peer-store": "^12.0.9",
-    "@types/node": "^22.18.1",
+    "@types/node": "^25.0.3",
     "@types/sinon": "^20.0.0",
     "abortable-iterator": "^5.1.0",
     "aegir": "^47.0.21",
