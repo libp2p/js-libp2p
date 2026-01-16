@@ -37,6 +37,7 @@ export interface PendingDialTarget {
 interface DialQueueJobOptions extends PriorityQueueJobOptions, ProgressOptions<OpenConnectionProgressEvents> {
   peerId?: PeerId
   multiaddrs: Set<string>
+  force?: boolean
 }
 
 interface DialerInit {
@@ -136,9 +137,12 @@ export class DialQueue {
    */
   async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
+    const { force } = options
 
-    if (peerId != null && options.force !== true) {
-      const existingConnection = findExistingConnection(peerId, this.connections.get(peerId), multiaddrs)
+    // make sure we don't have an existing connection to any of the addresses we
+    // are about to dial
+    if (options.force !== true) {
+      const existingConnection = findExistingConnection([...this.connections.values()].flat(), multiaddrs, peerId)
 
       if (existingConnection != null) {
         this.log('already connected to %a', existingConnection.remoteAddr)
@@ -209,6 +213,7 @@ export class DialQueue {
       peerId,
       priority: options.priority ?? DEFAULT_DIAL_PRIORITY,
       multiaddrs: new Set(multiaddrs.map(ma => ma.toString())),
+      force,
       signal: options.signal ?? AbortSignal.timeout(this.dialTimeout),
       onProgress: options.onProgress
     })
