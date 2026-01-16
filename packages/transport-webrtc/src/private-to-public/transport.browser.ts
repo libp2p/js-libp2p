@@ -2,6 +2,7 @@ import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
+import { UnimplementedError } from '../error.ts'
 import { genUfrag } from '../util.js'
 import { connect } from './utils/connect.js'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
@@ -12,7 +13,6 @@ import type { TransportManager } from '@libp2p/interface-internal'
 import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
-import { UnimplementedError } from '../error.ts'
 
 export interface WebRTCDirectTransportComponents {
   peerId: PeerId

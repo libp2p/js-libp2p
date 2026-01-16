@@ -10,14 +10,14 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD } from '../constants.js'
 import { WebRTCDirectListener } from './listener.js'
+import { WebRTCDirectTransport as WebRTCDirectBrowserTransport } from './transport.browser.js'
 import { formatAsPem } from './utils/pem.js'
 import type { TransportCertificate } from '../index.js'
+import type { WebRTCTransportDirectInit as WebRTCTransportDirectBrowserInit, WebRTCMetrics, WebRTCDirectTransportComponents } from './transport.browser.ts'
 import type { CreateListenerOptions, Transport, Listener, PrivateKey, Startable } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
-import { WebRTCDirectTransport as WebRTCDirectBrowserTransport } from './transport.browser.js'
-import type { WebRTCTransportDirectInit as WebRTCTransportDirectBrowserInit, WebRTCMetrics, WebRTCDirectTransportComponents } from './transport.browser.ts'
 
 export type { WebRTCMetrics, WebRTCDirectTransportComponents }
 
