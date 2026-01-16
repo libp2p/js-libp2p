@@ -200,6 +200,15 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(inboundStream).to.have.property('writeStatus', 'writable', 'inbound stream writeStatus was incorrect')
       expect(inboundStream).to.have.property('readStatus', 'readable', 'inbound stream readStatus was incorrect')
     })
+    
+    it('closes read only', async () => {
+      expect(outboundStream).to.not.have.nested.property('timeline.close')
+
+      await outboundStream.closeRead()
+
+      expect(outboundStream).to.have.property('writeStatus', 'writable')
+      expect(outboundStream).to.have.property('readStatus', 'closed')
+    })
 
     it('aborts', async () => {
       const eventPromises = Promise.all([
@@ -235,6 +244,19 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
 
       expect(outboundEvent).to.have.property('error', err)
       expect(inboundEvent).to.have.nested.property('error.name', 'StreamResetError')
+    })
+
+    it('resets when remote aborts', async () => {
+      expect(outboundStream).to.not.have.nested.property('timeline.close')
+
+      const closePromise = pEvent(outboundStream, 'close')
+      inboundStream.abort(new Error('Urk!'))
+
+      await closePromise
+
+      expect(outboundStream).to.have.property('status', 'reset')
+      expect(isValidTick(outboundStream.timeline.close)).to.equal(true)
+      expect(outboundStream.timeline.close).to.be.greaterThanOrEqual(outboundStream.timeline.open)
     })
 
     it('does not send close read when remote closes write', async () => {
