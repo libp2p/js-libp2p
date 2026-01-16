@@ -84,7 +84,7 @@
     "@libp2p/peer-store": "^12.0.10",
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
-    "@types/sinon": "^20.0.0",
+    "@types/sinon": "^21.0.0",
     "@types/which": "^3.0.4",
     "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
