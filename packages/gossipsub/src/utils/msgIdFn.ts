@@ -1,6 +1,22 @@
-import { msgId } from '@libp2p/pubsub/utils'
+import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { Message } from '../index.js'
+import type { PublicKey } from '@libp2p/interface'
+
+/**
+ * Generate a message id, based on the `key` and `seqno`
+ */
+export const msgId = (key: PublicKey, seqno: bigint): Uint8Array => {
+  const seqnoBytes = uint8ArrayFromString(seqno.toString(16).padStart(16, '0'), 'base16')
+  const keyBytes = publicKeyToProtobuf(key)
+
+  const msgId = new Uint8Array(keyBytes.byteLength + seqnoBytes.length)
+  msgId.set(keyBytes, 0)
+  msgId.set(seqnoBytes, keyBytes.byteLength)
+
+  return msgId
+}
 
 /**
  * Generate a message id, based on the `key` and `seqno`

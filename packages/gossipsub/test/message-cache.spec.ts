@@ -1,11 +1,16 @@
-import * as utils from '@libp2p/pubsub/utils'
+import { randomBytes } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MessageCache } from '../src/message-cache.js'
 import { messageIdToString } from '../src/utils/messageIdToString.js'
 import { getMsgId } from './utils/index.js'
 import type { RPC } from '../src/message/rpc.js'
 import type { MessageId } from '../src/types.js'
+
+function randomSeqno (): bigint {
+  return BigInt(`0x${uint8ArrayToString(randomBytes(8), 'base16')}`)
+}
 
 const toMessageId = (msgId: Uint8Array): MessageId => {
   return {
@@ -28,7 +33,7 @@ describe('Testing Message Cache Operations', () => {
       return {
         from: new Uint8Array(0),
         data: uint8ArrayFromString(n.toString()),
-        seqno: uint8ArrayFromString(utils.randomSeqno().toString(16).padStart(16, '0'), 'base16'),
+        seqno: uint8ArrayFromString(randomSeqno().toString(16).padStart(16, '0'), 'base16'),
         topic
       }
     }
