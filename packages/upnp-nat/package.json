@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/upnp-nat",
-  "version": "4.0.9",
+  "version": "4.0.10",
   "description": "UPnP NAT hole punching",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/upnp-nat#readme",
@@ -50,8 +50,8 @@
     "@achingbrain/nat-port-mapper": "^4.0.4",
     "@chainsafe/is-ip": "^2.1.0",
     "@libp2p/interface": "^3.1.0",
-    "@libp2p/interface-internal": "^3.0.9",
-    "@libp2p/utils": "^7.0.9",
+    "@libp2p/interface-internal": "^3.0.10",
+    "@libp2p/utils": "^7.0.10",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
     "main-event": "^1.0.1",
