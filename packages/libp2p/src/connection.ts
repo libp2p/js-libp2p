@@ -177,6 +177,20 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       this.components.metrics?.trackProtocolStream(muxedStream)
 
+      // track stream open/close counts
+      const streamKey = `${muxedStream.direction} ${muxedStream.protocol ?? 'unnegotiated'}`
+      this.components.metrics?.registerCounterGroup('libp2p_protocol_streams_opened_total', {
+        label: 'protocol',
+        help: 'Total count of protocol streams opened'
+      }).increment({ [streamKey]: true })
+
+      muxedStream.addEventListener('close', () => {
+        this.components.metrics?.registerCounterGroup('libp2p_protocol_streams_closed_total', {
+          label: 'protocol',
+          help: 'Total count of protocol streams closed'
+        }).increment({ [streamKey]: true })
+      }, { once: true })
+
       const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
 
       return await this.runMiddlewareChain(muxedStream, this, middleware)
@@ -230,6 +244,20 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
       })
 
       this.components.metrics?.trackProtocolStream(muxedStream)
+
+      // track stream open/close counts
+      const streamKey = `${muxedStream.direction} ${muxedStream.protocol ?? 'unnegotiated'}`
+      this.components.metrics?.registerCounterGroup('libp2p_protocol_streams_opened_total', {
+        label: 'protocol',
+        help: 'Total count of protocol streams opened'
+      }).increment({ [streamKey]: true })
+
+      muxedStream.addEventListener('close', () => {
+        this.components.metrics?.registerCounterGroup('libp2p_protocol_streams_closed_total', {
+          label: 'protocol',
+          help: 'Total count of protocol streams closed'
+        }).increment({ [streamKey]: true })
+      }, { once: true })
 
       const { handler, options } = this.components.registrar.getHandler(muxedStream.protocol)
 
