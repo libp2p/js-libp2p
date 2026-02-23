@@ -30,6 +30,10 @@
     "./types": {
       "types": "./dist/src/types.d.ts",
       "import": "./dist/src/types.js"
+    },
+    "./partial": {
+      "types": "./dist/src/partial/index.d.ts",
+      "import": "./dist/src/partial/index.js"
     }
   },
   "typesVersions": {

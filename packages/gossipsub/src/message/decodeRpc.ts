@@ -6,6 +6,7 @@ export interface DecodeRPCLimits {
   maxIdontwantMessageIDs: number
   maxControlMessages: number
   maxPeerInfos: number
+  maxPartialMessageSize: number
 }
 
 export const defaultDecodeRpcLimits: DecodeRPCLimits = {
@@ -15,5 +16,6 @@ export const defaultDecodeRpcLimits: DecodeRPCLimits = {
   maxIwantMessageIDs: Infinity,
   maxIdontwantMessageIDs: Infinity,
   maxControlMessages: Infinity,
-  maxPeerInfos: Infinity
+  maxPeerInfos: Infinity,
+  maxPartialMessageSize: Infinity
 }

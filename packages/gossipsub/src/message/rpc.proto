@@ -8,6 +8,8 @@ message RPC {
   message SubOpts {
     optional bool subscribe = 1; // subscribe or unsubcribe
     optional string topic = 2;
+    optional bool requestsPartial = 3;
+    optional bool supportsSendingPartial = 4;
   }
 
   message Message {
@@ -25,6 +27,11 @@ message RPC {
     repeated ControlGraft graft = 3;
     repeated ControlPrune prune = 4;
     repeated ControlIDontWant idontwant = 5;
+    optional ControlExtensions extensions = 6;
+  }
+
+  message ControlExtensions {
+    optional bool partialMessages = 10;
   }
 
   message ControlIHave {
@@ -53,6 +60,15 @@ message RPC {
 
   message ControlIDontWant {
     repeated bytes messageIDs = 1;
+  }
+
+  optional PartialMessagesExtension partial = 10;
+
+  message PartialMessagesExtension {
+    optional bytes topicID = 1;
+    optional bytes groupID = 2;
+    optional bytes partialMessage = 3;
+    optional bytes partsMetadata = 4;
   }
 
 }

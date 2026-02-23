@@ -3,7 +3,7 @@ import type { RPC } from '../message/rpc.js'
 /**
  * Create a gossipsub RPC object
  */
-export function createGossipRpc (messages: RPC.Message[] = [], control?: Partial<RPC.ControlMessage>): RPC {
+export function createGossipRpc (messages: RPC.Message[] = [], control?: Partial<RPC.ControlMessage>, partial?: RPC.PartialMessagesExtension): RPC {
   return {
     subscriptions: [],
     messages,
@@ -15,11 +15,12 @@ export function createGossipRpc (messages: RPC.Message[] = [], control?: Partial
           iwant: control.iwant ?? [],
           idontwant: control.idontwant ?? []
         }
-      : undefined
+      : undefined,
+    partial
   }
 }
 
-export function ensureControl (rpc: RPC): Required<RPC> {
+export function ensureControl (rpc: RPC): Required<Pick<RPC, 'subscriptions' | 'messages' | 'control'>> & RPC {
   if (rpc.control === undefined) {
     rpc.control = {
       graft: [],
@@ -30,5 +31,5 @@ export function ensureControl (rpc: RPC): Required<RPC> {
     }
   }
 
-  return rpc as Required<RPC>
+  return rpc as Required<Pick<RPC, 'subscriptions' | 'messages' | 'control'>> & RPC
 }
