@@ -38,15 +38,25 @@
 - emitPartialGossip(): heartbeat gossip of partsMetadata to non-mesh partial peers
 - heartbeat(): calls emitPartialGossip + pruneExpired on all PartialMessageState
 
-### Task 5: Tests - DONE (by team-lead)
+### Task 5: Tests - DONE (by team-lead, refined in testing phase)
 - `test/partial/bitwise-or-merger.spec.ts` - 7 unit tests for BitwiseOrMerger
 - `test/partial/partial-message-state.spec.ts` - 8 unit tests for PartialMessageState (track, merge, evict, prune, removePeer, gossip, clear, unknown)
-- `test/partial-messages.spec.ts` - Integration tests: subscription signaling, protobuf round-trip (SubOpts, ControlExtensions, PartialMessagesExtension, full RPC, backward compat), publishPartial event dispatch, cleanup
+- `test/partial-messages.spec.ts` - 20 integration tests:
+  - Subscription signaling (5): subscribe/unsubscribe partial flags, track peer opts via handleReceivedRpc, remove on unsubscribe, outgoing SubOpts flags
+  - Protobuf round-trip (5): SubOpts, ControlExtensions, PartialMessagesExtension, full RPC, backward compat
+  - handleReceivedPartial (3): dispatch event, update state, reject invalid
+  - publishPartial (3): update local state, send to requestsPartial peers (sendRpc spy), send metadata-only to supportsSendingPartial peers
+  - Cleanup (4): unsubscribePartial state cleanup, peer partial opts on removePeer, sentExtensions on removePeer, partialMessageState peer entries on removePeer
 
-### Task 6: Build Verification - DONE
-- TypeScript compilation: 0 new errors (all errors are pre-existing monorepo dependency resolution issues)
-- Our files: src/partial/*, src/message/rpc.ts, src/message/decodeRpc.ts, src/types.ts, src/constants.ts, src/utils/create-gossip-rpc.ts, src/index.ts, src/gossipsub.ts all compile cleanly
-- NOTE: Full monorepo build fails due to pre-existing @libp2p/crypto and @libp2p/interface-internal build errors, not related to our changes
+**NOTE**: Tests use direct `handleReceivedRpc` calls and `sendRpc` spying instead of end-to-end mock stream delivery because the mock infrastructure (mockMuxer/multiaddrConnectionPair) doesn't reliably deliver subscription-change events. This is a pre-existing limitation - the `2-nodes.spec.ts` "Subscribe to a topic" test also times out on main branch.
+
+### Task 6: Build + Test Verification - DONE
+- TypeScript compilation: 0 new errors (pre-existing monorepo issues only)
+- All 35 tests passing:
+  - BitwiseOrMerger: 7/7
+  - PartialMessageState: 8/8
+  - partial-messages integration: 20/20
+- Total execution: ~500ms (fast, no timeouts)
 
 ## Files Modified
 - `src/message/rpc.proto`
