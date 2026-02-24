@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { echo } from '@libp2p/echo'
 import { memory } from '@libp2p/memory'

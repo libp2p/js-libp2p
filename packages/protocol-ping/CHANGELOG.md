@@ -50,6 +50,22 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [3.0.10](https://github.com/libp2p/js-libp2p/compare/ping-v3.0.9...ping-v3.0.10) (2026-01-16)
+
+
+### Bug Fixes
+
+* use unknown promise type ([#3369](https://github.com/libp2p/js-libp2p/issues/3369)) ([d3291de](https://github.com/libp2p/js-libp2p/commit/d3291de10073c32073a80724b28fafe08751a31a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.9 to ^3.0.10
+  * devDependencies
+    * @libp2p/utils bumped from ^7.0.9 to ^7.0.10
+
 ## [3.0.9](https://github.com/libp2p/js-libp2p/compare/ping-v3.0.8...ping-v3.0.9) (2025-11-14)
 
 

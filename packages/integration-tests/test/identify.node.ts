@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { identify, identifyPush } from '@libp2p/identify'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'

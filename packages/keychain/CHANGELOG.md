@@ -47,6 +47,13 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [6.0.10](https://github.com/libp2p/js-libp2p/compare/keychain-v6.0.9...keychain-v6.0.10) (2026-01-16)
+
+
+### Bug Fixes
+
+* use unknown promise type ([#3369](https://github.com/libp2p/js-libp2p/issues/3369)) ([d3291de](https://github.com/libp2p/js-libp2p/commit/d3291de10073c32073a80724b28fafe08751a31a))
+
 ## [6.0.9](https://github.com/libp2p/js-libp2p/compare/keychain-v6.0.8...keychain-v6.0.9) (2025-11-14)
 
 

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
@@ -227,7 +225,7 @@ describe('upgrader', () => {
     await expect(upgrader.upgradeInbound(inbound, {
       signal: AbortSignal.timeout(5_000)
     })).to.eventually.be.rejected
-      .with.property('message').that.include('aborted')
+      .with.property('name').that.include('EncryptionFailedError')
   })
 
   it('should abort by signal if inbound upgrade is slow', async () => {

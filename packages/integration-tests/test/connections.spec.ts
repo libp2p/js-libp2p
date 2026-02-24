@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { stop } from '@libp2p/interface'
 import { memory } from '@libp2p/memory'
@@ -65,7 +63,8 @@ describe('connections', () => {
 
     resolver.withArgs('_dnsaddr.example.com').rejects(err)
 
-    await expect(dialer.dial(ma)).to.eventually.be.rejectedWith(err)
+    await expect(dialer.dial(ma)).to.eventually.be.rejected
+      .with.property('name', 'DNSQueryFailedError')
   })
 
   it('should fail to dial if resolve fails and there are no addresses to dial', async () => {

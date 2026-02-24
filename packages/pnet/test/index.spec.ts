@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'

@@ -110,6 +110,24 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.1.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.2...libp2p-v3.1.3) (2026-01-16)
+
+
+### Bug Fixes
+
+* use unknown promise type ([#3369](https://github.com/libp2p/js-libp2p/issues/3369)) ([d3291de](https://github.com/libp2p/js-libp2p/commit/d3291de10073c32073a80724b28fafe08751a31a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.9 to ^3.0.10
+    * @libp2p/multistream-select bumped from ^7.0.9 to ^7.0.10
+    * @libp2p/peer-collections bumped from ^7.0.9 to ^7.0.10
+    * @libp2p/peer-store bumped from ^12.0.9 to ^12.0.10
+    * @libp2p/utils bumped from ^7.0.9 to ^7.0.10
+
 ## [3.1.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.1...libp2p-v3.1.2) (2025-11-14)
 
 

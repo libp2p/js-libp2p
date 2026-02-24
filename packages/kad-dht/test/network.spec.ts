@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import all from 'it-all'

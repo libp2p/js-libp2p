@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import pRetry from 'p-retry'
 import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.js'

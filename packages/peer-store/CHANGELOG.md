@@ -68,6 +68,21 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [12.0.10](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.9...peer-store-v12.0.10) (2026-01-16)
+
+
+### Bug Fixes
+
+* use unknown promise type ([#3369](https://github.com/libp2p/js-libp2p/issues/3369)) ([d3291de](https://github.com/libp2p/js-libp2p/commit/d3291de10073c32073a80724b28fafe08751a31a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.9 to ^7.0.10
+    * @libp2p/peer-record bumped from ^9.0.4 to ^9.0.5
+
 ## [12.0.9](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.8...peer-store-v12.0.9) (2025-11-14)
 
 

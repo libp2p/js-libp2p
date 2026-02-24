@@ -1,6 +1,4 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-/* eslint-env mocha */
-
 import { generateKeyPair, publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'

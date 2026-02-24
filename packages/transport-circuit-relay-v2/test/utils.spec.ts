@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { defaultLogger } from '@libp2p/logger'
 import { streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'

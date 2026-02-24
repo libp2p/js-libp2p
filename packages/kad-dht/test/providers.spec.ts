@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'

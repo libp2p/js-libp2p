@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'

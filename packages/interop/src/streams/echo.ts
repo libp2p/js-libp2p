@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { lpStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'

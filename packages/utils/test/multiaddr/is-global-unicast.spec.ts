@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { isGlobalUnicast } from '../../src/multiaddr/is-global-unicast.js'

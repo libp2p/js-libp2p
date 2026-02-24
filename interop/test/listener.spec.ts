@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-/* eslint-env mocha */
-
 import { multiaddr } from '@multiformats/multiaddr'
 import { getLibp2p } from './fixtures/get-libp2p.js'
 import { redisProxy } from './fixtures/redis-proxy.js'

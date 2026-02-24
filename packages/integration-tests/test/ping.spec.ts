@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { identify } from '@libp2p/identify'
 import { ping, PING_PROTOCOL } from '@libp2p/ping'
 import { multiaddr } from '@multiformats/multiaddr'

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { fetch } from '@libp2p/fetch'
 import { identify } from '@libp2p/identify'
 import { ping } from '@libp2p/ping'

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { contentRoutingSymbol } from '@libp2p/interface'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'

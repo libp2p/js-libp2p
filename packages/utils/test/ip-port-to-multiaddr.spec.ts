@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { ipPortToMultiaddr } from '../src/ip-port-to-multiaddr.js'
 

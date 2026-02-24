@@ -60,6 +60,13 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [9.0.5](https://github.com/libp2p/js-libp2p/compare/peer-record-v9.0.4...peer-record-v9.0.5) (2026-01-16)
+
+
+### Bug Fixes
+
+* use unknown promise type ([#3369](https://github.com/libp2p/js-libp2p/issues/3369)) ([d3291de](https://github.com/libp2p/js-libp2p/commit/d3291de10073c32073a80724b28fafe08751a31a))
+
 ## [9.0.4](https://github.com/libp2p/js-libp2p/compare/peer-record-v9.0.3...peer-record-v9.0.4) (2025-10-29)
 
 

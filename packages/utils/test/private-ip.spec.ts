@@ -1,6 +1,4 @@
 /* spell-checker:disable */
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import { isPrivateIp } from '../src/private-ip.js'
 

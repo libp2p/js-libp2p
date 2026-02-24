@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { FaultTolerance, stop } from '@libp2p/interface'
 import { memory } from '@libp2p/memory'
 import { plaintext } from '@libp2p/plaintext'

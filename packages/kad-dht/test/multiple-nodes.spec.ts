@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import last from 'it-last'

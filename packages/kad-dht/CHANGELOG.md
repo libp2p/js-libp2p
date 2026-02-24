@@ -106,6 +106,26 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.1.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.1.2...kad-dht-v16.1.3) (2026-01-16)
+
+
+### Bug Fixes
+
+* use unknown promise type ([#3369](https://github.com/libp2p/js-libp2p/issues/3369)) ([d3291de](https://github.com/libp2p/js-libp2p/commit/d3291de10073c32073a80724b28fafe08751a31a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.9 to ^3.0.10
+    * @libp2p/peer-collections bumped from ^7.0.9 to ^7.0.10
+    * @libp2p/ping bumped from ^3.0.9 to ^3.0.10
+    * @libp2p/record bumped from ^4.0.8 to ^4.0.9
+    * @libp2p/utils bumped from ^7.0.9 to ^7.0.10
+  * devDependencies
+    * @libp2p/peer-store bumped from ^12.0.9 to ^12.0.10
+
 ## [16.1.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.1.1...kad-dht-v16.1.2) (2025-11-14)
 
 

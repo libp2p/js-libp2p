@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { bootstrap } from '@libp2p/bootstrap'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerDiscoverySymbol } from '@libp2p/interface'

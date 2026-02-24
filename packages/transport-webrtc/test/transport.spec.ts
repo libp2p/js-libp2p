@@ -32,6 +32,8 @@ function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
   }
 }
 
+const LISTEN_SUPPORTED = isNode || isElectronMain
+
 describe('WebRTCDirect Transport', () => {
   let components: WebRTCDirectTransportComponents
   let listener: Listener
@@ -68,9 +70,11 @@ describe('WebRTCDirect Transport', () => {
 
     await start(transport)
 
-    listener = transport.createListener({
-      upgrader
-    })
+    if (LISTEN_SUPPORTED) {
+      listener = transport.createListener({
+        upgrader
+      })
+    }
   })
 
   afterEach(async () => {
@@ -102,14 +106,21 @@ describe('WebRTCDirect Transport', () => {
       multiaddr('/ip4/1.2.3.4/udp/1234/certhash/uEiAUqV7kzvM1wI5DYDc1RbcekYVmXli_Qprlw3IkiEg6tQ/p2p/12D3KooWGDMwwqrpcYKpKCgxuKT2NfqPqa94QnkoBBpqvCaiCzWd')
     ]
 
-    expect(transport.listenFilter([
-      ...valid,
-      ...invalid
-    ])).to.deep.equal(valid)
+    if (LISTEN_SUPPORTED) {
+      expect(transport.listenFilter([
+        ...valid,
+        ...invalid
+      ])).to.deep.equal(valid)
+    } else {
+      expect(transport.listenFilter([
+        ...valid,
+        ...invalid
+      ])).to.be.empty()
+    }
   })
 
   it('can listen on ipv4 and ipv6 on the same port in series', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+    if (!LISTEN_SUPPORTED || !supportsIpV6()) {
       return this.skip()
     }
 
@@ -125,7 +136,7 @@ describe('WebRTCDirect Transport', () => {
   })
 
   it('can listen on ipv4 and ipv6 on the same port in parallel', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+    if (!LISTEN_SUPPORTED || !supportsIpV6()) {
       return this.skip()
     }
 
@@ -143,7 +154,7 @@ describe('WebRTCDirect Transport', () => {
   })
 
   it('can listen on wildcard IPv4 hosts', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+    if (!LISTEN_SUPPORTED || !supportsIpV6()) {
       return this.skip()
     }
 
@@ -168,7 +179,7 @@ describe('WebRTCDirect Transport', () => {
   })
 
   it('can listen on wildcard IPv6 hosts', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+    if (!LISTEN_SUPPORTED || !supportsIpV6()) {
       return this.skip()
     }
 
@@ -193,7 +204,7 @@ describe('WebRTCDirect Transport', () => {
   })
 
   it('should add certificate to announce addresses', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+    if (!LISTEN_SUPPORTED || !supportsIpV6()) {
       return this.skip()
     }
 
@@ -225,7 +236,7 @@ describe('WebRTCDirect Transport', () => {
   })
 
   it('can start listeners for two nodes on wildcard socket addresses', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+    if (!LISTEN_SUPPORTED || !supportsIpV6()) {
       return this.skip()
     }
 
@@ -268,7 +279,7 @@ describe('WebRTCDirect Transport', () => {
   })
 
   it('can start multiple wildcard listeners', async function () {
-    if ((!isNode && !isElectronMain) || !supportsIpV6()) {
+    if (!LISTEN_SUPPORTED || !supportsIpV6()) {
       return this.skip()
     }
 

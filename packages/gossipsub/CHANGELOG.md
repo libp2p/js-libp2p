@@ -1,5 +1,23 @@
 # Changelog
 
+## [15.0.12](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.11...gossipsub-v15.0.12) (2026-01-16)
+
+
+### Bug Fixes
+
+* remove outdated dep ([#3372](https://github.com/libp2p/js-libp2p/issues/3372)) ([05acd0c](https://github.com/libp2p/js-libp2p/commit/05acd0c35f1fd0fae893f6823ad5fde4616785c2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.9 to ^3.0.10
+    * @libp2p/utils bumped from ^7.0.9 to ^7.0.10
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.10 to ^11.0.11
+    * @libp2p/peer-store bumped from ^12.0.9 to ^12.0.10
+
 ## [15.0.11](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.10...gossipsub-v15.0.11) (2025-11-14)
 
 

@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import { noise } from '@chainsafe/libp2p-noise'
 import { stop } from '@libp2p/interface'
 import { ping } from '@libp2p/ping'

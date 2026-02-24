@@ -1,5 +1,3 @@
-/* eslint-env mocha */
-
 import fs from 'fs'
 import path from 'path'
 import { isPeerId } from '@libp2p/interface'
