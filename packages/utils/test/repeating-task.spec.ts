@@ -193,8 +193,8 @@ describe('repeating-task', () => {
 
     expect(count).to.equal(1)
 
-    // wait longer than the repeat interval
-    await delay(150)
+    // wait a repeat interval
+    await delay(100)
 
     expect(count).to.equal(2)
   })
