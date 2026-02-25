@@ -1,6 +1,7 @@
 import { IpNet } from '@chainsafe/netmask'
 import { InvalidParametersError } from '@libp2p/interface'
 import { getNetConfig } from '@libp2p/utils'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import type { Connection, AbortOptions, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -106,16 +107,42 @@ export function isDirect (ma: Multiaddr): boolean {
 }
 
 /**
+ * Strips the remote peer's peer id from the multiaddr if it is present
+ */
+function stripPeerId (ma: Multiaddr): Multiaddr {
+  if (Circuit.exactMatch(ma)) {
+    return multiaddr(`${ma.toString().split('/p2p-circuit')[0]}/p2p-circuit`)
+  }
+
+  if (ma.getComponents().some(c => c.code === CODE_P2P)) {
+    return ma.decapsulateCode(CODE_P2P)
+  }
+
+  return ma
+}
+
+/**
  * If there is an existing non-limited connection to the remote peer return it,
  * unless it is indirect and at least one of the passed dial addresses would
  * result in a direct connection
  */
-export function findExistingConnection (peerId?: PeerId, connections?: Connection[], dialAddresses?: Multiaddr[]): Connection | undefined {
-  if (peerId == null || connections == null) {
-    return
-  }
+export function findExistingConnection (connections: Connection[], dialAddresses: Multiaddr[], peerId?: PeerId): Connection | undefined {
+  // strip PeerId for address comparison if it is present as we may be dialing
+  // a multiaddr without a peer id
+  const dialAddressesWithoutPeerId = dialAddresses.map(stripPeerId)
 
   const existingConnection = connections
+    .filter(conn => {
+      // check remote peer
+      if (peerId != null) {
+        return conn.remotePeer.equals(peerId)
+      }
+
+      // check multiaddr
+      return dialAddressesWithoutPeerId.some(ma => {
+        return ma.equals(stripPeerId(conn.remoteAddr))
+      })
+    })
     .sort((a, b) => {
       if (a.direct) {
         return -1

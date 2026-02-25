@@ -399,6 +399,7 @@ describe('Connection Manager', () => {
       status: 'open'
     })
     const newConnection = stubInterface<Connection>({
+      limits: undefined,
       remotePeer: targetPeer,
       remoteAddr: addr,
       status: 'open'
@@ -417,6 +418,93 @@ describe('Connection Manager', () => {
     const conn = await connectionManager.openConnection(addr)
 
     expect(conn).to.equal(newConnection)
+  })
+
+  it('should return existing connection when dialing a different multiaddr without a peer id that resolves to the same peer', async () => {
+    connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxIncomingPendingConnections: 1
+    })
+    await connectionManager.start()
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const ip = multiaddr('/ip4/123.123.123.123')
+
+    // same host but different ports
+    const addr1 = ip.encapsulate('/tcp/123')
+    const addr2 = ip.encapsulate('/tcp/321')
+
+    const existingConnection = stubInterface<Connection>({
+      limits: undefined,
+      remotePeer,
+      remoteAddr: addr1.encapsulate(`/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const newConnection = stubInterface<Connection>({
+      limits: undefined,
+      remotePeer,
+      remoteAddr: addr2.encapsulate(`/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const dialStub = sinon.stub(connectionManager.dialQueue, 'dial')
+
+    dialStub.withArgs(addr1)
+      .resolves(existingConnection)
+
+    await expect(connectionManager.openConnection(addr1)).to.eventually.equal(existingConnection, 'did not open first connection')
+
+    dialStub.withArgs(addr2)
+      .resolves(newConnection)
+
+    await expect(connectionManager.openConnection(addr2)).to.eventually.equal(existingConnection, 'did not reuse existing connection to same peer with different multiaddr')
+    expect(newConnection.abort.called).to.be.true('did not abort duplicate connection')
+  })
+
+  it('should return existing limited connection when dialing a different multiaddr results in a connection that is also limited', async () => {
+    connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxIncomingPendingConnections: 1
+    })
+    await connectionManager.start()
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    // same host but different ports
+    const addr1 = multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/16Uiu2HAm2dSCBFxuge46aEt7U1oejtYuBUZXxASHqmcfVmk4gsbx/p2p-circuit/p2p/${remotePeer}`)
+    const addr2 = multiaddr(`/ip4/123.123.123.123/tcp/321/p2p/16Uiu2HAm2dSCBFxuge46aEt7U1oejtYuBUZXxASHqmcfVmk4gsbx/p2p-circuit/p2p/${remotePeer}`)
+
+    const existingConnection = stubInterface<Connection>({
+      limits: {
+        bytes: 100n
+      },
+      remotePeer,
+      remoteAddr: addr1.encapsulate(`/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const newConnection = stubInterface<Connection>({
+      limits: {
+        bytes: 100n
+      },
+      remotePeer,
+      remoteAddr: addr2.encapsulate(`/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    const dialStub = sinon.stub(connectionManager.dialQueue, 'dial')
+
+    dialStub.withArgs(addr1)
+      .resolves(existingConnection)
+
+    await expect(connectionManager.openConnection(addr1)).to.eventually.equal(existingConnection, 'did not open first connection')
+
+    dialStub.withArgs(addr2)
+      .resolves(newConnection)
+
+    await expect(connectionManager.openConnection(addr2)).to.eventually.equal(existingConnection, 'did not reuse existing connection to same peer with different multiaddr')
+    expect(newConnection.abort.called).to.be.true('did not abort duplicate connection')
   })
 
   it('should filter connections on disconnect, removing the closed one', async () => {
