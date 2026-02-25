@@ -111,6 +111,16 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.12](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.11...webrtc-v6.0.12) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.10 to ^3.0.11
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+
 ## [6.0.11](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.10...webrtc-v6.0.11) (2026-01-16)
 
 
