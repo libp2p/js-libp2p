@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.11](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.10...utils-v7.0.11) (2026-02-25)
+
+
+### Bug Fixes
+
+* bytestream reads buffered data ([#3378](https://github.com/libp2p/js-libp2p/issues/3378)) ([30b53a9](https://github.com/libp2p/js-libp2p/commit/30b53a9994006c925c8f2e1326a1bff1bc7b50ef))
+
 ## [7.0.10](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.9...utils-v7.0.10) (2026-01-16)
 
 
