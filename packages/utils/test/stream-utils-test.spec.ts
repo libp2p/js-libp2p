@@ -194,6 +194,29 @@ describe('byte-stream', () => {
 
     expect(bytes).to.be.null()
   })
+
+  it('should read buffered data before returning null when the remote closes it\'s writable end', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const outgoingBytes = byteStream(outgoing)
+    const incomingBytes = byteStream(incoming)
+
+    const writtenOutgoing = new Uint8ArrayList(Uint8Array.from([0, 1, 2, 3]))
+
+    await Promise.all([
+      outgoingBytes.write(writtenOutgoing),
+      new Promise((resolve) => incoming.addEventListener('message', resolve))
+    ])
+
+    await Promise.all([
+      outgoing.close(),
+      new Promise((resolve) => incoming.addEventListener('remoteCloseWrite', resolve))
+    ])
+
+    const readIncoming = await incomingBytes.read()
+
+    expect(readIncoming).to.deep.equal(writtenOutgoing)
+  })
 })
 
 describe('stream-pair', () => {
