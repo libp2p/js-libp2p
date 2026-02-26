@@ -134,4 +134,48 @@ describe('PartialMessageState', () => {
     expect(state.getPeerMetadata(makeGroupID(99), 'peer1')).to.be.undefined()
     expect(state.hasGroup(makeGroupID(99))).to.be.false()
   })
+
+  it('should replace peer metadata on second update for same group', () => {
+    const state = new PartialMessageState(merger, maxGroups, groupTTLMs)
+    const groupID = makeGroupID(1)
+
+    // First update
+    state.updateMetadata(groupID, 'peer1', new Uint8Array([0b1010]))
+    expect(state.getPeerMetadata(groupID, 'peer1')).to.deep.equal(new Uint8Array([0b1010]))
+
+    // Second update from same peer, same group, different metadata
+    state.updateMetadata(groupID, 'peer1', new Uint8Array([0b0101]))
+    expect(state.getPeerMetadata(groupID, 'peer1')).to.deep.equal(new Uint8Array([0b0101]))
+
+    // Local metadata is cumulative (bitwise OR of all received)
+    // First 0b1010 | initial 0b0000 = 0b1010, then 0b1010 | 0b0101 = 0b1111
+    expect(state.getLocalMetadata(groupID)).to.deep.equal(new Uint8Array([0b1111]))
+  })
+
+  it('should evict by access time not creation time (LRU)', () => {
+    sandbox.useFakeTimers()
+
+    const state = new PartialMessageState(merger, maxGroups, groupTTLMs)
+
+    // Create groups 1, 2, 3 in order
+    state.updateMetadata(makeGroupID(1), 'peer1', new Uint8Array([1]))
+    sandbox.clock.tick(10)
+    state.updateMetadata(makeGroupID(2), 'peer1', new Uint8Array([2]))
+    sandbox.clock.tick(10)
+    state.updateMetadata(makeGroupID(3), 'peer1', new Uint8Array([3]))
+
+    // Access group 1 again, making group 2 the least-recently-accessed
+    sandbox.clock.tick(10)
+    state.getLocalMetadata(makeGroupID(1))
+
+    // Adding group 4 should evict group 2 (least recently accessed), not group 1
+    sandbox.clock.tick(10)
+    state.updateMetadata(makeGroupID(4), 'peer1', new Uint8Array([4]))
+
+    expect(state.size).to.equal(3)
+    expect(state.hasGroup(makeGroupID(1))).to.be.true()
+    expect(state.hasGroup(makeGroupID(2))).to.be.false()
+    expect(state.hasGroup(makeGroupID(3))).to.be.true()
+    expect(state.hasGroup(makeGroupID(4))).to.be.true()
+  })
 })
