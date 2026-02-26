@@ -1012,20 +1012,25 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
           this.handleReceivedSubscription(from, topic, subscribe)
 
           // Track partial message opts from peer
-          if (subOpt.requestsPartial != null || subOpt.supportsSendingPartial != null) {
-            const fromId = from.toString()
+          const fromId = from.toString()
+          const normalizedOpts = this.normalizePartialSubscriptionOpts({
+            requestsPartial: subOpt.requestsPartial === true,
+            supportsSendingPartial: subOpt.supportsSendingPartial === true
+          })
+          const hasPartialOpts = normalizedOpts.requestsPartial || normalizedOpts.supportsSendingPartial
+
+          if (subscribe && hasPartialOpts) {
             let peerOpts = this.peerPartialOpts.get(fromId)
             if (peerOpts == null) {
               peerOpts = new Map()
               this.peerPartialOpts.set(fromId, peerOpts)
             }
-            if (subscribe) {
-              peerOpts.set(topic, {
-                requestsPartial: subOpt.requestsPartial === true,
-                supportsSendingPartial: subOpt.supportsSendingPartial === true
-              })
-            } else {
-              peerOpts.delete(topic)
+            peerOpts.set(topic, normalizedOpts)
+          } else {
+            const peerOpts = this.peerPartialOpts.get(fromId)
+            peerOpts?.delete(topic)
+            if (peerOpts?.size === 0) {
+              this.peerPartialOpts.delete(fromId)
             }
           }
 
@@ -1279,8 +1284,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         // Include partial message flags if this topic has partial support
         const partialOpts = this.partialTopics.get(topic)
         if (partialOpts != null) {
-          subOpts.requestsPartial = partialOpts.requestsPartial
-          subOpts.supportsSendingPartial = partialOpts.supportsSendingPartial
+          const normalizedOpts = this.normalizePartialSubscriptionOpts(partialOpts)
+          subOpts.requestsPartial = normalizedOpts.requestsPartial
+          subOpts.supportsSendingPartial = normalizedOpts.supportsSendingPartial
         }
         return subOpts
       }),
@@ -1858,7 +1864,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       throw new Error('Pubsub has not started')
     }
 
-    this.partialTopics.set(topic, opts)
+    this.partialTopics.set(topic, this.normalizePartialSubscriptionOpts(opts))
 
     // Ensure we have a PartialMessageState for this topic
     if (!this.partialMessageState.has(topic)) {
@@ -1978,6 +1984,12 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // Validate metadata size
     if (partial.partsMetadata.length > PartialMessagesMaxMetadataSize) {
       this.log('received oversized partsMetadata from %p (%d bytes), ignoring', from, partial.partsMetadata.length)
+      return
+    }
+
+    // Validate partial message payload size (if present)
+    if (partial.partialMessage != null && partial.partialMessage.length > this.decodeRpcLimits.maxPartialMessageSize) {
+      this.log('received oversized partialMessage from %p (%d bytes), ignoring', from, partial.partialMessage.length)
       return
     }
 
@@ -2582,11 +2594,12 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.gossip.delete(id)
     }
 
-    // Extension handshake: on first RPC to peer, include partialMessages=true if we have partial topics
+    // Extension handshake: on first successful RPC to peer, include partialMessages=true if we have partial topics
+    let shouldMarkExtensionAsSent = false
     if (this.partialTopics.size > 0 && !this.sentExtensions.has(id)) {
       const rpcWithControl = ensureControl(rpc)
       rpcWithControl.control.extensions = { partialMessages: true }
-      this.sentExtensions.add(id)
+      shouldMarkExtensionAsSent = true
     }
 
     const rpcBytes = RPC.encode(rpc)
@@ -2604,6 +2617,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
 
       return false
+    }
+
+    if (shouldMarkExtensionAsSent) {
+      this.sentExtensions.add(id)
     }
 
     this.metrics?.onRpcSent(rpc, rpcBytes.length)
@@ -2720,19 +2737,23 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.log('too many messages for gossip; will truncate IHAVE list (%d messages)', messageIDs.length)
     }
 
-    if (candidateToGossip.size === 0) { return }
+    const eligiblePeers = Array.from(candidateToGossip).filter((id) => {
+      return this.peerPartialOpts.get(id)?.get(topic)?.requestsPartial !== true
+    })
+
+    if (eligiblePeers.length === 0) { return }
     let target = this.opts.Dlazy
     const gossipFactor = this.opts.gossipFactor
-    const factor = gossipFactor * candidateToGossip.size
-    let peersToGossip: Set<PeerIdStr> | PeerIdStr[] = candidateToGossip
+    const factor = gossipFactor * eligiblePeers.length
+    let peersToGossip = eligiblePeers
     if (factor > target) {
       target = factor
     }
-    if (target > peersToGossip.size) {
-      target = peersToGossip.size
+    if (target > peersToGossip.length) {
+      target = peersToGossip.length
     } else {
       // only shuffle if needed
-      peersToGossip = shuffle(Array.from(peersToGossip)).slice(0, target)
+      peersToGossip = shuffle(peersToGossip.slice()).slice(0, target)
     }
 
     // Emit the IHAVE gossip to the selected peers up to the target
@@ -2775,6 +2796,21 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.log('Add gossip to %s', id)
     const gossip = this.gossip.get(id) ?? []
     this.gossip.set(id, gossip.concat(controlIHaveMsgs))
+  }
+
+  private normalizePartialSubscriptionOpts (opts: PartialSubscriptionOpts): PartialSubscriptionOpts {
+    if (opts.requestsPartial) {
+      return {
+        requestsPartial: true,
+        // Spec invariant: requesting partial implies ability to send partial
+        supportsSendingPartial: true
+      }
+    }
+
+    return {
+      requestsPartial: false,
+      supportsSendingPartial: opts.supportsSendingPartial === true
+    }
   }
 
   /**

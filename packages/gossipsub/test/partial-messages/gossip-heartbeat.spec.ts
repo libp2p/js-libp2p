@@ -160,4 +160,45 @@ describe('partial messages - gossip and heartbeat', () => {
     const sentToB = sentRpcs.filter(s => s.peerId === bId && s.rpc.partial != null)
     expect(sentToB.length).to.equal(2)
   })
+
+  it('should not send IHAVE to peers that request partial messages', () => {
+    const topic = 'test-topic'
+    const bId = ctx.nodeB.components.peerId.toString()
+    const gsA = ctx.nodeA.pubsub as any
+
+    gsA.peerPartialOpts.set(bId, new Map())
+    gsA.peerPartialOpts.get(bId).set(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    } as PartialSubscriptionOpts)
+
+    const pushedIHave: Array<{ peerId: string }> = []
+    const originalPushGossip = gsA.pushGossip.bind(gsA)
+    gsA.pushGossip = (peerId: string, controlIHaveMsgs: unknown) => {
+      pushedIHave.push({ peerId })
+      return originalPushGossip(peerId, controlIHaveMsgs)
+    }
+
+    gsA.doEmitGossip(topic, new Set([bId]), [new Uint8Array([1, 2, 3])])
+
+    expect(pushedIHave).to.have.length(0)
+  })
+
+  it('should prune partial group state during heartbeat execution', async () => {
+    const topic = 'test-topic'
+    const gsA = ctx.nodeA.pubsub as any
+
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    const state = gsA.partialMessageState.get(topic)
+    state.updateMetadata(new Uint8Array([1]), 'peer1', new Uint8Array([0b1010]))
+
+    const pruneSpy = sinon.spy(state, 'pruneExpired')
+    await gsA.heartbeat()
+
+    expect(pruneSpy.called).to.be.true()
+  })
 })

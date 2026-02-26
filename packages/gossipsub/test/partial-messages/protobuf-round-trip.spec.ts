@@ -2,6 +2,38 @@ import { expect } from 'aegir/chai'
 import { RPC } from '../../src/message/rpc.js'
 
 describe('partial messages - protobuf round-trip', () => {
+  it('should encode and decode SubOpts with only requestsPartial set', () => {
+    const subOpts: RPC.SubOpts = {
+      subscribe: true,
+      topic: 'test-topic',
+      requestsPartial: true
+    }
+
+    const encoded = RPC.SubOpts.encode(subOpts)
+    const decoded = RPC.SubOpts.decode(encoded)
+
+    expect(decoded.subscribe).to.equal(true)
+    expect(decoded.topic).to.equal('test-topic')
+    expect(decoded.requestsPartial).to.equal(true)
+    expect(decoded.supportsSendingPartial).to.be.undefined()
+  })
+
+  it('should encode and decode SubOpts with only supportsSendingPartial set', () => {
+    const subOpts: RPC.SubOpts = {
+      subscribe: true,
+      topic: 'test-topic',
+      supportsSendingPartial: true
+    }
+
+    const encoded = RPC.SubOpts.encode(subOpts)
+    const decoded = RPC.SubOpts.decode(encoded)
+
+    expect(decoded.subscribe).to.equal(true)
+    expect(decoded.topic).to.equal('test-topic')
+    expect(decoded.requestsPartial).to.be.undefined()
+    expect(decoded.supportsSendingPartial).to.equal(true)
+  })
+
   it('should encode and decode SubOpts with partial fields', () => {
     const subOpts: RPC.SubOpts = {
       subscribe: true,

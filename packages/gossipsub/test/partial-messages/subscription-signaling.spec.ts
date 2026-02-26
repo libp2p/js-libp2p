@@ -110,18 +110,34 @@ describe('partial messages - subscription signaling', () => {
     })
 
     // The topic should be removed from the peer's opts
-    expect(gsB.peerPartialOpts.get(aId)?.has(topic)).to.be.false()
+    expect(gsB.peerPartialOpts.get(aId)?.has(topic) ?? false).to.be.false()
   })
 
-  it('should store flags when requestsPartial implies supportsSendingPartial', () => {
+  it('should normalize received peer opts when requestsPartial is true', async () => {
+    const topic = 'test-topic'
+    const aId = ctx.nodeA.components.peerId.toString()
+    const gsB = ctx.nodeB.pubsub as any
+
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{
+        subscribe: true,
+        topic,
+        requestsPartial: true,
+        supportsSendingPartial: false
+      }],
+      messages: []
+    })
+
+    const peerOpts = gsB.peerPartialOpts.get(aId)?.get(topic)
+    expect(peerOpts).to.not.be.undefined()
+    expect(peerOpts?.requestsPartial).to.be.true()
+    expect(peerOpts?.supportsSendingPartial).to.be.true()
+  })
+
+  it('should enforce supportsSendingPartial when requestsPartial is true', () => {
     const topic = 'test-topic'
 
     // Per spec: "If a node requests partial messages, it MUST support sending partial messages."
-    // TODO(IMPL-GAP-2): The implementation currently stores flags as-is without enforcing
-    // that requestsPartial=true implies supportsSendingPartial=true. When the implementation
-    // is fixed to enforce this invariant, update this test to verify enforcement
-    // (e.g. passing requestsPartial=true, supportsSendingPartial=false should either
-    // force supportsSendingPartial=true or throw an error).
     ctx.nodeA.pubsub.subscribePartial(topic, {
       requestsPartial: true,
       supportsSendingPartial: false
@@ -130,8 +146,66 @@ describe('partial messages - subscription signaling', () => {
     const opts = ctx.nodeA.pubsub.partialTopics.get(topic)
     expect(opts).to.not.be.undefined()
     expect(opts?.requestsPartial).to.be.true()
-    // Currently stores as-is; when IMPL-GAP-2 is fixed, this should be true
-    expect(opts?.supportsSendingPartial).to.be.false()
+    expect(opts?.supportsSendingPartial).to.be.true()
+  })
+
+  it('should normalize outgoing SubOpts when requestsPartial is true', () => {
+    const topic = 'test-topic'
+    const bId = ctx.nodeB.components.peerId.toString()
+    const gsA = ctx.nodeA.pubsub as any
+
+    const sentRpcs: Array<{ peerId: string, rpc: RPC }> = []
+    const origSendRpc = gsA.sendRpc.bind(gsA)
+    gsA.sendRpc = (id: string, rpc: RPC): boolean => {
+      sentRpcs.push({ peerId: id, rpc })
+      return origSendRpc(id, rpc)
+    }
+
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: false
+    })
+
+    const sentToB = sentRpcs.find(s =>
+      s.peerId === bId &&
+      s.rpc.subscriptions.some(sub => sub.topic === topic)
+    )
+    expect(sentToB).to.not.be.undefined()
+
+    const sub = sentToB?.rpc.subscriptions.find(s => s.topic === topic)
+    expect(sub?.requestsPartial).to.be.true()
+    expect(sub?.supportsSendingPartial).to.be.true()
+  })
+
+  it('should clear stale peer partial opts when peer re-subscribes without partial flags', async () => {
+    const topic = 'test-topic'
+    const aId = ctx.nodeA.components.peerId.toString()
+    const gsB = ctx.nodeB.pubsub as any
+
+    // Initial subscription with partial flags
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{
+        subscribe: true,
+        topic,
+        requestsPartial: true,
+        supportsSendingPartial: true
+      }],
+      messages: []
+    })
+
+    expect(gsB.peerPartialOpts.get(aId)?.get(topic)?.requestsPartial).to.be.true()
+
+    // Re-subscribe without partial flags (how unsubscribePartial re-advertises)
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{
+        subscribe: true,
+        topic
+      }],
+      messages: []
+    })
+
+    // Stale partial opts should be removed
+    expect(gsB.peerPartialOpts.get(aId)?.has(topic) ?? false).to.be.false()
   })
 
   it('should send updated SubOpts with partial flags to connected peers', () => {

@@ -1,6 +1,7 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { PartialMessagesMaxMetadataSize } from '../../src/constants.js'
+import { defaultDecodeRpcLimits } from '../../src/message/decodeRpc.js'
 import { RPC } from '../../src/message/rpc.js'
 import { createComponents } from '../utils/create-pubsub.js'
 import { setupTwoNodes, teardownTwoNodes } from './utils.js'
@@ -206,6 +207,51 @@ describe('partial messages - handleReceivedPartial', () => {
     expect(eventFired).to.be.false()
     const state = gsB.partialMessageState.get(topic)
     expect(state?.hasGroup(new Uint8Array([1, 2]))).to.not.be.true()
+  })
+
+  it('should reject partial messages with oversized partialMessage', async () => {
+    const limitedNode = await createComponents({
+      init: {
+        emitSelf: false,
+        decodeRpcLimits: {
+          ...defaultDecodeRpcLimits,
+          maxPartialMessageSize: 1
+        }
+      }
+    })
+
+    try {
+      const gsLimited = limitedNode.pubsub as any
+      const topic = 'test-topic'
+
+      limitedNode.pubsub.subscribePartial(topic, {
+        requestsPartial: true,
+        supportsSendingPartial: true
+      })
+
+      const topicIDBytes = new TextEncoder().encode(topic)
+      let eventFired = false
+      limitedNode.pubsub.addEventListener('gossipsub:partial-message', () => {
+        eventFired = true
+      }, { once: true })
+
+      await gsLimited.handleReceivedRpc(ctx.nodeA.components.peerId, {
+        subscriptions: [],
+        messages: [],
+        partial: {
+          topicID: topicIDBytes,
+          groupID: new Uint8Array([1, 2]),
+          partialMessage: new Uint8Array([4, 5]), // exceeds maxPartialMessageSize
+          partsMetadata: new Uint8Array([0b1010])
+        }
+      })
+
+      expect(eventFired).to.be.false()
+      const state = gsLimited.partialMessageState.get(topic)
+      expect(state?.hasGroup(new Uint8Array([1, 2]))).to.not.be.true()
+    } finally {
+      await stop(limitedNode.pubsub, ...Object.entries(limitedNode.components))
+    }
   })
 
   it('should ignore partial for topic not subscribed with partial support', () => {

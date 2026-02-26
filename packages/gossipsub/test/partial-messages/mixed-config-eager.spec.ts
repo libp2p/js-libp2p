@@ -76,6 +76,87 @@ describe('partial messages - mixed network and upgrade path', () => {
     expect(peerOpts?.requestsPartial).to.be.false()
     expect(peerOpts?.supportsSendingPartial).to.be.true()
   })
+
+  it('should still process full messages when supportsSendingPartial-only is set', () => {
+    const topic = 'test-topic'
+    const gsB = ctx.nodeB.pubsub as any
+
+    ctx.nodeB.pubsub.subscribePartial(topic, {
+      requestsPartial: false,
+      supportsSendingPartial: true
+    })
+
+    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{ subscribe: true, topic }],
+      messages: []
+    })
+
+    const rpc: RPC = {
+      subscriptions: [],
+      messages: [{
+        topic,
+        data: new TextEncoder().encode('full message'),
+        from: ctx.nodeA.components.peerId.toMultihash().bytes,
+        seqno: new Uint8Array(8)
+      }]
+    }
+
+    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, rpc)
+    expect(ctx.nodeB.pubsub.getTopics()).to.include(topic)
+  })
+
+  it('should update peer behavior when upgrading from supports-only to requestsPartial', () => {
+    const topic = 'test-topic'
+    const aId = ctx.nodeA.components.peerId.toString()
+    const gsB = ctx.nodeB.pubsub as any
+
+    // Step 1: peer advertises supports-only
+    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{
+        subscribe: true,
+        topic,
+        requestsPartial: false,
+        supportsSendingPartial: true
+      }],
+      messages: []
+    })
+
+    expect(gsB.peerPartialOpts.get(aId)?.get(topic)?.requestsPartial).to.be.false()
+    expect(gsB.peerPartialOpts.get(aId)?.get(topic)?.supportsSendingPartial).to.be.true()
+
+    // Step 2: same peer upgrades to request partials
+    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{
+        subscribe: true,
+        topic,
+        requestsPartial: true,
+        supportsSendingPartial: true
+      }],
+      messages: []
+    })
+
+    expect(gsB.peerPartialOpts.get(aId)?.get(topic)?.requestsPartial).to.be.true()
+    expect(gsB.peerPartialOpts.get(aId)?.get(topic)?.supportsSendingPartial).to.be.true()
+
+    // After upgrade, publishPartial should include data (not metadata-only)
+    const sentRpcs: Array<{ peerId: string, rpc: RPC }> = []
+    const originalSendRpc = gsB.sendRpc.bind(gsB)
+    gsB.sendRpc = (peerId: string, rpc: RPC): boolean => {
+      sentRpcs.push({ peerId, rpc })
+      return originalSendRpc(peerId, rpc)
+    }
+
+    ctx.nodeB.pubsub.publishPartial({
+      topic,
+      groupID: new Uint8Array([1, 2, 3]),
+      partialMessage: new Uint8Array([9, 9, 9]),
+      partsMetadata: new Uint8Array([0b1010])
+    })
+
+    const sentToA = sentRpcs.find((entry) => entry.peerId === aId && entry.rpc.partial != null)
+    expect(sentToA).to.not.be.undefined()
+    expect(sentToA?.rpc.partial?.partialMessage).to.deep.equal(new Uint8Array([9, 9, 9]))
+  })
 })
 
 describe('partial messages - configuration', () => {

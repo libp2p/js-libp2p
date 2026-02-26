@@ -123,6 +123,37 @@ describe('partial messages - extension handshake', () => {
     expect(gsA.sentExtensions.has(bId)).to.be.false()
   })
 
+  it('should not mark extension as sent when first RPC send fails', () => {
+    const topic = 'test-topic'
+    const bId = ctx.nodeB.components.peerId.toString()
+    const gsA = ctx.nodeA.pubsub as any
+
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    gsA.sentExtensions.clear()
+
+    const outboundStream = gsA.streamsOutbound.get(bId)
+    expect(outboundStream).to.not.be.undefined()
+
+    const originalPush = outboundStream.push.bind(outboundStream)
+    outboundStream.push = () => {
+      throw new Error('boom')
+    }
+
+    const sent = gsA.sendRpc(bId, {
+      subscriptions: [],
+      messages: []
+    })
+
+    expect(sent).to.be.false()
+    expect(gsA.sentExtensions.has(bId)).to.be.false()
+
+    outboundStream.push = originalPush
+  })
+
   it('should log peer support when receiving extension handshake', async () => {
     const gsB = ctx.nodeB.pubsub as any
     const aId = ctx.nodeA.components.peerId.toString()
