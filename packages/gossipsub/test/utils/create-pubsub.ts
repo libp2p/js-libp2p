@@ -7,6 +7,7 @@ import { persistentPeerStore } from '@libp2p/peer-store'
 import { mockMuxer, multiaddrConnectionPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core'
+import pWaitFor from 'p-wait-for'
 import { stubInterface } from 'sinon-ts'
 import { GossipSub as GossipSubClass } from '../../src/gossipsub.ts'
 import { gossipsub } from '../../src/index.js'
@@ -99,6 +100,7 @@ export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSub
     for (const call of a.components.registrar.handle.getCalls()) {
       if (call.args[0] === evt.detail.protocol) {
         call.args[1](evt.detail, outboundConnection)
+        break
       }
     }
   })
@@ -107,6 +109,7 @@ export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSub
     for (const call of b.components.registrar.handle.getCalls()) {
       if (call.args[0] === evt.detail.protocol) {
         call.args[1](evt.detail, inboundConnection)
+        break
       }
     }
   })
@@ -150,6 +153,19 @@ export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSub
       }
     }
   }
+
+  // Wait for both outbound and inbound streams to be established. Outbound
+  // streams are created asynchronously via the outboundInflightQueue. Inbound
+  // streams are created when the remote muxer receives the 'create' message
+  // and fires the 'stream' event, which invokes the registrar handler.
+  const aId = a.components.peerId.toString()
+  const bId = b.components.peerId.toString()
+  await pWaitFor(() => {
+    const gsA = a.pubsub as any
+    const gsB = b.pubsub as any
+    return gsA.streamsOutbound.has(bId) && gsB.streamsOutbound.has(aId) &&
+      gsA.streamsInbound.has(bId) && gsB.streamsInbound.has(aId)
+  }, { timeout: 10000 })
 }
 
 export const connectAllPubSubNodes = async (components: GossipSubAndComponents[]): Promise<void> => {
