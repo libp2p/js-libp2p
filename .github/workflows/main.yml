@@ -292,6 +292,7 @@ jobs:
           git update-index --assume-unchanged packages/libp2p/src/version.ts
           npm run --if-present release
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - if: ${{ steps.release.outputs.releases_created != 'true' }}
         name: Run release rc
@@ -299,4 +300,5 @@ jobs:
             git update-index --assume-unchanged packages/libp2p/src/version.ts
             npm run --if-present release:rc
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
