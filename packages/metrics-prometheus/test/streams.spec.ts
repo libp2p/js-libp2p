@@ -78,7 +78,6 @@ describe('streams', () => {
     expect(scrapedMetrics).to.include(`libp2p_data_transfer_bytes_total{protocol="${outbound.protocol} sent"} ${data.length}`)
   })
 
-
   it('should not consume early protocol data before app listeners are attached', async () => {
     const [outbound, inbound] = await streamPair()
 
@@ -100,7 +99,7 @@ describe('streams', () => {
     const iterator = outbound[Symbol.asyncIterator]()
     const first = await Promise.race([
       iterator.next(),
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timed out waiting for first frame')), 200))
+      new Promise<never>((_resolve, reject) => setTimeout(() => reject(new Error('timed out waiting for first frame')), 200))
     ])
 
     expect(first.done).to.equal(false)
