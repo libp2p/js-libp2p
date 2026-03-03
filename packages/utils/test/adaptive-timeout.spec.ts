@@ -91,6 +91,16 @@ describe('adaptive-timeout', () => {
     expect(signal3).to.have.property('timeout', 8835)
   })
 
+  it('should clear timeout signal listeners on cleanUp', () => {
+    const adaptiveTimeout = new AdaptiveTimeout()
+    const signal = adaptiveTimeout.getTimeoutSignal()
+    const clearSpy = Sinon.spy(signal, 'clear')
+
+    adaptiveTimeout.cleanUp(signal)
+
+    expect(clearSpy).to.have.property('called', true)
+  })
+
   it('should wrap an existing signal', () => {
     const controller = new AbortController()
     const adaptiveTimeout = new AdaptiveTimeout()
