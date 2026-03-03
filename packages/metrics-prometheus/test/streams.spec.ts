@@ -40,9 +40,20 @@ describe('streams', () => {
     // track incoming stream
     metrics.trackMultiaddrConnection(outbound)
 
+    // attach reader before data arrives so the stream dispatches message events
+    const iterator = outbound[Symbol.asyncIterator]()
+
     // send data to the remote over the tracked stream
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     inbound.send(data)
+
+    const first = await Promise.race([
+      iterator.next(),
+      new Promise<never>((_resolve, reject) => setTimeout(() => reject(new Error('timed out waiting for first frame')), 200))
+    ])
+
+    expect(first.done).to.equal(false)
+    expect(first.value?.byteLength).to.equal(data.length)
 
     await Promise.all([
       pEvent(inbound, 'close'),
@@ -125,9 +136,20 @@ describe('streams', () => {
     // track incoming stream
     metrics.trackProtocolStream(outbound)
 
+    // attach reader before data arrives so the stream dispatches message events
+    const iterator = outbound[Symbol.asyncIterator]()
+
     // send data from remote to local
     const data = Uint8Array.from([0, 1, 2, 3, 4])
     inbound.send(data)
+
+    const first = await Promise.race([
+      iterator.next(),
+      new Promise<never>((_resolve, reject) => setTimeout(() => reject(new Error('timed out waiting for first frame')), 200))
+    ])
+
+    expect(first.done).to.equal(false)
+    expect(first.value?.byteLength).to.equal(data.length)
 
     await Promise.all([
       pEvent(inbound, 'close'),
