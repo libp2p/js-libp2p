@@ -18,7 +18,7 @@ import { RoutingTable } from '../../src/routing-table/index.js'
 import { RPC } from '../../src/rpc/index.js'
 import { passthroughMapper } from '../../src/utils.js'
 import { createPeerIdWithPrivateKey } from '../utils/create-peer-id.js'
-import type { Validators } from '../../src/index.js'
+import type { Selectors, Validators } from '../../src/index.js'
 import type { RPCComponents } from '../../src/rpc/index.js'
 import type { PeerAndKey } from '../utils/create-peer-id.js'
 import type { Libp2pEvents, Connection, PeerStore } from '@libp2p/interface'
@@ -32,6 +32,7 @@ describe('rpc', () => {
   let providers: SinonStubbedInstance<Providers>
   let peerRouting: SinonStubbedInstance<PeerRouting>
   let validators: Validators
+  let selectors: Selectors
   let datastore: Datastore
   let routingTable: RoutingTable
 
@@ -57,12 +58,14 @@ describe('rpc', () => {
     peerRouting = Sinon.createStubInstance(PeerRouting)
     routingTable = Sinon.createStubInstance(RoutingTable)
     validators = {}
+    selectors = {}
 
     rpc = new RPC(components, {
       routingTable,
       providers,
       peerRouting,
       validators,
+      selectors,
       logPrefix: '',
       metricsPrefix: '',
       datastorePrefix: '',

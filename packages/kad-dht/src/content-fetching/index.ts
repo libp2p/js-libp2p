@@ -4,6 +4,7 @@ import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   ALPHA
 } from '../constants.js'
@@ -16,7 +17,7 @@ import {
 import { bestRecord } from '../record/selectors.js'
 import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'
-import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.js'
+import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent, SelectFn } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { Network, SendMessageOptions } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
@@ -62,6 +63,16 @@ export class ContentFetching {
     this.put = components.metrics?.traceFunction('libp2p.kadDHT.put', this.put.bind(this), {
       optionsIndex: 2
     }) ?? this.put
+  }
+
+  private getRecordSelector (key: Uint8Array): SelectFn | undefined {
+    const parts = uint8ArrayToString(key).split('/')
+
+    if (parts.length < 3) {
+      return
+    }
+
+    return this.selectors[parts[1].toString()]
   }
 
   /**
@@ -147,6 +158,25 @@ export class ContentFetching {
 
     // store the record locally
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
+    const selector = this.getRecordSelector(key)
+
+    if (selector != null) {
+      try {
+        const existingRaw = await this.components.datastore.get(dsKey, options)
+        const existingRecord = Libp2pRecord.deserialize(existingRaw)
+        const selected = selector(key, [value, existingRecord.value])
+
+        if (selected !== 0) {
+          this.log('ignoring stale local value for key %b', key)
+          return
+        }
+      } catch (err: any) {
+        if (err.name !== 'NotFoundError') {
+          throw err
+        }
+      }
+    }
+
     this.log(`storing record for key ${dsKey.toString()}`)
     await this.components.datastore.put(dsKey, record.subarray(), options)
 
