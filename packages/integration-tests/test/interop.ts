@@ -28,6 +28,9 @@ import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 import type { Ping } from '@libp2p/ping'
 import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
 
+const GO_DAEMON_START_TIMEOUT = 10_000
+const GO_DAEMON_START_RETRIES = 5
+
 /**
  * @packageDocumentation
  *
@@ -39,88 +42,132 @@ import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
  */
 
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
-  const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
-  const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+  let lastErr: Error | undefined
 
-  const log = logger(`go-libp2p:${controlPort}`)
+  for (let attempt = 0; attempt < GO_DAEMON_START_RETRIES; attempt++) {
+    const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
+    const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+    const log = logger(`go-libp2p:${controlPort}`)
 
-  const opts = [
-    `-listen=${apiAddr.toString()}`
-  ]
+    const opts = [
+      `-listen=${apiAddr.toString()}`
+    ]
 
-  if (options.noListen === true) {
-    opts.push('-noListenAddrs')
-  } else {
-    if (options.transport == null || options.transport === 'tcp') {
-      opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
-    } else if (options.transport === 'webtransport') {
-      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport')
-    } else if (options.transport === 'webrtc-direct') {
-      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/webrtc-direct')
+    if (options.noListen === true) {
+      opts.push('-noListenAddrs')
     } else {
-      throw new UnsupportedError()
+      if (options.transport == null || options.transport === 'tcp') {
+        opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+      } else if (options.transport === 'webtransport') {
+        opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport')
+      } else if (options.transport === 'webrtc-direct') {
+        opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/webrtc-direct')
+      } else {
+        throw new UnsupportedError()
+      }
     }
-  }
 
-  if (options.encryption != null) {
-    opts.push(`-${options.encryption}=true`)
-  }
-
-  if (options.dht === true) {
-    opts.push('-dhtServer')
-  }
-
-  if (options.relay === true) {
-    opts.push('-relay')
-  }
-
-  if (options.pubsub === true) {
-    opts.push('-pubsub')
-  }
-
-  if (options.pubsubRouter != null) {
-    opts.push(`-pubsubRouter=${options.pubsubRouter}`)
-  }
-
-  if (options.key != null) {
-    opts.push(`-id=${options.key}`)
-  }
-
-  if (options.muxer === 'mplex') {
-    opts.push('-muxer=mplex')
-  } else {
-    opts.push('-muxer=yamux')
-  }
-
-  const deferred = pDefer()
-  const proc = execa(p2pd(), opts, {
-    env: {
-      GOLOG_LOG_LEVEL: 'debug'
+    if (options.encryption != null) {
+      opts.push(`-${options.encryption}=true`)
     }
-  })
 
-  proc.stdout?.on('data', (buf: Buffer) => {
-    const str = buf.toString()
-    log(str)
-
-    // daemon has started
-    if (str.includes('Control socket:')) {
-      deferred.resolve()
+    if (options.dht === true) {
+      opts.push('-dhtServer')
     }
-  })
 
-  proc.stderr?.on('data', (buf) => {
-    log.error(buf.toString())
-  })
+    if (options.relay === true) {
+      opts.push('-relay')
+    }
 
-  await deferred.promise
+    if (options.pubsub === true) {
+      opts.push('-pubsub')
+    }
 
-  return {
-    client: createClient(apiAddr),
-    stop: async () => {
+    if (options.pubsubRouter != null) {
+      opts.push(`-pubsubRouter=${options.pubsubRouter}`)
+    }
+
+    if (options.key != null) {
+      opts.push(`-id=${options.key}`)
+    }
+
+    if (options.muxer === 'mplex') {
+      opts.push('-muxer=mplex')
+    } else {
+      opts.push('-muxer=yamux')
+    }
+
+    const deferred = pDefer<void>()
+    const proc = execa(p2pd(), opts, {
+      env: {
+        GOLOG_LOG_LEVEL: 'debug'
+      }
+    })
+
+    let started = false
+    let startupOutput = ''
+    let stderrOutput = ''
+
+    const rejectStartup = (err: Error): void => {
+      if (started) {
+        return
+      }
+
+      started = true
+      deferred.reject(err)
+    }
+
+    const startupTimeout = setTimeout(() => {
+      rejectStartup(new Error(`go-libp2p daemon did not start within ${GO_DAEMON_START_TIMEOUT}ms`))
+    }, GO_DAEMON_START_TIMEOUT)
+
+    proc.stdout?.on('data', (buf: Buffer) => {
+      const str = buf.toString()
+      startupOutput += str
+      log(str)
+
+      if (startupOutput.includes('Control socket:')) {
+        started = true
+        deferred.resolve()
+      }
+    })
+
+    proc.stderr?.on('data', (buf) => {
+      const str = buf.toString()
+      stderrOutput += str
+      log.error(str)
+    })
+
+    proc.then(() => {
+      rejectStartup(new Error(`go-libp2p daemon exited before startup completed\n${stderrOutput.trim()}`.trim()))
+    }).catch((err: Error) => {
+      rejectStartup(err)
+    })
+
+    try {
+      await deferred.promise
+
+      return {
+        client: createClient(apiAddr),
+        stop: async () => {
+          proc.kill()
+        }
+      }
+    } catch (err: any) {
       proc.kill()
+      lastErr = err
+
+      if (/address already in use|EADDRINUSE/i.test(String(err?.message ?? err))) {
+        continue
+      }
+
+      throw err
+    } finally {
+      clearTimeout(startupTimeout)
     }
   }
+
+  throw lastErr ?? new Error('Failed to start go-libp2p daemon')
 }
 
 async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
