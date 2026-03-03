@@ -96,6 +96,19 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.14](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.13...webtransport-v6.0.14) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.13 to ^10.0.14
+    * @libp2p/ping bumped from ^3.0.11 to ^3.0.12
+    * libp2p bumped from ^3.1.4 to ^3.1.5
+
 ## [6.0.13](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.12...webtransport-v6.0.13) (2026-02-25)
 
 
