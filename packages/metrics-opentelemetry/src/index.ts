@@ -160,15 +160,13 @@ class OpenTelemetryMetrics implements Metrics {
     // Instead, wrap dispatchEvent to observe already-dispatched message events
     // without increasing listenerCount('message').
     const dispatchEvent = stream.dispatchEvent.bind(stream)
-    const wrappedDispatchEvent: typeof stream.dispatchEvent = (evt: Event): boolean => {
+    stream.dispatchEvent = (evt: Event): boolean => {
       if (evt.type === 'message') {
         this._incrementValue(`${name} received`, (evt as MessageEvent<{ byteLength: number }>).data.byteLength)
       }
 
       return dispatchEvent(evt)
     }
-
-    stream.dispatchEvent = wrappedDispatchEvent
 
     const send = stream.send.bind(stream)
     stream.send = (buf) => {
