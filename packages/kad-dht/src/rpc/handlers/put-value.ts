@@ -1,9 +1,9 @@
 import { InvalidMessageError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { getRecordSelector } from '../../record/selectors.js'
 import { verifyRecord } from '../../record/validators.js'
 import { bufferToRecordKey } from '../../utils.js'
-import type { Selectors, SelectFn, Validators } from '../../index.js'
+import type { Selectors, Validators } from '../../index.js'
 import type { Message } from '../../message/dht.js'
 import type { DHTMessageHandler } from '../index.js'
 import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
@@ -38,16 +38,6 @@ export class PutValueHandler implements DHTMessageHandler {
     this.selectors = selectors
   }
 
-  private getRecordSelector (key: Uint8Array): SelectFn | undefined {
-    const parts = uint8ArrayToString(key).split('/')
-
-    if (parts.length < 3) {
-      return
-    }
-
-    return this.selectors[parts[1].toString()]
-  }
-
   async handle (peerId: PeerId, msg: Message): Promise<Message> {
     const key = msg.key
     this.log('%p asked us to store value for key %b', peerId, key)
@@ -64,7 +54,7 @@ export class PutValueHandler implements DHTMessageHandler {
 
       const recordKey = bufferToRecordKey(this.datastorePrefix, deserializedRecord.key)
 
-      const selector = this.getRecordSelector(deserializedRecord.key)
+      const selector = getRecordSelector(this.selectors, deserializedRecord.key)
 
       if (selector != null) {
         try {

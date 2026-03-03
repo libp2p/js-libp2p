@@ -4,7 +4,6 @@ import map from 'it-map'
 import parallel from 'it-parallel'
 import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   ALPHA
 } from '../constants.js'
@@ -14,10 +13,10 @@ import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
-import { bestRecord } from '../record/selectors.js'
+import { bestRecord, getRecordSelector } from '../record/selectors.js'
 import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'
-import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent, SelectFn } from '../index.js'
+import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.js'
 import type { Message } from '../message/dht.js'
 import type { Network, SendMessageOptions } from '../network.js'
 import type { PeerRouting } from '../peer-routing/index.js'
@@ -63,16 +62,6 @@ export class ContentFetching {
     this.put = components.metrics?.traceFunction('libp2p.kadDHT.put', this.put.bind(this), {
       optionsIndex: 2
     }) ?? this.put
-  }
-
-  private getRecordSelector (key: Uint8Array): SelectFn | undefined {
-    const parts = uint8ArrayToString(key).split('/')
-
-    if (parts.length < 3) {
-      return
-    }
-
-    return this.selectors[parts[1].toString()]
   }
 
   /**
@@ -158,7 +147,7 @@ export class ContentFetching {
 
     // store the record locally
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
-    const selector = this.getRecordSelector(key)
+    const selector = getRecordSelector(this.selectors, key)
 
     if (selector != null) {
       try {
