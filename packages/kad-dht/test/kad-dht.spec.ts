@@ -272,16 +272,16 @@ describe('KadDHT', () => {
     it('put - get with custom namespace selector keeps highest seq across 3 peers', async function () {
       this.timeout(20 * 1000)
 
-      const key = uint8ArrayFromString('/testns/hello')
+      const key = uint8ArrayFromString('/ns/hello')
       const encode = (seq: number, value: string): Uint8Array => uint8ArrayFromString(JSON.stringify({ seq, value }))
       const getSeq = (buf: Uint8Array): number => JSON.parse(uint8ArrayToString(buf)).seq
 
-      const testNsOptions = {
+      const testOptions = {
         validators: {
-          testns: sinon.stub().resolves()
+          ns: sinon.stub().resolves()
         },
         selectors: {
-          testns: (_key: Uint8Array, records: Uint8Array[]) => {
+          ns: (_key: Uint8Array, records: Uint8Array[]) => {
             let bestIndex = 0
             let bestSeq = -1
 
@@ -300,9 +300,9 @@ describe('KadDHT', () => {
       }
 
       const [dhtA, dhtB, dhtC] = await Promise.all([
-        testDHT.spawn(testNsOptions),
-        testDHT.spawn(testNsOptions),
-        testDHT.spawn(testNsOptions)
+        testDHT.spawn(testOptions),
+        testDHT.spawn(testOptions),
+        testDHT.spawn(testOptions)
       ])
 
       await Promise.all([
