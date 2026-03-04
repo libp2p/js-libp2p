@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.2",
+    "@libp2p/utils": "^7.0.12",
     "aegir": "^47.0.22"
   },
   "browser": {

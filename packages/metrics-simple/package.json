@@ -47,6 +47,7 @@
     "tdigest": "^0.1.2"
   },
   "devDependencies": {
+    "@libp2p/utils": "^7.0.12",
     "@types/tdigest": "^0.1.5",
     "aegir": "^47.0.22",
     "p-defer": "^4.0.1"
