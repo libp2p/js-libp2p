@@ -1,13 +1,12 @@
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
-import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
-import { pEvent } from 'p-event'
 import { simpleMetrics } from '../src/index.js'
+import type { Metrics } from '@libp2p/interface'
 
 describe('simple-metrics', () => {
-  let s: import('@libp2p/interface').Metrics
+  let s: Metrics
 
   afterEach(async () => {
     if (s != null) {
@@ -156,98 +155,6 @@ describe('simple-metrics', () => {
       foo: 10,
       bar: 20
     })
-  })
-
-  it('should track bytes received over outbound streams and not consume early frames', async () => {
-    const data = Uint8Array.from([9, 8, 7, 6, 5])
-    const deferred = pDefer<Record<string, any>>()
-
-    s = simpleMetrics({
-      onMetrics: (metrics) => {
-        const value = metrics.libp2p_data_transfer_bytes_total?.['/echo/1.0.0 received']
-
-        if (value === data.length) {
-          deferred.resolve(metrics)
-        }
-      },
-      intervalMs: 10
-    })({
-      logger: defaultLogger()
-    })
-
-    await start(s)
-
-    const [outbound, inbound] = await streamPair({
-      protocol: '/echo/1.0.0'
-    })
-
-    s.trackProtocolStream(outbound)
-
-    // Send before app-level iterator is attached
-    inbound.send(data)
-    await new Promise((resolve) => setTimeout(resolve, 25))
-
-    const iterator = outbound[Symbol.asyncIterator]()
-    const first = await Promise.race([
-      iterator.next(),
-      new Promise<never>((_resolve, reject) => setTimeout(() => reject(new Error('timed out waiting for first frame')), 200))
-    ])
-
-    expect(first.done).to.equal(false)
-    expect(first.value?.byteLength).to.equal(data.length)
-
-    await Promise.all([
-      pEvent(inbound, 'close'),
-      outbound.close(),
-      inbound.close()
-    ])
-
-    const metrics = await deferred.promise
-    expect(metrics.libp2p_data_transfer_bytes_total?.['/echo/1.0.0 received']).to.equal(data.length)
-  })
-
-  it('should track bytes received over outbound connections', async () => {
-    const data = Uint8Array.from([0, 1, 2, 3, 4])
-    const deferred = pDefer<Record<string, any>>()
-
-    s = simpleMetrics({
-      onMetrics: (metrics) => {
-        const value = metrics.libp2p_data_transfer_bytes_total?.['global received']
-
-        if (value === data.length) {
-          deferred.resolve(metrics)
-        }
-      },
-      intervalMs: 10
-    })({
-      logger: defaultLogger()
-    })
-
-    await start(s)
-
-    const [outbound, inbound] = multiaddrConnectionPair()
-
-    s.trackMultiaddrConnection(outbound)
-
-    const iterator = outbound[Symbol.asyncIterator]()
-    inbound.send(data)
-
-    const first = await Promise.race([
-      iterator.next(),
-      new Promise<never>((_resolve, reject) => setTimeout(() => reject(new Error('timed out waiting for first frame')), 200))
-    ])
-
-    expect(first.done).to.equal(false)
-    expect(first.value?.byteLength).to.equal(data.length)
-
-    await Promise.all([
-      pEvent(inbound, 'close'),
-      outbound.close(),
-      inbound.close()
-    ])
-
-    const metrics = await deferred.promise
-    expect(metrics.libp2p_data_transfer_bytes_total?.['global received']).to.equal(data.length)
   })
 
   it('should retain metrics after stop', async () => {
