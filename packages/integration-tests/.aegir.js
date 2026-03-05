@@ -1,5 +1,6 @@
 import { execa } from 'execa'
 import fs from 'node:fs'
+import net from 'node:net'
 import { randomUUID } from 'node:crypto'
 import pDefer from 'p-defer'
 
@@ -171,9 +172,7 @@ async function createGoLibp2pRelay () {
   const { defaultLogger } = await import('@libp2p/logger')
 
   const log = defaultLogger().forComponent('go-libp2p')
-  const controlSocketPath = `/tmp/p2pd-${randomUUID()}.sock`
-  const apiAddr = multiaddr(`/unix/${encodeURIComponent(controlSocketPath)}`)
-  const daemonListenAddr = `/unix${controlSocketPath}`
+  const { controlSocketPath, apiAddr, daemonListenAddr } = await getControlEndpoint(multiaddr)
   const deferred = pDefer()
 
   const proc = execa(p2pd(), [
@@ -189,10 +188,17 @@ async function createGoLibp2pRelay () {
       GOLOG_LOG_LEVEL: 'debug'
     }
   })
+
   proc.catch(() => {
     // go-libp2p daemon throws when killed
   }).finally(() => {
-    fs.rmSync(controlSocketPath, { force: true })
+    if (controlSocketPath != null) {
+      fs.rmSync(controlSocketPath, { force: true })
+    }
+  })
+
+  proc.once('exit', code => {
+    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
   })
 
   proc.stdout?.on('data', (buf) => {
@@ -208,6 +214,7 @@ async function createGoLibp2pRelay () {
 
     log(str)
   })
+
   await deferred.promise
 
   const daemonClient = createClient(apiAddr)
@@ -219,4 +226,53 @@ async function createGoLibp2pRelay () {
     multiaddrs: id.addrs.map(ma => ma.toString()).join(','),
     proc
   }
+}
+
+async function getControlEndpoint (multiaddr) {
+  if (process.platform === 'win32') {
+    const controlPort = await getAvailablePort()
+    const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+
+    return {
+      controlPort,
+      apiAddr,
+      daemonListenAddr: apiAddr.toString()
+    }
+  }
+
+  const controlSocketPath = `/tmp/p2pd-${randomUUID()}.sock`
+  const apiAddr = multiaddr(`/unix/${encodeURIComponent(controlSocketPath)}`)
+
+  return {
+    controlSocketPath,
+    apiAddr,
+    daemonListenAddr: `/unix${controlSocketPath}`
+  }
+}
+
+async function getAvailablePort () {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer()
+
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const addr = server.address()
+
+      if (addr == null || typeof addr === 'string') {
+        server.close(() => {
+          reject(new Error('could not allocate control port'))
+        })
+        return
+      }
+
+      server.close(err => {
+        if (err != null) {
+          reject(err)
+          return
+        }
+
+        resolve(addr.port)
+      })
+    })
+  })
 }

@@ -1,5 +1,6 @@
 import fs from 'fs'
 import { randomUUID } from 'node:crypto'
+import net from 'node:net'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
@@ -39,12 +40,17 @@ import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
  * ```
  */
 
-async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
-  const controlSocketPath = `/tmp/p2pd-${randomUUID()}.sock`
-  const apiAddr = multiaddr(`/unix/${encodeURIComponent(controlSocketPath)}`)
-  const daemonListenAddr = `/unix${controlSocketPath}`
+interface ControlEndpoint {
+  controlSocketPath?: string
+  controlPort?: number
+  apiAddr: ReturnType<typeof multiaddr>
+  daemonListenAddr: string
+}
 
-  const log = logger(`go-libp2p:${controlSocketPath}`)
+async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
+  const { controlSocketPath, controlPort, apiAddr, daemonListenAddr } = await getControlEndpoint()
+
+  const log = logger(`go-libp2p:${controlSocketPath ?? controlPort}`)
 
   const opts = [
     `-listen=${daemonListenAddr}`
@@ -94,11 +100,19 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     opts.push('-muxer=yamux')
   }
 
-  const deferred = pDefer()
+  const deferred = pDefer<void>()
   const proc = execa(p2pd(), opts, {
     env: {
       GOLOG_LOG_LEVEL: 'debug'
     }
+  })
+
+  proc.catch(() => {
+    // go-libp2p daemon throws when killed
+  })
+
+  proc.once('exit', code => {
+    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
   })
 
   proc.stdout?.on('data', (buf: Buffer) => {
@@ -121,9 +135,63 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     client: createClient(apiAddr),
     stop: async () => {
       proc.kill()
-      fs.rmSync(controlSocketPath, { force: true })
+
+      if (controlSocketPath != null) {
+        fs.rmSync(controlSocketPath, { force: true })
+      }
     }
   }
+}
+
+async function getControlEndpoint (): Promise<ControlEndpoint> {
+  // Use tcp control ports on windows
+  if (process.platform === 'win32') {
+    const controlPort = await getAvailablePort()
+    const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+
+    return {
+      controlPort,
+      apiAddr,
+      daemonListenAddr: apiAddr.toString()
+    }
+  }
+
+  // Use unix domain sockets on non-windows - avoids port clashes
+  const controlSocketPath = `/tmp/p2pd-${randomUUID()}.sock`
+  const apiAddr = multiaddr(`/unix/${encodeURIComponent(controlSocketPath)}`)
+
+  return {
+    controlSocketPath,
+    apiAddr,
+    daemonListenAddr: `/unix${controlSocketPath}`
+  }
+}
+
+async function getAvailablePort (): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer()
+
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const addr = server.address()
+
+      if (addr == null || typeof addr === 'string') {
+        server.close(() => {
+          reject(new Error('could not allocate control port'))
+        })
+        return
+      }
+
+      server.close(err => {
+        if (err != null) {
+          reject(err)
+          return
+        }
+
+        resolve(addr.port)
+      })
+    })
+  })
 }
 
 async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
