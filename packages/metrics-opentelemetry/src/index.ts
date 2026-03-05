@@ -152,9 +152,21 @@ class OpenTelemetryMetrics implements Metrics {
    * in and out
    */
   _track (stream: MessageStream, name: string): void {
-    stream.addEventListener('message', (evt) => {
-      this._incrementValue(`${name} received`, evt.data.byteLength)
-    })
+    // AbstractMessageStream dispatches buffered inbound data only when there is
+    // at least one `message` listener. Adding a metrics listener too early can
+    // consume the read buffer before protocol handlers attach their own readers
+    // (e.g. identify), causing lost first frames.
+    //
+    // Instead, wrap dispatchEvent to observe already-dispatched message events
+    // without increasing listenerCount('message').
+    const dispatchEvent = stream.dispatchEvent.bind(stream)
+    stream.dispatchEvent = (evt: Event): boolean => {
+      if (evt.type === 'message') {
+        this._incrementValue(`${name} received`, (evt as MessageEvent<{ byteLength: number }>).data.byteLength)
+      }
+
+      return dispatchEvent(evt)
+    }
 
     const send = stream.send.bind(stream)
     stream.send = (buf) => {
