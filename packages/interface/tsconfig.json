@@ -1,7 +1,10 @@
 {
   "extends": "aegir/src/config/tsconfig.aegir.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@libp2p/interface": ["./src/index.ts"]
+    }
   },
   "include": [
     "src",

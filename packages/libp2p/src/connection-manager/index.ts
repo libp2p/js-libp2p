@@ -421,7 +421,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   }
 
   setMaxConnections (maxConnections: number): void {
-    if (this.maxConnections < 1) {
+    if (maxConnections < 1) {
       throw new InvalidParametersError('Connection Manager maxConnections must be greater than 0')
     }
 

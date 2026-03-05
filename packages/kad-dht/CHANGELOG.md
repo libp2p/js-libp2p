@@ -106,6 +106,34 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.1.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.1.4...kad-dht-v16.1.5) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.11 to ^3.0.12
+    * @libp2p/peer-collections bumped from ^7.0.11 to ^7.0.12
+    * @libp2p/ping bumped from ^3.0.11 to ^3.0.12
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+  * devDependencies
+    * @libp2p/peer-store bumped from ^12.0.11 to ^12.0.12
+
+## [16.1.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.1.3...kad-dht-v16.1.4) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.10 to ^3.0.11
+    * @libp2p/peer-collections bumped from ^7.0.10 to ^7.0.11
+    * @libp2p/ping bumped from ^3.0.10 to ^3.0.11
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+  * devDependencies
+    * @libp2p/peer-store bumped from ^12.0.10 to ^12.0.11
+
 ## [16.1.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.1.2...kad-dht-v16.1.3) (2026-01-16)
 
 
