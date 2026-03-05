@@ -1,4 +1,6 @@
 import { execa } from 'execa'
+import fs from 'node:fs'
+import { randomUUID } from 'node:crypto'
 import pDefer from 'p-defer'
 
 /** @type {import('aegir').PartialOptions} */
@@ -169,11 +171,13 @@ async function createGoLibp2pRelay () {
   const { defaultLogger } = await import('@libp2p/logger')
 
   const log = defaultLogger().forComponent('go-libp2p')
-  const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
-  const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+  const controlSocketPath = `/tmp/p2pd-${randomUUID()}.sock`
+  const apiAddr = multiaddr(`/unix/${encodeURIComponent(controlSocketPath)}`)
+  const daemonListenAddr = `/unix${controlSocketPath}`
   const deferred = pDefer()
+
   const proc = execa(p2pd(), [
-    `-listen=${apiAddr.toString()}`,
+    `-listen=${daemonListenAddr}`,
     // listen on TCP, WebSockets and WebTransport
     '-hostAddrs=/ip4/127.0.0.1/tcp/0,/ip4/127.0.0.1/tcp/0/ws,/ip4/127.0.0.1/udp/0/quic-v1/webtransport',
     '-noise=true',
@@ -187,6 +191,8 @@ async function createGoLibp2pRelay () {
   })
   proc.catch(() => {
     // go-libp2p daemon throws when killed
+  }).finally(() => {
+    fs.rmSync(controlSocketPath, { force: true })
   })
 
   proc.stdout?.on('data', (buf) => {
