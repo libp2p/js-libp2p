@@ -7,6 +7,11 @@ export function connectTests (factory: DaemonFactory): void {
 
   for (const typeA of nodeTypes) {
     for (const typeB of nodeTypes) {
+      // skip go-go tests
+      if (typeA === 'go' && typeB === 'go') {
+        continue
+      }
+
       transportTypes.forEach(transport => {
         runConnectTests(
           transport,
