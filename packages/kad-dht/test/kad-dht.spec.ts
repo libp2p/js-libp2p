@@ -9,6 +9,7 @@ import filter from 'it-filter'
 import last from 'it-last'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
 import * as kadUtils from '../src/utils.js'
@@ -268,6 +269,63 @@ describe('KadDHT', () => {
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
+    it('put - get with custom namespace selector keeps highest seq across 3 peers', async function () {
+      this.timeout(20 * 1000)
+
+      const key = uint8ArrayFromString('/ns/hello')
+      const encode = (seq: number, value: string): Uint8Array => uint8ArrayFromString(JSON.stringify({ seq, value }))
+      const getSeq = (buf: Uint8Array): number => JSON.parse(uint8ArrayToString(buf)).seq
+
+      const testOptions = {
+        validators: {
+          ns: sinon.stub().resolves()
+        },
+        selectors: {
+          ns: (_key: Uint8Array, records: Uint8Array[]) => {
+            let bestIndex = 0
+            let bestSeq = -1
+
+            for (let i = 0; i < records.length; i++) {
+              const seq = getSeq(records[i])
+
+              if (seq > bestSeq) {
+                bestIndex = i
+                bestSeq = seq
+              }
+            }
+
+            return bestIndex
+          }
+        }
+      }
+
+      const [dhtA, dhtB, dhtC] = await Promise.all([
+        testDHT.spawn(testOptions),
+        testDHT.spawn(testOptions),
+        testDHT.spawn(testOptions)
+      ])
+
+      await Promise.all([
+        testDHT.connect(dhtA, dhtB),
+        testDHT.connect(dhtB, dhtC),
+        testDHT.connect(dhtA, dhtC)
+      ])
+
+      await drain(dhtA.dht.put(key, encode(1, 'old-v1')))
+      await drain(dhtB.dht.put(key, encode(2, 'new-v2')))
+      await drain(dhtC.dht.put(key, encode(1, 'stale-v1-late')))
+
+      const [resA, resB, resC] = await Promise.all([
+        findEvent(dhtA.dht.get(key), 'VALUE'),
+        findEvent(dhtB.dht.get(key), 'VALUE'),
+        findEvent(dhtC.dht.get(key), 'VALUE')
+      ])
+
+      expect(getSeq(resA.value)).to.equal(2)
+      expect(getSeq(resB.value)).to.equal(2)
+      expect(getSeq(resC.value)).to.equal(2)
+    })
+
     it('put - get should fail if unrecognized key prefix in get', async function () {
       this.timeout(10 * 1000)
 
@@ -285,6 +343,36 @@ describe('KadDHT', () => {
 
       await expect(last(dhtA.dht.get(key))).to.eventually.be.rejected
         .with.property('name', 'MissingSelectorError')
+    })
+
+    it('put - same node should ignore stale updates when selector exists', async function () {
+      this.timeout(10 * 1000)
+
+      const key = uint8ArrayFromString('/v/hello')
+      const newerValue = uint8ArrayFromString('world2')
+      const olderValue = uint8ArrayFromString('world1')
+      const dht = await testDHT.spawn()
+
+      await drain(dht.dht.put(key, newerValue))
+      await drain(dht.dht.put(key, olderValue))
+
+      const res = await last(dht.dht.get(key))
+      expect(res).to.have.property('value').that.equalBytes(newerValue)
+    })
+
+    it('put - same node should allow overwrites when selector is unavailable', async function () {
+      this.timeout(10 * 1000)
+
+      const key = uint8ArrayFromString('hello')
+      const firstValue = uint8ArrayFromString('world1')
+      const secondValue = uint8ArrayFromString('world2')
+      const dht = await testDHT.spawn()
+
+      await drain(dht.dht.put(key, firstValue))
+      await drain(dht.dht.put(key, secondValue))
+
+      const res = await last(dht.dht.get(key))
+      expect(res).to.have.property('value').that.equalBytes(secondValue)
     })
 
     it('put - get with update', async function () {

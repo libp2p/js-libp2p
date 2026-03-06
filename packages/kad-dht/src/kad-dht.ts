@@ -270,6 +270,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       providers: this.providers,
       peerRouting: this.peerRouting,
       validators: this.validators,
+      selectors: this.selectors,
       logPrefix,
       metricsPrefix,
       datastorePrefix,
