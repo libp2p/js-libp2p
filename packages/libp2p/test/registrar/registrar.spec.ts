@@ -379,6 +379,89 @@ describe('registrar topologies', () => {
     ])).to.eventually.not.be.rejected()
   })
 
+  it('should not call topology onDisconnect on peer update when peer was filtered out during connect', async () => {
+    const onDisconnectDefer = pDefer()
+
+    // setup peer
+    const remotePeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    // connection is limited
+    const conn = stubInterface<Connection>({
+      remotePeer: remotePeerId,
+      limits: {
+        bytes: 100n
+      }
+    })
+
+    // topology WITH filter - this is required to track which peers were notified
+    const filter = stubInterface<TopologyFilter>({
+      has: sinon.stub().returns(false),
+      add: sinon.stub(),
+      remove: sinon.stub()
+    })
+
+    const topology: Topology = {
+      filter,
+      // notifyOnLimitedConnection is NOT set (defaults to false)
+      onDisconnect: () => {
+        onDisconnectDefer.reject(new Error('Topology onDisconnect called for peer that was never onConnect\'d'))
+      }
+    }
+
+    // register topology for protocol
+    await registrar.register(protocol, topology)
+
+    // Peer data is in the peer store with the protocol
+    peerStore.get.withArgs(remotePeerId).resolves({
+      id: remotePeerId,
+      addresses: [],
+      protocols: [protocol],
+      metadata: new Map(),
+      tags: new Map()
+    })
+
+    // remote peer identifies with limited connection
+    events.safeDispatchEvent('peer:identify', {
+      detail: {
+        peerId: remotePeerId,
+        protocols: [protocol],
+        connection: conn
+      }
+    })
+
+    // wait a bit to ensure onConnect is not called (because connection is limited)
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // now simulate peer update removing the protocol
+    // (this triggers onDisconnect in _onPeerUpdate)
+    events.safeDispatchEvent('peer:update', {
+      detail: {
+        peer: {
+          id: remotePeerId,
+          protocols: [], // protocol removed
+          addresses: [],
+          metadata: new Map()
+        },
+        previous: {
+          id: remotePeerId,
+          protocols: [protocol], // had protocol before
+          addresses: [],
+          metadata: new Map()
+        }
+      }
+    })
+
+    // wait to ensure onDisconnect is not called
+    await expect(Promise.any([
+      onDisconnectDefer.promise,
+      new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve()
+        }, 100)
+      })
+    ])).to.eventually.not.be.rejected()
+  })
+
   it('should call topology handlers for non-limited connection opened after limited connection', async () => {
     const onConnectDefer = pDefer()
     let callCount = 0
