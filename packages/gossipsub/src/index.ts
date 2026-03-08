@@ -5,7 +5,7 @@ import type { GossipsubOptsSpec } from './config.js'
 import type { DecodeRPCLimits } from './message/decodeRpc.js'
 import type { MetricsRegister, TopicStrToLabel } from './metrics.js'
 import type { PeerScoreParams, PeerScoreThresholds } from './score/index.js'
-import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn } from './types.js'
+import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn, PartialMessage, PartialSubscriptionOpts, PartsMetadataMerger } from './types.js'
 import type {
   PeerId, PeerStore,
   ComponentLogger,
@@ -255,6 +255,28 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
    * handle this many incoming pubsub messages concurrently
    */
   messageProcessingConcurrency?: number
+
+  /**
+   * Custom parts metadata merger for partial messages.
+   * Defaults to BitwiseOrMerger which uses bitwise OR to combine bitmasks.
+   */
+  partsMetadataMerger?: PartsMetadataMerger
+
+  /**
+   * Maximum number of groups to track per topic in PartialMessageState.
+   * When exceeded, oldest groups are evicted (LRU).
+   *
+   * @default 128
+   */
+  partialMessagesMaxGroups?: number
+
+  /**
+   * Time-to-live for partial message groups in milliseconds.
+   * Groups older than this are pruned during heartbeat.
+   *
+   * @default 120000
+   */
+  partialMessagesGroupTTLMs?: number
 }
 
 export interface GossipsubMessage {
@@ -276,6 +298,7 @@ export interface GossipSubEvents {
   'gossipsub:message': CustomEvent<GossipsubMessage>
   'gossipsub:graft': CustomEvent<MeshPeer>
   'gossipsub:prune': CustomEvent<MeshPeer>
+  'gossipsub:partial-message': CustomEvent<PartialMessage>
 }
 
 export interface GossipSubComponents {
@@ -395,6 +418,22 @@ export interface GossipSub extends TypedEventTarget<GossipSubEvents> {
    * ```
    */
   publish(topic: string, data?: Uint8Array): Promise<PublishResult>
+
+  /**
+   * Subscribe to a topic with partial message support.
+   * Sends updated SubOpts to peers indicating partial capabilities.
+   */
+  subscribePartial(topic: string, opts: PartialSubscriptionOpts): void
+
+  /**
+   * Remove partial message support for a topic.
+   */
+  unsubscribePartial(topic: string): void
+
+  /**
+   * Publish a partial message to peers that support the partial messages extension.
+   */
+  publishPartial(partialMsg: PartialMessage): void
 }
 
 export function gossipsub (
@@ -402,3 +441,5 @@ export function gossipsub (
 ): (components: GossipSubComponents) => GossipSub {
   return (components: GossipSubComponents) => new GossipSubClass(components, init)
 }
+
+export type { PartialMessage, PartialSubscriptionOpts, PartsMetadataMerger } from './types.js'

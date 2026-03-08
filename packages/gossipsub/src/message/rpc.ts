@@ -8,12 +8,15 @@ export interface RPC {
   subscriptions: RPC.SubOpts[]
   messages: RPC.Message[]
   control?: RPC.ControlMessage
+  partial?: RPC.PartialMessagesExtension
 }
 
 export namespace RPC {
   export interface SubOpts {
     subscribe?: boolean
     topic?: string
+    requestsPartial?: boolean
+    supportsSendingPartial?: boolean
   }
 
   export namespace SubOpts {
@@ -36,6 +39,16 @@ export namespace RPC {
             w.string(obj.topic)
           }
 
+          if (obj.requestsPartial != null) {
+            w.uint32(24)
+            w.bool(obj.requestsPartial)
+          }
+
+          if (obj.supportsSendingPartial != null) {
+            w.uint32(32)
+            w.bool(obj.supportsSendingPartial)
+          }
+
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
@@ -54,6 +67,14 @@ export namespace RPC {
               }
               case 2: {
                 obj.topic = reader.string()
+                break
+              }
+              case 3: {
+                obj.requestsPartial = reader.bool()
+                break
+              }
+              case 4: {
+                obj.supportsSendingPartial = reader.bool()
                 break
               }
               default: {
@@ -195,6 +216,7 @@ export namespace RPC {
     graft: RPC.ControlGraft[]
     prune: RPC.ControlPrune[]
     idontwant: RPC.ControlIDontWant[]
+    extensions?: RPC.ControlExtensions
   }
 
   export namespace ControlMessage {
@@ -240,6 +262,11 @@ export namespace RPC {
               w.uint32(42)
               RPC.ControlIDontWant.codec().encode(value, w)
             }
+          }
+
+          if (obj.extensions != null) {
+            w.uint32(50)
+            RPC.ControlExtensions.codec().encode(obj.extensions, w)
           }
 
           if (opts.lengthDelimited !== false) {
@@ -308,6 +335,12 @@ export namespace RPC {
                 obj.idontwant.push(RPC.ControlIDontWant.codec().decode(reader, reader.uint32(), {
                   limits: opts.limits?.idontwant$
                 }))
+                break
+              }
+              case 6: {
+                obj.extensions = RPC.ControlExtensions.codec().decode(reader, reader.uint32(), {
+                  limits: opts.limits?.extensions$
+                })
                 break
               }
               default: {
@@ -755,6 +788,152 @@ export namespace RPC {
     }
   }
 
+  export interface ControlExtensions {
+    partialMessages?: boolean
+  }
+
+  export namespace ControlExtensions {
+    let _codec: Codec<ControlExtensions>
+
+    export const codec = (): Codec<ControlExtensions> => {
+      if (_codec == null) {
+        _codec = message<ControlExtensions>((obj, w, opts = {}) => {
+          if (opts.lengthDelimited !== false) {
+            w.fork()
+          }
+
+          if (obj.partialMessages != null) {
+            w.uint32(80)
+            w.bool(obj.partialMessages)
+          }
+
+          if (opts.lengthDelimited !== false) {
+            w.ldelim()
+          }
+        }, (reader, length, opts = {}) => {
+          const obj: any = {}
+
+          const end = length == null ? reader.len : reader.pos + length
+
+          while (reader.pos < end) {
+            const tag = reader.uint32()
+
+            switch (tag >>> 3) {
+              case 10: {
+                obj.partialMessages = reader.bool()
+                break
+              }
+              default: {
+                reader.skipType(tag & 7)
+                break
+              }
+            }
+          }
+
+          return obj
+        })
+      }
+
+      return _codec
+    }
+
+    export const encode = (obj: Partial<ControlExtensions>): Uint8Array => {
+      return encodeMessage(obj, ControlExtensions.codec())
+    }
+
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ControlExtensions>): ControlExtensions => {
+      return decodeMessage(buf, ControlExtensions.codec(), opts)
+    }
+  }
+
+  export interface PartialMessagesExtension {
+    topicID?: Uint8Array
+    groupID?: Uint8Array
+    partialMessage?: Uint8Array
+    partsMetadata?: Uint8Array
+  }
+
+  export namespace PartialMessagesExtension {
+    let _codec: Codec<PartialMessagesExtension>
+
+    export const codec = (): Codec<PartialMessagesExtension> => {
+      if (_codec == null) {
+        _codec = message<PartialMessagesExtension>((obj, w, opts = {}) => {
+          if (opts.lengthDelimited !== false) {
+            w.fork()
+          }
+
+          if (obj.topicID != null) {
+            w.uint32(10)
+            w.bytes(obj.topicID)
+          }
+
+          if (obj.groupID != null) {
+            w.uint32(18)
+            w.bytes(obj.groupID)
+          }
+
+          if (obj.partialMessage != null) {
+            w.uint32(26)
+            w.bytes(obj.partialMessage)
+          }
+
+          if (obj.partsMetadata != null) {
+            w.uint32(34)
+            w.bytes(obj.partsMetadata)
+          }
+
+          if (opts.lengthDelimited !== false) {
+            w.ldelim()
+          }
+        }, (reader, length, opts = {}) => {
+          const obj: any = {}
+
+          const end = length == null ? reader.len : reader.pos + length
+
+          while (reader.pos < end) {
+            const tag = reader.uint32()
+
+            switch (tag >>> 3) {
+              case 1: {
+                obj.topicID = reader.bytes()
+                break
+              }
+              case 2: {
+                obj.groupID = reader.bytes()
+                break
+              }
+              case 3: {
+                obj.partialMessage = reader.bytes()
+                break
+              }
+              case 4: {
+                obj.partsMetadata = reader.bytes()
+                break
+              }
+              default: {
+                reader.skipType(tag & 7)
+                break
+              }
+            }
+          }
+
+          return obj
+        })
+      }
+
+      return _codec
+    }
+
+    export const encode = (obj: Partial<PartialMessagesExtension>): Uint8Array => {
+      return encodeMessage(obj, PartialMessagesExtension.codec())
+    }
+
+    export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PartialMessagesExtension>): PartialMessagesExtension => {
+      return decodeMessage(buf, PartialMessagesExtension.codec(), opts)
+    }
+  }
+
   let _codec: Codec<RPC>
 
   export const codec = (): Codec<RPC> => {
@@ -781,6 +960,11 @@ export namespace RPC {
         if (obj.control != null) {
           w.uint32(26)
           RPC.ControlMessage.codec().encode(obj.control, w)
+        }
+
+        if (obj.partial != null) {
+          w.uint32(82)
+          RPC.PartialMessagesExtension.codec().encode(obj.partial, w)
         }
 
         if (opts.lengthDelimited !== false) {
@@ -821,6 +1005,12 @@ export namespace RPC {
             case 3: {
               obj.control = RPC.ControlMessage.codec().decode(reader, reader.uint32(), {
                 limits: opts.limits?.control
+              })
+              break
+            }
+            case 10: {
+              obj.partial = RPC.PartialMessagesExtension.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.partial$
               })
               break
             }
