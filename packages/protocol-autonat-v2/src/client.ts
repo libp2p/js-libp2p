@@ -402,11 +402,22 @@ export class AutoNATv2Client implements Startable {
     // if the remote peer has IPv6 addresses, we can probably send them an IPv6
     // address to verify, otherwise only send them IPv4 addresses
     const supportsIPv6 = peer.addresses.some(({ multiaddr }) => {
-      return getNetConfig(multiaddr).type === 'ip6'
+      try {
+        return getNetConfig(multiaddr).type === 'ip6'
+      } catch {
+        // getNetConfig() throws if a multiaddr cannot be parsed
+        return false
+      }
     })
 
     // get multiaddrs this peer is eligible to verify
-    const segment = this.getNetworkSegment(connection.remoteAddr)
+    let segment: string
+    try {
+      segment = this.getNetworkSegment(connection.remoteAddr)
+    } catch {
+      // getNetworkSegment throws if the multiaddr is not ip4 or ip6 - skip verification for this peer
+      return
+    }
     const results = this.getUnverifiedMultiaddrs(segment, supportsIPv6)
 
     if (results.length === 0) {
