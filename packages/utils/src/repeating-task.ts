@@ -77,8 +77,10 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
       signal: shutdownController.signal
     }
 
+    let signal: ReturnType<typeof anySignal> | undefined
+
     if (options?.timeout != null) {
-      const signal = anySignal([shutdownController.signal, AbortSignal.timeout(options.timeout)])
+      signal = anySignal([shutdownController.signal, AbortSignal.timeout(options.timeout)])
       setMaxListeners(Infinity, signal)
 
       opts.signal = signal
@@ -91,6 +93,8 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
     })
       .catch(() => {})
       .finally(() => {
+        signal?.clear()
+
         running = false
 
         if (shutdownController.signal.aborted) {
