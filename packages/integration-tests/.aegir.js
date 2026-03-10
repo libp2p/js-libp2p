@@ -1,7 +1,4 @@
 import { execa } from 'execa'
-import fs from 'node:fs'
-import net from 'node:net'
-import { randomUUID } from 'node:crypto'
 import pDefer from 'p-defer'
 
 /** @type {import('aegir').PartialOptions} */
@@ -172,11 +169,11 @@ async function createGoLibp2pRelay () {
   const { defaultLogger } = await import('@libp2p/logger')
 
   const log = defaultLogger().forComponent('go-libp2p')
-  const { controlSocketPath, apiAddr, daemonListenAddr } = await getControlEndpoint(multiaddr)
+  const controlAddrUndefinedPort = multiaddr('/ip4/127.0.0.1/tcp/0')
   const deferred = pDefer()
 
   const proc = execa(p2pd(), [
-    `-listen=${daemonListenAddr}`,
+    `-listen=${controlAddrUndefinedPort.toString()}`,
     // listen on TCP, WebSockets and WebTransport
     '-hostAddrs=/ip4/127.0.0.1/tcp/0,/ip4/127.0.0.1/tcp/0/ws,/ip4/127.0.0.1/udp/0/quic-v1/webtransport',
     '-noise=true',
@@ -191,21 +188,20 @@ async function createGoLibp2pRelay () {
 
   proc.catch(() => {
     // go-libp2p daemon throws when killed
-  }).finally(() => {
-    if (controlSocketPath != null) {
-      fs.rmSync(controlSocketPath, { force: true })
-    }
   })
 
   proc.once('exit', code => {
     deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
   })
 
+  let controlMultiaddr
+
   proc.stdout?.on('data', (buf) => {
     const str = buf.toString()
 
-    // daemon has started
-    if (str.includes('Control socket:')) {
+    const match = str.match(/Control socket:\s*(.+)/)
+    if (match != null) {
+      controlMultiaddr = multiaddr(match[1].trim())
       deferred.resolve()
     }
   })
@@ -217,62 +213,17 @@ async function createGoLibp2pRelay () {
 
   await deferred.promise
 
-  const daemonClient = createClient(apiAddr)
+  if (controlMultiaddr == null) {
+    throw new Error('go-libp2p daemon did not report a control socket')
+  }
+
+  const daemonClient = createClient(controlMultiaddr)
   const id = await daemonClient.identify()
 
   return {
-    apiAddr,
+    apiAddr: controlMultiaddr,
     peerId: id.peerId.toString(),
     multiaddrs: id.addrs.map(ma => ma.toString()).join(','),
     proc
   }
-}
-
-async function getControlEndpoint (multiaddr) {
-  if (process.platform === 'win32') {
-    const controlPort = await getAvailablePort()
-    const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
-
-    return {
-      controlPort,
-      apiAddr,
-      daemonListenAddr: apiAddr.toString()
-    }
-  }
-
-  const controlSocketPath = `/tmp/p2pd-${randomUUID()}.sock`
-  const apiAddr = multiaddr(`/unix/${encodeURIComponent(controlSocketPath)}`)
-
-  return {
-    controlSocketPath,
-    apiAddr,
-    daemonListenAddr: `/unix${controlSocketPath}`
-  }
-}
-
-async function getAvailablePort () {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer()
-
-    server.once('error', reject)
-    server.listen(0, '127.0.0.1', () => {
-      const addr = server.address()
-
-      if (addr == null || typeof addr === 'string') {
-        server.close(() => {
-          reject(new Error('could not allocate control port'))
-        })
-        return
-      }
-
-      server.close(err => {
-        if (err != null) {
-          reject(err)
-          return
-        }
-
-        resolve(addr.port)
-      })
-    })
-  })
 }
