@@ -1,6 +1,4 @@
 import fs from 'fs'
-import { randomUUID } from 'node:crypto'
-import net from 'node:net'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
