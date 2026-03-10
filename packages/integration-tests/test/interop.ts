@@ -40,13 +40,6 @@ import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
  * ```
  */
 
-interface ControlEndpoint {
-  controlSocketPath?: string
-  controlPort?: number
-  apiAddr: ReturnType<typeof multiaddr>
-  daemonListenAddr: string
-}
-
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   const controlAddrUndefinedPort = multiaddr(`/ip4/127.0.0.1/tcp/0`)
 
