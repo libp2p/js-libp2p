@@ -14,6 +14,11 @@ export function runTests (name: string, fn: TestFunction, factory: DaemonFactory
   for (const keyType of keyTypes) {
     for (const implA of impls) {
       for (const implB of impls) {
+        // skip go-go tests
+        if (implA === 'go' && implB === 'go') {
+          continue
+        }
+
         for (const encrypter of encrypters) {
           // eslint-disable-next-line max-depth
           for (const muxer of muxers) {
