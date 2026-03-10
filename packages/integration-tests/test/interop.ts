@@ -48,12 +48,12 @@ interface ControlEndpoint {
 }
 
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
-  const { controlSocketPath, controlPort, apiAddr, daemonListenAddr } = await getControlEndpoint()
+  const controlAddrUndefinedPort = multiaddr(`/ip4/127.0.0.1/tcp/0`)
 
-  const log = logger(`go-libp2p:${controlSocketPath ?? controlPort}`)
+  const log = logger('go-libp2p')
 
   const opts = [
-    `-listen=${daemonListenAddr}`
+    `-listen=${controlAddrUndefinedPort.toString()}`
   ]
 
   if (options.noListen === true) {
@@ -115,12 +115,15 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
   })
 
+  let controlMultiaddr: ReturnType<typeof multiaddr> | undefined
+
   proc.stdout?.on('data', (buf: Buffer) => {
     const str = buf.toString()
     log(str)
 
-    // daemon has started
-    if (str.includes('Control socket:')) {
+    const match = str.match(/Control socket:\s*(.+)/)
+    if (match != null) {
+      controlMultiaddr = multiaddr(match[1].trim())
       deferred.resolve()
     }
   })
@@ -131,67 +134,16 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   await deferred.promise
 
+  if (controlMultiaddr == null) {
+    throw new Error('go-libp2p daemon did not report a control socket')
+  }
+
   return {
-    client: createClient(apiAddr),
+    client: createClient(controlMultiaddr),
     stop: async () => {
       proc.kill()
-
-      if (controlSocketPath != null) {
-        fs.rmSync(controlSocketPath, { force: true })
-      }
     }
   }
-}
-
-async function getControlEndpoint (): Promise<ControlEndpoint> {
-  // Use tcp control ports on windows
-  if (process.platform === 'win32') {
-    const controlPort = await getAvailablePort()
-    const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
-
-    return {
-      controlPort,
-      apiAddr,
-      daemonListenAddr: apiAddr.toString()
-    }
-  }
-
-  // Use unix domain sockets on non-windows - avoids port clashes
-  const controlSocketPath = `/tmp/p2pd-${randomUUID()}.sock`
-  const apiAddr = multiaddr(`/unix/${encodeURIComponent(controlSocketPath)}`)
-
-  return {
-    controlSocketPath,
-    apiAddr,
-    daemonListenAddr: `/unix${controlSocketPath}`
-  }
-}
-
-async function getAvailablePort (): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer()
-
-    server.once('error', reject)
-    server.listen(0, '127.0.0.1', () => {
-      const addr = server.address()
-
-      if (addr == null || typeof addr === 'string') {
-        server.close(() => {
-          reject(new Error('could not allocate control port'))
-        })
-        return
-      }
-
-      server.close(err => {
-        if (err != null) {
-          reject(err)
-          return
-        }
-
-        resolve(addr.port)
-      })
-    })
-  })
 }
 
 async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
