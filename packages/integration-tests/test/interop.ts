@@ -26,6 +26,7 @@ import type { Identify } from '@libp2p/identify'
 import type { ServiceMap, PrivateKey } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 import type { Ping } from '@libp2p/ping'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
 
 /**
@@ -106,7 +107,7 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
   })
 
-  let controlMultiaddr: ReturnType<typeof multiaddr> | undefined
+  let controlMultiaddr: Multiaddr | undefined
 
   proc.stdout?.on('data', (buf: Buffer) => {
     const str = buf.toString()
