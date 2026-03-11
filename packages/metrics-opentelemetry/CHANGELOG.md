@@ -1,5 +1,30 @@
 # Changelog
 
+## [2.0.13](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.12...opentelemetry-metrics-v2.0.13) (2026-03-04)
+
+
+### Bug Fixes
+
+* **metrics:** avoid consuming protocol frames before app readers ([#3394](https://github.com/libp2p/js-libp2p/issues/3394)) ([4db427d](https://github.com/libp2p/js-libp2p/commit/4db427d307923d2bfde3c7052f3abfb0456b5e61))
+
+## [2.0.12](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.11...opentelemetry-metrics-v2.0.12) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+
+## [2.0.11](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.10...opentelemetry-metrics-v2.0.11) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+
 ## [2.0.10](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.9...opentelemetry-metrics-v2.0.10) (2026-01-16)
 
 

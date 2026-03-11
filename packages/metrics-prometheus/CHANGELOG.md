@@ -81,6 +81,31 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [5.0.13](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.12...prometheus-metrics-v5.0.13) (2026-03-04)
+
+
+### Bug Fixes
+
+* **metrics:** avoid consuming protocol frames before app readers ([#3394](https://github.com/libp2p/js-libp2p/issues/3394)) ([4db427d](https://github.com/libp2p/js-libp2p/commit/4db427d307923d2bfde3c7052f3abfb0456b5e61))
+
+## [5.0.12](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.11...prometheus-metrics-v5.0.12) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+
+## [5.0.11](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.10...prometheus-metrics-v5.0.11) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+
 ## [5.0.10](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.9...prometheus-metrics-v5.0.10) (2026-01-16)
 
 

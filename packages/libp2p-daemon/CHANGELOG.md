@@ -4,6 +4,24 @@
 
 * update all deps ([#348](https://github.com/libp2p/js-libp2p-daemon/issues/348)) ([44bf148](https://github.com/libp2p/js-libp2p-daemon/commit/44bf148f37b9f4091dc8ed26cf343e196607ebbc))
 
+## [6.0.14](https://github.com/libp2p/js-libp2p/compare/daemon-v6.0.13...daemon-v6.0.14) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-server bumped from ^9.0.13 to ^9.0.14
+
+## [6.0.13](https://github.com/libp2p/js-libp2p/compare/daemon-v6.0.12...daemon-v6.0.13) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-server bumped from ^9.0.12 to ^9.0.13
+
 ## [6.0.12](https://github.com/libp2p/js-libp2p/compare/daemon-v6.0.11...daemon-v6.0.12) (2026-01-16)
 
 

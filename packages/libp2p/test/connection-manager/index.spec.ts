@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { KEEP_ALIVE, start, stop } from '@libp2p/interface'
+import { InvalidParametersError, KEEP_ALIVE, start, stop } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -417,6 +417,41 @@ describe('Connection Manager', () => {
     const conn = await connectionManager.openConnection(addr)
 
     expect(conn).to.equal(newConnection)
+  })
+
+  it('should throw when setMaxConnections is less than 1', async () => {
+    connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections: 10
+    })
+
+    expect(() => connectionManager.setMaxConnections(0)).to.throw(InvalidParametersError, 'greater than 0')
+  })
+
+  it('should trigger pruning when reducing max connections', async () => {
+    connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections: 10
+    })
+
+    const pruneSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
+
+    connectionManager.setMaxConnections(5)
+
+    expect(pruneSpy.calledOnce).to.be.true()
+  })
+
+  it('should not trigger pruning when increasing max connections', async () => {
+    connectionManager = new DefaultConnectionManager(components, {
+      ...defaultOptions,
+      maxConnections: 10
+    })
+
+    const pruneSpy = sinon.spy(connectionManager.connectionPruner, 'maybePruneConnections')
+
+    connectionManager.setMaxConnections(20)
+
+    expect(pruneSpy.called).to.be.false()
   })
 
   it('should filter connections on disconnect, removing the closed one', async () => {

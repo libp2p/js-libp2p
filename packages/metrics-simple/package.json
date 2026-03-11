@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/simple-metrics",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Simple in-memory metrics gathering for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/metrics-simple#readme",

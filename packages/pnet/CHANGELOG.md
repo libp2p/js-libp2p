@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.0.13](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.12...pnet-v3.0.13) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+
+## [3.0.12](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.11...pnet-v3.0.12) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+
 ## [3.0.11](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.10...pnet-v3.0.11) (2026-01-16)
 
 
