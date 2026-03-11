@@ -39,7 +39,7 @@ import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
  */
 
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
-  const controlAddrUndefinedPort = multiaddr(`/ip4/127.0.0.1/tcp/0`)
+  const controlAddrUndefinedPort = multiaddr('/ip4/127.0.0.1/tcp/0')
 
   const log = logger('go-libp2p')
 
