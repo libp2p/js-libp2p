@@ -93,7 +93,16 @@ export function repeatingTask (fn: (options?: AbortOptions) => void | Promise<vo
     })
       .catch(() => {})
       .finally(() => {
-        signal?.clear()
+        if (signal != null) {
+          if (signal.aborted) {
+            signal.clear()
+          } else {
+            // Clear listeners once this per-run signal eventually aborts
+            signal.addEventListener('abort', () => {
+              signal.clear()
+            }, { once: true })
+          }
+        }
 
         running = false
 
