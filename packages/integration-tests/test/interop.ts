@@ -26,6 +26,7 @@ import type { Identify } from '@libp2p/identify'
 import type { ServiceMap, PrivateKey } from '@libp2p/interface'
 import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 import type { Ping } from '@libp2p/ping'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
 
 /**
@@ -39,13 +40,12 @@ import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
  */
 
 async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
-  const controlPort = Math.floor(Math.random() * (50000 - 10000 + 1)) + 10000
-  const apiAddr = multiaddr(`/ip4/127.0.0.1/tcp/${controlPort}`)
+  const controlAddrUndefinedPort = multiaddr('/ip4/127.0.0.1/tcp/0')
 
-  const log = logger(`go-libp2p:${controlPort}`)
+  const log = logger('go-libp2p')
 
   const opts = [
-    `-listen=${apiAddr.toString()}`
+    `-listen=${controlAddrUndefinedPort.toString()}`
   ]
 
   if (options.noListen === true) {
@@ -92,19 +92,30 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     opts.push('-muxer=yamux')
   }
 
-  const deferred = pDefer()
+  const deferred = pDefer<void>()
   const proc = execa(p2pd(), opts, {
     env: {
       GOLOG_LOG_LEVEL: 'debug'
     }
   })
 
+  proc.catch(() => {
+    // go-libp2p daemon throws when killed
+  })
+
+  proc.once('exit', code => {
+    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
+  })
+
+  let controlMultiaddr: Multiaddr | undefined
+
   proc.stdout?.on('data', (buf: Buffer) => {
     const str = buf.toString()
     log(str)
 
-    // daemon has started
-    if (str.includes('Control socket:')) {
+    const match = str.match(/Control socket:\s*(.+)/)
+    if (match != null) {
+      controlMultiaddr = multiaddr(match[1].trim())
       deferred.resolve()
     }
   })
@@ -115,8 +126,12 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
 
   await deferred.promise
 
+  if (controlMultiaddr == null) {
+    throw new Error('go-libp2p daemon did not report a control socket')
+  }
+
   return {
-    client: createClient(apiAddr),
+    client: createClient(controlMultiaddr),
     stop: async () => {
       proc.kill()
     }
