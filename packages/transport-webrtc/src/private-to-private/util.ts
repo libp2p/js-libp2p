@@ -66,9 +66,12 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
       }
     }
   } catch (err) {
-    options.log.error('%s error parsing ICE candidate - %e', options.direction, err)
+    options.log.error('%s error reading ICE candidates - %e', options.direction, err)
 
-    if (options.signal?.aborted === true && pc.connectionState !== 'connected') {
+    // If the peer connection is not connected, the error is fatal - re-throw so
+    // the caller can clean up. If already connected, ignore stream errors (the
+    // signaling stream may close after the connection is established).
+    if (pc.connectionState !== 'connected') {
       throw err
     }
   }
