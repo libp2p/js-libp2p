@@ -185,7 +185,7 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
               new Promise((resolve, reject) => {
                 setTimeout(() => {
                   reject(timeoutError)
-                }, 70)
+                }, 2000)
               })
             ])
             expect.fail('stream pipe with infinite source should never return')
