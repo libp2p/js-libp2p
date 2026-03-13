@@ -20,7 +20,7 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
     this.peerConnection.onconnectionstatechange = () => {
       this.log.trace('peer connection state change %s initial state %s', this.peerConnection.connectionState, initialState)
 
-      if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
+      if (this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
         // nothing else to do but close the connection
         this.onTransportClosed()
 
@@ -34,7 +34,9 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
     // before this handler was registered (e.g. ICE failed during SDP exchange).
     // Since onconnectionstatechange is a property assignment it won't fire for
     // past state transitions, so we need to check the current state explicitly.
-    if (initialState === 'disconnected' || initialState === 'failed' || initialState === 'closed') {
+    // Note: 'disconnected' is transient and may recover to 'connected', so only
+    // 'failed' and 'closed' are treated as terminal states here.
+    if (initialState === 'failed' || initialState === 'closed') {
       this.log.trace('peer connection already in terminal state %s at construction time', initialState)
       this.onTransportClosed()
       this.peerConnection.close()
