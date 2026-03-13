@@ -150,7 +150,7 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
   async onCreateStream (options?: CreateStreamOptions): Promise<WebRTCStream> {
     // The spec says the label MUST be an empty string: https://github.com/libp2p/specs/blob/master/webrtc/README.md#rtcdatachannel-label
     const channel = this.peerConnection.createDataChannel('', {
-      // TODO: pre-negotiate stream protocol
+      // pre-negotiate stream protocol when spec supports it
       // protocol: options?.protocol
     })
 

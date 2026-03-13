@@ -306,7 +306,9 @@ export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implemen
   private getKeychain (): Keychain | undefined {
     try {
       return this.components.keychain
-    } catch {}
+    } catch {
+      // keychain is an optional service
+    }
   }
 }
 
