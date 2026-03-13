@@ -264,6 +264,86 @@ describe('gossip', () => {
     expect(peerInfoB?.tags.get(topic)).to.be.undefined()
   })
 
+  it('should delete empty topic entries after remote unsubscribe', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const topic = 'empty-topic-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB])
+
+    nodeA.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+
+    nodeA.pubsub.unsubscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect(nodeB.pubsub.getSubscribers(topic)).to.be.empty()
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.false()
+  })
+
+  it('should delete empty topic entries after peer disconnect', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const topic = 'disconnect-topic-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB])
+
+    nodeA.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+
+    ;(nodeB.pubsub as any).onPeerDisconnected(nodeA.components.peerId)
+
+    expect(nodeB.pubsub.getSubscribers(topic)).to.be.empty()
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.false()
+  })
+
+  it('should not create empty topic entries from unsubscribe-only updates', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const topic = 'unsubscribe-only-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB])
+
+    ;(nodeB.pubsub as any).handleReceivedSubscription(nodeA.components.peerId, topic, false)
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.false()
+    expect(nodeB.pubsub.getSubscribers(topic)).to.be.empty()
+  })
+
+  it('should keep topic entries while other peers remain subscribed', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const nodeC = nodes[2]
+    const topic = 'multi-peer-topic-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB, nodeC])
+
+    nodeA.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    nodeC.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+    expect(nodeB.pubsub.getSubscribers(topic)).to.have.lengthOf(2)
+
+    nodeA.pubsub.unsubscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+    const subscribers = nodeB.pubsub.getSubscribers(topic).map((p) => p.toString())
+    expect(subscribers).to.have.lengthOf(1)
+    expect(subscribers).to.include(nodeC.components.peerId.toString())
+  })
+
   it.skip('should reject incoming messages bigger than maxInboundDataLength limit', async function () {
     this.timeout(10e4)
     const nodeA = nodes[0]
