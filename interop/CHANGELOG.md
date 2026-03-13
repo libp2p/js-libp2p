@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.15](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.14...transport-interop-libp2p-main-v1.0.15) (2026-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.1.5 to ^4.1.6
+    * @libp2p/identify bumped from ^4.0.12 to ^4.0.13
+    * @libp2p/mplex bumped from ^12.0.13 to ^12.0.14
+    * @libp2p/ping bumped from ^3.0.12 to ^3.0.13
+    * @libp2p/tcp bumped from ^11.0.12 to ^11.0.13
+    * @libp2p/tls bumped from ^3.0.12 to ^3.0.13
+    * @libp2p/webrtc bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/websockets bumped from ^10.1.5 to ^10.1.6
+    * @libp2p/webtransport bumped from ^6.0.14 to ^6.0.15
+    * libp2p bumped from ^3.1.5 to ^3.1.6
+
 ## [1.0.14](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.13...transport-interop-libp2p-main-v1.0.14) (2026-03-03)
 
 
