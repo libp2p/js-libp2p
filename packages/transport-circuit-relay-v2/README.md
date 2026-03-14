@@ -77,7 +77,7 @@ Loading this module through a script tag will make its exports available as `Lib
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_circuit_relay_v2.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_circuit-relay-v2.html>
 
 # License
 
