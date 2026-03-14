@@ -141,6 +141,8 @@ class PrometheusMetrics implements Metrics {
   private readonly log: Logger
   private transferStats: Map<string, number>
   private readonly registry?: Registry
+  private readonly streamsOpened: CounterGroup
+  private readonly streamsClosed: CounterGroup
 
   constructor (components: PrometheusMetricsComponents, init?: Partial<PrometheusMetricsInit>) {
     this.log = components.logger.forComponent('libp2p:prometheus-metrics')
@@ -204,6 +206,16 @@ class PrometheusMetrics implements Metrics {
           used: (available / total) * 100
         }
       }
+    })
+
+    this.log('Collecting protocol stream open/close metrics')
+    this.streamsOpened = this.registerCounterGroup('libp2p_protocol_streams_opened_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams opened, by direction and protocol'
+    })
+    this.streamsClosed = this.registerCounterGroup('libp2p_protocol_streams_closed_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams closed, by direction and protocol'
     })
   }
 
@@ -272,8 +284,20 @@ class PrometheusMetrics implements Metrics {
       // calls this handler after protocol negotiation
       return
     }
-
+ 
+    // existing byte-transfer tracking — unchanged
     this._track(stream, stream.protocol)
+ 
+    // Label format: "direction protocol"  e.g. "inbound /identify/1.0.0"
+    // Matches the format of the existing libp2p_protocol_streams_total gauge.
+    const label = `${stream.direction} ${stream.protocol}`
+ 
+    // Stream is now open — increment the opened counter immediately.
+    this.streamsOpened.increment({ [label]: 1 })
+ 
+    stream.addEventListener('close', () => {
+      this.streamsClosed.increment({ [label]: 1 })
+    }, { once: true })
   }
 
   registerMetric (name: string, opts: PrometheusCalculatedMetricOptions): void

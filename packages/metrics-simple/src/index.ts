@@ -344,6 +344,8 @@ export interface SimpleMetricsComponents {
 class SimpleMetrics implements Metrics, Startable {
   public metrics = new Map<string, SimpleMetric | SimpleGroupMetric | SimpleHistogram | SimpleHistogramGroup | SimpleSummary | SimpleSummaryGroup>()
   private readonly transferStats: Map<string, number>
+  private readonly streamsOpened: CounterGroup
+  private readonly streamsClosed: CounterGroup
   private started: boolean
   private interval?: ReturnType<typeof setInterval>
   private readonly intervalMs: number
@@ -361,6 +363,16 @@ class SimpleMetrics implements Metrics, Startable {
 
     // holds global and per-protocol sent/received stats
     this.transferStats = new Map()
+
+    this.streamsOpened = this.registerCounterGroup('libp2p_protocol_streams_opened_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams opened, by direction and protocol'
+    })
+
+    this.streamsClosed = this.registerCounterGroup('libp2p_protocol_streams_closed_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams closed, by direction and protocol'
+    })
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/metrics-simple'
@@ -446,12 +458,18 @@ class SimpleMetrics implements Metrics, Startable {
 
   trackProtocolStream (stream: Stream): void {
     if (stream.protocol == null) {
-      // protocol not negotiated yet, should not happen as the upgrader
-      // calls this handler after protocol negotiation
       return
     }
 
     this._track(stream, stream.protocol)
+
+    const label = `${stream.direction} ${stream.protocol}`
+
+    this.streamsOpened.increment({ [label]: 1 })
+
+    stream.addEventListener('close', () => {
+      this.streamsClosed.increment({ [label]: 1 })
+    }, { once: true })
   }
 
   registerMetric (name: string, opts: CalculatedMetricOptions): void
