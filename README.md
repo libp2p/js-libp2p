@@ -36,11 +36,13 @@ We are in the process of writing better documentation, blog posts, tutorials and
 - [docs.libp2p.io](https://docs.libp2p.io)
 - [Specification (WIP)](https://github.com/libp2p/specs)
 - [Discussion Forums](https://discuss.libp2p.io)
+- [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p)
+- [libp2p Connectivity Matrix](https://connectivity.libp2p.io/)
+- [Universal Connectivity Demo](https://github.com/libp2p/universal-connectivity)
 - Talks
   - [`libp2p <3 ethereum` at DEVCON2](https://archive.devcon.org/archive/watch/2/libp2p-devp2p-ipfs-and-ethereum-networking/)
 - Articles
   - [The overview of libp2p](https://github.com/libp2p/libp2p#description)
-
 To sum up, libp2p is a "network stack" -- a protocol suite -- that cleanly separates concerns, and enables sophisticated applications to only use the protocols they absolutely need, without giving up interoperability and upgradability. libp2p grew out of IPFS, but it is built so that lots of people can use it, for lots of different projects.
 
 ## Roadmap
