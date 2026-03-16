@@ -6,7 +6,7 @@ export const DIAL_TIMEOUT = 10_000
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#addressDialTimeout
  */
-export const ADDRESS_DIAL_TIMEOUT = 3_000
+export const ADDRESS_DIAL_TIMEOUT = 6_000
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#connectionCloseTimeout
