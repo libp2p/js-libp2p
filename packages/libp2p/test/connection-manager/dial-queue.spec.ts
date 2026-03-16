@@ -430,6 +430,169 @@ describe('dial queue', () => {
     expect(components.transportManager.dial.callCount).to.equal(1, 'should have coalesced multiple dials to same dial')
   })
 
+  describe('addressDialTimeout', () => {
+    // helper: returns a transport stub that hangs until the signal fires
+    function hangUntilAborted (options?: { signal?: AbortSignal }): Promise<Connection> {
+      return new Promise<Connection>((_, reject) => {
+        options?.signal?.addEventListener('abort', () => { reject(options.signal?.reason) }, { once: true })
+      })
+    }
+
+    it('should move on to the next address when one address dial hangs', async () => {
+      const connection = stubInterface<Connection>()
+      const addressDialTimeout = 100
+      const dialledAddrs: string[] = []
+
+      components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+      components.transportManager.dial.callsFake(async (ma, options) => {
+        dialledAddrs.push(ma.toString())
+
+        if (ma.toString().includes('1231')) {
+          return hangUntilAborted(options)
+        }
+
+        return connection
+      })
+
+      dialer = new DialQueue(components, {
+        addressDialTimeout,
+        dialTimeout: 5000
+      })
+
+      const start = Date.now()
+      const conn = await dialer.dial([
+        multiaddr('/ip4/127.0.0.1/tcp/1231'),
+        multiaddr('/ip4/127.0.0.1/tcp/1232')
+      ])
+      const elapsed = Date.now() - start
+
+      expect(conn).to.equal(connection)
+      // both addresses must have been attempted
+      expect(dialledAddrs).to.include('/ip4/127.0.0.1/tcp/1231')
+      expect(dialledAddrs).to.include('/ip4/127.0.0.1/tcp/1232')
+      // elapsed >= addressDialTimeout (first hung) and well under dialTimeout
+      expect(elapsed).to.be.greaterThanOrEqual(addressDialTimeout)
+      expect(elapsed).to.be.lessThan(addressDialTimeout * 4)
+    })
+
+    it('should try all addresses when multiple dials hang sequentially before one succeeds', async () => {
+      // This is the exact scenario from the bug report:
+      // [/ip4/10.2.0.2, /ip4/127.0.0.1, /ip4/172.20.5.94] where only the last is reachable.
+      // With the old code the first address consumed the entire dialTimeout.
+      const connection = stubInterface<Connection>()
+      const addressDialTimeout = 100
+      const dialledAddrs: string[] = []
+
+      components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+      components.transportManager.dial.callsFake(async (ma, options) => {
+        const maStr = ma.toString()
+        dialledAddrs.push(maStr)
+
+        if (!maStr.includes('1234')) {
+          // first three addresses hang – will be cut by per-address timeout
+          return hangUntilAborted(options)
+        }
+
+        return connection
+      })
+
+      dialer = new DialQueue(components, {
+        addressDialTimeout,
+        dialTimeout: 10_000
+      })
+
+      const start = Date.now()
+      const conn = await dialer.dial([
+        multiaddr('/ip4/127.0.0.1/tcp/1231'),
+        multiaddr('/ip4/127.0.0.1/tcp/1232'),
+        multiaddr('/ip4/127.0.0.1/tcp/1233'),
+        multiaddr('/ip4/127.0.0.1/tcp/1234')
+      ])
+      const elapsed = Date.now() - start
+
+      expect(conn).to.equal(connection)
+      // all four addresses were attempted in order
+      expect(dialledAddrs).to.deep.equal([
+        '/ip4/127.0.0.1/tcp/1231',
+        '/ip4/127.0.0.1/tcp/1232',
+        '/ip4/127.0.0.1/tcp/1233',
+        '/ip4/127.0.0.1/tcp/1234'
+      ])
+      // elapsed ~= 3 × addressDialTimeout (three per-address timeouts before success)
+      expect(elapsed).to.be.greaterThan(addressDialTimeout * 2)
+      expect(elapsed).to.be.lessThan(addressDialTimeout * 6)
+    })
+
+    it('should throw an AggregateError when every address times out per-address before the batch timeout', async () => {
+      const addressDialTimeout = 100
+
+      components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+      components.transportManager.dial.callsFake(async (ma, options) => hangUntilAborted(options))
+
+      dialer = new DialQueue(components, {
+        addressDialTimeout,
+        dialTimeout: 10_000  // batch timeout is far away
+      })
+
+      const err = await dialer.dial([
+        multiaddr('/ip4/127.0.0.1/tcp/1231'),
+        multiaddr('/ip4/127.0.0.1/tcp/1232')
+      ]).catch(e => e)
+
+      // each address timed out individually → AggregateError, not TimeoutError
+      expect(err).to.have.property('name', 'AggregateError')
+    })
+
+    it('should throw a TimeoutError when the batch timeout fires before the per-address timeout', async () => {
+      const dialTimeout = 100
+      const addressDialTimeout = 5000  // much longer than dialTimeout
+
+      components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+      components.transportManager.dial.callsFake(async (ma, options) => hangUntilAborted(options))
+
+      dialer = new DialQueue(components, {
+        addressDialTimeout,
+        dialTimeout
+      })
+
+      const err = await dialer.dial([
+        multiaddr('/ip4/127.0.0.1/tcp/1231'),
+        multiaddr('/ip4/127.0.0.1/tcp/1232')
+      ]).catch(e => e)
+
+      // batch timeout fires → name is 'TimeoutError' (not AggregateError)
+      // Note: the error is the native DOMException from AbortSignal.timeout(),
+      // not our custom TimeoutError class, because JobRecipient rejects with
+      // the raw signal reason before our callback's throw can propagate.
+      expect(err).to.have.property('name', 'TimeoutError')
+    })
+
+    it('should not delay dials that succeed within the addressDialTimeout', async () => {
+      const connection = stubInterface<Connection>()
+      const addressDialTimeout = 500
+
+      components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+      components.transportManager.dial.callsFake(async () => {
+        await delay(10)  // quick success, well within addressDialTimeout
+        return connection
+      })
+
+      dialer = new DialQueue(components, {
+        addressDialTimeout,
+        dialTimeout: 5000
+      })
+
+      const conn = await dialer.dial([
+        multiaddr('/ip4/127.0.0.1/tcp/1231'),
+        multiaddr('/ip4/127.0.0.1/tcp/1232')
+      ])
+
+      expect(conn).to.equal(connection)
+      // first address succeeded – second address should never have been dialled
+      expect(components.transportManager.dial.callCount).to.equal(1)
+    })
+  })
+
   it('should continue dial when new addresses are discovered', async () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const ma1 = multiaddr(`/ip6/2001:db8:1:2:3:4:5:6/tcp/123/p2p/${remotePeer}`)
