@@ -26,6 +26,11 @@ const webrtcDirectDownload = mbps('webrtc-direct', 'download')
 const webrtcUpload = mbps('webrtc', 'upload')
 const webrtcDownload = mbps('webrtc', 'download')
 
+const webrtcDirectTcpRatio = (
+  (webrtcDirectUpload / tcpUpload) +
+  (webrtcDirectDownload / tcpDownload)
+) / 2 * 100
+
 const throughputRatioPct = (
   (webrtcDirectUpload / tcpUpload) +
   (webrtcDirectDownload / tcpDownload) +
@@ -41,6 +46,7 @@ const combinedWebRTCMbps = (
 )
 
 const metrics = {
+  webrtc_direct_tcp_ratio: webrtcDirectTcpRatio,
   combined_webrtc_mbps: combinedWebRTCMbps,
   throughput_ratio_pct: throughputRatioPct,
   tcp_upload_mbps: tcpUpload,
