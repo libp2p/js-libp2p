@@ -1,0 +1,2 @@
+{"type":"config","name":"Improve WebRTC streaming throughput toward TCP","metricName":"webrtc_direct_tcp_ratio","metricUnit":"","bestDirection":"higher"}
+{"run":1,"commit":"5969607","metric":0.060045318650684625,"metrics":{},"status":"checks_failed","description":"baseline: add autoresearch harness for tcp vs webrtc-direct throughput ratio; benchmark passes at ~0.0600 ratio but checks failed because package-local test script could not find aegir via pnpm filter","timestamp":1773628073739,"segment":0}
