@@ -5,6 +5,7 @@ import * as lengthPrefixed from 'it-length-prefixed'
 import { bytes } from 'multiformats'
 import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
+import { Uint8ArrayList } from 'uint8arraylist'
 import { MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
 import { Message } from '../src/private-to-public/pb/message.js'
 import { createStream } from '../src/stream.js'
@@ -94,6 +95,30 @@ async function setup (): Promise<{ peerConnection: RTCPeerConnection, dataChanne
 
   return { peerConnection, dataChannel, stream }
 }
+
+describe('Incoming frames', () => {
+  it('reads a complete data frame delivered in a single message event', async () => {
+    const { dataChannel, stream, peerConnection } = await setup()
+    const received = Promise.withResolvers<Uint8Array | Uint8ArrayList>()
+    const expected = bytes.fromString(TEST_MESSAGE)
+
+    stream.addEventListener('message', (event) => {
+      received.resolve(event.data)
+    }, {
+      once: true
+    })
+
+    const frame = lengthPrefixed.encode.single(Message.encode({
+      message: expected
+    })).subarray()
+
+    dataChannel.dispatchEvent(new MessageEvent('message', { data: frame.buffer.slice(frame.byteOffset, frame.byteOffset + frame.byteLength) }))
+
+    expect(new Uint8ArrayList(await received.promise).subarray()).to.equalBytes(expected)
+
+    peerConnection.close()
+  })
+})
 
 function generatePbByFlag (flag?: Message.Flag): Uint8Array {
   const buf = Message.encode({

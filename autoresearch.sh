@@ -29,7 +29,7 @@ const webrtcDownload = mbps('webrtc', 'download')
 const webrtcDirectTcpRatio = (
   (webrtcDirectUpload / tcpUpload) +
   (webrtcDirectDownload / tcpDownload)
-) / 2 * 100
+) / 2
 
 const throughputRatioPct = (
   (webrtcDirectUpload / tcpUpload) +

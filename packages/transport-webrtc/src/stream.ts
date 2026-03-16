@@ -13,6 +13,25 @@ import type { AbortOptions, MessageStreamDirection, Logger } from '@libp2p/inter
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
 import type { Pushable } from 'it-pushable'
 
+function decodeVarint (buf: Uint8Array, offset: number = 0): { value: number, bytes: number } | undefined {
+  let value = 0
+  let shift = 0
+
+  for (let i = offset; i < buf.length; i++) {
+    const byte = buf[i]
+    value |= (byte & 0x7f) << shift
+
+    if ((byte & 0x80) === 0) {
+      return {
+        value,
+        bytes: i - offset + 1
+      }
+    }
+
+    shift += 7
+  }
+}
+
 export interface WebRTCStreamInit extends AbstractStreamInit, DataChannelOptions {
   /**
    * The network channel used for bidirectional peer-to-peer transfers of

@@ -63,5 +63,5 @@ It runs `benchmark/webrtc-perf.mjs`, writes the raw JSON to a temp file, and pri
 - Strong candidate to test early: non-Firefox `_sendMessage` currently iterates `Uint8ArrayList` chunks and may turn one framed logical message into multiple `RTCDataChannel.send(...)` calls, increasing SCTP/datachannel message count.
 - `throughput_ratio_pct` as a primary metric was too sensitive to noisy TCP denominator movement in short runs.
 - `combined_webrtc_mbps` reduced denominator noise, but it can hide regressions in the direct path by mixing in relayed WebRTC behavior.
-- Current decision: use `webrtc_direct_tcp_ratio` as the primary metric because it best isolates the suspected bottleneck while still anchoring against TCP; keep relayed and absolute throughput metrics as secondary guardrails.
+- Current decision: use `webrtc_direct_tcp_ratio` as the primary metric because it best isolates the suspected bottleneck while still anchoring against TCP; report it as a unitless ratio so it matches the historical PR comparisons more directly, and keep relayed and absolute throughput metrics as secondary guardrails.
 - Confirmed win already landed: send each framed WebRTC record with a single `RTCDataChannel.send(...)` call instead of splitting one logical record across multiple sends.
