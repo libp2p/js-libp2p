@@ -4,6 +4,14 @@ set -euo pipefail
 out=$(mktemp)
 trap 'rm -f "$out"' EXIT
 
+(
+  cd /Users/aristotle/Documents/Projects/js-libp2p/packages/transport-webrtc
+  ../../node_modules/.bin/aegir build >/tmp/autoresearch-webrtc-build.log 2>&1
+) || {
+  tail -n 80 /tmp/autoresearch-webrtc-build.log
+  exit 1
+}
+
 node benchmark/webrtc-perf.mjs \
   --transports=tcp \
   --transports=webrtc-direct \
