@@ -1,0 +1,1 @@
+- Add a raw `node-datachannel` microbenchmark to separate js-libp2p framing overhead from native SCTP/datachannel limits before attempting larger protocol changes.
