@@ -433,7 +433,7 @@ describe('dial queue', () => {
   describe('addressDialTimeout', () => {
     // helper: returns a transport stub that hangs until the signal fires
     function hangUntilAborted (options?: { signal?: AbortSignal }): Promise<Connection> {
-      return new Promise<Connection>((_, reject) => {
+      return new Promise<Connection>((_resolve, reject) => {
         options?.signal?.addEventListener('abort', () => { reject(options.signal?.reason) }, { once: true })
       })
     }
