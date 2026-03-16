@@ -140,18 +140,10 @@ export class WebRTCStream extends AbstractStream {
 
     this.log.trace('sending message, channel state "%s"', this.channel.readyState)
 
-    if (isFirefox) {
-      // TODO: firefox can deliver small messages out of order - remove once a
-      // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
-      // available in playwright-test
-      this.channel.send(data.subarray())
-      return
-    }
-
-    // send message without copying data
-    for (const buf of data) {
-      this.channel.send(buf)
-    }
+    // RTCDataChannel is message-oriented, so each framed libp2p message should
+    // be sent with a single `send(...)` call. Splitting a Uint8ArrayList into
+    // multiple sends increases data channel message count and hurts throughput.
+    this.channel.send(data.subarray())
   }
 
   sendData (data: Uint8ArrayList): SendResult {
