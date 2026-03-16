@@ -6,8 +6,8 @@ trap 'rm -f "$tmp"' EXIT
 
 node benchmark/webrtc-perf.mjs \
   --throughput-iterations=1 \
-  --throughput-seconds=3 \
-  --latency-iterations=3 \
+  --throughput-seconds=4 \
+  --latency-iterations=2 \
   > "$tmp"
 
 node --input-type=module - "$tmp" <<'EOF'
@@ -33,7 +33,15 @@ const throughputRatioPct = (
   (webrtcDownload / tcpDownload)
 ) / 4 * 100
 
+const combinedWebRTCMbps = (
+  webrtcDirectUpload +
+  webrtcDirectDownload +
+  webrtcUpload +
+  webrtcDownload
+)
+
 const metrics = {
+  combined_webrtc_mbps: combinedWebRTCMbps,
   throughput_ratio_pct: throughputRatioPct,
   tcp_upload_mbps: tcpUpload,
   tcp_download_mbps: tcpDownload,

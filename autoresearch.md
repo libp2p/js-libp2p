@@ -11,13 +11,14 @@ The existing benchmark context in `benchmarking-results.md` shows:
 The current autoresearch loop uses the existing `benchmark/webrtc-perf.mjs` harness with a shorter runtime for iteration speed, but keeps the workload structure the same: TCP baseline plus both WebRTC modes, upload + download, and latency sampling.
 
 ## Metrics
-- **Primary**: `throughput_ratio_pct` (%, higher is better)
-  - Average of:
-    - `webrtc-direct upload / tcp upload`
-    - `webrtc-direct download / tcp download`
-    - `webrtc upload / tcp upload`
-    - `webrtc download / tcp download`
+- **Primary**: `combined_webrtc_mbps` (Mbps, higher is better)
+  - Sum of median throughput for:
+    - `webrtc-direct upload`
+    - `webrtc-direct download`
+    - `webrtc upload`
+    - `webrtc download`
 - **Secondary**:
+  - `throughput_ratio_pct`
   - `webrtc_direct_upload_mbps`
   - `webrtc_direct_download_mbps`
   - `webrtc_upload_mbps`
@@ -61,3 +62,5 @@ It runs `benchmark/webrtc-perf.mjs`, writes the raw JSON to a temp file, and pri
 - Session started from `benchmarking-results.md` context.
 - Initial hypothesis: the biggest wins are likely in `packages/transport-webrtc/src/stream.ts`, where every libp2p stream chunk is framed for RTCDataChannel send/receive.
 - Strong candidate to test early: non-Firefox `_sendMessage` currently iterates `Uint8ArrayList` chunks and may turn one framed logical message into multiple `RTCDataChannel.send(...)` calls, increasing SCTP/datachannel message count.
+- The first primary metric (`throughput_ratio_pct`) proved too sensitive to noisy TCP denominator movement in short runs, so the loop switched to `combined_webrtc_mbps` as the primary metric while keeping `throughput_ratio_pct` as a secondary guardrail.
+- Experiment currently under test: send each framed libp2p message via one `RTCDataChannel.send(...)` instead of scattering a `Uint8ArrayList` across multiple sends.
