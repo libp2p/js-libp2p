@@ -116,6 +116,11 @@ export function findExistingConnection (peerId?: PeerId, connections?: Connectio
   }
 
   const existingConnection = connections
+    // only consider connections that are still open - a closing/closed
+    // connection may still appear in the connection list if the 'close' event
+    // hasn't been processed yet (e.g. TCP FIN received at OS level but the JS
+    // event hasn't fired in this tick)
+    .filter(con => con.status === 'open')
     .sort((a, b) => {
       if (a.direct) {
         return -1
