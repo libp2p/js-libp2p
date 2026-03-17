@@ -472,4 +472,67 @@ describe('dial queue', () => {
     await expect(dial1).to.eventually.equal(connection)
     await expect(dial2).to.eventually.equal(connection)
   })
+
+  it('should append peer id to circuit relay addresses that are missing it', async () => {
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    // relay address as stored in the peer store - no destination peer id
+    // (PeerInfo multiaddrs intentionally omit the destination peer id for wire efficiency)
+    const relayAddrWithoutPeerId = multiaddr(`/ip4/1.2.3.4/tcp/1234/p2p/${relayPeer}/p2p-circuit`)
+    const relayAddrWithPeerId = multiaddr(`/ip4/1.2.3.4/tcp/1234/p2p/${relayPeer}/p2p-circuit/p2p/${remotePeer}`)
+    const connection = stubInterface<Connection>({ remotePeer })
+
+    components.peerStore.get.withArgs(remotePeer).resolves({
+      id: remotePeer,
+      addresses: [{ multiaddr: relayAddrWithoutPeerId, isCertified: false }],
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map()
+    })
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (ma) => {
+      if (ma.equals(relayAddrWithPeerId)) {
+        return connection
+      }
+      throw new Error(`unexpected address: ${ma.toString()}`)
+    })
+
+    dialer = new DialQueue(components)
+
+    await expect(dialer.dial(remotePeer)).to.eventually.equal(connection)
+
+    // the transport was called with the full relay address including the destination peer id
+    expect(components.transportManager.dial.calledWith(relayAddrWithPeerId)).to.be.true()
+  })
+
+  it('should not duplicate peer id in circuit relay addresses that already have it', async () => {
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    // relay address already has the destination peer id (e.g. from pubsub-peer-discovery)
+    const relayAddrWithPeerId = multiaddr(`/ip4/1.2.3.4/tcp/1234/p2p/${relayPeer}/p2p-circuit/p2p/${remotePeer}`)
+    const connection = stubInterface<Connection>({ remotePeer })
+
+    components.peerStore.get.withArgs(remotePeer).resolves({
+      id: remotePeer,
+      addresses: [{ multiaddr: relayAddrWithPeerId, isCertified: false }],
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map()
+    })
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.resolves(connection)
+
+    dialer = new DialQueue(components)
+
+    await expect(dialer.dial(remotePeer)).to.eventually.equal(connection)
+
+    // the address passed to the transport must not have a double peer id
+    const dialledAddr = components.transportManager.dial.getCall(0).args[0].toString()
+    expect(dialledAddr).to.equal(relayAddrWithPeerId.toString())
+    expect(dialledAddr).to.not.include(`/p2p/${remotePeer}/p2p/${remotePeer}`)
+  })
 })

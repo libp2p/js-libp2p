@@ -4,7 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
-import { CODE_P2P, CODE_P2P_CIRCUIT, isMultiaddr, multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, isMultiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -100,24 +100,9 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     components.events.addEventListener('peer:update', evt => {
       // if there was no peer previously in the peer store this is a new peer
       if (evt.detail.previous == null) {
-        const id = evt.detail.peer.id
         const peerInfo: PeerInfo = {
-          id,
-          multiaddrs: evt.detail.peer.addresses.map(a => {
-            const ma = a.multiaddr
-            const components = ma.getComponents()
-            const circuitIdx = components.findIndex(c => c.code === CODE_P2P_CIRCUIT)
-
-            // For circuit relay addresses, ensure the target peer ID is appended
-            // so callers can dial the address directly without having to add it manually.
-            // Peers often announce relay addresses without their own peer ID (e.g. from
-            // identify), so we add it here since it is known from the peer store.
-            if (circuitIdx !== -1 && !components.slice(circuitIdx + 1).some(c => c.code === CODE_P2P)) {
-              return ma.encapsulate(multiaddr(`/p2p/${id}`))
-            }
-
-            return ma
-          })
+          id: evt.detail.peer.id,
+          multiaddrs: evt.detail.peer.addresses.map(a => a.multiaddr)
         }
 
         components.events.safeDispatchEvent('peer:discovery', { detail: peerInfo })
