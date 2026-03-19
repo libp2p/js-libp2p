@@ -110,6 +110,24 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.1.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.5...libp2p-v3.1.6) (2026-03-12)
+
+
+### Bug Fixes
+
+* **registrar:** ensure onDisconnect respects notifyOnLimitedConnection ([#3376](https://github.com/libp2p/js-libp2p/issues/3376)) ([464e16e](https://github.com/libp2p/js-libp2p/commit/464e16e1371798a52526e94ff0f5bf865548b7bb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.12 to ^3.0.13
+    * @libp2p/multistream-select bumped from ^7.0.12 to ^7.0.13
+    * @libp2p/peer-collections bumped from ^7.0.12 to ^7.0.13
+    * @libp2p/peer-store bumped from ^12.0.12 to ^12.0.13
+    * @libp2p/utils bumped from ^7.0.12 to ^7.0.13
+
 ## [3.1.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.4...libp2p-v3.1.5) (2026-03-03)
 
 
