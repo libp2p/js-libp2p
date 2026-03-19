@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.13](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.12...utils-v7.0.13) (2026-03-12)
+
+
+### Bug Fixes
+
+* **utils:** clear repeatingTask anySignal per run ([#3401](https://github.com/libp2p/js-libp2p/issues/3401)) ([e19d110](https://github.com/libp2p/js-libp2p/commit/e19d1109390aed39d5020200a2dd4c1fe6f35217))
+
 ## [7.0.12](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.11...utils-v7.0.12) (2026-03-03)
 
 
