@@ -458,6 +458,8 @@ class SimpleMetrics implements Metrics, Startable {
 
   trackProtocolStream (stream: Stream): void {
     if (stream.protocol == null) {
+      // protocol not negotiated yet, should not happen as the upgrader
+      // calls this handler after protocol negotiation
       return
     }
 

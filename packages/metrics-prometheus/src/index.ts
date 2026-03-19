@@ -284,17 +284,16 @@ class PrometheusMetrics implements Metrics {
       // calls this handler after protocol negotiation
       return
     }
- 
-    // existing byte-transfer tracking — unchanged
+
     this._track(stream, stream.protocol)
- 
+
     // Label format: "direction protocol"  e.g. "inbound /identify/1.0.0"
     // Matches the format of the existing libp2p_protocol_streams_total gauge.
     const label = `${stream.direction} ${stream.protocol}`
- 
+
     // Stream is now open — increment the opened counter immediately.
     this.streamsOpened.increment({ [label]: 1 })
- 
+
     stream.addEventListener('close', () => {
       this.streamsClosed.increment({ [label]: 1 })
     }, { once: true })
