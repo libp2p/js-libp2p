@@ -72,7 +72,7 @@ export interface ConnectionManagerInit {
    * unreachable address from consuming the entire `dialTimeout` budget when
    * multiple addresses are available for a peer.
    *
-   * @default 3_000
+   * @default 6_000
    */
   addressDialTimeout?: number
 
