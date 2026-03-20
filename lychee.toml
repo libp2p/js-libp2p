@@ -1,26 +1,34 @@
 # https://lychee.cli.rs/
 # Lychee link checker configuration
-# Run with: lychee '**/*.md' '**/*.ts'
+# Run with: lychee -q '**/*.md' '**/*.ts'
 
 # Accept 429 (Too Many Requests) - GitHub rate-limits crawlers, it doesn't
 # mean the link is broken
 # 429 = GitHub rate-limits crawlers
 # 403 = npm returns 403 to automated clients
-accept = [429, 403]
+# 406 = some servers (e.g. bugzilla.mozilla.org) reject crawlers via content negotiation
+accept = [429, 403, 406]
 
 cache = true
 max_cache_age = "1d"
 
 format = "compact"
-output = "lychee-report.txt"
 
 # URL patterns to skip (regex)
 exclude = [
   # Protocol-relative URLs like //npmjs.com/package/... in markdown tables
-  # and //github.com/... badge URLs cannot be resolved by lychee
-  "mailto://",
+  # //github.com/... badge URLs cannot be resolved by lychee
   "^//",
 
+  "mailto://",
+
+  # Localhost and LAN addresses used in test fixtures and example code
+  "^http://localhost",
+  "^http://127\\.0\\.0\\.1",
+  "^https?://192\\.168\\.",
+
+  # Specific example IPs used in test code
+  "^https?://154\\.38\\.162\\.255",
 ]
 
 # File paths/globs to exclude from scanning

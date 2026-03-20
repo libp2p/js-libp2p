@@ -1,7 +1,7 @@
 /**
  * Default options for key derivation
  *
- * @see https://cryptosense.com/parametesr-choice-for-pbkdf2/
+ * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
  */
 export const DEK_INIT = {
   keyLength: 512 / 8,

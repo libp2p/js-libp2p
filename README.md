@@ -95,7 +95,6 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 - [`/packages/peer-store`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store) Stores information about peers libp2p knows on the network
 - [`/packages/protocol-echo`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo) Implementation of an Echo protocol
 - [`/packages/protocol-perf`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-perf) Implementation of the Perf protocol
-- [`/packages/pubsub`](https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub) libp2p pubsub base class
 - [`/packages/floodsub`](https://github.com/libp2p/js-libp2p/tree/main/packages/floodsub) libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
 - [`/packages/record`](https://github.com/libp2p/js-libp2p/tree/main/packages/record) libp2p record implementation
 - [`/packages/stream-multiplexer-mplex`](https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex) JavaScript implementation of <https://github.com/libp2p/mplex>
