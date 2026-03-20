@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * This is a [simple stream multiplexer(https://docs.libp2p.io/concepts/multiplex/mplex/) that has been deprecated.
+ * This is a [simple stream multiplexer(https://libp2p.io/docs/mplex/) that has been deprecated.
  *
  * Please use [@chainsafe/libp2p-yamux](https://www.npmjs.com/package/@chainsafe/libp2p-yamux) instead.
  *

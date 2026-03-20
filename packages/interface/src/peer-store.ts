@@ -243,7 +243,7 @@ export interface PeerStore {
    * The returned object can be passed to `JSON.stringify` without any
    * additional processing.
    *
-   * @see https://docs.libp2p.io/concepts/fundamentals/peers/#peer-info
+   * @see https://libp2p.io/docs/peers/
    *
    * @example
    *

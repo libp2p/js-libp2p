@@ -1,0 +1,38 @@
+# https://lychee.cli.rs/
+# Lychee link checker configuration
+# Run with: lychee '**/*.md' '**/*.ts'
+
+# Accept 429 (Too Many Requests) - GitHub rate-limits crawlers, it doesn't
+# mean the link is broken
+# 429 = GitHub rate-limits crawlers
+# 403 = npm returns 403 to automated clients
+accept = [429, 403]
+
+cache = true
+max_cache_age = "1d"
+
+format = "compact"
+output = "lychee-report.txt"
+
+# URL patterns to skip (regex)
+exclude = [
+  # Protocol-relative URLs like //npmjs.com/package/... in markdown tables
+  # and //github.com/... badge URLs cannot be resolved by lychee
+  "mailto://",
+  "^//",
+
+]
+
+# File paths/globs to exclude from scanning
+exclude_path = [
+  # CHANGELOG files are auto-generated and contain GitHub comparison URLs
+  # (e.g. .../compare/libp2p-v3.1.3...libp2p-v3.1.4) that frequently 404
+  # as old tags get cleaned up - not worth maintaining
+  "CHANGELOG\\.md",
+
+  # Migration guides document historical API changes and intentionally
+  # reference archived/superseded repositories (js-libp2p-interfaces etc.)
+  "doc/migrations",
+
+  "node_modules",
+]

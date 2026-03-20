@@ -1,40 +1,41 @@
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#dialTimeout
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#dialTimeout
  */
 export const DIAL_TIMEOUT = 10_000
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#connectionCloseTimeout
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#connectionCloseTimeout
  */
 export const CONNECTION_CLOSE_TIMEOUT = 1_000
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#inboundUpgradeTimeout
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#inboundUpgradeTimeout
  */
 export const INBOUND_UPGRADE_TIMEOUT = 10_000
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#protocolNegotiationTimeout
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#inboundStreamProtocolNegotiationTimeout
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#outboundStreamProtocolNegotiationTimeout
  */
 export const PROTOCOL_NEGOTIATION_TIMEOUT = 10_000
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxPeerAddrsToDial
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#maxPeerAddrsToDial
  */
 export const MAX_PEER_ADDRS_TO_DIAL = 25
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#inboundConnectionThreshold
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#inboundConnectionThreshold
  */
 export const INBOUND_CONNECTION_THRESHOLD = 5
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxIncomingPendingConnections
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#maxIncomingPendingConnections
  */
 export const MAX_INCOMING_PENDING_CONNECTIONS = 10
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxParallelReconnects
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#maxParallelReconnects
  */
 export const MAX_PARALLEL_RECONNECTS = 5
 
@@ -56,11 +57,8 @@ export const LAST_DIAL_FAILURE_KEY = 'last-dial-failure'
 export const LAST_DIAL_SUCCESS_KEY = 'last-dial-success'
 
 /**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxDialQueueLength
+ * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#maxDialQueueLength
  */
 export const MAX_DIAL_QUEUE_LENGTH = 500
 
-/**
- * @see https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html#maxRecursiveDepth
- */
 export const MAX_RECURSIVE_DEPTH = 32
