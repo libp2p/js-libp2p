@@ -40,7 +40,7 @@ describe('Max message size', () => {
     expect(sendMore).to.be.true()
 
     if (isFirefox) {
-      // firefox can deliver small messages out of order - remove once a
+      // TODO: firefox can deliver small messages out of order - remove once a
       // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
       // available in playwright-test
       expect(channel.send).to.have.property('callCount', 1)
@@ -117,7 +117,7 @@ function generatePbByFlag (flag?: Message.Flag): Uint8Array {
   return lengthPrefixed.encode.single(buf).subarray()
 }
 
-// move to transport interface compliance suite
+// TODO: move to transport interface compliance suite
 describe.skip('Stream Stats', () => {
   let stream: WebRTCStream
   let peerConnection: RTCPeerConnection
@@ -185,7 +185,7 @@ describe.skip('Stream Stats', () => {
   })
 })
 
-// move to transport interface compliance suite
+// TODO: move to transport interface compliance suite
 describe.skip('Stream Read Stats Transition By Incoming Flag', () => {
   let dataChannel: RTCDataChannel
   let stream: Stream
@@ -228,7 +228,7 @@ describe.skip('Stream Read Stats Transition By Incoming Flag', () => {
   })
 })
 
-// move to transport interface compliance suite
+// TODO: move to transport interface compliance suite
 describe.skip('Stream Write Stats Transition By Incoming Flag', () => {
   let dataChannel: RTCDataChannel
   let stream: Stream

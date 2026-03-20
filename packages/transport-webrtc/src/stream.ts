@@ -141,7 +141,7 @@ export class WebRTCStream extends AbstractStream {
     this.log.trace('sending message, channel state "%s"', this.channel.readyState)
 
     if (isFirefox) {
-      // firefox can deliver small messages out of order - remove once a
+      // TODO: firefox can deliver small messages out of order - remove once a
       // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
       // available in playwright-test
       this.channel.send(data.subarray())
@@ -162,7 +162,7 @@ export class WebRTCStream extends AbstractStream {
       }
     }
 
-    // firefox can deliver small messages out of order - remove once a
+    // TODO: firefox can deliver small messages out of order - remove once a
     // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
     // available in playwright-test
     // ----
@@ -301,11 +301,11 @@ export class WebRTCStream extends AbstractStream {
   }
 
   sendPause (): void {
-    // read backpressure not yet implemented
+    // TODO: read backpressure?
   }
 
   sendResume (): void {
-    // read backpressure not yet implemented
+    // TODO: read backpressure?
   }
 }
 

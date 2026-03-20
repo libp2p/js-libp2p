@@ -60,11 +60,11 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   sendPause (): void {
-    // read backpressure not yet implemented
+    // TODO: readable backpressure?
   }
 
   sendResume (): void {
-    // read backpressure not yet implemented
+    // TODO: readable backpressure?
   }
 }
 
