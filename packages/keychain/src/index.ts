@@ -32,7 +32,7 @@
  *
  * ```TypeScript
  * const defaultOptions = {
- *   // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+ *   // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
  *   dek: {
  *     keyLength: 512 / 8,
  *     iterationCount: 1000,

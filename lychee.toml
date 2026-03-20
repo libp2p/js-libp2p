@@ -29,6 +29,9 @@ exclude = [
 
   # Specific example IPs used in test code
   "^https?://154\\.38\\.162\\.255",
+
+  # pubsub package moved out of this repo
+  "github\\.com/libp2p/js-libp2p/tree/main/packages/pubsub",
 ]
 
 # File paths/globs to exclude from scanning

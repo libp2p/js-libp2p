@@ -61,4 +61,7 @@ export const LAST_DIAL_SUCCESS_KEY = 'last-dial-success'
  */
 export const MAX_DIAL_QUEUE_LENGTH = 500
 
+/**
+ * @see https://github.com/libp2p/js-libp2p/blob/main/packages/libp2p/src/connection-manager/resolvers/index.ts
+ */
 export const MAX_RECURSIVE_DEPTH = 32

@@ -1,7 +1,7 @@
 /**
  * Default options for key derivation
  *
- * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+ * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
  */
 export const DEK_INIT = {
   keyLength: 512 / 8,
