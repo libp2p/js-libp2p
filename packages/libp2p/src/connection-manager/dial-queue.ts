@@ -531,7 +531,7 @@ export class DialQueue {
 
       return true
     } catch {
-      // failed to calculate multiaddrs, treat as not dialable
+
     }
 
     return false
