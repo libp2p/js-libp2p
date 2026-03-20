@@ -18,6 +18,7 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
     - [Browser](#browser)
   - [React Native](#react-native)
   - [What is next](#what-is-next)
+    - [Additional Resources](#additional-resources)
 
 ## Install
 
@@ -329,6 +330,12 @@ Libp2p can be used in React Native applications. However, there are some limitat
 
 There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md) and the [examples repo](https://github.com/libp2p/js-libp2p-examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
+### Additional Resources
+
+- [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p) — Interactive tutorial covering libp2p fundamentals
+- [libp2p Concepts](https://docs.libp2p.io/concepts/introduction/overview/) — Overview of core concepts and architecture
+- [libp2p Connectivity](https://connectivity.libp2p.io/) — Interoperability matrix across libp2p implementations
+- [Universal Connectivity](https://github.com/libp2p/universal-connectivity) — Demo application showcasing cross-implementation connectivity
 
 [transport]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/transport.ts
 [crypto]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/keys.ts
