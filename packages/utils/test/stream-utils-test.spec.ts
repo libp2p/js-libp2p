@@ -412,4 +412,58 @@ describe('stream-pair', () => {
     await expect(outgoing.onDrain()).to.eventually.be.rejected
       .with.property('name', 'StreamResetError')
   })
+
+  it('should not throw uncaught error on drain event when stream is closed', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+
+    // fill the write buffer to trigger backpressure
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {
+      // drain the send buffer
+    }
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    // set the stream to closed - drain events after this should be ignored
+    outgoing.writeStatus = 'closed'
+
+    // dispatching drain on a closed stream should not throw
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
+  it('should catch StreamStateError from sendData during closing', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+    const outgoingStream = outgoing as typeof outgoing & {
+      sendData(data: Uint8ArrayList): { sentBytes: number, canSendMore: boolean }
+    }
+
+    // fill the write buffer to trigger backpressure
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {
+      // drain the send buffer
+    }
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    // stub sendData to throw StreamStateError (simulates underlying
+    // transport closing while the outer stream is still flushing)
+    const err = new Error('Cannot write to a stream that is closing')
+    err.name = 'StreamStateError'
+    Sinon.stub(outgoingStream, 'sendData').throws(err)
+
+    outgoing.writeStatus = 'closing'
+
+    // the drain event should not throw - the error should be caught internally
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
 })

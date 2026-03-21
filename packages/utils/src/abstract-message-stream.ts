@@ -96,6 +96,15 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     const continueSendingOnDrain = (): void => {
       if (this.writableNeedsDrain) {
+        // a drain event can arrive after writeStatus transitions to
+        // 'closing'/'closed' during connection teardown - bail out to
+        // avoid calling send() on a non-writable stream which would
+        // throw an uncaught StreamStateError
+        if (this.writeStatus !== 'writable' && this.writeStatus !== 'closing') {
+          this.log.trace('not processing send queue on drain as stream write status is %s', this.writeStatus)
+          return
+        }
+
         this.log.trace('drain event received, continue sending data')
         this.writableNeedsDrain = false
         this.processSendQueue()
@@ -476,7 +485,22 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
         // sending data can cause buffers to fill up, events to be emitted and
         // this method to be invoked again
-        const sendResult = this.sendData(toSend)
+        let sendResult: SendResult
+        try {
+          sendResult = this.sendData(toSend)
+        } catch (err: any) {
+          // the underlying transport may have closed between the drain event
+          // and this send attempt - treat as a failed send rather than letting
+          // the error propagate as an uncaught exception
+          if (err.name === 'StreamStateError') {
+            this.log('send failed during queue processing, stream is %s - %e', this.writeStatus, err)
+            this.writeBuffer.prepend(toSend)
+            return false
+          }
+
+          throw err
+        }
+
         canSendMore = sendResult.canSendMore
         sentBytes += sendResult.sentBytes
 
