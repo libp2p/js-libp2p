@@ -152,7 +152,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           }
 
           // if the provider is us and we are within the reprovide threshold,
-          // collect for reprovision
+          // collect for reproviding
           if (this.shouldReprovide(isSelf, expires)) {
             this.log('scheduling reprovide of %c', cid)
             toReprovide.push(cid)
