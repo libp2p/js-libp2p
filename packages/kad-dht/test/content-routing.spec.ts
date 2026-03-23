@@ -355,7 +355,7 @@ describe('content routing', () => {
       'No new network calls should be made after abort')
   })
 
-  it('queries connection status to prioritise connected peers when sending ADD_PROVIDER', async function () {
+  it('queries connection status to prioritize connected peers when sending ADD_PROVIDER', async function () {
     this.timeout(20 * 1000)
 
     const dhts = await sortDHTs(await Promise.all([
@@ -381,7 +381,7 @@ describe('content routing', () => {
     // getConnections should have been called to check peer connection status
     // when sorting the closest peers for ADD_PROVIDER fan-out
     expect(dhts[3].components.connectionManager.getConnections.called).to.be.true(
-      'getConnections should be called to prioritise connected peers during provide()'
+      'getConnections should be called to prioritize connected peers during provide()'
     )
   })
 })
