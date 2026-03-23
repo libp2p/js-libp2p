@@ -2,7 +2,7 @@ import { AdaptiveTimeout, Queue } from '@libp2p/utils'
 import drain from 'it-drain'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD, REPROVIDE_TIMEOUT } from './constants.js'
-import { parseProviderKey, readProviderTime, timeOperationMethod } from './utils.js'
+import { convertBuffer, parseProviderKey, readProviderTime, timeOperationMethod } from './utils.js'
 import type { ContentRouting } from './content-routing/index.js'
 import type { OperationMetrics } from './kad-dht.js'
 import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
@@ -116,11 +116,20 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
   /**
    * Check all provider records. Delete them if they have expired, reprovide
    * them if the provider is us and the expiry is within the reprovide window.
+   *
+   * CIDs are queued in Kademlia key order so that XOR-adjacent CIDs are
+   * reprovided consecutively. Since nearby CIDs in the keyspace share the
+   * same K closest peers, connections opened for one CID are likely to be
+   * reused for the next, reducing the number of new dials per reprovide run.
    */
   private async processRecords (options?: AbortOptions): Promise<void> {
     try {
       this.safeDispatchEvent('reprovide:start')
       this.log('starting reprovide/cleanup')
+
+      // collect CIDs that need reproviding so we can sort them before queueing
+      const toReprovide: CID[] = []
+
       // Get all provider entries from the datastore
       for await (const entry of this.datastore.query({
         prefix: this.datastorePrefix
@@ -143,17 +152,43 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           }
 
           // if the provider is us and we are within the reprovide threshold,
-          // reprovide the record
+          // collect for reprovision
           if (this.shouldReprovide(isSelf, expires)) {
-            this.log('reproviding %c as it is within the reprovide threshold (%d)', cid, this.reprovideThreshold)
-            this.queueReprovide(cid)
-              .catch(err => {
-                this.log.error('could not reprovide %c - %e', cid, err)
-              })
+            this.log('scheduling reprovide of %c', cid)
+            toReprovide.push(cid)
           }
         } catch (err: any) {
           this.log.error('error processing datastore key %s - %s', entry.key, err.message)
         }
+      }
+
+      // sort collected CIDs by their Kademlia key so XOR-adjacent CIDs are
+      // queued consecutively — peers responsible for one CID are likely to
+      // also be responsible for adjacent CIDs, so connections can be reused
+      if (toReprovide.length > 1) {
+        const kadKeys = await Promise.all(
+          toReprovide.map(cid => convertBuffer(cid.multihash.bytes, options))
+        )
+
+        const sortable = toReprovide.map((cid, i) => ({ cid, kadKey: kadKeys[i] }))
+        sortable.sort((a, b) => {
+          for (let i = 0; i < a.kadKey.length; i++) {
+            if (a.kadKey[i] !== b.kadKey[i]) {
+              return a.kadKey[i] - b.kadKey[i]
+            }
+          }
+          return 0
+        })
+
+        toReprovide.splice(0, toReprovide.length, ...sortable.map(({ cid }) => cid))
+      }
+
+      // queue reprovides in Kademlia key order
+      for (const cid of toReprovide) {
+        this.queueReprovide(cid)
+          .catch(err => {
+            this.log.error('could not reprovide %c - %e', cid, err)
+          })
       }
 
       this.log('reprovide/cleanup successful')
