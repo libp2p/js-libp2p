@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://libp2p.io/docs/circuit-relay/)
 addresses.
 
 ## Example - Use as a transport
@@ -42,7 +42,7 @@ const node = await createLibp2p({
 })
 ```
 
-The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://libp2p.io/docs/circuit-relay/)
 server.  This will not work in browsers.
 
 ## Example - Use as a server
