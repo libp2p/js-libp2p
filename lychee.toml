@@ -7,7 +7,7 @@
 # 429 = GitHub rate-limits crawlers
 # 403 = npm returns 403 to automated clients
 # 406 = some servers (e.g. bugzilla.mozilla.org) reject crawlers via content negotiation
-accept = [429, 403, 406]
+accept = [200, 429, 403, 406]
 
 cache = true
 max_cache_age = "1d"
