@@ -187,8 +187,7 @@ List of packages currently in existence for libp2p
     <a href="https://hoprnet.org/"><img width="150" src="https://github.com/hoprnet/hopr-assets/blob/master/v1/logo/hopr_logo_padded.png?raw=true" alt="HOPR Logo" /></a>
     <a href="https://helia.io/"><img src="https://raw.githubusercontent.com/ipfs/helia/main/assets/helia.png" alt="Helia (IPFS in JavaScript) logo" width="150" /></a>
     <a href="https://github.com/orbitdb/orbitdb"><img src="https://avatars.githubusercontent.com/u/25079463?s=200&v=4" alt="OrbitDB logo" width="150" /></a>
-    <a href="https://peerbit.org/"><img src="https://peerbit.org/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
-    <a href="https://blog.topology.gg/"><img src="https://avatars.githubusercontent.com/u/157637200" alt="Topology logo" width="150" /></a>
+    <a href="https://peerbit.org/"><img src="https://www.peerbit.org/content/docs/peerbit-logo.png" alt="Peerbit logo" width="150" /></a>
   </p>
 </div>
 
