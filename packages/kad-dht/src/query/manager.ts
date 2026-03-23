@@ -172,13 +172,19 @@ export class QueryManager implements Startable {
         count: this.routingTable.kBucketSize
       })
 
-      // split peers into d buckets evenly(ish)
-      const peersToQuery = peers.sort(() => {
-        if (Math.random() > 0.5) {
-          return 1
+      // split peers into d buckets evenly(ish), preferring already-connected
+      // peers to avoid opening new connections unnecessarily
+      const peersToQuery = peers.sort((a, b) => {
+        const aConnected = (this.connectionManager.getConnections(a) ?? []).length > 0 ? 0 : 1
+        const bConnected = (this.connectionManager.getConnections(b) ?? []).length > 0 ? 0 : 1
+
+        if (aConnected !== bConnected) {
+          // put connected peers first
+          return aConnected - bConnected
         }
 
-        return -1
+        // randomize within each group to maintain path diversity
+        return Math.random() > 0.5 ? 1 : -1
       })
         .reduce((acc: PeerId[][], curr, index) => {
           acc[index % this.disjointPaths].push(curr)

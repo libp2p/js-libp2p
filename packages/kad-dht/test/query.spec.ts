@@ -998,4 +998,63 @@ describe('QueryManager', () => {
 
     await manager.stop()
   })
+
+  it('should prefer connected peers when distributing to disjoint paths', async () => {
+    // pick peers at higher XOR indices as "connected" and lower-XOR as "disconnected"
+    // so XOR-distance sorting alone would put disconnected peers first — only our
+    // connected-first bucket assignment can ensure each path gets a connected peer
+    const connectedPeers = peers.slice(10, 12).map(p => p.peerId)
+    const disconnectedPeers = peers.slice(0, 2).map(p => p.peerId)
+    // routing table returns the 4 peers in arbitrary order
+    const startingPeers = [...connectedPeers, ...disconnectedPeers]
+
+    const connectionManager = stubInterface<ConnectionManager>({
+      isDialable: async () => true
+    })
+    connectionManager.getConnections.callsFake((peerId?: PeerId) => {
+      if (peerId != null && connectedPeers.some(p => p.equals(peerId))) {
+        return [{}] as any
+      }
+      return []
+    })
+
+    const manager = new QueryManager({
+      peerId: ourPeerId,
+      logger: defaultLogger(),
+      connectionManager
+    }, {
+      ...defaultInit(),
+      disjointPaths: 2,
+      alpha: 1
+    })
+    await manager.start()
+
+    routingTable.closestPeers.returns(startingPeers)
+
+    // track which peers are queried on each disjoint path
+    const peersByPath = new Map<number, PeerId[]>([[0, []], [1, []]])
+
+    const queryFunc: QueryFunc = async function * ({ peer, path }) {
+      peersByPath.get(path.index)?.push(peer.id)
+
+      yield peerResponseEvent({
+        from: peer.id,
+        messageType: MessageType.GET_VALUE,
+        path
+      })
+    }
+
+    await drain(manager.run(key, queryFunc))
+
+    // with connected-peers-first sort, even though disconnected peers have lower
+    // XOR distance, each disjoint path should get at least one connected starting peer
+    for (const [pathIndex, queriedPeers] of peersByPath) {
+      const hasConnectedPeer = queriedPeers.some(p => connectedPeers.some(c => c.equals(p)))
+      expect(hasConnectedPeer).to.be.true(
+        `path ${pathIndex} should have at least one connected starting peer`
+      )
+    }
+
+    await manager.stop()
+  })
 })

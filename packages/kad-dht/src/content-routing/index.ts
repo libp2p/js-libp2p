@@ -151,16 +151,24 @@ export class ContentRouting {
         finalPeerEvents.push(event)
       }
 
-      finalPeerEvents.forEach(event => {
-        queue.add(async () => {
-          for await (const notifyEvent of publishProviderRecord(event)) {
-            events.push(notifyEvent)
-          }
+      // sort connected peers first to reuse existing connections before
+      // opening new ones when sending ADD_PROVIDER records
+      finalPeerEvents
+        .sort((a, b) => {
+          const aConnected = (self.components.connectionManager.getConnections(a.peer.id) ?? []).length > 0 ? 0 : 1
+          const bConnected = (self.components.connectionManager.getConnections(b.peer.id) ?? []).length > 0 ? 0 : 1
+          return aConnected - bConnected
         })
-          .catch(err => {
-            this.log.error('error publishing provider record to peer - %e', err)
+        .forEach(event => {
+          queue.add(async () => {
+            for await (const notifyEvent of publishProviderRecord(event)) {
+              events.push(notifyEvent)
+            }
           })
-      })
+            .catch(err => {
+              this.log.error('error publishing provider record to peer - %e', err)
+            })
+        })
     })
       .catch(err => {
         events.end(err)

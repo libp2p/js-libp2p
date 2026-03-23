@@ -354,4 +354,34 @@ describe('content routing', () => {
     expect(sendMessageSpy.callCount).to.equal(initialMessageCalls,
       'No new network calls should be made after abort')
   })
+
+  it('queries connection status to prioritise connected peers when sending ADD_PROVIDER', async function () {
+    this.timeout(20 * 1000)
+
+    const dhts = await sortDHTs(await Promise.all([
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn(),
+      testDHT.spawn()
+    ]), await kadUtils.convertBuffer(cid.multihash.bytes))
+
+    // connect all peers to the provider (dhts[3]) so they appear in its routing table
+    await Promise.all([
+      testDHT.connect(dhts[0], dhts[3]),
+      testDHT.connect(dhts[1], dhts[3]),
+      testDHT.connect(dhts[2], dhts[3])
+    ])
+
+    // getConnections is already a sinon stub from stubInterface — reset its history
+    // and verify it gets called during provide() for the connected-peers-first sort
+    dhts[3].components.connectionManager.getConnections.resetHistory()
+
+    await drain(dhts[3].dht.provide(cid))
+
+    // getConnections should have been called to check peer connection status
+    // when sorting the closest peers for ADD_PROVIDER fan-out
+    expect(dhts[3].components.connectionManager.getConnections.called).to.be.true(
+      'getConnections should be called to prioritise connected peers during provide()'
+    )
+  })
 })
