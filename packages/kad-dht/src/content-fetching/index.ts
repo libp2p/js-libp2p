@@ -302,6 +302,10 @@ export class ContentFetching {
     }
 
     // we have peers, lets send the actual query to them
-    yield * this.queryManager.run(key, getValueQuery, options)
+    // disable early termination so all close peers respond before we select the best record
+    yield * this.queryManager.run(key, getValueQuery, {
+      ...options,
+      disableEarlyTermination: true
+    })
   }
 }

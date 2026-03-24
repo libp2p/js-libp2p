@@ -40,6 +40,12 @@ export interface QueryManagerComponents {
 
 export interface QueryOptions extends RoutingOptions {
   isSelfQuery?: boolean
+  /**
+   * Disable early termination of the query when a majority of paths complete.
+   * Use this for value-retrieval queries that need responses from all close peers
+   * to select the best record.
+   */
+  disableEarlyTermination?: boolean
 }
 
 /**
@@ -198,14 +204,16 @@ export class QueryManager implements Startable {
       const earlyTerminationController = new AbortController()
       setMaxListeners(Infinity, earlyTerminationController.signal)
 
-      const onPathComplete = (pathIndex: number): void => {
-        completedPaths++
+      const onPathComplete = options.disableEarlyTermination === true
+        ? undefined
+        : (pathIndex: number): void => {
+            completedPaths++
 
-        if (completedPaths >= minCompletedPaths && completedPaths < totalPaths) {
-          log('path %d completed, %d/%d paths done, triggering early termination', pathIndex, completedPaths, totalPaths)
-          earlyTerminationController.abort()
-        }
-      }
+            if (completedPaths >= minCompletedPaths && completedPaths < totalPaths) {
+              log('path %d completed, %d/%d paths done, triggering early termination', pathIndex, completedPaths, totalPaths)
+              earlyTerminationController.abort()
+            }
+          }
 
       // Create query paths from the starting peers
       const paths = peersToQuery.map((peer, index) => {
