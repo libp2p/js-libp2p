@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message, streamMessage } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -134,18 +134,104 @@ export namespace Message {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield * DialRequest.codec().stream(reader, reader.uint32(), `${prefix}.dialRequest`, {
+                limits: opts.limits?.dialRequest
+              })
+
+              break
+            }
+            case 2: {
+              yield * DialResponse.codec().stream(reader, reader.uint32(), `${prefix}.dialResponse`, {
+                limits: opts.limits?.dialResponse
+              })
+
+              break
+            }
+            case 3: {
+              yield * DialDataRequest.codec().stream(reader, reader.uint32(), `${prefix}.dialDataRequest`, {
+                limits: opts.limits?.dialDataRequest
+              })
+
+              break
+            }
+            case 4: {
+              yield * DialDataResponse.codec().stream(reader, reader.uint32(), `${prefix}.dialDataResponse`, {
+                limits: opts.limits?.dialDataResponse
+              })
+
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Message>): Uint8Array => {
+  export interface MessageDialRequestAddrsFieldEvent {
+    field: '$.dialRequest.addrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface MessageDialRequestNonceFieldEvent {
+    field: '$.dialRequest.nonce'
+    value: bigint
+  }
+
+  export interface MessageDialResponseStatusFieldEvent {
+    field: '$.dialResponse.status'
+    value: DialResponse.ResponseStatus
+  }
+
+  export interface MessageDialResponseAddrIdxFieldEvent {
+    field: '$.dialResponse.addrIdx'
+    value: number
+  }
+
+  export interface MessageDialResponseDialStatusFieldEvent {
+    field: '$.dialResponse.dialStatus'
+    value: DialStatus
+  }
+
+  export interface MessageDialDataRequestAddrIdxFieldEvent {
+    field: '$.dialDataRequest.addrIdx'
+    value: number
+  }
+
+  export interface MessageDialDataRequestNumBytesFieldEvent {
+    field: '$.dialDataRequest.numBytes'
+    value: bigint
+  }
+
+  export interface MessageDialDataResponseDataFieldEvent {
+    field: '$.dialDataResponse.data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<Message>): Uint8Array {
     return encodeMessage(obj, Message.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Message => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Message {
     return decodeMessage(buf, Message.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Generator<MessageDialRequestAddrsFieldEvent | MessageDialRequestNonceFieldEvent | MessageDialResponseStatusFieldEvent | MessageDialResponseAddrIdxFieldEvent | MessageDialResponseDialStatusFieldEvent | MessageDialDataRequestAddrIdxFieldEvent | MessageDialDataRequestNumBytesFieldEvent | MessageDialDataResponseDataFieldEvent> {
+    return streamMessage(buf, Message.codec(), opts)
   }
 }
 
@@ -193,7 +279,7 @@ export namespace DialRequest {
           switch (tag >>> 3) {
             case 1: {
               if (opts.limits?.addrs != null && obj.addrs.length === opts.limits.addrs) {
-                throw new MaxLengthError('Decode error - map field "addrs" had too many elements')
+                throw new MaxLengthError('Decode error - repeated field "addrs" had too many elements')
               }
 
               obj.addrs.push(reader.bytes())
@@ -211,18 +297,72 @@ export namespace DialRequest {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const obj = {
+          addrs: 0
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              if (opts.limits?.addrs != null && obj.addrs === opts.limits.addrs) {
+                throw new MaxLengthError('Streaming decode error - repeated field "addrs" had too many elements')
+              }
+
+              yield {
+                field: `${prefix}.addrs[]`,
+                index: obj.addrs,
+                value: reader.bytes()
+              }
+
+              obj.addrs++
+
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.nonce`,
+                value: reader.fixed64()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<DialRequest>): Uint8Array => {
+  export interface DialRequestAddrsFieldEvent {
+    field: '$.addrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface DialRequestNonceFieldEvent {
+    field: '$.nonce'
+    value: bigint
+  }
+
+  export function encode (obj: Partial<DialRequest>): Uint8Array {
     return encodeMessage(obj, DialRequest.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialRequest>): DialRequest => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialRequest>): DialRequest {
     return decodeMessage(buf, DialRequest.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialRequest>): Generator<DialRequestAddrsFieldEvent | DialRequestNonceFieldEvent> {
+    return streamMessage(buf, DialRequest.codec(), opts)
   }
 }
 
@@ -282,18 +422,59 @@ export namespace DialDataRequest {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.addrIdx`,
+                value: reader.uint32()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.numBytes`,
+                value: reader.uint64()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<DialDataRequest>): Uint8Array => {
+  export interface DialDataRequestAddrIdxFieldEvent {
+    field: '$.addrIdx'
+    value: number
+  }
+
+  export interface DialDataRequestNumBytesFieldEvent {
+    field: '$.numBytes'
+    value: bigint
+  }
+
+  export function encode (obj: Partial<DialDataRequest>): Uint8Array {
     return encodeMessage(obj, DialDataRequest.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialDataRequest>): DialDataRequest => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialDataRequest>): DialDataRequest {
     return decodeMessage(buf, DialDataRequest.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialDataRequest>): Generator<DialDataRequestAddrIdxFieldEvent | DialDataRequestNumBytesFieldEvent> {
+    return streamMessage(buf, DialDataRequest.codec(), opts)
   }
 }
 
@@ -404,18 +585,71 @@ export namespace DialResponse {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.status`,
+                value: DialResponse.ResponseStatus.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.addrIdx`,
+                value: reader.uint32()
+              }
+              break
+            }
+            case 3: {
+              yield {
+                field: `${prefix}.dialStatus`,
+                value: DialStatus.codec().decode(reader)
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<DialResponse>): Uint8Array => {
+  export interface DialResponseStatusFieldEvent {
+    field: '$.status'
+    value: DialResponse.ResponseStatus
+  }
+
+  export interface DialResponseAddrIdxFieldEvent {
+    field: '$.addrIdx'
+    value: number
+  }
+
+  export interface DialResponseDialStatusFieldEvent {
+    field: '$.dialStatus'
+    value: DialStatus
+  }
+
+  export function encode (obj: Partial<DialResponse>): Uint8Array {
     return encodeMessage(obj, DialResponse.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialResponse>): DialResponse => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialResponse>): DialResponse {
     return decodeMessage(buf, DialResponse.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialResponse>): Generator<DialResponseStatusFieldEvent | DialResponseAddrIdxFieldEvent | DialResponseDialStatusFieldEvent> {
+    return streamMessage(buf, DialResponse.codec(), opts)
   }
 }
 
@@ -464,18 +698,47 @@ export namespace DialDataResponse {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.data`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<DialDataResponse>): Uint8Array => {
+  export interface DialDataResponseDataFieldEvent {
+    field: '$.data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<DialDataResponse>): Uint8Array {
     return encodeMessage(obj, DialDataResponse.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialDataResponse>): DialDataResponse => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialDataResponse>): DialDataResponse {
     return decodeMessage(buf, DialDataResponse.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialDataResponse>): Generator<DialDataResponseDataFieldEvent> {
+    return streamMessage(buf, DialDataResponse.codec(), opts)
   }
 }
 
@@ -524,18 +787,47 @@ export namespace DialBack {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.nonce`,
+                value: reader.fixed64()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<DialBack>): Uint8Array => {
+  export interface DialBackNonceFieldEvent {
+    field: '$.nonce'
+    value: bigint
+  }
+
+  export function encode (obj: Partial<DialBack>): Uint8Array {
     return encodeMessage(obj, DialBack.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialBack>): DialBack => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialBack>): DialBack {
     return decodeMessage(buf, DialBack.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialBack>): Generator<DialBackNonceFieldEvent> {
+    return streamMessage(buf, DialBack.codec(), opts)
   }
 }
 
@@ -598,17 +890,46 @@ export namespace DialBackResponse {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.status`,
+                value: DialBackResponse.DialBackStatus.codec().decode(reader)
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<DialBackResponse>): Uint8Array => {
+  export interface DialBackResponseStatusFieldEvent {
+    field: '$.status'
+    value: DialBackResponse.DialBackStatus
+  }
+
+  export function encode (obj: Partial<DialBackResponse>): Uint8Array {
     return encodeMessage(obj, DialBackResponse.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialBackResponse>): DialBackResponse => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialBackResponse>): DialBackResponse {
     return decodeMessage(buf, DialBackResponse.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<DialBackResponse>): Generator<DialBackResponseStatusFieldEvent> {
+    return streamMessage(buf, DialBackResponse.codec(), opts)
   }
 }

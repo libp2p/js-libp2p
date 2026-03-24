@@ -51,14 +51,14 @@
     "@peculiar/x509": "^1.13.0",
     "asn1js": "^3.0.6",
     "p-event": "^7.0.0",
-    "protons-runtime": "^5.6.0",
+    "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.2",
     "aegir": "^47.0.22",
-    "protons": "^7.7.0",
+    "protons": "^8.0.2",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

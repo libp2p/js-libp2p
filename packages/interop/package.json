@@ -52,13 +52,13 @@
     "multiformats": "^13.4.0",
     "p-retry": "^7.0.0",
     "p-wait-for": "^6.0.0",
-    "protons-runtime": "^5.6.0",
+    "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
     "aegir": "^47.0.22",
-    "protons": "^7.7.0"
+    "protons": "^8.0.2"
   },
   "peerDependencies": {
     "aegir": "^47.0.22"

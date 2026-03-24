@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message, streamMessage } from 'protons-runtime'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -67,7 +67,7 @@ export namespace HolePunch {
             }
             case 2: {
               if (opts.limits?.observedAddresses != null && obj.observedAddresses.length === opts.limits.observedAddresses) {
-                throw new MaxLengthError('Decode error - map field "observedAddresses" had too many elements')
+                throw new MaxLengthError('Decode error - repeated field "observedAddresses" had too many elements')
               }
 
               obj.observedAddresses.push(reader.bytes())
@@ -81,17 +81,71 @@ export namespace HolePunch {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const obj = {
+          observedAddresses: 0
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.type`,
+                value: HolePunch.Type.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              if (opts.limits?.observedAddresses != null && obj.observedAddresses === opts.limits.observedAddresses) {
+                throw new MaxLengthError('Streaming decode error - repeated field "observedAddresses" had too many elements')
+              }
+
+              yield {
+                field: `${prefix}.observedAddresses[]`,
+                index: obj.observedAddresses,
+                value: reader.bytes()
+              }
+
+              obj.observedAddresses++
+
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<HolePunch>): Uint8Array => {
+  export interface HolePunchTypeFieldEvent {
+    field: '$.type'
+    value: HolePunch.Type
+  }
+
+  export interface HolePunchObservedAddressesFieldEvent {
+    field: '$.observedAddresses[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<HolePunch>): Uint8Array {
     return encodeMessage(obj, HolePunch.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<HolePunch>): HolePunch => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<HolePunch>): HolePunch {
     return decodeMessage(buf, HolePunch.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<HolePunch>): Generator<HolePunchTypeFieldEvent | HolePunchObservedAddressesFieldEvent> {
+    return streamMessage(buf, HolePunch.codec(), opts)
   }
 }

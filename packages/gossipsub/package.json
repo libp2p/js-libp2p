@@ -83,7 +83,7 @@
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "multiformats": "^13.0.1",
-    "protons-runtime": "^5.5.0",
+    "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.0.1"
   },
@@ -105,7 +105,7 @@
     "p-event": "^7.0.0",
     "p-retry": "^7.0.0",
     "p-wait-for": "^6.0.0",
-    "protons": "^7.5.0",
+    "protons": "^8.0.2",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "time-cache": "^0.3.0"
