@@ -59,10 +59,10 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
     this.running = false
     this.protocol = init.protocol
     this.timeout = new AdaptiveTimeout({
-      ...(init.timeout ?? {}),
       maxTimeout: 5_000,
       minTimeout: 2_000,
       failureMultiplier: 1.5,
+      ...(init.timeout ?? {}),
       metrics: components.metrics,
       metricName: `${init.metricsPrefix}_network_message_send_times_milliseconds`
     })
