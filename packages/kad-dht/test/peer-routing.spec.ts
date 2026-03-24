@@ -164,6 +164,7 @@ describe('peer-routing', () => {
       const testError = new Error('test error')
 
       init.queryManager.run.callsFake(async function * () {
+        yield * ([] as any[])
         throw testError
       })
 

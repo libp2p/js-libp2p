@@ -141,9 +141,6 @@ export class QueryManager implements Startable {
 
     const log = this.logger.forComponent(`${this.logPrefix}:query:` + uint8ArrayToString(key, 'base58btc'))
 
-    // query a subset of peers up to `kBucketSize / 2` in length
-    let queryFinished = false
-
     try {
       if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
         log('routing table was empty, waiting for some peers before running%s query', options.isSelfQuery === true ? ' self' : '')
@@ -234,7 +231,6 @@ export class QueryManager implements Startable {
       for await (const event of merge(...paths)) {
         if (earlyTerminationController.signal.aborted) {
           log('early termination: %d/%d paths completed', completedPaths, totalPaths)
-          queryFinished = true
           break
         }
 
@@ -260,8 +256,6 @@ export class QueryManager implements Startable {
         signal.throwIfAborted()
         yield event
       }
-
-      queryFinished = true
     } catch (err) {
       if (this.running) {
         // ignore errors thrown during shut down

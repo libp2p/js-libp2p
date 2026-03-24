@@ -356,7 +356,7 @@ export class PeerRouting {
         id: peer.id,
         multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)
       })
-    } catch {}
+    } catch { /* key may not be a valid peer multihash */ }
 
     const keyKadId = await convertBuffer(key, options)
     const ids = this.routingTable.closestPeers(keyKadId, options)

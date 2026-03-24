@@ -72,7 +72,7 @@ export interface QueryPathOptions extends RoutingOptions {
    * Fires out-of-band so the manager can detect completion without waiting
    * for the event to flow through the merge iterator.
    */
-  onPathComplete?: (pathIndex: number) => void
+  onPathComplete?(pathIndex: number): void
 }
 
 interface QueryQueueOptions extends AbortOptions {
