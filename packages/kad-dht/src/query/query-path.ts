@@ -66,6 +66,13 @@ export interface QueryPathOptions extends RoutingOptions {
    * The overall query abort signal
    */
   signal: AbortSignal
+
+  /**
+   * Called when this path's queue goes idle, before PATH_ENDED is pushed.
+   * Fires out-of-band so the manager can detect completion without waiting
+   * for the event to flow through the merge iterator.
+   */
+  onPathComplete?: (pathIndex: number) => void
 }
 
 interface QueryQueueOptions extends AbortOptions {
@@ -77,7 +84,7 @@ interface QueryQueueOptions extends AbortOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager, signal } = options
+  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager, signal, onPathComplete } = options
   const events = pushable<QueryEvent>({
     objectMode: true
   })
@@ -89,6 +96,8 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
     sort: (a, b) => uint8ArrayXorCompare(a.options.distance, b.options.distance)
   })
   queue.addEventListener('idle', () => {
+    onPathComplete?.(path)
+
     events.push(pathEndedEvent({
       path: {
         index: path,

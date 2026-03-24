@@ -195,6 +195,21 @@ export class QueryManager implements Startable {
       // make sure we don't get trapped in a loop
       const peersSeen = createScalableCuckooFilter(1024)
 
+      const totalPaths = peersToQuery.length
+      const minCompletedPaths = Math.max(1, Math.ceil(totalPaths * 0.6))
+      let completedPaths = 0
+      const earlyTerminationController = new AbortController()
+      setMaxListeners(Infinity, earlyTerminationController.signal)
+
+      const onPathComplete = (pathIndex: number): void => {
+        completedPaths++
+
+        if (completedPaths >= minCompletedPaths && completedPaths < totalPaths) {
+          log('path %d completed, %d/%d paths done, triggering early termination', pathIndex, completedPaths, totalPaths)
+          earlyTerminationController.abort()
+        }
+      }
+
       // Create query paths from the starting peers
       const paths = peersToQuery.map((peer, index) => {
         return queryPath({
@@ -210,12 +225,19 @@ export class QueryManager implements Startable {
           log,
           peersSeen,
           onProgress: options.onProgress,
-          connectionManager: this.connectionManager
+          connectionManager: this.connectionManager,
+          onPathComplete
         })
       })
 
       // Execute the query along each disjoint path and yield their results as they become available
       for await (const event of merge(...paths)) {
+        if (earlyTerminationController.signal.aborted) {
+          log('early termination: %d/%d paths completed', completedPaths, totalPaths)
+          queryFinished = true
+          break
+        }
+
         if (event.name === 'QUERY_ERROR') {
           log.error('query error - %e', event.error)
         }
@@ -246,10 +268,7 @@ export class QueryManager implements Startable {
         throw err
       }
     } finally {
-      if (!queryFinished) {
-        log('query exited early')
-        queryEarlyExitController.abort()
-      }
+      queryEarlyExitController.abort()
 
       signal.clear()
 
