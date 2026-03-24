@@ -114,7 +114,7 @@ describe('peer-routing', () => {
       const peer1Multiaddr = multiaddr('/ip4/127.0.0.1/tcp/4001')
       const path = { index: 0, queued: 0, running: 1, total: 1 }
 
-      // queryManager.run calls queryFunc for peer1 (emitting FINAL_PEER inline), then throws AbortError
+      // queryManager.run calls queryFunc for peer1 (recording the contact), then throws AbortError
       init.queryManager.run.callsFake(async function * (k, queryFunc) {
         const peer1KadId = await convertPeerId(peer1.peerId)
 

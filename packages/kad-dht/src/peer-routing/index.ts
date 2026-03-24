@@ -5,6 +5,7 @@ import { Libp2pRecord } from '@libp2p/record'
 import * as Digest from 'multiformats/hashes/digest'
 import { QueryError, InvalidRecordError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
+import { PeerDistanceList } from '../peer-distance-list.js'
 import {
   queryErrorEvent,
   finalPeerEvent,
@@ -241,6 +242,12 @@ export class PeerRouting {
     this.log('getClosestPeers to %b', key)
     const self = this
 
+    // Accumulate the K closest peers that respond during the traversal.
+    // We only know the true closest set after the full query, so FINAL_PEER
+    // events are emitted after the query completes (or after a timeout).
+    const keyKadId = await convertBuffer(key, options)
+    const closestPeers = new PeerDistanceList(keyKadId, this.routingTable.kBucketSize)
+
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, signal }) {
       self.log('getClosestPeers asking %p', peer.id)
       const request: Partial<Message> = {
@@ -262,7 +269,6 @@ export class PeerRouting {
         yield event
       }
 
-      // only emit a FINAL_PEER event if we've managed to contact the peer successfully
       if (!contacted) {
         return
       }
@@ -274,26 +280,46 @@ export class PeerRouting {
           peerInfo = await self.components.peerStore.getInfo(peer.id)
         }
 
-        if (peerInfo.multiaddrs.length === 0) {
-          return
+        if (peerInfo.multiaddrs.length > 0) {
+          // omit signal - peer ID hashing is fast and we don't want
+          // an aborted signal to prevent recording a successful contact
+          await closestPeers.add(peerInfo, path)
         }
-
-        yield finalPeerEvent({
-          from: self.components.peerId,
-          peer: peerInfo,
-          path: {
-            index: path.index,
-            queued: 0,
-            running: 0,
-            total: 0
-          }
-        }, options)
       } catch {
         // peer info may not be in the peer store
       }
     }
 
-    yield * this.queryManager.run(key, getCloserPeersQuery, options)
+    let caughtError: Error | undefined
+
+    try {
+      yield * this.queryManager.run(key, getCloserPeersQuery, options)
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        throw err
+      }
+
+      // query timed out - fall through to emit whatever we found
+      caughtError = err
+    }
+
+    // emit FINAL_PEER for the K closest peers that responded, even on timeout
+    for (const { peer, path } of closestPeers.peers) {
+      yield finalPeerEvent({
+        from: this.components.peerId,
+        peer,
+        path: {
+          index: path.index,
+          queued: 0,
+          running: 0,
+          total: 0
+        }
+      }, options)
+    }
+
+    if (caughtError != null) {
+      throw caughtError
+    }
   }
 
   /**
