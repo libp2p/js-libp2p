@@ -5,7 +5,6 @@ import { Libp2pRecord } from '@libp2p/record'
 import * as Digest from 'multiformats/hashes/digest'
 import { QueryError, InvalidRecordError } from '../errors.js'
 import { MessageType } from '../message/dht.js'
-import { PeerDistanceList } from '../peer-distance-list.js'
 import {
   queryErrorEvent,
   finalPeerEvent,
@@ -240,44 +239,48 @@ export class PeerRouting {
    */
   async * getClosestPeers (key: Uint8Array, options: QueryOptions = {}): AsyncGenerator<QueryEvent> {
     this.log('getClosestPeers to %b', key)
-    const kadId = await convertBuffer(key, options)
-    const peers = new PeerDistanceList(kadId, this.routingTable.kBucketSize)
     const self = this
 
-    const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, peerKadId, signal }) {
+    const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, signal }) {
       self.log('getClosestPeers asking %p', peer.id)
       const request: Partial<Message> = {
         type: MessageType.FIND_NODE,
         key
       }
 
-      yield * self.network.sendRequest(peer.id, request, {
+      let contacted = false
+
+      for await (const event of self.network.sendRequest(peer.id, request, {
         ...options,
         signal,
         path
-      })
-
-      // add the peer to the list if we've managed to contact it successfully
-      peers.addWithKadId(peer, peerKadId, path)
-    }
-
-    yield * this.queryManager.run(key, getCloserPeersQuery, options)
-
-    this.log('found %d peers close to %b', peers.length, key)
-
-    for (let { peer, path } of peers.peers) {
-      try {
-        if (peer.multiaddrs.length === 0) {
-          peer = await self.components.peerStore.getInfo(peer.id, options)
+      })) {
+        if (event.name === 'PEER_RESPONSE') {
+          contacted = true
         }
 
-        if (peer.multiaddrs.length === 0) {
-          continue
+        yield event
+      }
+
+      // only emit a FINAL_PEER event if we've managed to contact the peer successfully
+      if (!contacted) {
+        return
+      }
+
+      try {
+        let peerInfo = peer
+
+        if (peerInfo.multiaddrs.length === 0) {
+          peerInfo = await self.components.peerStore.getInfo(peer.id)
+        }
+
+        if (peerInfo.multiaddrs.length === 0) {
+          return
         }
 
         yield finalPeerEvent({
-          from: this.components.peerId,
-          peer: await self.components.peerStore.getInfo(peer.id, options),
+          from: self.components.peerId,
+          peer: peerInfo,
           path: {
             index: path.index,
             queued: 0,
@@ -286,9 +289,11 @@ export class PeerRouting {
           }
         }, options)
       } catch {
-        continue
+        // peer info may not be in the peer store
       }
     }
+
+    yield * this.queryManager.run(key, getCloserPeersQuery, options)
   }
 
   /**

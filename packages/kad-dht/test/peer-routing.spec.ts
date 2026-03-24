@@ -1,12 +1,16 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { AbortError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import drain from 'it-drain'
 import { stubInterface } from 'sinon-ts'
 import { K } from '../src/constants.js'
+import { MessageType } from '../src/message/dht.js'
 import { PeerRouting } from '../src/peer-routing/index.js'
-import { convertBuffer } from '../src/utils.js'
+import { peerResponseEvent } from '../src/query/events.js'
+import { convertBuffer, convertPeerId } from '../src/utils.js'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
 import { sortClosestPeers } from './utils/sort-closest-peers.js'
 import type { PeerAndKey } from './utils/create-peer-id.js'
@@ -59,6 +63,145 @@ describe('peer-routing', () => {
     }
 
     peerRouting = new PeerRouting(components, init)
+  })
+
+  describe('getClosestPeers', () => {
+    it('should emit FINAL_PEER events for peers successfully contacted during a query', async () => {
+      const key = Uint8Array.from([0, 1, 2, 3, 4])
+      const [peer1] = await getSortedPeers(key)
+      const peer1Multiaddr = multiaddr('/ip4/127.0.0.1/tcp/4001')
+      const path = { index: 0, queued: 0, running: 1, total: 1 }
+
+      // queryManager.run calls queryFunc for peer1, then completes normally
+      init.queryManager.run.callsFake(async function * (k, queryFunc) {
+        const peer1KadId = await convertPeerId(peer1.peerId)
+
+        yield * queryFunc({
+          key: k,
+          peer: { id: peer1.peerId, multiaddrs: [peer1Multiaddr] },
+          path,
+          peerKadId: peer1KadId,
+          numPaths: 1,
+          signal: new AbortController().signal
+        })
+      })
+
+      // network.sendRequest returns a PEER_RESPONSE indicating successful contact
+      init.network.sendRequest.callsFake(async function * () {
+        yield peerResponseEvent({
+          from: peer1.peerId,
+          messageType: MessageType.FIND_NODE,
+          closer: [],
+          providers: [],
+          record: undefined,
+          path
+        }, {})
+      })
+
+      const events = []
+      for await (const event of peerRouting.getClosestPeers(key)) {
+        events.push(event)
+      }
+
+      const finalPeerEvents = events.filter(e => e.name === 'FINAL_PEER')
+      expect(finalPeerEvents).to.have.lengthOf(1)
+      expect(finalPeerEvents[0]).to.have.nested.property('peer.id', peer1.peerId)
+    })
+
+    it('should emit FINAL_PEER events for peers contacted before an abort, then propagate the abort', async () => {
+      const key = Uint8Array.from([0, 1, 2, 3, 4])
+      const [peer1] = await getSortedPeers(key)
+      const peer1Multiaddr = multiaddr('/ip4/127.0.0.1/tcp/4001')
+      const path = { index: 0, queued: 0, running: 1, total: 1 }
+
+      // queryManager.run calls queryFunc for peer1 (emitting FINAL_PEER inline), then throws AbortError
+      init.queryManager.run.callsFake(async function * (k, queryFunc) {
+        const peer1KadId = await convertPeerId(peer1.peerId)
+
+        yield * queryFunc({
+          key: k,
+          peer: { id: peer1.peerId, multiaddrs: [peer1Multiaddr] },
+          path,
+          peerKadId: peer1KadId,
+          numPaths: 1,
+          signal: new AbortController().signal
+        })
+
+        throw new AbortError('Query timed out')
+      })
+
+      // network.sendRequest returns a PEER_RESPONSE so 'contacted' becomes true
+      init.network.sendRequest.callsFake(async function * () {
+        yield peerResponseEvent({
+          from: peer1.peerId,
+          messageType: MessageType.FIND_NODE,
+          closer: [],
+          providers: [],
+          record: undefined,
+          path
+        }, {})
+      })
+
+      const events = []
+      let threw = false
+      try {
+        for await (const event of peerRouting.getClosestPeers(key)) {
+          events.push(event)
+        }
+      } catch (err: any) {
+        expect(err).to.have.property('name', 'AbortError')
+        threw = true
+      }
+
+      expect(threw).to.be.true('getClosestPeers should have propagated the AbortError')
+      const finalPeerEvents = events.filter(e => e.name === 'FINAL_PEER')
+      expect(finalPeerEvents).to.have.lengthOf(1)
+      expect(finalPeerEvents[0]).to.have.nested.property('peer.id', peer1.peerId)
+    })
+
+    it('should propagate non-AbortError from queryManager', async () => {
+      const key = Uint8Array.from([0, 1, 2, 3, 4])
+      const testError = new Error('test error')
+
+      init.queryManager.run.callsFake(async function * () {
+        throw testError
+      })
+
+      await expect(drain(peerRouting.getClosestPeers(key))).to.eventually.be.rejectedWith(testError)
+    })
+
+    it('should not emit FINAL_PEER for peers that returned a query error', async () => {
+      const key = Uint8Array.from([0, 1, 2, 3, 4])
+      const [peer1] = await getSortedPeers(key)
+      const peer1Multiaddr = multiaddr('/ip4/127.0.0.1/tcp/4001')
+      const path = { index: 0, queued: 0, running: 1, total: 1 }
+
+      init.queryManager.run.callsFake(async function * (k, queryFunc) {
+        const peer1KadId = await convertPeerId(peer1.peerId)
+
+        yield * queryFunc({
+          key: k,
+          peer: { id: peer1.peerId, multiaddrs: [peer1Multiaddr] },
+          path,
+          peerKadId: peer1KadId,
+          numPaths: 1,
+          signal: new AbortController().signal
+        })
+      })
+
+      // network.sendRequest yields no PEER_RESPONSE — simulates a failed contact
+      init.network.sendRequest.callsFake(async function * () {
+        // yields nothing (peer was not contactable)
+      })
+
+      const events = []
+      for await (const event of peerRouting.getClosestPeers(key)) {
+        events.push(event)
+      }
+
+      const finalPeerEvents = events.filter(e => e.name === 'FINAL_PEER')
+      expect(finalPeerEvents).to.have.lengthOf(0)
+    })
   })
 
   describe('getClosestPeersOffline', () => {
