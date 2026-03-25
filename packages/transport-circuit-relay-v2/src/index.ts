@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+ * The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://libp2p.io/docs/circuit-relay/)
  * addresses.
  *
  * @example Use as a transport
@@ -19,7 +19,7 @@
  * })
  * ```
  *
- * The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+ * The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://libp2p.io/docs/circuit-relay/)
  * server.  This will not work in browsers.
  *
  * @example Use as a server

@@ -55,7 +55,7 @@ For more info on enabling ES modules in Node, see [this guide](https://nodejs.or
 
 ### Basic setup
 
-Now that we have libp2p installed, let's configure the minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. However, we recommend that a basic setup should also have a [**Stream Multiplexer**](streamMuxer) configured, which we will explain shortly. Let's start by setting up a Transport.
+Now that we have libp2p installed, let's configure the minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. However, we recommend that a basic setup should also have a [**Stream Multiplexer**][streamMuxer] configured, which we will explain shortly. Let's start by setting up a Transport.
 
 #### Transports
 
@@ -115,7 +115,7 @@ const node = await createLibp2p({
 <details><summary>Read More</summary>
 If you want to know more about libp2p connection encryption, you should read the following content:
 
-- https://docs.libp2p.io/concepts/secure-comms
+- https://libp2p.io/docs/secure-channels-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
@@ -154,7 +154,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 #### Running Libp2p
 
-Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#start) and [`libp2p.stop()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#stop) methods.
+Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**][streamMuxer] module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#start) and [`libp2p.stop()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#stop) methods.
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -337,6 +337,6 @@ There are a lot of other concepts within `libp2p`, that are not covered in this 
 - [libp2p Connectivity](https://connectivity.libp2p.io/) — Interoperability matrix across libp2p implementations
 - [Universal Connectivity](https://github.com/libp2p/universal-connectivity) — Demo application showcasing cross-implementation connectivity
 
-[transport]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/transport
-[crypto]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/crypto
-[streamMuxer]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/stream-muxer
+[transport]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/transport.ts
+[crypto]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/keys.ts
+[streamMuxer]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/stream-muxer.ts
