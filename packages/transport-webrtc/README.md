@@ -24,9 +24,9 @@ repo and examine the changes made.
 
 -->
 
-A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebRTC data channels](https://webrtc.org/).
+A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on [WebRTC data channels](https://webrtc.org/).
 
-[WebRTC](https://www.w3.org/TR/webrtc/) is a specification that allows real-time communication between nodes - it's commonly used in browser video conferencing applications but it also provides a reliable data transport mechanism called [data channels](https://www.w3.org/TR/webrtc/#peer-to-peer-data-api) which libp2p uses to facilitate [protocol streams](https://docs.libp2p.io/concepts/multiplex/overview/) between peers.
+[WebRTC](https://www.w3.org/TR/webrtc/) is a specification that allows real-time communication between nodes - it's commonly used in browser video conferencing applications but it also provides a reliable data transport mechanism called [data channels](https://www.w3.org/TR/webrtc/#peer-to-peer-data-api) which libp2p uses to facilitate [protocol streams](https://libp2p.io/docs/multiplexing-overview/) between peers.
 
 There are two transports exposed by this module, [webRTC](https://github.com/libp2p/specs/blob/master/webrtc/webrtc.md) and [webRTCDirect](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md).
 
@@ -36,7 +36,7 @@ The connection establishment phase of WebRTC involves a handshake using [SDP](ht
 
 A third party is usually necessary to carry out this handshake, forwarding messages between the two peers until they can make a direct connection between themselves.
 
-The WebRTC transport uses libp2p [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)s to forward SDP messages. Once a direct connection is formed the relay plays no further part in the exchange.
+The WebRTC transport uses libp2p [Circuit Relay](https://libp2p.io/docs/circuit-relay/)s to forward SDP messages. Once a direct connection is formed the relay plays no further part in the exchange.
 
 WebRTC Direct uses a technique known as [SDP munging](https://webrtchacks.com/not-a-guide-to-sdp-munging/) to skip the handshake step, instead encoding enough information in the connection request that the responder can derive what would have been in the handshake messages and so requires no third parties to establish a connection.
 

@@ -76,11 +76,11 @@ Some available transports are:
 - [@libp2p/websockets](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-websockets)
 - [@libp2p/webtransport](https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webtransport)
 
-If none of the available transports fulfils your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/transport).
+If none of the available transports fulfils your needs, you can create a libp2p compatible transport. A libp2p transport just needs to be compliant with the [Transport Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/transport.ts).
 
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://docs.libp2p.io/concepts/transports/overview
+- https://libp2p.io/docs/transports-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 
 ### Stream Multiplexing
@@ -93,7 +93,7 @@ Some available stream multiplexers are:
 
 Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
 
-If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [Stream Muxer Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/stream-muxer).
+If none of the available stream multiplexers fulfills your needs, you can create a libp2p compatible stream multiplexer. A libp2p multiplexer just needs to be compliant with the [Stream Muxer Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/stream-muxer.ts).
 
 If you want to know more about libp2p stream multiplexing, you should read the following content:
 
@@ -112,13 +112,13 @@ If you configure multiple muxers for use in your application, js-libp2p will cho
 Some available connection encryption protocols:
 
 - [@chainsafe/libp2p-noise](https://github.com/chainsafe/js-libp2p-noise)
-- [@libp2p/plaintext](https://github.com/libp2p/js-libp2p/blob/main/src/packages/connection-encrypter-plaintext/index.ts) (Not for production use)
+- [@libp2p/plaintext](https://github.com/libp2p/js-libp2p/blob/main/packages/connection-encrypter-plaintext/src/index.ts) (Not for production use)
 
-If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Connection Encrypter Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/connection-encrypter).
+If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Connection Encrypter Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/connection-encrypter.ts).
 
 If you want to know more about libp2p connection encryption, you should read the following content:
 
-- https://docs.libp2p.io/concepts/secure-comms
+- https://libp2p.io/docs/secure-channels-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 
 ### Peer Discovery
@@ -132,7 +132,7 @@ Some available peer discovery modules are:
 - [@libp2p/bootstrap](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-discovery-bootstrap) (typically used together with @libp2p/kad-dht)
 - [@chainsafe/discv5](https://github.com/chainsafe/discv5) ([spec](https://github.com/ethereum/devp2p/blob/master/discv5/discv5.md))
 
-If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/peer-discovery).
+If none of the available peer discovery protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer discovery protocol just needs to be compliant with the [Peer Discovery Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/peer-discovery.ts).
 
 ### Content Routing
 
@@ -148,7 +148,7 @@ Some available content routing modules are:
 > The `@helia/delegated-routing-v1-http-api-client` module is a client for the [IPFS Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/). It is not a libp2p module, but it can be used in conjunction with libp2p to provide content and peer routing functionality.
 > For most purposes, `@helia/delegated-routing-v1-http-api-client` should be favoured over `@libp2p/delegated-content-routing` for delegated routing, as it is more broadly adopted by the ecosystem and doesn't rely on Kubo specific APIs.
 
-If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/content-routing/index.ts).
+If none of the available content routing protocols fulfil your needs, you can create a libp2p compatible one. A libp2p content routing protocol just needs to be compliant with the [Content Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/content-routing.ts).
 
 
 ### Peer Routing
@@ -160,7 +160,7 @@ Some available peer routing modules are:
 - [@libp2p/kad-dht](https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht)
 - [@helia/delegated-routing-v1-http-api-client](https://github.com/ipfs/helia-delegated-routing-v1-http-api)
 - [@libp2p/delegated-peer-routing](https://github.com/libp2p/js-libp2p-delegated-peer-routing)
-If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/peer-routing/index.ts).
+If none of the available peer routing protocols fulfills your needs, you can create a libp2p compatible one. A libp2p peer routing protocol just needs to be compliant with the [Peer Routing Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/peer-routing.ts).
 
 > [!NOTE]
 > The `@helia/delegated-routing-v1-http-api-client` module is a client for the [IPFS Delegated Routing V1 HTTP API](https://specs.ipfs.tech/routing/http-routing-v1/). It is not a libp2p module, but it can be used in conjunction with libp2p to provide content and peer routing functionality.
@@ -319,7 +319,7 @@ This means that pubsub requires the identify service to be configured in order t
 Potential methods for discovering peers include:
 
 - [Distributed hash tables](#dht)
-- [Local network broadcasts](https://docs.libp2p.io/concepts/discovery-routing/mdns/)
+- [Local network broadcasts](https://libp2p.io/docs/mdns/)
 - [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
 - [Lists of bootstrap peers](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/bootstrappers.ts)
 
@@ -579,7 +579,7 @@ const node = await createLibp2p({
 
 The Connection Manager manages connections to peers in libp2p.  It controls opening closing connections but also pruning connections when certain limits are exceeded. If Metrics are enabled, you can also configure the Connection Manager to monitor the bandwidth of libp2p and prune connections as needed. You can read more about what Connection Manager does at [./CONNECTION_MANAGER.md](https://libp2p.github.io/js-libp2p-interfaces/modules/_libp2p_interface_connection_manager.html). The configuration values below show the defaults for Connection Manager.
 
-See the [API docs](https://libp2p.github.io/js-libp2p/interfaces/index._internal_.ConnectionManagerConfig.html) for a full run list and discussion of all Connection Manager options.
+See the [API docs](https://libp2p.github.io/js-libp2p/modules/_libp2p_interface-internal.html) for a full run list and discussion of all Connection Manager options.
 
 
 ```js

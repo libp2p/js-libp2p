@@ -40,6 +40,7 @@ jobs:
       - run: npm run --if-present lint
       - run: npm run --if-present dep-check
       - run: npm run --if-present docs:no-publish
+      - run: git diff --exit-code
       - run: npm run --if-present doc-check
       - run: npm run --if-present spell-check
 

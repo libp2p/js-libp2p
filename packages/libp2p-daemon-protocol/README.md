@@ -15,7 +15,7 @@ $ npm i @libp2p/daemon-protocol
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p-daemon/modules/_libp2p_daemon_protocol.html>
+- <https://libp2p.github.io/js-libp2p-daemon/modules/_libp2p_daemon-protocol.html>
 
 # License
 
