@@ -243,8 +243,9 @@ export class PeerRouting {
     const self = this
 
     // Accumulate the K closest peers that respond during the traversal.
-    // We only know the true closest set after the full query, so FINAL_PEER
-    // events are emitted after the query completes (or after a timeout).
+    // FINAL_PEER events are only emitted after the query fully converges -
+    // partial results from a timed-out query are not emitted because the DHT
+    // requires crossover between independent nodes resolving the same key.
     const keyKadId = await convertBuffer(key, options)
     const closestPeers = new PeerDistanceList(keyKadId, this.routingTable.kBucketSize)
 
@@ -290,20 +291,9 @@ export class PeerRouting {
       }
     }
 
-    let caughtError: Error | undefined
+    yield * this.queryManager.run(key, getCloserPeersQuery, options)
 
-    try {
-      yield * this.queryManager.run(key, getCloserPeersQuery, options)
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        throw err
-      }
-
-      // query timed out - fall through to emit whatever we found
-      caughtError = err
-    }
-
-    // emit FINAL_PEER for the K closest peers that responded, even on timeout
+    // only reached on successful convergence - emit the K closest peers found
     for (const { peer, path } of closestPeers.peers) {
       yield finalPeerEvent({
         from: this.components.peerId,
@@ -315,10 +305,6 @@ export class PeerRouting {
           total: 0
         }
       }, options)
-    }
-
-    if (caughtError != null) {
-      throw caughtError
     }
   }
 

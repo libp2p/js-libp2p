@@ -108,13 +108,14 @@ describe('peer-routing', () => {
       expect(finalPeerEvents[0]).to.have.nested.property('peer.id', peer1.peerId)
     })
 
-    it('should emit FINAL_PEER events for peers contacted before an abort, then propagate the abort', async () => {
+    it('should propagate AbortError from queryManager without emitting FINAL_PEER', async () => {
       const key = Uint8Array.from([0, 1, 2, 3, 4])
       const [peer1] = await getSortedPeers(key)
       const peer1Multiaddr = multiaddr('/ip4/127.0.0.1/tcp/4001')
       const path = { index: 0, queued: 0, running: 1, total: 1 }
 
-      // queryManager.run calls queryFunc for peer1 (recording the contact), then throws AbortError
+      // queryManager.run contacts peer1 successfully then times out —
+      // partial results must not be emitted since the query did not converge
       init.queryManager.run.callsFake(async function * (k, queryFunc) {
         const peer1KadId = await convertPeerId(peer1.peerId)
 
@@ -130,7 +131,6 @@ describe('peer-routing', () => {
         throw new AbortError('Query timed out')
       })
 
-      // network.sendRequest returns a PEER_RESPONSE so 'contacted' becomes true
       init.network.sendRequest.callsFake(async function * () {
         yield peerResponseEvent({
           from: peer1.peerId,
@@ -142,8 +142,8 @@ describe('peer-routing', () => {
         }, {})
       })
 
-      const events = []
       let threw = false
+      const events = []
       try {
         for await (const event of peerRouting.getClosestPeers(key)) {
           events.push(event)
@@ -155,8 +155,7 @@ describe('peer-routing', () => {
 
       expect(threw).to.be.true('getClosestPeers should have propagated the AbortError')
       const finalPeerEvents = events.filter(e => e.name === 'FINAL_PEER')
-      expect(finalPeerEvents).to.have.lengthOf(1)
-      expect(finalPeerEvents[0]).to.have.nested.property('peer.id', peer1.peerId)
+      expect(finalPeerEvents).to.have.lengthOf(0)
     })
 
     it('should propagate non-AbortError from queryManager', async () => {
