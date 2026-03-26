@@ -428,7 +428,7 @@ export namespace Peer {
           w.bytes(obj.id)
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(18)
             w.bytes(value)
@@ -560,7 +560,7 @@ export namespace Reservation {
           w.uint64(obj.expire)
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(18)
             w.bytes(value)

@@ -37,7 +37,7 @@ export namespace Identify {
           w.bytes(obj.publicKey)
         }
 
-        if (obj.listenAddrs != null) {
+        if (obj.listenAddrs != null && obj.listenAddrs.length > 0) {
           for (const value of obj.listenAddrs) {
             w.uint32(18)
             w.bytes(value)
@@ -49,7 +49,7 @@ export namespace Identify {
           w.bytes(obj.observedAddr)
         }
 
-        if (obj.protocols != null) {
+        if (obj.protocols != null && obj.protocols.length > 0) {
           for (const value of obj.protocols) {
             w.uint32(26)
             w.string(value)

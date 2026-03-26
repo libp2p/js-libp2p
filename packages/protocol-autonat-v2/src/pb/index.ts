@@ -250,7 +250,7 @@ export namespace DialRequest {
           w.fork()
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(10)
             w.bytes(value)

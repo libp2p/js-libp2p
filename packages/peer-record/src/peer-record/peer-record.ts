@@ -118,7 +118,7 @@ export namespace PeerRecord {
           w.uint64(obj.seq)
         }
 
-        if (obj.addresses != null) {
+        if (obj.addresses != null && obj.addresses.length > 0) {
           for (const value of obj.addresses) {
             w.uint32(26)
             PeerRecord.AddressInfo.codec().encode(value, w)

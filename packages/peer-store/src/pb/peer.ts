@@ -253,14 +253,14 @@ export namespace Peer {
           w.fork()
         }
 
-        if (obj.addresses != null) {
+        if (obj.addresses != null && obj.addresses.length > 0) {
           for (const value of obj.addresses) {
             w.uint32(10)
             Address.codec().encode(value, w)
           }
         }
 
-        if (obj.protocols != null) {
+        if (obj.protocols != null && obj.protocols.length > 0) {
           for (const value of obj.protocols) {
             w.uint32(18)
             w.string(value)
@@ -277,14 +277,14 @@ export namespace Peer {
           w.bytes(obj.peerRecordEnvelope)
         }
 
-        if (obj.metadata != null) {
+        if (obj.metadata != null && obj.metadata.size > 0) {
           for (const [key, value] of obj.metadata.entries()) {
             w.uint32(50)
             Peer.Peer$metadataEntry.codec().encode({ key, value }, w)
           }
         }
 
-        if (obj.tags != null) {
+        if (obj.tags != null && obj.tags.size > 0) {
           for (const [key, value] of obj.tags.entries()) {
             w.uint32(58)
             Peer.Peer$tagsEntry.codec().encode({ key, value }, w)

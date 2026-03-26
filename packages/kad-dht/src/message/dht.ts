@@ -243,7 +243,7 @@ export namespace PeerInfo {
           w.bytes(obj.id)
         }
 
-        if (obj.multiaddrs != null) {
+        if (obj.multiaddrs != null && obj.multiaddrs.length > 0) {
           for (const value of obj.multiaddrs) {
             w.uint32(18)
             w.bytes(value)
@@ -414,14 +414,14 @@ export namespace Message {
           w.bytes(obj.record)
         }
 
-        if (obj.closer != null) {
+        if (obj.closer != null && obj.closer.length > 0) {
           for (const value of obj.closer) {
             w.uint32(66)
             PeerInfo.codec().encode(value, w)
           }
         }
 
-        if (obj.providers != null) {
+        if (obj.providers != null && obj.providers.length > 0) {
           for (const value of obj.providers) {
             w.uint32(74)
             PeerInfo.codec().encode(value, w)

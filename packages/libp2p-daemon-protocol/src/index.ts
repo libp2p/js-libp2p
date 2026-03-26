@@ -470,7 +470,7 @@ export namespace Response {
           DHTResponse.codec().encode(obj.dht, w)
         }
 
-        if (obj.peers != null) {
+        if (obj.peers != null && obj.peers.length > 0) {
           for (const value of obj.peers) {
             w.uint32(50)
             PeerInfo.codec().encode(value, w)
@@ -780,7 +780,7 @@ export namespace IdentifyResponse {
           w.bytes(obj.id)
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(18)
             w.bytes(value)
@@ -912,7 +912,7 @@ export namespace ConnectRequest {
           w.bytes(obj.peer)
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(18)
             w.bytes(value)
@@ -1065,7 +1065,7 @@ export namespace StreamOpenRequest {
           w.bytes(obj.peer)
         }
 
-        if (obj.proto != null) {
+        if (obj.proto != null && obj.proto.length > 0) {
           for (const value of obj.proto) {
             w.uint32(18)
             w.string(value)
@@ -1217,7 +1217,7 @@ export namespace StreamHandlerRequest {
           w.bytes(obj.addr)
         }
 
-        if (obj.proto != null) {
+        if (obj.proto != null && obj.proto.length > 0) {
           for (const value of obj.proto) {
             w.uint32(18)
             w.string(value)
@@ -1978,7 +1978,7 @@ export namespace PeerInfo {
           w.bytes(obj.id)
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(18)
             w.bytes(value)
@@ -2534,7 +2534,7 @@ export namespace PSMessage {
           w.bytes(obj.seqno)
         }
 
-        if (obj.topicIDs != null) {
+        if (obj.topicIDs != null && obj.topicIDs.length > 0) {
           for (const value of obj.topicIDs) {
             w.uint32(34)
             w.string(value)
@@ -2733,14 +2733,14 @@ export namespace PSResponse {
           w.fork()
         }
 
-        if (obj.topics != null) {
+        if (obj.topics != null && obj.topics.length > 0) {
           for (const value of obj.topics) {
             w.uint32(10)
             w.string(value)
           }
         }
 
-        if (obj.peerIDs != null) {
+        if (obj.peerIDs != null && obj.peerIDs.length > 0) {
           for (const value of obj.peerIDs) {
             w.uint32(18)
             w.bytes(value)
@@ -2909,7 +2909,7 @@ export namespace PeerstoreRequest {
           w.bytes(obj.id)
         }
 
-        if (obj.protos != null) {
+        if (obj.protos != null && obj.protos.length > 0) {
           for (const value of obj.protos) {
             w.uint32(26)
             w.string(value)
@@ -3055,7 +3055,7 @@ export namespace PeerstoreResponse {
           PeerInfo.codec().encode(obj.peer, w)
         }
 
-        if (obj.protos != null) {
+        if (obj.protos != null && obj.protos.length > 0) {
           for (const value of obj.protos) {
             w.uint32(18)
             w.string(value)

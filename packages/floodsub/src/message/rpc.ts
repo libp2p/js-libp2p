@@ -324,14 +324,14 @@ export namespace RPC {
           w.fork()
         }
 
-        if (obj.subscriptions != null) {
+        if (obj.subscriptions != null && obj.subscriptions.length > 0) {
           for (const value of obj.subscriptions) {
             w.uint32(10)
             RPC.SubOpts.codec().encode(value, w)
           }
         }
 
-        if (obj.messages != null) {
+        if (obj.messages != null && obj.messages.length > 0) {
           for (const value of obj.messages) {
             w.uint32(18)
             RPC.Message.codec().encode(value, w)
@@ -585,28 +585,28 @@ export namespace ControlMessage {
           w.fork()
         }
 
-        if (obj.ihave != null) {
+        if (obj.ihave != null && obj.ihave.length > 0) {
           for (const value of obj.ihave) {
             w.uint32(10)
             ControlIHave.codec().encode(value, w)
           }
         }
 
-        if (obj.iwant != null) {
+        if (obj.iwant != null && obj.iwant.length > 0) {
           for (const value of obj.iwant) {
             w.uint32(18)
             ControlIWant.codec().encode(value, w)
           }
         }
 
-        if (obj.graft != null) {
+        if (obj.graft != null && obj.graft.length > 0) {
           for (const value of obj.graft) {
             w.uint32(26)
             ControlGraft.codec().encode(value, w)
           }
         }
 
-        if (obj.prune != null) {
+        if (obj.prune != null && obj.prune.length > 0) {
           for (const value of obj.prune) {
             w.uint32(34)
             ControlPrune.codec().encode(value, w)
@@ -857,7 +857,7 @@ export namespace ControlIHave {
           w.string(obj.topic)
         }
 
-        if (obj.messageIDs != null) {
+        if (obj.messageIDs != null && obj.messageIDs.length > 0) {
           for (const value of obj.messageIDs) {
             w.uint32(18)
             w.bytes(value)
@@ -981,7 +981,7 @@ export namespace ControlIWant {
           w.fork()
         }
 
-        if (obj.messageIDs != null) {
+        if (obj.messageIDs != null && obj.messageIDs.length > 0) {
           for (const value of obj.messageIDs) {
             w.uint32(10)
             w.bytes(value)
@@ -1183,7 +1183,7 @@ export namespace ControlPrune {
           w.string(obj.topic)
         }
 
-        if (obj.peers != null) {
+        if (obj.peers != null && obj.peers.length > 0) {
           for (const value of obj.peers) {
             w.uint32(18)
             PeerInfo.codec().encode(value, w)

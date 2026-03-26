@@ -40,7 +40,7 @@ export namespace HolePunch {
           HolePunch.Type.codec().encode(obj.type, w)
         }
 
-        if (obj.observedAddresses != null) {
+        if (obj.observedAddresses != null && obj.observedAddresses.length > 0) {
           for (const value of obj.observedAddresses) {
             w.uint32(18)
             w.bytes(value)
