@@ -58,7 +58,7 @@
   "devDependencies": {
     "@libp2p/logger": "^6.2.2",
     "aegir": "^47.0.22",
-    "protons": "^8.1.0",
+    "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

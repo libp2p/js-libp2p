@@ -111,6 +111,6 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "protons": "^8.1.0"
+    "protons": "^8.1.1"
   }
 }
