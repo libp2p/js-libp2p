@@ -57,7 +57,7 @@
     "@types/which": "^3.0.4",
     "aegir": "^47.0.22",
     "multiformats": "^13.4.0",
-    "protons": "^8.0.2"
+    "protons": "^8.1.0"
   },
   "sideEffects": false
 }

@@ -501,7 +501,7 @@ export namespace Peer {
 
   export interface PeerAddressesObservedFieldEvent {
     field: '$.addresses[].observed'
-    value: bigint
+    value: number
     index: number
   }
 
@@ -541,7 +541,7 @@ export namespace Peer {
 
   export interface PeerUpdatedFieldEvent {
     field: '$.updated'
-    value: bigint
+    value: number
   }
 
   export function encode (obj: Partial<Peer>): Uint8Array {
@@ -674,7 +674,7 @@ export namespace Address {
 
   export interface AddressObservedFieldEvent {
     field: '$.observed'
-    value: bigint
+    value: number
   }
 
   export function encode (obj: Partial<Address>): Uint8Array {

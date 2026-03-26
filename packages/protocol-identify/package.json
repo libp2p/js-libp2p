@@ -65,7 +65,7 @@
     "aegir": "^47.0.22",
     "delay": "^7.0.0",
     "it-length-prefixed": "^10.0.1",
-    "protons": "^8.0.2",
+    "protons": "^8.1.0",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

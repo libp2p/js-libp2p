@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "aegir": "^47.0.22",
-    "protons": "^8.0.2",
+    "protons": "^8.1.0",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

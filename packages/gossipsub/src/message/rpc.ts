@@ -607,7 +607,7 @@ export namespace RPC {
 
     export interface ControlMessagePruneBackoffFieldEvent {
       field: '$.prune[].backoff'
-      value: bigint
+      value: number
       index: number
     }
 
@@ -1102,7 +1102,7 @@ export namespace RPC {
 
     export interface ControlPruneBackoffFieldEvent {
       field: '$.backoff'
-      value: bigint
+      value: number
     }
 
     export function encode (obj: Partial<ControlPrune>): Uint8Array {
@@ -1571,7 +1571,7 @@ export namespace RPC {
 
   export interface RPCControlPruneBackoffFieldEvent {
     field: '$.control.prune[].backoff'
-    value: bigint
+    value: number
     index: number
   }
 

@@ -98,7 +98,7 @@
     "aegir": "^47.0.22",
     "asn1js": "^3.0.6",
     "benchmark": "^2.1.4",
-    "protons": "^8.0.2"
+    "protons": "^8.1.0"
   },
   "browser": {
     "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",
