@@ -1,5 +1,5 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
+import { InvalidMessageError, StreamStateError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
@@ -65,7 +65,14 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       }).pb(IdentifyMessage)
 
       const message = await pb.read(options)
-      await pb.unwrap().unwrap().close(options)
+      try {
+          await pb.unwrap().unwrap().close(options)
+      } catch (err) {
+          // Remote may have already closed the stream, triggering a StreamStateError
+          if (!(err instanceof StreamStateError)) {
+              throw err
+          }
+      }
 
       return message
     } catch (err: any) {
