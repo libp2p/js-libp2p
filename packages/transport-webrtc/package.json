@@ -30,7 +30,7 @@
     }
   },
   "scripts": {
-    "generate": "protons src/private-to-private/pb/message.proto",
+    "generate": "protons src/private-to-private/pb/message.proto src/private-to-public/pb/message.proto",
     "build": "aegir build",
     "test": "aegir test -t node -t browser",
     "test:node": "aegir test -t node --cov -- --exit",
@@ -71,7 +71,7 @@
     "p-timeout": "^7.0.0",
     "p-wait-for": "^6.0.0",
     "progress-events": "^1.0.1",
-    "protons-runtime": "^5.6.0",
+    "protons-runtime": "^6.0.1",
     "race-signal": "^2.0.0",
     "react-native-webrtc": "^124.0.6",
     "uint8-varint": "^2.0.4",
@@ -86,7 +86,7 @@
     "datastore-core": "^11.0.1",
     "delay": "^7.0.0",
     "p-retry": "^7.0.0",
-    "protons": "^7.7.0",
+    "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
