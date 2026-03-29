@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.10](https://github.com/libp2p/js-libp2p/compare/record-v4.0.9...record-v4.0.10) (2026-03-27)
+
+
+### Dependencies
+
+* update protons to 8.x.x and protons-runtime to 6.x.x ([#3421](https://github.com/libp2p/js-libp2p/issues/3421)) ([1c3b617](https://github.com/libp2p/js-libp2p/commit/1c3b6177735c97ede56783560738eb54b4038e1a))
+
 ## [4.0.9](https://github.com/libp2p/js-libp2p/compare/record-v4.0.8...record-v4.0.9) (2026-01-16)
 
 

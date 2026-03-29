@@ -78,8 +78,8 @@ $ npm i @libp2p/interop
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/interop/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/libp2p/interop/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/interop/blob/main/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/interop/blob/main/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

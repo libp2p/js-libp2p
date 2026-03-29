@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
+ * A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
  *
  * > ⚠️ **Note**
  * >
