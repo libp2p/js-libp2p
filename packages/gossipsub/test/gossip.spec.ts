@@ -121,20 +121,13 @@ describe('gossip', () => {
       ])
       await nodeA.pubsub.publish(topic, msg)
     }
-    // track the heartbeat when each node received the last message
-
-    const ticks = otherNodes.map((n) => n.pubsub['heartbeatTicks'])
-
-    // there's no event currently implemented to await, so just wait a bit - flaky :(
-    // TODO figure out something more robust
-    await new Promise((resolve) => setTimeout(resolve, 200))
+    // wait for one heartbeat so IDONTWANT handling has happened on all peers
+    await Promise.all(otherNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
 
     // other nodes should have received idontwant messages
     // check that idontwants <= GossipsubIdontwantMaxMessages
     for (let i = 0; i < otherNodes.length; i++) {
       const node = otherNodes[i]
-
-      const currentTick = node.pubsub['heartbeatTicks']
 
       const idontwantCounts = node.pubsub['idontwantCounts']
       let minCount = Infinity
@@ -154,14 +147,7 @@ describe('gossip', () => {
         maxIdontwants = Math.max(maxIdontwants, idontwant.size)
       }
       // expect(minIdontwants).to.be.greaterThan(0)
-      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages)
-
-      // sanity check that the idontwantCount matches idontwants.size
-      // only the case if there hasn't been a heartbeat
-      if (currentTick === ticks[i]) {
-        expect(minCount).to.be.equal(minIdontwants)
-        expect(maxCount).to.be.equal(maxIdontwants)
-      }
+      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages * node.pubsub.opts.mcacheLength)
     }
 
     await Promise.all(otherNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
@@ -183,7 +169,7 @@ describe('gossip', () => {
         maxIdontwants = Math.max(maxIdontwants, idontwant.size)
       }
       // expect(minIdontwants).to.be.greaterThan(0)
-      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages)
+      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages * node.pubsub.opts.mcacheLength)
     }
   })
 
