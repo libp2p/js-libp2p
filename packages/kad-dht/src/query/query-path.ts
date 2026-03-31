@@ -77,7 +77,7 @@ interface QueryQueueOptions extends AbortOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, signal } = options
+  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager, signal } = options
   const events = pushable<QueryEvent>({
     objectMode: true
   })
@@ -166,6 +166,13 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
                 if (ourPeerId.equals(closerPeer.id)) { // eslint-disable-line max-depth
                   log('not querying ourselves')
+                  continue
+                }
+
+                if (!(await connectionManager.isDialable(closerPeer.multiaddrs, {
+                  signal
+                }))) { // eslint-disable-line max-depth
+                  log('not querying undialable peer')
                   continue
                 }
 

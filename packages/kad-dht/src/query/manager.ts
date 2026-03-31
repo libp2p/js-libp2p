@@ -1,4 +1,4 @@
-import { createScalableCuckooFilter } from '@libp2p/utils'
+import { createScalableCuckooFilter, Queue } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
 import { setMaxListeners } from 'main-event'
@@ -143,6 +143,10 @@ export class QueryManager implements Startable {
 
     // query a subset of peers up to `kBucketSize / 2` in length
     let queryFinished = false
+    const routingUpdateQueue = new Queue<void>({
+      concurrency: Math.max(1, Math.min(this.alpha * 2, 16))
+    })
+    const routingUpdatePeers = new Set<string>()
 
     try {
       if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
@@ -225,17 +229,30 @@ export class QueryManager implements Startable {
 
         if (event.name === 'PEER_RESPONSE') {
           for (const peer of [...event.closer, ...event.providers]) {
-            void (async () => {
-              if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
-                signal
-              }))) {
-                return
-              }
+            const peerId = peer.id.toString()
 
-              await this.routingTable.add(peer.id, {
-                signal
-              })
-            })().catch(err => {
+            if (routingUpdatePeers.has(peerId)) {
+              continue
+            }
+
+            routingUpdatePeers.add(peerId)
+
+            void routingUpdateQueue.add(async () => {
+              try {
+                if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
+                  signal
+                }))) {
+                  return
+                }
+
+                await this.routingTable.add(peer.id, {
+                  signal
+                })
+              } finally {
+                routingUpdatePeers.delete(peerId)
+              }
+            }).catch(err => {
+              routingUpdatePeers.delete(peerId)
               log.error('could not update routing table from peer response - %e', err)
             })
           }
@@ -252,6 +269,15 @@ export class QueryManager implements Startable {
       if (!queryFinished) {
         log('query exited early')
         queryEarlyExitController.abort()
+        routingUpdateQueue.abort()
+      } else {
+        try {
+          await routingUpdateQueue.onIdle({
+            signal: AbortSignal.timeout(1000)
+          })
+        } catch {
+
+        }
       }
 
       signal.clear()
