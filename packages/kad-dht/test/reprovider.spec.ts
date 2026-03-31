@@ -8,6 +8,7 @@ import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
 import { Providers } from '../src/providers.js'
 import { Reprovider } from '../src/reprovider.js'
+import { convertBuffer } from '../src/utils.ts'
 import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
 import type { PeerAndKey } from './utils/create-peer-id.ts'
 import type { ContentRouting } from '../src/content-routing/index.js'
@@ -156,6 +157,101 @@ describe('reprovider', () => {
     // Only our own record should remain, other peer's expired record should be deleted
     expect(provsAfter).to.have.length(1)
     expect(provsAfter[0].toString()).to.equal(components.peerId.toString())
+  })
+
+  it('should reprovide in Kademlia key order', async function () {
+    this.timeout(5000)
+
+    // five well-known IPFS CIDs — their Kademlia keys will be in some order
+    // that is unlikely to match the insertion order below
+    const cids = [
+      CID.parse('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb'),
+      CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n'),
+      CID.parse('QmRgutAxd8t7oGkSm4wmeuByG6M51wcTso6cubDdQtuEfL'),
+      CID.parse('QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB'),
+      CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+    ]
+
+    // compute expected Kademlia key order — use multihash bytes as canonical
+    // identity since parseProviderKey always reconstructs CIDs as CIDv1/raw
+    const kadKeys = await Promise.all(cids.map(cid => convertBuffer(cid.multihash.bytes)))
+    const expectedMultihashes = cids
+      .map((cid, i) => ({ multihash: cid.multihash.bytes, kadKey: kadKeys[i] }))
+      .sort((a, b) => {
+        for (let i = 0; i < a.kadKey.length; i++) {
+          if (a.kadKey[i] !== b.kadKey[i]) {
+            return a.kadKey[i] - b.kadKey[i]
+          }
+        }
+        return 0
+      })
+      .map(({ multihash }) => multihash)
+
+    // insert CIDs in REVERSE expected order to prove sorting overrides insertion order
+    for (const { multihash } of [...expectedMultihashes].reverse().map((m, i) => ({ multihash: m, i }))) {
+      const cid = cids.find(c => c.multihash.bytes === multihash) ??
+        cids.find(c => c.multihash.bytes.every((b, j) => b === multihash[j]))
+      if (cid != null) {
+        await providers.addProvider(cid, components.peerId)
+      }
+    }
+
+    // recreate reprovider with concurrency=1 so provides are strictly sequential
+    reprovider = new Reprovider(components, {
+      logPrefix: 'libp2p',
+      datastorePrefix: '/dht',
+      metricsPrefix: '',
+      contentRouting,
+      threshold: 100,
+      validity: 200,
+      interval: 200,
+      concurrency: 1,
+      operationMetrics: {}
+    })
+
+    const provisionMultihashes: Uint8Array[] = []
+
+    // resolve when all CIDs have been provided
+    let resolveWhenDone!: () => void
+    const whenAllDone = new Promise<void>(resolve => { resolveWhenDone = resolve })
+    let provided = 0
+
+    contentRouting.provide.callsFake(async function * (cid: CID) {
+      provisionMultihashes.push(cid.multihash.bytes)
+      provided++
+      if (provided === cids.length) {
+        resolveWhenDone()
+      }
+      yield * []
+    })
+
+    await start(reprovider)
+    await pEvent(reprovider, 'reprovide:start')
+    await pEvent(reprovider, 'reprovide:end')
+
+    // wait for the queue to finish processing all enqueued reprovides
+    await whenAllDone
+
+    // verify CIDs were provided in Kademlia key order by checking each
+    // adjacent pair maintains non-decreasing Kademlia key order
+    expect(provisionMultihashes).to.have.lengthOf(cids.length)
+
+    for (let i = 1; i < provisionMultihashes.length; i++) {
+      const prevKey = await convertBuffer(provisionMultihashes[i - 1])
+      const currKey = await convertBuffer(provisionMultihashes[i])
+
+      let comparison = 0
+      for (let j = 0; j < prevKey.length; j++) {
+        if (prevKey[j] !== currKey[j]) {
+          comparison = prevKey[j] - currKey[j]
+          break
+        }
+      }
+
+      expect(comparison).to.be.lessThanOrEqual(0,
+        `CID at position ${i - 1} should have a smaller or equal Kademlia key than position ${i}`
+      )
+    }
   })
 
   describe('shouldReprovide', () => {
