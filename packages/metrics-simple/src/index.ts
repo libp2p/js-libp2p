@@ -26,7 +26,7 @@
 import { serviceCapabilities } from '@libp2p/interface'
 import { logger } from '@libp2p/logger'
 import { TDigest } from 'tdigest'
-import type { Startable, MultiaddrConnection, Stream, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, ComponentLogger, Logger, MessageStream } from '@libp2p/interface'
+import type { Startable, MultiaddrConnection, Stream, StreamCloseEvent, Metric, MetricGroup, StopTimer, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, CalculateMetric, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, ComponentLogger, Logger, MessageStream } from '@libp2p/interface'
 
 const log = logger('libp2p:simple-metrics')
 
@@ -346,6 +346,7 @@ class SimpleMetrics implements Metrics, Startable {
   private readonly transferStats: Map<string, number>
   private readonly streamsOpened: CounterGroup
   private readonly streamsClosed: CounterGroup
+  private readonly streamsCloseErrors: CounterGroup
   private started: boolean
   private interval?: ReturnType<typeof setInterval>
   private readonly intervalMs: number
@@ -372,6 +373,11 @@ class SimpleMetrics implements Metrics, Startable {
     this.streamsClosed = this.registerCounterGroup('libp2p_protocol_streams_closed_total', {
       label: 'protocol',
       help: 'Total number of protocol streams closed, by direction and protocol'
+    })
+
+    this.streamsCloseErrors = this.registerCounterGroup('libp2p_protocol_streams_close_errors_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams that ended with an error (abort, reset, etc.), by direction and protocol'
     })
   }
 
@@ -469,8 +475,13 @@ class SimpleMetrics implements Metrics, Startable {
 
     this.streamsOpened.increment({ [label]: 1 })
 
-    stream.addEventListener('close', () => {
-      this.streamsClosed.increment({ [label]: 1 })
+    stream.addEventListener('close', (evt: Event) => {
+      const e = evt as StreamCloseEvent
+      if (e.error != null) {
+        this.streamsCloseErrors.increment({ [label]: 1 })
+      } else {
+        this.streamsClosed.increment({ [label]: 1 })
+      }
     }, { once: true })
   }
 

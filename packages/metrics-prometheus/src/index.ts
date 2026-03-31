@@ -78,7 +78,7 @@ import { PrometheusMetricGroup } from './metric-group.js'
 import { PrometheusMetric } from './metric.js'
 import { PrometheusSummaryGroup } from './summary-group.js'
 import { PrometheusSummary } from './summary.js'
-import type { ComponentLogger, Logger, MultiaddrConnection, Stream, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics, CalculatedHistogramOptions, CalculatedSummaryOptions, HistogramOptions, Histogram, HistogramGroup, SummaryOptions, Summary, SummaryGroup, MessageStream } from '@libp2p/interface'
+import type { ComponentLogger, Logger, MultiaddrConnection, Stream, StreamCloseEvent, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics, CalculatedHistogramOptions, CalculatedSummaryOptions, HistogramOptions, Histogram, HistogramGroup, SummaryOptions, Summary, SummaryGroup, MessageStream } from '@libp2p/interface'
 import type { DefaultMetricsCollectorConfiguration, Registry, RegistryContentType } from 'prom-client'
 
 // export helper functions for creating buckets
@@ -143,6 +143,7 @@ class PrometheusMetrics implements Metrics {
   private readonly registry?: Registry
   private readonly streamsOpened: CounterGroup
   private readonly streamsClosed: CounterGroup
+  private readonly streamsCloseErrors: CounterGroup
 
   constructor (components: PrometheusMetricsComponents, init?: Partial<PrometheusMetricsInit>) {
     this.log = components.logger.forComponent('libp2p:prometheus-metrics')
@@ -216,6 +217,10 @@ class PrometheusMetrics implements Metrics {
     this.streamsClosed = this.registerCounterGroup('libp2p_protocol_streams_closed_total', {
       label: 'protocol',
       help: 'Total number of protocol streams closed, by direction and protocol'
+    })
+    this.streamsCloseErrors = this.registerCounterGroup('libp2p_protocol_streams_close_errors_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams that ended with an error (abort, reset, etc.), by direction and protocol'
     })
   }
 
@@ -294,8 +299,13 @@ class PrometheusMetrics implements Metrics {
     // Stream is now open — increment the opened counter immediately.
     this.streamsOpened.increment({ [label]: 1 })
 
-    stream.addEventListener('close', () => {
-      this.streamsClosed.increment({ [label]: 1 })
+    stream.addEventListener('close', (evt: Event) => {
+      const e = evt as StreamCloseEvent
+      if (e.error != null) {
+        this.streamsCloseErrors.increment({ [label]: 1 })
+      } else {
+        this.streamsClosed.increment({ [label]: 1 })
+      }
     }, { once: true })
   }
 

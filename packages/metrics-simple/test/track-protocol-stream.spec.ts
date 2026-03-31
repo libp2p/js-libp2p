@@ -1,4 +1,4 @@
-import { TypedEventEmitter } from '@libp2p/interface'
+import { StreamAbortEvent, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
@@ -33,10 +33,11 @@ describe('SimpleMetrics - protocol stream counters', () => {
 
     const opened = await metrics.metrics.get('libp2p_protocol_streams_opened_total')?.collect()
     const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()
+    const closeErrors = await metrics.metrics.get('libp2p_protocol_streams_close_errors_total')?.collect()
 
     expect(opened).to.deep.include({ 'outbound /identify/1.0.0': 1 })
-    // closed counter must NOT have fired yet
     expect(closed).to.deep.equal({})
+    expect(closeErrors).to.deep.equal({})
   })
 
   it('increments closed counter on graceful stream close', async () => {
@@ -48,9 +49,11 @@ describe('SimpleMetrics - protocol stream counters', () => {
 
     const opened = await metrics.metrics.get('libp2p_protocol_streams_opened_total')?.collect()
     const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()
+    const closeErrors = await metrics.metrics.get('libp2p_protocol_streams_close_errors_total')?.collect()
 
     expect(opened).to.deep.include({ 'inbound /ping/1.0.0': 1 })
     expect(closed).to.deep.include({ 'inbound /ping/1.0.0': 1 })
+    expect(closeErrors).to.deep.equal({})
   })
 
   it('increments closed counter exactly once because listener is registered with once:true', async () => {
@@ -62,7 +65,23 @@ describe('SimpleMetrics - protocol stream counters', () => {
     stream.dispatchEvent(new Event('close'))
 
     const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()
+    const closeErrors = await metrics.metrics.get('libp2p_protocol_streams_close_errors_total')?.collect()
     expect(closed['outbound /test/1.0.0']).to.equal(1)
+    expect(closeErrors).to.deep.equal({})
+  })
+
+  it('increments close-errors counter when close event carries an error', async () => {
+    const metrics = makeMetrics() as any
+    const stream = makeStream('outbound', '/ping/1.0.0')
+
+    metrics.trackProtocolStream(stream)
+    stream.dispatchEvent(new StreamAbortEvent(new Error('aborted')))
+
+    const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()
+    const closeErrors = await metrics.metrics.get('libp2p_protocol_streams_close_errors_total')?.collect()
+
+    expect(closed).to.deep.equal({})
+    expect(closeErrors).to.deep.include({ 'outbound /ping/1.0.0': 1 })
   })
 
   it('accumulates counts correctly across multiple streams', async () => {
@@ -82,6 +101,7 @@ describe('SimpleMetrics - protocol stream counters', () => {
 
     const opened = await metrics.metrics.get('libp2p_protocol_streams_opened_total')?.collect()
     const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()
+    const closeErrors = await metrics.metrics.get('libp2p_protocol_streams_close_errors_total')?.collect()
 
     // 2 outbound + 1 inbound opened
     expect(opened['outbound /identify/1.0.0']).to.equal(2)
@@ -90,6 +110,7 @@ describe('SimpleMetrics - protocol stream counters', () => {
     // 1 outbound + 1 inbound closed (s2 still open)
     expect(closed['outbound /identify/1.0.0']).to.equal(1)
     expect(closed['inbound /identify/1.0.0']).to.equal(1)
+    expect(closeErrors).to.deep.equal({})
   })
 
   it('does not track a stream with no protocol', async () => {
