@@ -231,7 +231,7 @@ export class QueryManager implements Startable {
           for (const peer of [...event.closer, ...event.providers]) {
             const peerId = peer.id.toString()
 
-            if (routingUpdatePeers.has(peerId)) {
+            if (routingUpdatePeers.has(peerId)) { // eslint-disable-line max-depth
               continue
             }
 
