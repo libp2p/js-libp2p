@@ -77,7 +77,7 @@ interface QueryQueueOptions extends AbortOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager, signal } = options
+  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, signal } = options
   const events = pushable<QueryEvent>({
     objectMode: true
   })
@@ -146,6 +146,16 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
             peerKadId,
             signal
           })) {
+            events.push({
+              ...event,
+              path: {
+                index: path,
+                queued: queue.queued,
+                running: queue.running,
+                total: queue.size
+              }
+            })
+
             // if there are closer peers and the query has not completed, continue the query
             if (event.name === 'PEER_RESPONSE') {
               for (const closerPeer of event.closer) {
@@ -156,11 +166,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
 
                 if (ourPeerId.equals(closerPeer.id)) { // eslint-disable-line max-depth
                   log('not querying ourselves')
-                  continue
-                }
-
-                if (!(await connectionManager.isDialable(closerPeer.multiaddrs))) { // eslint-disable-line max-depth
-                  log('not querying undialable peer')
                   continue
                 }
 
@@ -179,16 +184,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                 queryPeer(closerPeer, closerPeerKadId)
               }
             }
-
-            events.push({
-              ...event,
-              path: {
-                index: path,
-                queued: queue.queued,
-                running: queue.running,
-                total: queue.size
-              }
-            })
           }
         } catch (err: any) {
           // yield error event if query is continuing

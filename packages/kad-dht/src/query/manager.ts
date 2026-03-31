@@ -220,23 +220,26 @@ export class QueryManager implements Startable {
           log.error('query error - %e', event.error)
         }
 
+        signal.throwIfAborted()
+        yield event
+
         if (event.name === 'PEER_RESPONSE') {
           for (const peer of [...event.closer, ...event.providers]) {
-            // eslint-disable-next-line max-depth
-            if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
-              signal
-            }))) {
-              continue
-            }
+            void (async () => {
+              if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
+                signal
+              }))) {
+                return
+              }
 
-            await this.routingTable.add(peer.id, {
-              signal
+              await this.routingTable.add(peer.id, {
+                signal
+              })
+            })().catch(err => {
+              log.error('could not update routing table from peer response - %e', err)
             })
           }
         }
-
-        signal.throwIfAborted()
-        yield event
       }
 
       queryFinished = true
