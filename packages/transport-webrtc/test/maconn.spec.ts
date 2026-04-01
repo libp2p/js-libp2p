@@ -121,7 +121,9 @@ describe('readCandidatesUntilConnected', () => {
     await remoteStream.close()
   })
 
-  it('throws ConnectionFailedError when peer connection enters disconnected state', async () => {
+  it('does not fail when peer connection is temporarily disconnected then recovers to connected', async () => {
+    // 'disconnected' is a transient state — the ICE agent may recover without
+    // intervention. readCandidatesUntilConnected must not abort on 'disconnected'.
     const [localStream, remoteStream] = await streamPair()
 
     const pc: any = {
@@ -129,10 +131,51 @@ describe('readCandidatesUntilConnected', () => {
       onconnectionstatechange: null as any
     }
 
+    // ICE briefly goes disconnected at t=30ms, then recovers at t=60ms
     setTimeout(() => {
       pc.connectionState = 'disconnected'
       pc.onconnectionstatechange?.(new Event('connectionstatechange'))
-    }, 50)
+    }, 30)
+
+    setTimeout(() => {
+      pc.connectionState = 'connected'
+      pc.onconnectionstatechange?.(new Event('connectionstatechange'))
+    }, 60)
+
+    const messageStream = pbStream(localStream).pb(Message)
+
+    // Should resolve cleanly when the PC connects — 'disconnected' is ignored
+    await expect(
+      readCandidatesUntilConnected(pc, messageStream, {
+        direction: 'recipient',
+        signal: AbortSignal.timeout(5000),
+        log: defaultLogger().forComponent('test:webrtc')
+      })
+    ).to.eventually.be.undefined
+
+    await remoteStream.close()
+  })
+
+  it('throws ConnectionFailedError when peer connection goes disconnected then failed', async () => {
+    // If ICE cannot recover from 'disconnected' and transitions to 'failed',
+    // the error must still be propagated correctly.
+    const [localStream, remoteStream] = await streamPair()
+
+    const pc: any = {
+      connectionState: 'checking' as RTCPeerConnectionState,
+      onconnectionstatechange: null as any
+    }
+
+    // ICE goes disconnected at t=30ms, then fails at t=60ms
+    setTimeout(() => {
+      pc.connectionState = 'disconnected'
+      pc.onconnectionstatechange?.(new Event('connectionstatechange'))
+    }, 30)
+
+    setTimeout(() => {
+      pc.connectionState = 'failed'
+      pc.onconnectionstatechange?.(new Event('connectionstatechange'))
+    }, 60)
 
     const messageStream = pbStream(localStream).pb(Message)
 

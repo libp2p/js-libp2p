@@ -95,7 +95,6 @@ function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<voi
         promise.resolve()
         break
       case 'failed':
-      case 'disconnected':
       case 'closed':
         promise.reject(new ConnectionFailedError(`RTCPeerConnection connection state became "${pc.connectionState}"`))
         break
