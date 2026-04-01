@@ -68,7 +68,7 @@ describe('events', () => {
       onProgress
     })
 
-    expect(events.get('connection:open-stream')).to.equal(2)
-    expect(events.get('connection:opened-stream')).to.equal(2)
+    expect(events.get('connection:open-stream')).to.equal(1)
+    expect(events.get('connection:opened-stream')).to.equal(1)
   })
 })
