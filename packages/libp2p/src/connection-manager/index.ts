@@ -532,6 +532,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     try {
       options.signal?.throwIfAborted()
+      options?.onProgress?.(new CustomProgressEvent('connection:open', peerIdOrMultiaddr))
 
       const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
@@ -547,6 +548,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           this.log('had an existing connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+          options.onProgress?.(new CustomProgressEvent('connection:opened', existingConnection))
+
           return existingConnection
         }
       }
@@ -589,6 +592,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       if (!trackedConnection) {
         peerConnections.push(connection)
       }
+
+      options.onProgress?.(new CustomProgressEvent('connection:opened', connection))
 
       return connection
     } finally {

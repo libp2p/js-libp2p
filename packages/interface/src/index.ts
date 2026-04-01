@@ -14,7 +14,7 @@
  * ```
  */
 
-import type { Connection, NewStreamOptions } from './connection.js'
+import type { Connection, NewStreamOptions, NewStreamProgressEvents } from './connection.js'
 import type { ContentRouting } from './content-routing.js'
 import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
 import type { Metrics } from './metrics.js'
@@ -483,6 +483,8 @@ export type TransportManagerDialProgressEvents =
   ProgressEvent<'transport-manager:selected-transport', string>
 
 export type OpenConnectionProgressEvents =
+  ProgressEvent<'connection:open', DialTarget> |
+  ProgressEvent<'connection:opened', Connection> |
   TransportManagerDialProgressEvents |
   ProgressEvent<'dial-queue:already-connected'> |
   ProgressEvent<'dial-queue:already-in-dial-queue'> |
@@ -491,14 +493,14 @@ export type OpenConnectionProgressEvents =
   ProgressEvent<'dial-queue:calculated-addresses', Address[]> |
   OutboundConnectionUpgradeEvents
 
-export interface DialOptions extends AbortOptions, ProgressOptions {
+export interface DialOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
   /**
    * If true, open a new connection to the remote even if one already exists
    */
   force?: boolean
 }
 
-export interface DialProtocolOptions extends NewStreamOptions {
+export interface DialProtocolOptions extends Omit<DialOptions, 'onProgress'>, Omit<NewStreamOptions, 'onProgress'>, ProgressOptions<OpenConnectionProgressEvents | NewStreamProgressEvents> {
 
 }
 
