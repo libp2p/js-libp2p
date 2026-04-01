@@ -56,6 +56,11 @@ export interface SignedPeerRecord {
 }
 
 /**
+ * Things that libp2p can dial
+ */
+export type DialTarget = PeerId | Multiaddr | Multiaddr[]
+
+/**
  * A certificate that can be used to secure connections
  */
 export interface TLSCertificate {
@@ -678,7 +683,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * await conn.close()
    * ```
    */
-  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: DialOptions): Promise<Connection>
+  dial(peer: DialTarget, options?: DialOptions): Promise<Connection>
 
   /**
    * Dials to the provided peer and tries to handshake with the given protocols in order.
@@ -696,7 +701,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: DialProtocolOptions): Promise<Stream>
+  dialProtocol(peer: DialTarget, protocols: string | string[], options?: DialProtocolOptions): Promise<Stream>
 
   /**
    * Attempts to gracefully close an open connection to the given peer. If the
