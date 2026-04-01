@@ -482,6 +482,7 @@ describe('dial queue', () => {
       const connection = stubInterface<Connection>()
       const addressDialTimeout = 100
       const dialledAddrs: string[] = []
+      let dialsAborted = 0
 
       components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
       components.transportManager.dial.callsFake(async (ma, options) => {
@@ -490,6 +491,7 @@ describe('dial queue', () => {
 
         if (!maStr.includes('1234')) {
           // first three addresses hang – will be cut by per-address timeout
+          options?.signal?.addEventListener('abort', () => { dialsAborted++ }, { once: true })
           return hangUntilAborted(options)
         }
 
@@ -501,14 +503,12 @@ describe('dial queue', () => {
         dialTimeout: 10_000
       })
 
-      const start = Date.now()
       const conn = await dialer.dial([
         multiaddr('/ip4/127.0.0.1/tcp/1231'),
         multiaddr('/ip4/127.0.0.1/tcp/1232'),
         multiaddr('/ip4/127.0.0.1/tcp/1233'),
         multiaddr('/ip4/127.0.0.1/tcp/1234')
       ])
-      const elapsed = Date.now() - start
 
       expect(conn).to.equal(connection)
       // all four addresses were attempted in order
@@ -518,9 +518,8 @@ describe('dial queue', () => {
         '/ip4/127.0.0.1/tcp/1233',
         '/ip4/127.0.0.1/tcp/1234'
       ])
-      // elapsed ~= 3 × addressDialTimeout (three per-address timeouts before success)
-      expect(elapsed).to.be.greaterThan(addressDialTimeout * 2)
-      expect(elapsed).to.be.lessThan(addressDialTimeout * 6)
+      // per-address signal was aborted for each of the three hung dials
+      expect(dialsAborted).to.equal(3)
     })
 
     it('should throw an AggregateError when every address times out per-address before the batch timeout', async () => {
