@@ -6,7 +6,7 @@ import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
-import type { Stream, Startable, DialProtocolOptions, DialTarget } from '@libp2p/interface'
+import type { Stream, PeerId, Startable, DialProtocolOptions, DialTarget } from '@libp2p/interface'
 
 const DEFAULT_TIMEOUT = 10_000
 
@@ -75,7 +75,8 @@ export class Fetch implements Startable, FetchInterface {
     let stream: Stream | undefined
 
     try {
-      const stream = await this.components.connectionManager.openStream(peer, this.protocol, options)
+      const connection = await this.components.connectionManager.openConnection(peer, options)
+      stream = await connection.newStream(this.protocol, options)
 
       const log = stream.log.newScope('fetch')
       log.trace('fetch %m', key)
