@@ -1,5 +1,28 @@
 # Changelog
 
+## [15.0.16](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.15...gossipsub-v15.0.16) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* update protons to 8.x.x and protons-runtime to 6.x.x ([#3421](https://github.com/libp2p/js-libp2p/issues/3421)) ([1c3b617](https://github.com/libp2p/js-libp2p/commit/1c3b6177735c97ede56783560738eb54b4038e1a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/interface-internal bumped from ^3.0.13 to ^3.0.14
+    * @libp2p/peer-id bumped from ^6.0.4 to ^6.0.5
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.14 to ^11.0.15
+    * @libp2p/logger bumped from ^6.2.2 to ^6.2.3
+    * @libp2p/peer-store bumped from ^12.0.13 to ^12.0.14
+
 ## [15.0.15](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.14...gossipsub-v15.0.15) (2026-03-12)
 
 

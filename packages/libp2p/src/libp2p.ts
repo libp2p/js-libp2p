@@ -24,7 +24,7 @@ import { userAgent } from './user-agent.js'
 import * as pkg from './version.js'
 import type { Components } from './components.js'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.js'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, NewStreamOptions, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
@@ -286,7 +286,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     return Array.from(peerSet)
   }
 
-  async dial (peer: PeerId | Multiaddr | Multiaddr[], options: DialOptions = {}): Promise<Connection> {
+  async dial (peer: DialTarget, options: DialOptions = {}): Promise<Connection> {
     return this.components.connectionManager.openConnection(peer, {
       // ensure any userland dials take top priority in the queue
       priority: 75,
@@ -294,7 +294,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     })
   }
 
-  async dialProtocol (peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {
+  async dialProtocol (peer: DialTarget, protocols: string | string[], options: NewStreamOptions = {}): Promise<Stream> {
     if (protocols == null) {
       throw new InvalidParametersError('no protocols were provided to open a stream')
     }
