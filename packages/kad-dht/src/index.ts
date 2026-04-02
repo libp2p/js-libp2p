@@ -501,6 +501,21 @@ export interface KadDHTInit {
   disjointPaths?: number
 
   /**
+   * Concurrency for background routing table updates from query responses.
+   *
+   * @default min(alpha * 2, 16)
+   */
+  routingUpdateQueueConcurrency?: number
+
+  /**
+   * Minimum time in ms between background routing table update attempts for
+   * the same responding peer.
+   *
+   * @default 30_000
+   */
+  routingUpdatePeerTtl?: number
+
+  /**
    * How many bits of the KAD-ID of peers to use when creating the routing
    * table.
    *

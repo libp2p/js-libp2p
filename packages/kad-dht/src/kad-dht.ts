@@ -228,6 +228,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.queryManager = new QueryManager(components, {
       disjointPaths: this.d,
       alpha: this.a,
+      routingUpdateQueueConcurrency: init.routingUpdateQueueConcurrency,
+      routingUpdatePeerTtl: init.routingUpdatePeerTtl,
       logPrefix,
       metricsPrefix,
       initialQuerySelfHasRun,
@@ -404,14 +406,9 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
     const signal = AbortSignal.timeout(this.onPeerConnectTimeout)
     setMaxListeners(Infinity, signal)
-
-    try {
-      await this.routingTable.add(peerData.id, {
-        signal
-      })
-    } catch (err: any) {
-      this.log.error('could not add %p to routing table - %e', peerData.id, err)
-    }
+    this.queryManager.queueRoutingTableUpdate(peerData.id, {
+      signal
+    })
   }
 
   /**

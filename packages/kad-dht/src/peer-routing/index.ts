@@ -275,9 +275,15 @@ export class PeerRouting {
           continue
         }
 
+        if (!(await this.components.connectionManager.isDialable(peer.multiaddrs, {
+          signal: options.signal
+        }))) {
+          continue
+        }
+
         yield finalPeerEvent({
           from: this.components.peerId,
-          peer: await self.components.peerStore.getInfo(peer.id, options),
+          peer,
           path: {
             index: path.index,
             queued: 0,
