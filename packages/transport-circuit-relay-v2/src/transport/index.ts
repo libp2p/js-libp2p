@@ -15,7 +15,7 @@ import { createListener } from './listener.js'
 import { ReservationStore } from './reservation-store.js'
 import { streamToMaConnection } from './stream-to-conn.js'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from '../index.ts'
-import type { Transport, CreateListenerOptions, Listener, Logger, Connection, Stream, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { Transport, CreateListenerOptions, Listener, Logger, Connection, Stream, DialTransportOptions, OpenConnectionProgressEvents, NewStreamProgressEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
@@ -40,8 +40,8 @@ const defaults = {
 }
 
 export type CircuitRelayDialEvents =
-  OutboundConnectionUpgradeEvents |
   OpenConnectionProgressEvents |
+  NewStreamProgressEvents |
   ProgressEvent<'circuit-relay:open-connection'> |
   ProgressEvent<'circuit-relay:reuse-connection'> |
   ProgressEvent<'circuit-relay:open-hop-stream'> |
