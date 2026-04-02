@@ -4,9 +4,7 @@ import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import type { Echo as EchoInterface, EchoComponents, EchoInit } from './index.js'
-import type { PeerId, Startable, Stream } from '@libp2p/interface'
-import type { OpenConnectionOptions } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { DialProtocolOptions, DialTarget, Startable, Stream } from '@libp2p/interface'
 
 /**
  * A simple echo stream, any data received will be sent back to the sender
@@ -85,7 +83,7 @@ export class Echo implements Startable, EchoInterface {
     })
   }
 
-  async echo (peer: PeerId | Multiaddr | Multiaddr[], buf: Uint8Array | Uint8ArrayList, options?: OpenConnectionOptions): Promise<Uint8ArrayList> {
+  async echo (peer: DialTarget, buf: Uint8Array | Uint8ArrayList, options?: DialProtocolOptions): Promise<Uint8ArrayList> {
     const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
       ...this.init,
       ...options

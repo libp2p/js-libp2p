@@ -58,7 +58,7 @@
     "main-event": "^1.0.1",
     "multiformats": "^13.4.0",
     "nanoid": "^5.1.5",
-    "progress-events": "^1.0.1",
+    "progress-events": "^1.1.0",
     "protons-runtime": "^6.0.1",
     "retimeable-signal": "^1.0.1",
     "uint8arraylist": "^2.4.8",

@@ -6,7 +6,7 @@ import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
 import { FetchRequest, FetchResponse } from './pb/proto.js'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.js'
-import type { AbortOptions, Stream, PeerId, Startable } from '@libp2p/interface'
+import type { Stream, Startable, DialProtocolOptions, DialTarget } from '@libp2p/interface'
 
 const DEFAULT_TIMEOUT = 10_000
 
@@ -55,7 +55,7 @@ export class Fetch implements Startable, FetchInterface {
   /**
    * Sends a request to fetch the value associated with the given key from the given peer
    */
-  async fetch (peer: PeerId, key: string | Uint8Array, options: AbortOptions = {}): Promise<Uint8Array | undefined> {
+  async fetch (peer: DialTarget, key: string | Uint8Array, options: DialProtocolOptions = {}): Promise<Uint8Array | undefined> {
     if (typeof key === 'string') {
       key = uint8arrayFromString(key)
     }

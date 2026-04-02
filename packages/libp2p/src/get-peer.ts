@@ -2,7 +2,7 @@ import { InvalidMultiaddrError, InvalidParametersError, isPeerId } from '@libp2p
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CODE_P2P, isMultiaddr } from '@multiformats/multiaddr'
 import { PEER_ID } from '@multiformats/multiaddr-matcher'
-import type { PeerId } from '@libp2p/interface'
+import type { DialTarget, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface PeerAddress {
@@ -14,7 +14,7 @@ export interface PeerAddress {
  * Extracts a PeerId and/or multiaddr from the passed PeerId or Multiaddr or an
  * array of Multiaddrs
  */
-export function getPeerAddress (peer: PeerId | Multiaddr | Multiaddr[]): PeerAddress {
+export function getPeerAddress (peer: DialTarget): PeerAddress {
   if (isPeerId(peer)) {
     return { peerId: peer, multiaddrs: [] }
   }

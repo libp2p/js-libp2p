@@ -52,11 +52,11 @@
  */
 
 import { Perf as PerfClass } from './perf-service.js'
-import type { AbortOptions, ComponentLogger } from '@libp2p/interface'
+import type { ComponentLogger, DialProtocolOptions } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-export interface PerfOptions extends AbortOptions {
+export interface PerfOptions extends DialProtocolOptions {
   /**
    * By default measuring perf should include the time it takes to establish a
    * connection, so a new connection will be opened for every performance run.
