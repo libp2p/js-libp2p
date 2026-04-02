@@ -164,6 +164,47 @@ describe('identify', () => {
     expect(outgoingStream).to.have.property('status', 'aborted')
   })
 
+  it('should succeed if the remote closes the stream after sending the identify response', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const message: IdentifyMessage = {
+      listenAddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/123').bytes
+      ],
+      protocols: [
+        '/foo/bar/1.0'
+      ],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+    }
+
+    const [outgoingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    const identifyPromise = identify.identify(connection)
+
+    // Wait for identify to register its stream listener
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+
+    // send the identify message with a trailing byte then close immediately.
+    const encoded = lp.encode.single(IdentifyMessage.encode(message)).subarray()
+    const combined = new Uint8Array(encoded.byteLength + 1)
+    combined.set(encoded)
+    outgoingStream.push(combined) // appends to readBuffer, schedules setTimeout(dispatchReadBuffer, 0)
+    outgoingStream.remoteWriteStatus = 'closed' // set before dispatchReadBuffer fires
+
+    const response = await identifyPromise
+
+    expect(response.peerId.toString()).to.equal(remotePeer.toString())
+    expect(response.protocols).to.deep.equal(message.protocols)
+    expect(response.listenAddrs.map(ma => ma.toString())).to.deep.equal(['/ip4/123.123.123.123/tcp/123'])
+  })
+
   it('should limit incoming identify message sizes', async () => {
     const maxMessageSize = 100
 
