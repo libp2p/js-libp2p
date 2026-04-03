@@ -2,6 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 
 import { Libp2pRecord } from '@libp2p/record'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -9,7 +10,6 @@ import drain from 'it-drain'
 import filter from 'it-filter'
 import last from 'it-last'
 import sinon from 'sinon'
-import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { MessageType } from '../src/index.js'
 import { peerResponseEvent } from '../src/query/events.js'
