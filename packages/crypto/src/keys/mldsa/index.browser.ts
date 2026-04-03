@@ -1,19 +1,19 @@
-import { ml_dsa44, ml_dsa65, ml_dsa87 } from '@noble/post-quantum/ml-dsa.js'
+import { ml_dsa44, ml_dsa65, ml_dsa87 } from '@noble/post-quantum/ml-dsa.js' // eslint-disable-line camelcase
 import { randomBytes as pqRandomBytes } from '@noble/post-quantum/utils.js'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { SigningError, VerificationError } from '../../errors.js'
 import webcrypto from '../../webcrypto/index.js'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { MLDSAVariant, AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayKeyPair } from '../interface.js'
+import type { MLDSAVariant, AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 type WebCryptoAlgorithm = 'ML-DSA-44' | 'ML-DSA-65' | 'ML-DSA-87'
 export type MLDSABackend = 'auto' | 'noble' | 'node-subtle'
 
 const variants = {
-  MLDSA44: ml_dsa44,
-  MLDSA65: ml_dsa65,
-  MLDSA87: ml_dsa87
+  MLDSA44: ml_dsa44, // eslint-disable-line camelcase
+  MLDSA65: ml_dsa65, // eslint-disable-line camelcase
+  MLDSA87: ml_dsa87 // eslint-disable-line camelcase
 } as const
 
 let backendPreference: MLDSABackend = 'auto'

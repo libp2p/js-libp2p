@@ -23,7 +23,7 @@ import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair, pkcs1Mess
 import { privateKeyLength as secp256k1PrivateKeyLength, publicKeyLength as secp256k1PublicKeyLength } from './secp256k1/index.js'
 import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
 import type { Curve } from './ecdsa/index.js'
-import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey, MLDSAPrivateKey, MLDSAPublicKey, MLDSAVariant } from '@libp2p/interface'
+import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey, MLDSAPrivateKey, MLDSAVariant } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
 import type { Digest } from 'multiformats/hashes/digest'
 

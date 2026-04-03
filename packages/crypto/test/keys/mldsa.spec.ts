@@ -5,8 +5,8 @@ import { randomBytes } from '../../src/index.js'
 import { privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf, generateKeyPair } from '../../src/keys/index.js'
 import { KeyType } from '../../src/keys/keys.js'
 import { getMLDSABackend, getMLDSASignatureLength, setMLDSABackend } from '../../src/keys/mldsa/index.js'
-import webcrypto from '../../src/webcrypto/index.js'
 import { unmarshalMLDSAPrivateKey, unmarshalMLDSAPublicKey } from '../../src/keys/mldsa/utils.js'
+import webcrypto from '../../src/webcrypto/index.js'
 import type { MLDSAPrivateKey } from '@libp2p/interface'
 
 describe('mldsa keys', function () {
@@ -160,6 +160,7 @@ describe('mldsa keys', function () {
       }
     }
 
+    // eslint-disable-next-line no-console
     console.log('ML-DSA subtle capability:', capabilities)
 
     expect(capabilities).to.have.property('ML-DSA-65')

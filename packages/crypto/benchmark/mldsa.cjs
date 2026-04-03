@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 const crypto = require('../dist/src/index.js')
-const peerId = require('../../peer-id/dist/src/index.js')
 const Benchmark = require('benchmark')
 
 const variants = ['MLDSA44', 'MLDSA65', 'MLDSA87']
@@ -107,26 +106,6 @@ async function runBackendBenchmarks (backend) {
     })
   })
 
-  variants.forEach((variant) => {
-    suite.add(`peerIdFromPublicKey ${variant}`, (d) => {
-      const key = keys.get(variant)
-
-      if (key == null) {
-        throw new Error(`missing benchmark key for ${variant}`)
-      }
-
-      const id = peerId.peerIdFromPublicKey(key.publicKey)
-
-      if (id.type !== 'MLDSA') {
-        throw new Error(`unexpected peer id type for ${variant}: ${id.type}`)
-      }
-
-      d.resolve()
-    }, {
-      defer: true
-    })
-  })
-
   console.log(`\n=== MLDSA backend: ${backend} (effective: ${getMLDSABackend()}) ===`)
 
   await new Promise((resolve) => {
@@ -136,7 +115,6 @@ async function runBackendBenchmarks (backend) {
         console.error('benchmark error:', event.target?.name, event.target?.error)
       })
       .on('complete', function () {
-        console.log('fastest is ' + this.filter('fastest').map('name'))
         resolve()
       })
       .run({ async: true })

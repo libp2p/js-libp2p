@@ -1,9 +1,9 @@
 import { InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { create as createDigest } from 'multiformats/hashes/digest'
+import * as pb from '../keys.js'
 import { MLDSAPrivateKey as MLDSAPrivateKeyClass, MLDSAPublicKey as MLDSAPublicKeyClass } from './mldsa.js'
 import * as crypto from './index.js'
-import * as pb from '../keys.js'
 import type { MLDSAPrivateKey, MLDSAPublicKey, MLDSAVariant } from '@libp2p/interface'
 import type { Digest } from 'multiformats/hashes/digest'
 
