@@ -32,6 +32,10 @@ export type { Curve } from './ecdh/index.js'
 export type { ECDHKey, EnhancedKey, EnhancedKeyPair, ECDHKeyPair } from './interface.js'
 export { keyStretcher } from './key-stretcher.js'
 
+export interface MLDSAKeyGenerationOptions {
+  variant?: MLDSAVariant
+}
+
 /**
  * Generates a keypair of the given type and bitsize
  */
@@ -39,9 +43,9 @@ export async function generateKeyPair (type: 'Ed25519'): Promise<Ed25519PrivateK
 export async function generateKeyPair (type: 'secp256k1'): Promise<Secp256k1PrivateKey>
 export async function generateKeyPair (type: 'ECDSA', curve?: Curve): Promise<ECDSAPrivateKey>
 export async function generateKeyPair (type: 'RSA', bits?: number): Promise<RSAPrivateKey>
-export async function generateKeyPair (type: 'MLDSA', variant?: MLDSAVariant): Promise<MLDSAPrivateKey>
+export async function generateKeyPair (type: 'MLDSA', variant?: MLDSAVariant | MLDSAKeyGenerationOptions): Promise<MLDSAPrivateKey>
 export async function generateKeyPair (type: KeyType, bits?: number): Promise<PrivateKey>
-export async function generateKeyPair (type: KeyType, bits?: number | string): Promise<unknown> {
+export async function generateKeyPair (type: KeyType, bits?: number | string | MLDSAKeyGenerationOptions): Promise<unknown> {
   if (type === 'Ed25519') {
     return generateEd25519KeyPair()
   }
@@ -272,7 +276,9 @@ function toCurve (curve: any): Curve {
   throw new InvalidParametersError('Unsupported curve, should be P-256, P-384 or P-521')
 }
 
-function toMLDSAVariant (variant: any): MLDSAVariant {
+function toMLDSAVariant (variantOrOptions: any): MLDSAVariant {
+  const variant = variantOrOptions?.variant ?? variantOrOptions
+
   if (variant == null) {
     return defaultMLDSAVariant
   }

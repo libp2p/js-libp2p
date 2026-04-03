@@ -36,6 +36,14 @@ describe('mldsa keys', function () {
     expect(key87.variant).to.equal('MLDSA87')
   })
 
+  it('generates variant-specific keys from options object', async () => {
+    const key44 = await generateKeyPair('MLDSA', { variant: 'MLDSA44' })
+    const key87 = await generateKeyPair('MLDSA', { variant: 'MLDSA87' })
+
+    expect(key44.variant).to.equal('MLDSA44')
+    expect(key87.variant).to.equal('MLDSA87')
+  })
+
   it('signs and verifies', async () => {
     const data = randomBytes(256)
     const sig = await key.sign(data)
