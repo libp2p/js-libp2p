@@ -43,7 +43,7 @@ export class MLDSAPublicKey implements MLDSAPublicKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean {
+  verify (data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean> {
     return hashAndVerify(this.variant, this.raw, sig, data, options)
   }
 }
@@ -68,7 +68,7 @@ export class MLDSAPrivateKey implements MLDSAPrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array {
-    return hashAndSign(this.variant, this.raw, message, options)
+  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array> {
+    return hashAndSign(this.variant, this.raw, message, options, this.publicKey.raw)
   }
 }

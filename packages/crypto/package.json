@@ -82,7 +82,10 @@
     "test:webkit": "aegir test -t browser -- --browser webkit",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
-    "generate": "protons ./src/keys/keys.proto"
+    "generate": "protons ./src/keys/keys.proto",
+    "bench:mldsa": "node ./benchmark/mldsa.cjs",
+    "bench:mldsa:noble": "MLDSA_BENCH_BACKENDS=noble node ./benchmark/mldsa.cjs",
+    "bench:mldsa:subtle": "MLDSA_BENCH_BACKENDS=node-subtle node ./benchmark/mldsa.cjs"
   },
   "dependencies": {
     "@libp2p/interface": "^3.1.1",
@@ -106,6 +109,7 @@
     "./dist/src/hmac/index.js": "./dist/src/hmac/index.browser.js",
     "./dist/src/keys/ecdh/index.js": "./dist/src/keys/ecdh/index.browser.js",
     "./dist/src/keys/ed25519/index.js": "./dist/src/keys/ed25519/index.browser.js",
+    "./dist/src/keys/mldsa/index.js": "./dist/src/keys/mldsa/index.browser.js",
     "./dist/src/keys/rsa/index.js": "./dist/src/keys/rsa/index.browser.js",
     "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js",
     "./dist/src/webcrypto/webcrypto.js": "./dist/src/webcrypto/webcrypto.browser.js"

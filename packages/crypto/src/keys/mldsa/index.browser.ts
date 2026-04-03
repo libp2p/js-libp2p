@@ -1,14 +1,13 @@
-import crypto from 'crypto'
 import { ml_dsa44, ml_dsa65, ml_dsa87 } from '@noble/post-quantum/ml-dsa.js'
 import { randomBytes as pqRandomBytes } from '@noble/post-quantum/utils.js'
-import { InvalidParametersError } from '@libp2p/interface'
 import { SigningError, VerificationError } from '../../errors.js'
+import webcrypto from '../../webcrypto/index.js'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { MLDSAVariant, AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayKeyPair } from '../interface.js'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-type NodeAlgorithm = 'ML-DSA-44' | 'ML-DSA-65' | 'ML-DSA-87'
+type WebCryptoAlgorithm = 'ML-DSA-44' | 'ML-DSA-65' | 'ML-DSA-87'
 export type MLDSABackend = 'auto' | 'noble' | 'node-subtle'
 
 const variants = {
@@ -18,14 +17,14 @@ const variants = {
 } as const
 
 let backendPreference: MLDSABackend = 'auto'
-const subtleSupport = new Map<MLDSAVariant, Promise<boolean>>()
+const webCryptoSupport = new Map<MLDSAVariant, Promise<boolean>>()
 
 export const mldsaVariants = Object.keys(variants) as MLDSAVariant[]
 export const defaultMLDSAVariant: MLDSAVariant = 'MLDSA65'
 
 export function setMLDSABackend (backend: MLDSABackend): void {
   if (backend !== 'auto' && backend !== 'noble' && backend !== 'node-subtle') {
-    throw new InvalidParametersError(`Unsupported ML-DSA backend "${backend}"`)
+    throw new Error(`Unsupported ML-DSA backend "${backend}"`)
   }
 
   backendPreference = backend
@@ -78,8 +77,8 @@ export function hashAndSign (variant: MLDSAVariant, key: Uint8Array, msg: Uint8A
 
   const data = msg instanceof Uint8Array ? msg : msg.subarray()
 
-  if (shouldUseNodeSubtle() && publicKey != null) {
-    return hashAndSignNodeSubtle(variant, key, publicKey, data)
+  if (shouldUseWebCryptoMLDSA()) {
+    return hashAndSignWebCrypto(variant, key, publicKey, data)
       .catch(() => {
         const normalizedKey = getMLDSA(variant).keygen(key).secretKey
         return getMLDSA(variant).sign(data, normalizedKey)
@@ -88,6 +87,7 @@ export function hashAndSign (variant: MLDSAVariant, key: Uint8Array, msg: Uint8A
 
   try {
     const normalizedKey = getMLDSA(variant).keygen(key).secretKey
+
     return getMLDSA(variant).sign(data, normalizedKey)
   } catch (err) {
     throw new SigningError(String(err))
@@ -99,8 +99,8 @@ export function hashAndVerify (variant: MLDSAVariant, key: Uint8Array, sig: Uint
 
   const data = msg instanceof Uint8Array ? msg : msg.subarray()
 
-  if (shouldUseNodeSubtle()) {
-    return hashAndVerifyNodeSubtle(variant, key, sig, data)
+  if (shouldUseWebCryptoMLDSA()) {
+    return hashAndVerifyWebCrypto(variant, key, sig, data)
       .catch(() => getMLDSA(variant).verify(sig, data, key))
   }
 
@@ -111,86 +111,64 @@ export function hashAndVerify (variant: MLDSAVariant, key: Uint8Array, sig: Uint
   }
 }
 
-function shouldUseNodeSubtle (): boolean {
-  if (backendPreference === 'noble') {
-    return false
-  }
-
-  if (backendPreference === 'node-subtle') {
-    return true
-  }
-
-  return crypto.webcrypto?.subtle != null
+function shouldUseWebCryptoMLDSA (): boolean {
+  return backendPreference !== 'noble'
 }
 
-async function hashAndSignNodeSubtle (variant: MLDSAVariant, seed: Uint8Array, publicKey: Uint8Array, msg: Uint8Array): Promise<Uint8Array> {
-  const subtle = crypto.webcrypto?.subtle
-
-  if (subtle == null) {
-    throw new SigningError('node-subtle backend unavailable')
-  }
-
-  const supported = await isNodeSubtleMLDSASupported(variant)
+async function hashAndSignWebCrypto (variant: MLDSAVariant, seed: Uint8Array, publicKey: Uint8Array | undefined, msg: Uint8Array): Promise<Uint8Array> {
+  const supported = await isWebCryptoMLDSASupported(variant)
 
   if (!supported) {
-    throw new SigningError('node-subtle ML-DSA variant not supported')
+    throw new SigningError('webcrypto ML-DSA variant not supported')
   }
 
+  const pk = publicKey ?? getMLDSA(variant).keygen(seed).publicKey
+  const subtle = webcrypto.get().subtle
   const key = await subtle.importKey('jwk', {
     kty: 'AKP',
-    alg: toNodeAlgorithm(variant),
+    alg: toWebCryptoAlgorithm(variant),
     priv: uint8ArrayToString(seed, 'base64url'),
-    pub: uint8ArrayToString(publicKey, 'base64url'),
+    pub: uint8ArrayToString(pk, 'base64url'),
     ext: false,
     key_ops: ['sign']
   } as any, {
-    name: toNodeAlgorithm(variant)
+    name: toWebCryptoAlgorithm(variant)
   }, false, ['sign'])
 
-  const sig = await subtle.sign({ name: toNodeAlgorithm(variant) }, key, msg)
+  const sig = await subtle.sign({ name: toWebCryptoAlgorithm(variant) }, key, msg)
   return new Uint8Array(sig, 0, sig.byteLength)
 }
 
-async function hashAndVerifyNodeSubtle (variant: MLDSAVariant, publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
-  const subtle = crypto.webcrypto?.subtle
-
-  if (subtle == null) {
-    throw new VerificationError('node-subtle backend unavailable')
-  }
-
-  const supported = await isNodeSubtleMLDSASupported(variant)
+async function hashAndVerifyWebCrypto (variant: MLDSAVariant, publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array): Promise<boolean> {
+  const supported = await isWebCryptoMLDSASupported(variant)
 
   if (!supported) {
-    throw new VerificationError('node-subtle ML-DSA variant not supported')
+    throw new VerificationError('webcrypto ML-DSA variant not supported')
   }
 
+  const subtle = webcrypto.get().subtle
   const key = await subtle.importKey('jwk', {
     kty: 'AKP',
-    alg: toNodeAlgorithm(variant),
+    alg: toWebCryptoAlgorithm(variant),
     pub: uint8ArrayToString(publicKey, 'base64url'),
     ext: false,
     key_ops: ['verify']
   } as any, {
-    name: toNodeAlgorithm(variant)
+    name: toWebCryptoAlgorithm(variant)
   }, false, ['verify'])
 
-  return subtle.verify({ name: toNodeAlgorithm(variant) }, key, sig, msg)
+  return subtle.verify({ name: toWebCryptoAlgorithm(variant) }, key, sig, msg)
 }
 
-async function isNodeSubtleMLDSASupported (variant: MLDSAVariant): Promise<boolean> {
-  let supportPromise = subtleSupport.get(variant)
+async function isWebCryptoMLDSASupported (variant: MLDSAVariant): Promise<boolean> {
+  let supportPromise = webCryptoSupport.get(variant)
 
   if (supportPromise == null) {
     supportPromise = (async () => {
       try {
-        const subtle = crypto.webcrypto?.subtle
-
-        if (subtle == null) {
-          return false
-        }
-
+        const subtle = webcrypto.get().subtle
         const keyPair = await subtle.generateKey({
-          name: toNodeAlgorithm(variant)
+          name: toWebCryptoAlgorithm(variant)
         }, false, ['sign', 'verify']) as CryptoKeyPair
 
         return keyPair.privateKey != null && keyPair.publicKey != null
@@ -199,13 +177,13 @@ async function isNodeSubtleMLDSASupported (variant: MLDSAVariant): Promise<boole
       }
     })()
 
-    subtleSupport.set(variant, supportPromise)
+    webCryptoSupport.set(variant, supportPromise)
   }
 
   return supportPromise
 }
 
-function toNodeAlgorithm (variant: MLDSAVariant): NodeAlgorithm {
+function toWebCryptoAlgorithm (variant: MLDSAVariant): WebCryptoAlgorithm {
   switch (variant) {
     case 'MLDSA44':
       return 'ML-DSA-44'

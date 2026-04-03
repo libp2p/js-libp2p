@@ -47,9 +47,10 @@ export function marshalMLDSAPublicKey (variant: MLDSAVariant, publicKey: Uint8Ar
 
 export function marshalMLDSAPrivateKey (variant: MLDSAVariant, privateKey: Uint8Array): Uint8Array {
   const expectedLength = crypto.getMLDSAPrivateKeyLength(variant)
+  const seedLength = crypto.getMLDSASeedLength(variant)
 
-  if (privateKey.byteLength !== expectedLength) {
-    throw new InvalidParametersError(`ML-DSA private key must be ${expectedLength} bytes, got ${privateKey.byteLength}`)
+  if (privateKey.byteLength !== expectedLength && privateKey.byteLength !== seedLength) {
+    throw new InvalidParametersError(`ML-DSA private key must be ${expectedLength} or ${seedLength} bytes, got ${privateKey.byteLength}`)
   }
 
   const out = new Uint8Array(1 + privateKey.byteLength)
@@ -96,9 +97,10 @@ export function unmarshalMLDSAPrivateKeyData (bytes: Uint8Array): { variant: MLD
     const variant = prefixToVariant(bytes[0])
     const key = bytes.subarray(1)
     const expectedLength = crypto.getMLDSAPrivateKeyLength(variant)
+    const seedLength = crypto.getMLDSASeedLength(variant)
 
-    if (key.byteLength !== expectedLength) {
-      throw new InvalidParametersError(`ML-DSA private key must be ${expectedLength} bytes, got ${key.byteLength}`)
+    if (key.byteLength !== expectedLength && key.byteLength !== seedLength) {
+      throw new InvalidParametersError(`ML-DSA private key must be ${expectedLength} or ${seedLength} bytes, got ${key.byteLength}`)
     }
 
     return { variant, key }
@@ -132,7 +134,7 @@ export function unmarshalMLDSAPublicKey (bytes: Uint8Array): MLDSAPublicKey {
 
 export function unmarshalMLDSAPrivateKey (bytes: Uint8Array): MLDSAPrivateKey {
   const { variant, key } = unmarshalMLDSAPrivateKeyData(bytes)
-  const publicKey = crypto.getMLDSA(variant).getPublicKey(key)
+  const publicKey = crypto.getPublicKeyFromPrivateKey(variant, key)
   const digest = createMLDSAPublicKeyDigest(variant, publicKey)
   return new MLDSAPrivateKeyClass(variant, key, new MLDSAPublicKeyClass(variant, publicKey, digest))
 }

@@ -4,7 +4,8 @@ import { expect } from 'aegir/chai'
 import { randomBytes } from '../../src/index.js'
 import { privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf, generateKeyPair } from '../../src/keys/index.js'
 import { KeyType } from '../../src/keys/keys.js'
-import { getMLDSASignatureLength } from '../../src/keys/mldsa/index.js'
+import { getMLDSABackend, getMLDSASignatureLength, setMLDSABackend } from '../../src/keys/mldsa/index.js'
+import webcrypto from '../../src/webcrypto/index.js'
 import { unmarshalMLDSAPrivateKey, unmarshalMLDSAPublicKey } from '../../src/keys/mldsa/utils.js'
 import type { MLDSAPrivateKey } from '@libp2p/interface'
 
@@ -15,6 +16,10 @@ describe('mldsa keys', function () {
 
   before(async () => {
     key = await generateKeyPair('MLDSA')
+  })
+
+  afterEach(() => {
+    setMLDSABackend('auto')
   })
 
   it('generates a valid key', async () => {
@@ -111,5 +116,44 @@ describe('mldsa keys', function () {
     expect(publicKeyFromProtobuf(publicKeyToProtobuf(key.publicKey)).type).to.equal('MLDSA')
     expect(privateKeyFromProtobuf(privateKeyToProtobuf(key)).type).to.equal('MLDSA')
     expect(KeyType.MLDSA).to.equal('MLDSA')
+  })
+
+  it('supports backend selection', async () => {
+    setMLDSABackend('noble')
+    expect(getMLDSABackend()).to.equal('noble')
+
+    const data = randomBytes(128)
+    const sig = await key.sign(data)
+    expect(await key.publicKey.verify(data, sig)).to.equal(true)
+
+    setMLDSABackend('auto')
+    expect(getMLDSABackend()).to.equal('auto')
+
+    const sig2 = await key.sign(data)
+    expect(await key.publicKey.verify(data, sig2)).to.equal(true)
+
+    setMLDSABackend('node-subtle')
+    expect(getMLDSABackend()).to.equal('node-subtle')
+
+    const sig3 = await key.sign(data)
+    expect(await key.publicKey.verify(data, sig3)).to.equal(true)
+  })
+
+  it('reports webcrypto ML-DSA capability', async function () {
+    const subtle = webcrypto.get().subtle
+    const capabilities: Record<string, boolean> = {}
+
+    for (const name of ['ML-DSA-44', 'ML-DSA-65', 'ML-DSA-87']) {
+      try {
+        const keyPair = await subtle.generateKey({ name }, false, ['sign', 'verify']) as CryptoKeyPair
+        capabilities[name] = keyPair.privateKey != null && keyPair.publicKey != null
+      } catch {
+        capabilities[name] = false
+      }
+    }
+
+    console.log('ML-DSA subtle capability:', capabilities)
+
+    expect(capabilities).to.have.property('ML-DSA-65')
   })
 })
