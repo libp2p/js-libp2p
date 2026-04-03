@@ -196,7 +196,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.network = new Network(components, {
       protocol: this.protocol,
       logPrefix,
-      metricsPrefix
+      metricsPrefix,
+      timeout: init.networkDialTimeout
     })
 
     this.routingTable = new RoutingTable(components, {
@@ -406,6 +407,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
 
     const signal = AbortSignal.timeout(this.onPeerConnectTimeout)
     setMaxListeners(Infinity, signal)
+
     this.queryManager.queueRoutingTableUpdate(peerData.id, {
       signal
     })

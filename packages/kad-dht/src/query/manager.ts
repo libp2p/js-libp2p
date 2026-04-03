@@ -181,7 +181,7 @@ export class QueryManager implements Startable {
       } finally {
         this.routingUpdateInFlight.delete(peerIdStr)
 
-        if (options.signal != null && 'clear' in signal) {
+        if ('clear' in signal) {
           (signal as any).clear()
         }
       }
