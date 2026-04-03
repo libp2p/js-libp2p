@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "6.0.11",
+  "version": "6.0.15",
   "description": "A libp2p transport using WebRTC connections",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc#readme",
@@ -30,7 +30,7 @@
     }
   },
   "scripts": {
-    "generate": "protons src/private-to-private/pb/message.proto",
+    "generate": "protons src/private-to-private/pb/message.proto src/private-to-public/pb/message.proto",
     "build": "aegir build",
     "test": "aegir test -t node -t browser",
     "test:node": "aegir test -t node --cov -- --exit",
@@ -45,13 +45,13 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.1.0",
-    "@libp2p/crypto": "^5.1.13",
-    "@libp2p/interface": "^3.1.0",
-    "@libp2p/interface-internal": "^3.0.10",
-    "@libp2p/keychain": "^6.0.10",
+    "@libp2p/crypto": "^5.1.14",
+    "@libp2p/interface": "^3.1.1",
+    "@libp2p/interface-internal": "^3.0.14",
+    "@libp2p/keychain": "^6.0.11",
     "@chainsafe/libp2p-noise": "^17.0.0",
-    "@libp2p/peer-id": "^6.0.4",
-    "@libp2p/utils": "^7.0.10",
+    "@libp2p/peer-id": "^6.0.5",
+    "@libp2p/utils": "^7.0.14",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
     "@peculiar/webcrypto": "^1.5.0",
@@ -71,7 +71,7 @@
     "p-timeout": "^7.0.0",
     "p-wait-for": "^6.0.0",
     "progress-events": "^1.0.1",
-    "protons-runtime": "^5.6.0",
+    "protons-runtime": "^6.0.1",
     "race-signal": "^2.0.0",
     "react-native-webrtc": "^124.0.6",
     "uint8-varint": "^2.0.4",
@@ -79,14 +79,14 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.2",
+    "@libp2p/logger": "^6.2.3",
     "@types/sinon": "^20.0.0",
     "aegir": "^47.0.22",
     "any-signal": "^4.1.1",
     "datastore-core": "^11.0.1",
     "delay": "^7.0.0",
     "p-retry": "^7.0.0",
-    "protons": "^7.7.0",
+    "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"

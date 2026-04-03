@@ -7,8 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MessageType } from '../src/message/dht.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { KadDHTPeer } from './utils/test-dht.js'
-import type { PeerId } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { DialTarget } from '@libp2p/interface'
 
 describe('Network', () => {
   let dht: KadDHTPeer
@@ -60,7 +59,7 @@ describe('Network', () => {
       }
 
       // mock it
-      dht.dht.components.connectionManager.openStream = async (peer: PeerId | Multiaddr | Multiaddr[]) => {
+      dht.dht.components.connectionManager.openStream = async (peer: DialTarget) => {
         const [outboundStream, inboundStream] = await streamPair()
 
         inboundStream.addEventListener('message', (evt) => {

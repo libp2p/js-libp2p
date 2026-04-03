@@ -1,7 +1,125 @@
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { safelyCloseConnectionIfUnused } from '../../src/connection-manager/utils.js'
+import { findExistingConnection, safelyCloseConnectionIfUnused } from '../../src/connection-manager/utils.js'
 import type { Connection, Stream } from '@libp2p/interface'
+
+describe('findExistingConnection', () => {
+  it('should return an open unlimited connection', () => {
+    const connection = stubInterface<Connection>({
+      status: 'open',
+      limits: undefined,
+      direct: true
+    })
+
+    const result = findExistingConnection(connection.remotePeer, [connection])
+
+    expect(result).to.equal(connection)
+  })
+
+  it('should not return a closing connection', () => {
+    const connection = stubInterface<Connection>({
+      status: 'closing',
+      limits: undefined,
+      direct: true
+    })
+
+    const result = findExistingConnection(connection.remotePeer, [connection])
+
+    expect(result).to.be.undefined()
+  })
+
+  it('should not return a closed connection', () => {
+    const connection = stubInterface<Connection>({
+      status: 'closed',
+      limits: undefined,
+      direct: true
+    })
+
+    const result = findExistingConnection(connection.remotePeer, [connection])
+
+    expect(result).to.be.undefined()
+  })
+
+  it('should not return a limited connection', () => {
+    const connection = stubInterface<Connection>({
+      status: 'open',
+      limits: { seconds: 60 },
+      direct: true
+    })
+
+    const result = findExistingConnection(connection.remotePeer, [connection])
+
+    expect(result).to.be.undefined()
+  })
+
+  it('should prefer a direct open connection over a relay open connection', () => {
+    const directConnection = stubInterface<Connection>({
+      status: 'open',
+      limits: undefined,
+      direct: true
+    })
+    const relayConnection = stubInterface<Connection>({
+      status: 'open',
+      limits: undefined,
+      direct: false
+    })
+
+    const result = findExistingConnection(directConnection.remotePeer, [relayConnection, directConnection])
+
+    expect(result).to.equal(directConnection)
+  })
+
+  it('should not return a closing direct connection when an open relay connection exists', () => {
+    const directConnection = stubInterface<Connection>({
+      status: 'closing',
+      limits: undefined,
+      direct: true
+    })
+    const relayConnection = stubInterface<Connection>({
+      status: 'open',
+      limits: undefined,
+      direct: false
+    })
+
+    const result = findExistingConnection(directConnection.remotePeer, [relayConnection, directConnection])
+
+    // the closing direct connection is excluded; the relay is returned
+    expect(result).to.equal(relayConnection)
+  })
+
+  it('should return undefined when no connections are provided', () => {
+    const result = findExistingConnection(stubInterface<Connection>().remotePeer, [])
+
+    expect(result).to.be.undefined()
+  })
+
+  it('should return undefined when peerId is not provided', () => {
+    const connection = stubInterface<Connection>({
+      status: 'open',
+      limits: undefined
+    })
+
+    const result = findExistingConnection(undefined, [connection])
+
+    expect(result).to.be.undefined()
+  })
+
+  it('should allow a direct connection upgrade when an open relay connection exists and dial addresses include a direct address', () => {
+    const relayConnection = stubInterface<Connection>({
+      status: 'open',
+      limits: undefined,
+      direct: false
+    })
+    // a real TCP multiaddr is not a circuit relay address, so isDirect() returns true
+    const directAddr = multiaddr('/ip4/1.2.3.4/tcp/4001')
+
+    // relay + direct dial addr → findExistingConnection allows upgrade → returns undefined
+    const result = findExistingConnection(relayConnection.remotePeer, [relayConnection], [directAddr])
+
+    expect(result).to.be.undefined()
+  })
+})
 
 describe('closing', () => {
   describe('connections', () => {

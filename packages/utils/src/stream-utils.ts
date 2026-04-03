@@ -160,11 +160,11 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
       }
 
       if (isEOF(stream)) {
-        if (options?.bytes == null) {
+        if (readBuffer.byteLength === 0 && options?.bytes == null) {
           return null
         }
 
-        if (readBuffer.byteLength < options.bytes) {
+        if (options?.bytes != null && readBuffer.byteLength < options.bytes) {
           stream.log.error('closed after reading %d/%d bytes', readBuffer.byteLength, options.bytes)
           throw new UnexpectedEOFError(`Unexpected EOF - stream closed after reading ${readBuffer.byteLength}/${options.bytes} bytes`)
         }

@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, message, streamMessage } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -81,17 +81,82 @@ export namespace Envelope {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.publicKey`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.payloadType`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 3: {
+              yield {
+                field: `${prefix}.payload`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 5: {
+              yield {
+                field: `${prefix}.signature`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Envelope>): Uint8Array => {
+  export interface EnvelopePublicKeyFieldEvent {
+    field: '$.publicKey'
+    value: Uint8Array
+  }
+
+  export interface EnvelopePayloadTypeFieldEvent {
+    field: '$.payloadType'
+    value: Uint8Array
+  }
+
+  export interface EnvelopePayloadFieldEvent {
+    field: '$.payload'
+    value: Uint8Array
+  }
+
+  export interface EnvelopeSignatureFieldEvent {
+    field: '$.signature'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<Envelope>): Uint8Array {
     return encodeMessage(obj, Envelope.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Envelope>): Envelope => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Envelope>): Envelope {
     return decodeMessage(buf, Envelope.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Envelope>): Generator<EnvelopePublicKeyFieldEvent | EnvelopePayloadTypeFieldEvent | EnvelopePayloadFieldEvent | EnvelopeSignatureFieldEvent> {
+    return streamMessage(buf, Envelope.codec(), opts)
   }
 }

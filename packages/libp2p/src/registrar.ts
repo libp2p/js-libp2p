@@ -199,7 +199,11 @@ export class Registrar implements RegistrarInterface {
 
         await Promise.all(
           [...topologies.values()].map(async topology => {
-            if (topology.filter?.has(remotePeer) === false) {
+            // If the topology has a filter, only call onDisconnect if the peer
+            // was previously added to the filter (which happens on onConnect).
+            // This ensures limited connections that were never notified via
+            // onConnect don't trigger onDisconnect.
+            if (topology.filter != null && topology.filter.has(remotePeer) !== true) {
               return
             }
 
@@ -237,7 +241,11 @@ export class Registrar implements RegistrarInterface {
 
         await Promise.all(
           [...topologies.values()].map(async topology => {
-            if (topology.filter?.has(peer.id) === false) {
+            // If the topology has a filter, only call onDisconnect if the peer
+            // was previously added to the filter (which happens on onConnect).
+            // This ensures limited connections that were never notified via
+            // onConnect don't trigger onDisconnect.
+            if (topology.filter != null && topology.filter.has(peer.id) !== true) {
               return
             }
 

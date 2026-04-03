@@ -26,7 +26,7 @@ Although designed to primarily integrate with tools such as [Prometheus](https:/
 
 ### Enable metrics
 
-First enable metrics tracking by supplying a [Metrics](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/metrics/index.ts#L150) implementation:
+First enable metrics tracking by supplying a [Metrics](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/metrics.ts) implementation:
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
@@ -182,7 +182,7 @@ stopTimer()
 
 ## Extracting metrics
 
-Metrics implementations will allow extracting the values for presentation in an external system. For example here is how to use the metrics implementation from `@libp2p/prometheus-metrics` to enable scraping stats to display in [Prometheus](https://prometheus.io/) or a [Graphana](https://grafana.com/) dashboard. For more information, you can view our [Prometheus Metrics Docs](https://libp2p.github.io/js-libp2p/modules/_libp2p_prometheus_metrics.html)
+Metrics implementations will allow extracting the values for presentation in an external system. For example here is how to use the metrics implementation from `@libp2p/prometheus-metrics` to enable scraping stats to display in [Prometheus](https://prometheus.io/) or a [Graphana](https://grafana.com/) dashboard. For more information, you can view our [Prometheus Metrics Docs](https://libp2p.github.io/js-libp2p/modules/_libp2p_prometheus-metrics.html)
 
 
 ```TypeScript
