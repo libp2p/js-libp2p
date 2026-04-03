@@ -18,13 +18,15 @@ const RAW_CODE = 0x55
 const types: KeyType[] = [
   'Ed25519',
   'secp256k1',
-  'RSA'
+  'RSA',
+  'MLDSA'
 ]
 
 describe('PeerId', () => {
   types.forEach(type => {
     describe(`${type} keys`, () => {
       let peerId: PeerId
+      const parsedType = (type === 'RSA' || type === 'MLDSA') ? 'hashed' : type
 
       before(async () => {
         const key = await generateKeyPair(type)
@@ -34,7 +36,7 @@ describe('PeerId', () => {
       it('should create a PeerId from a Multihash', async () => {
         const id = peerIdFromMultihash(peerId.toMultihash())
         expect(id.equals(peerId)).to.be.true()
-        expect(id.type).to.equal(type)
+        expect(id.type).to.equal(parsedType)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
@@ -42,7 +44,7 @@ describe('PeerId', () => {
       it('should create a PeerId from a string', async () => {
         const id = peerIdFromString(peerId.toString())
         expect(id.equals(peerId)).to.be.true()
-        expect(id.type).to.equal(type)
+        expect(id.type).to.equal(parsedType)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
@@ -53,21 +55,21 @@ describe('PeerId', () => {
 
       it('should parse a v1 CID with the libp2p-key codec', async () => {
         const id = peerIdFromCID(peerId.toCID())
-        expect(id.type).to.equal(type)
+        expect(id.type).to.equal(parsedType)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
 
       it('should return the correct peer id from cid encoded peer id in base36', async () => {
         const id = peerIdFromString(peerId.toCID().toString(base36))
-        expect(id.type).to.equal(type)
+        expect(id.type).to.equal(parsedType)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
 
       it('should return the correct peer id from cid encoded peer id in base32', async () => {
         const id = peerIdFromString(peerId.toCID().toString(base32))
-        expect(id.type).to.equal(type)
+        expect(id.type).to.equal(parsedType)
         expect(id.toString()).to.equal(peerId.toString())
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
@@ -157,6 +159,30 @@ describe('PeerId', () => {
       const id = peerIdFromCID(cid)
       expect(id).to.have.property('type', 'url')
       expect(id.toString()).to.equal(cid.toString())
+    })
+  })
+
+  describe('hashed peer ids', () => {
+    it('parses RSA multihash peer ids as hashed and without embedded public key', async () => {
+      const key = await generateKeyPair('RSA')
+      const peerId = peerIdFromPrivateKey(key)
+      const parsed = peerIdFromMultihash(peerId.toMultihash())
+
+      expect(peerId.type).to.equal('RSA')
+      expect(parsed.type).to.equal('hashed')
+      expect(parsed.publicKey).to.be.undefined()
+      expect(parsed.equals(peerId)).to.be.true()
+    })
+
+    it('parses MLDSA multihash peer ids as hashed and without embedded public key', async () => {
+      const key = await generateKeyPair('MLDSA')
+      const peerId = peerIdFromPrivateKey(key)
+      const parsed = peerIdFromMultihash(peerId.toMultihash())
+
+      expect(peerId.type).to.equal('MLDSA')
+      expect(parsed.type).to.equal('hashed')
+      expect(parsed.publicKey).to.be.undefined()
+      expect(parsed.equals(peerId)).to.be.true()
     })
   })
 })

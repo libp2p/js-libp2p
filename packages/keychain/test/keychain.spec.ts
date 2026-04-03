@@ -224,6 +224,37 @@ describe('keychain', () => {
     })
   })
 
+  describe('MLDSA keys', () => {
+    const keyName = 'my custom MLDSA key'
+
+    it('can be an MLDSA key', async () => {
+      const key = await generateKeyPair('MLDSA')
+      const keyInfo = await ks.importKey(keyName, key)
+
+      expect(keyInfo).to.exist()
+      expect(keyInfo).to.have.property('name', keyName)
+      expect(keyInfo).to.have.property('id')
+    })
+
+    it('does not overwrite existing key', async () => {
+      const key = await generateKeyPair('MLDSA')
+
+      await expect(ks.importKey(keyName, key)).to.eventually.be.rejected
+        .with.property('name', 'InvalidParametersError')
+    })
+
+    it('can export/import a key', async () => {
+      const keyName = 'a new MLDSA key'
+      const key = await generateKeyPair('MLDSA')
+      const keyInfo = await ks.importKey(keyName, key)
+      const exportedKey = await ks.exportKey(keyName)
+      // remove it so we can re-import it
+      await ks.removeKey(keyName)
+      const importedKey = await ks.importKey(keyName, exportedKey)
+      expect(importedKey.id).to.eql(keyInfo.id)
+    })
+  })
+
   describe('query', () => {
     before(async () => {
       const key = await generateKeyPair('RSA')

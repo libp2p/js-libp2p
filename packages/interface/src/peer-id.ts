@@ -1,4 +1,4 @@
-import type { Ed25519PublicKey, KeyType, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
+import type { Ed25519PublicKey, KeyType, MLDSAPublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -143,11 +143,73 @@ export interface URLPeerId {
   equals(other?: any): boolean
 }
 
+export interface MLDSAPeerId {
+  readonly type: 'MLDSA'
+
+  /**
+   * This may be undefined if the public key has not been discovered yet
+   */
+  readonly publicKey?: MLDSAPublicKey
+
+  /**
+   * Returns the multihash from `toMultihash()` as a base58btc encoded string
+   */
+  toString(): string
+
+  /**
+   * Returns a multihash, the digest of which is the SHA2-256 hash of the
+   * protobuf-encoded public key
+   */
+  toMultihash(): MultihashDigest<0x12>
+
+  /**
+   * Returns a CID with the libp2p key code and the same multihash as
+   * `toMultihash()`
+   */
+  toCID(): CID<Uint8Array, 0x72, 0x12, 1>
+
+  /**
+   * Returns true if the passed argument is equivalent to this PeerId
+   */
+  equals(other?: any): boolean
+}
+
+export interface HashedPeerId {
+  readonly type: 'hashed'
+
+  /**
+   * This may be undefined if the public key has not been discovered yet
+   */
+  readonly publicKey?: RSAPublicKey | MLDSAPublicKey
+
+  /**
+   * Returns the multihash from `toMultihash()` as a base58btc encoded string
+   */
+  toString(): string
+
+  /**
+   * Returns a multihash, the digest of which is the SHA2-256 hash of the
+   * protobuf-encoded public key
+   */
+  toMultihash(): MultihashDigest<0x12>
+
+  /**
+   * Returns a CID with the libp2p key code and the same multihash as
+   * `toMultihash()`
+   */
+  toCID(): CID<Uint8Array, 0x72, 0x12, 1>
+
+  /**
+   * Returns true if the passed argument is equivalent to this PeerId
+   */
+  equals(other?: any): boolean
+}
+
 /**
  * This is a union of all known PeerId types - use the `.type` field to
  * disambiguate them
  */
-export type PeerId = RSAPeerId | Ed25519PeerId | Secp256k1PeerId | URLPeerId
+export type PeerId = RSAPeerId | Ed25519PeerId | Secp256k1PeerId | URLPeerId | MLDSAPeerId | HashedPeerId
 
 /**
  * All PeerId implementations must use this symbol as the name of a property

@@ -469,8 +469,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     this.connections.set(peerId, storedConns)
 
-    // only need to store RSA public keys, all other types are embedded in the peer id
-    if (peerId.publicKey != null && peerId.type === 'RSA') {
+    // only hashed peer ids need public keys stored, identity multihashes embed the key
+    if (peerId.publicKey != null && peerId.toMultihash().code === 0x12) {
       await this.peerStore.patch(peerId, {
         publicKey: peerId.publicKey
       })

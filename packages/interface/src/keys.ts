@@ -3,7 +3,9 @@ import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
-export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1' | 'ECDSA'
+export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1' | 'ECDSA' | 'MLDSA'
+
+export type MLDSAVariant = 'MLDSA44' | 'MLDSA65' | 'MLDSA87'
 
 export interface RSAPublicKey {
   /**
@@ -184,7 +186,54 @@ export interface ECDSAPublicKey {
   toString(): string
 }
 
-export type PublicKey = RSAPublicKey | Ed25519PublicKey | Secp256k1PublicKey | ECDSAPublicKey
+export interface MLDSAPublicKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'MLDSA'
+
+  /**
+   * The ML-DSA parameter set used for this key
+   */
+  readonly variant: MLDSAVariant
+
+  /**
+   * The raw public key bytes
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Returns this public key as a SHA2-256 hash containing the protobuf wrapped
+   * public key
+   */
+  toMultihash(): MultihashDigest<0x12>
+
+  /**
+   * Return this public key as a CID encoded with the `libp2p-key` codec
+   *
+   * The digest contains a SHA2-256 hash of the protobuf wrapped version of the
+   * public key.
+   */
+  toCID(): CID<unknown, 0x72, 0x12, 1>
+
+  /**
+   * Verify the passed data was signed by the private key corresponding to this
+   * public key
+   */
+  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
+
+  /**
+   * Returns this key as a multihash with base58btc encoding
+   */
+  toString(): string
+}
+
+export type PublicKey = RSAPublicKey | Ed25519PublicKey | Secp256k1PublicKey | ECDSAPublicKey | MLDSAPublicKey
 
 /**
  * Returns true if the passed argument has type overlap with the `PublicKey`
@@ -195,7 +244,7 @@ export function isPublicKey (key?: any): key is PublicKey {
     return false
   }
 
-  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA') &&
+  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA' || key.type === 'MLDSA') &&
     key.raw instanceof Uint8Array &&
     typeof key.equals === 'function' &&
     typeof key.toMultihash === 'function' &&
@@ -328,7 +377,40 @@ export interface ECDSAPrivateKey {
   sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
 }
 
-export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey | ECDSAPrivateKey
+export interface MLDSAPrivateKey {
+  /**
+   * The type of this key
+   */
+  readonly type: 'MLDSA'
+
+  /**
+   * The ML-DSA parameter set used for this key
+   */
+  readonly variant: MLDSAVariant
+
+  /**
+   * The public key that corresponds to this private key
+   */
+  readonly publicKey: MLDSAPublicKey
+
+  /**
+   * The raw private key bytes
+   */
+  readonly raw: Uint8Array
+
+  /**
+   * Returns `true` if the passed object matches this key
+   */
+  equals(key?: any): boolean
+
+  /**
+   * Sign the passed data with this private key and return the signature for
+   * later verification
+   */
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
+}
+
+export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey | ECDSAPrivateKey | MLDSAPrivateKey
 
 /**
  * Returns true if the passed argument has type overlap with the `PrivateKey`
@@ -339,7 +421,7 @@ export function isPrivateKey (key?: any): key is PrivateKey {
     return false
   }
 
-  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA') &&
+  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA' || key.type === 'MLDSA') &&
     isPublicKey(key.publicKey) &&
     key.raw instanceof Uint8Array &&
     typeof key.equals === 'function' &&

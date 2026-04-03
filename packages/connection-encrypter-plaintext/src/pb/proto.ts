@@ -123,14 +123,16 @@ export enum KeyType {
   RSA = 'RSA',
   Ed25519 = 'Ed25519',
   secp256k1 = 'secp256k1',
-  ECDSA = 'ECDSA'
+  ECDSA = 'ECDSA',
+  MLDSA = 'MLDSA'
 }
 
 enum __KeyTypeValues {
   RSA = 0,
   Ed25519 = 1,
   secp256k1 = 2,
-  ECDSA = 3
+  ECDSA = 3,
+  MLDSA = 4
 }
 
 export namespace KeyType {

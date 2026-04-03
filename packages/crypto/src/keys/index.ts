@@ -3,7 +3,7 @@
  *
  * ## Supported Key Types
  *
- * Currently the `'RSA'`, `'ed25519'`, and `secp256k1` types are supported, although ed25519 and secp256k1 keys support only signing and verification of messages.
+ * Currently the `'RSA'`, `'ed25519'`, `secp256k1` and `MLDSA` types are supported, although ed25519, secp256k1 and MLDSA keys support only signing and verification of messages.
  *
  * For encryption / decryption support, RSA keys should be used.
  */
@@ -15,13 +15,15 @@ import { generateECDSAKeyPair, pkiMessageToECDSAPrivateKey, pkiMessageToECDSAPub
 import { privateKeyLength as ed25519PrivateKeyLength, publicKeyLength as ed25519PublicKeyLength } from './ed25519/index.js'
 import { generateEd25519KeyPair, generateEd25519KeyPairFromSeed, unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from './ed25519/utils.js'
 import * as pb from './keys.js'
+import { defaultMLDSAVariant, isMLDSAVariant } from './mldsa/index.js'
+import { generateMLDSAKeyPair, marshalMLDSAPrivateKey, marshalMLDSAPublicKey, unmarshalMLDSAPrivateKey, unmarshalMLDSAPublicKey } from './mldsa/utils.js'
 import { decodeDer } from './rsa/der.js'
 import { RSAES_PKCS1_V1_5_OID } from './rsa/index.js'
 import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair, pkcs1MessageToRSAPrivateKey, pkixMessageToRSAPublicKey, jwkToRSAPrivateKey } from './rsa/utils.js'
 import { privateKeyLength as secp256k1PrivateKeyLength, publicKeyLength as secp256k1PublicKeyLength } from './secp256k1/index.js'
 import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.js'
 import type { Curve } from './ecdsa/index.js'
-import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey } from '@libp2p/interface'
+import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey, MLDSAPrivateKey, MLDSAPublicKey, MLDSAVariant } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
 import type { Digest } from 'multiformats/hashes/digest'
 
@@ -37,6 +39,7 @@ export async function generateKeyPair (type: 'Ed25519'): Promise<Ed25519PrivateK
 export async function generateKeyPair (type: 'secp256k1'): Promise<Secp256k1PrivateKey>
 export async function generateKeyPair (type: 'ECDSA', curve?: Curve): Promise<ECDSAPrivateKey>
 export async function generateKeyPair (type: 'RSA', bits?: number): Promise<RSAPrivateKey>
+export async function generateKeyPair (type: 'MLDSA', variant?: MLDSAVariant): Promise<MLDSAPrivateKey>
 export async function generateKeyPair (type: KeyType, bits?: number): Promise<PrivateKey>
 export async function generateKeyPair (type: KeyType, bits?: number | string): Promise<unknown> {
   if (type === 'Ed25519') {
@@ -53,6 +56,10 @@ export async function generateKeyPair (type: KeyType, bits?: number | string): P
 
   if (type === 'ECDSA') {
     return generateECDSAKeyPair(toCurve(bits))
+  }
+
+  if (type === 'MLDSA') {
+    return generateMLDSAKeyPair(toMLDSAVariant(bits))
   }
 
   throw new UnsupportedKeyTypeError()
@@ -96,6 +103,8 @@ export function publicKeyFromProtobuf (buf: Uint8Array, digest?: Digest<18, numb
       return unmarshalSecp256k1PublicKey(data)
     case pb.KeyType.ECDSA:
       return unmarshalECDSAPublicKey(data)
+    case pb.KeyType.MLDSA:
+      return unmarshalMLDSAPublicKey(data)
     default:
       throw new UnsupportedKeyTypeError()
   }
@@ -105,6 +114,10 @@ export function publicKeyFromProtobuf (buf: Uint8Array, digest?: Digest<18, numb
  * Creates a public key from the raw key bytes
  */
 export function publicKeyFromRaw (buf: Uint8Array): PublicKey {
+  try {
+    return unmarshalMLDSAPublicKey(buf)
+  } catch {}
+
   if (buf.byteLength === ed25519PublicKeyLength) {
     return unmarshalEd25519PublicKey(buf)
   } else if (buf.byteLength === secp256k1PublicKeyLength) {
@@ -152,6 +165,13 @@ export function publicKeyFromMultihash (digest: MultihashDigest<0x0>): Ed25519Pu
  * Converts a public key object into a protobuf serialized public key
  */
 export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
+  if (key.type === 'MLDSA') {
+    return pb.PublicKey.encode({
+      Type: pb.KeyType[key.type],
+      Data: marshalMLDSAPublicKey(key.variant, key.raw)
+    })
+  }
+
   return pb.PublicKey.encode({
     Type: pb.KeyType[key.type],
     Data: key.raw
@@ -161,7 +181,7 @@ export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
 /**
  * Converts a protobuf serialized private key into its representative object
  */
-export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Secp256k1PrivateKey | RSAPrivateKey | ECDSAPrivateKey {
+export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Secp256k1PrivateKey | RSAPrivateKey | ECDSAPrivateKey | MLDSAPrivateKey {
   const decoded = pb.PrivateKey.decode(buf)
   const data = decoded.Data ?? new Uint8Array()
 
@@ -174,6 +194,8 @@ export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Se
       return unmarshalSecp256k1PrivateKey(data)
     case pb.KeyType.ECDSA:
       return unmarshalECDSAPrivateKey(data)
+    case pb.KeyType.MLDSA:
+      return unmarshalMLDSAPrivateKey(data)
     default:
       throw new UnsupportedKeyTypeError()
   }
@@ -185,6 +207,10 @@ export function privateKeyFromProtobuf (buf: Uint8Array): Ed25519PrivateKey | Se
  * differentiate between Ed25519 and secp256k1 keys as they are the same length.
  */
 export function privateKeyFromRaw (buf: Uint8Array): PrivateKey {
+  try {
+    return unmarshalMLDSAPrivateKey(buf)
+  } catch {}
+
   if (buf.byteLength === ed25519PrivateKeyLength) {
     return unmarshalEd25519PrivateKey(buf)
   } else if (buf.byteLength === secp256k1PrivateKeyLength) {
@@ -209,6 +235,13 @@ export function privateKeyFromRaw (buf: Uint8Array): PrivateKey {
  * Converts a private key object into a protobuf serialized private key
  */
 export function privateKeyToProtobuf (key: PrivateKey): Uint8Array {
+  if (key.type === 'MLDSA') {
+    return pb.PrivateKey.encode({
+      Type: pb.KeyType[key.type],
+      Data: marshalMLDSAPrivateKey(key.variant, key.raw)
+    })
+  }
+
   return pb.PrivateKey.encode({
     Type: pb.KeyType[key.type],
     Data: key.raw
@@ -237,6 +270,18 @@ function toCurve (curve: any): Curve {
   }
 
   throw new InvalidParametersError('Unsupported curve, should be P-256, P-384 or P-521')
+}
+
+function toMLDSAVariant (variant: any): MLDSAVariant {
+  if (variant == null) {
+    return defaultMLDSAVariant
+  }
+
+  if (isMLDSAVariant(variant)) {
+    return variant
+  }
+
+  throw new InvalidParametersError('Unsupported ML-DSA variant, should be MLDSA44, MLDSA65 or MLDSA87')
 }
 
 /**

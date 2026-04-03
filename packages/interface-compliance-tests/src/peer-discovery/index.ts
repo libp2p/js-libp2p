@@ -46,7 +46,7 @@ export default (common: TestSetup<PeerDiscovery>): void => {
         expect(id).to.exist()
         expect(id)
           .to.have.property('type')
-          .that.is.oneOf(['RSA', 'Ed25519', 'secp256k1'])
+          .that.is.oneOf(['RSA', 'Ed25519', 'secp256k1', 'MLDSA', 'hashed'])
         expect(multiaddrs).to.exist()
 
         multiaddrs.forEach((m) => expect(isMultiaddr(m)).to.eql(true))

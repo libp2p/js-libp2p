@@ -12,9 +12,11 @@ function populatePublicKey (peerId: PeerId, protobuf: PeerPB): PeerId {
 
   let digest: Digest<18, number> | undefined
 
-  if (peerId.type === 'RSA') {
+  const multihash = peerId.toMultihash()
+
+  if (multihash.code === 0x12) {
     // avoid hashing public key
-    digest = peerId.toMultihash()
+    digest = multihash
   }
 
   const publicKey = publicKeyFromProtobuf(protobuf.publicKey, digest)

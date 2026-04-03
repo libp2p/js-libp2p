@@ -77,7 +77,38 @@ describe('identify', () => {
       protocols: [
         '/foo/bar/1.0'
       ],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey!)
+    }
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    // run identify
+    const response = await identify.identify(connection)
+
+    expect(response.peerId.toString()).to.equal(remotePeer.toString())
+    expect(response.protocols).to.deep.equal(message.protocols)
+    expect(response.listenAddrs.map(ma => ma.toString())).to.deep.equal(['/ip4/123.123.123.123/tcp/123'])
+  })
+
+  it('should be able to identify another peer with MLDSA identity', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('MLDSA'))
+    const message: IdentifyMessage = {
+      listenAddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/123').bytes
+      ],
+      protocols: [
+        '/foo/bar/1.0'
+      ],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey!)
     }
 
     const [outgoingStream, incomingStream] = await streamPair()
@@ -107,7 +138,32 @@ describe('identify', () => {
     incomingStream.send(lp.encode.single(IdentifyMessage.encode({
       listenAddrs: [],
       protocols: [],
-      publicKey: publicKeyToProtobuf(otherPeer.publicKey)
+      publicKey: publicKeyToProtobuf(otherPeer.publicKey!)
+    })))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    // run identify
+    await expect(identify.identify(connection))
+      .to.eventually.be.rejected()
+      .and.to.have.property('name', 'InvalidMessageError')
+  })
+
+  it('should throw if identified MLDSA peer does not match the expected peer', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('MLDSA'))
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('MLDSA'))
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode({
+      listenAddrs: [],
+      protocols: [],
+      publicKey: publicKeyToProtobuf(otherPeer.publicKey!)
     })))
     const connection = stubInterface<Connection>({
       remotePeer
