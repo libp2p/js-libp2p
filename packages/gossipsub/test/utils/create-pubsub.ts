@@ -174,7 +174,7 @@ const getPubsubProtocols = (pubsub: any): string[] => {
     return [pubsub.protocol]
   }
 
-  return []
+  throw new Error('Pubsub protocols not found')
 }
 
 const selectProtocol = (protocols: string[], remoteProtocols: string[]): string => {
@@ -184,7 +184,7 @@ const selectProtocol = (protocols: string[], remoteProtocols: string[]): string 
     }
   }
 
-  return protocols[0]
+  throw new Error('No protocol found')
 }
 
 export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSubAndComponents): Promise<void> => {
