@@ -36,7 +36,8 @@
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
     "docs": "aegir docs",
-    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc"
+    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc",
+    "prepush": "npm exec npm-run-all -- lint dep-check docs:no-publish doc-check spell-check && (test -z \"$(git status --porcelain)\" || (echo 'Files changed during checks. Please review, stage, and commit them before pushing.' && exit 1))"
   },
   "devDependencies": {
     "aegir": "^47.0.22",
