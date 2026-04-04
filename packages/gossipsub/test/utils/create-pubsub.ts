@@ -295,8 +295,8 @@ export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSub
   addConnection(a.components.peerId.toString(), outboundConnection)
   addConnection(b.components.peerId.toString(), inboundConnection)
 
-  a.components.events.dispatchEvent(new CustomEvent('peer:connect', { detail: outboundConnection }))
-  b.components.events.dispatchEvent(new CustomEvent('peer:connect', { detail: inboundConnection }))
+  a.components.events.safeDispatchEvent('peer:connect', { detail: outboundConnection.remotePeer })
+  b.components.events.safeDispatchEvent('peer:connect', { detail: inboundConnection.remotePeer })
 }
 
 export const connectAllPubSubNodes = async (components: GossipSubAndComponents[]): Promise<void> => {
