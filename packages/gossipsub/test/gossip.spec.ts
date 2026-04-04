@@ -136,7 +136,7 @@ describe('gossip', () => {
         minCount = Math.min(minCount, count)
         maxCount = Math.max(maxCount, count)
       }
-      // expect(minCount).to.be.greaterThan(0)
+      expect(minCount).to.be.greaterThan(0)
       expect(maxCount).to.be.lessThanOrEqual(idontwantMaxMessages)
 
       const idontwants = node.pubsub['idontwants']
@@ -146,7 +146,8 @@ describe('gossip', () => {
         minIdontwants = Math.min(minIdontwants, idontwant.size)
         maxIdontwants = Math.max(maxIdontwants, idontwant.size)
       }
-      // expect(minIdontwants).to.be.greaterThan(0)
+
+      expect(minIdontwants).to.be.greaterThan(0)
       expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages * node.pubsub.opts.mcacheLength)
     }
 
