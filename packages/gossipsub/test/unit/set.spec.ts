@@ -11,7 +11,8 @@ describe('Set util', function () {
     const testCases: Array<{ id: string, ineed: number, fn(item: number): boolean, result: Set<number> }> = [
       { id: 'remove even numbers - need 0', ineed: 0, fn: (item) => item % 2 === 0, result: new Set([]) },
       { id: 'remove even numbers - need 1', ineed: 1, fn: (item) => item % 2 === 0, result: new Set([2]) },
-      { id: 'remove even numbers - need 2', ineed: 2, fn: (item) => item % 2 === 0, result: new Set([2, 4]) }
+      { id: 'remove even numbers - need 2', ineed: 2, fn: (item) => item % 2 === 0, result: new Set([2, 4]) },
+      { id: 'remove even numbers - need 10', ineed: 10, fn: (item) => item % 2 === 0, result: new Set([2, 4]) }
     ]
 
     for (const { id, ineed, fn, result } of testCases) {
