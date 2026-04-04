@@ -6,8 +6,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
 import type { PingComponents, PingInit, Ping as PingInterface } from './index.js'
-import type { AbortOptions, Stream, PeerId, Startable, Connection, StreamMessageEvent } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Stream, Startable, Connection, StreamMessageEvent, DialTarget, DialProtocolOptions } from '@libp2p/interface'
 
 export class Ping implements Startable, PingInterface {
   public readonly protocol: string
@@ -95,7 +94,7 @@ export class Ping implements Startable, PingInterface {
   /**
    * Ping a given peer and wait for its response, getting the operation latency.
    */
-  async ping (peer: PeerId | Multiaddr | Multiaddr[], options: AbortOptions = {}): Promise<number> {
+  async ping (peer: DialTarget, options: DialProtocolOptions = {}): Promise<number> {
     const data = randomBytes(PING_LENGTH)
     const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
       runOnLimitedConnection: this.runOnLimitedConnection,

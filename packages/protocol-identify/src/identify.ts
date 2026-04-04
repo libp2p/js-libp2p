@@ -13,7 +13,7 @@ import {
 import { Identify as IdentifyMessage } from './pb/message.js'
 import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
-import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger } from '@libp2p/interface'
+import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger, NewStreamOptions } from '@libp2p/interface'
 
 export class Identify extends AbstractIdentify implements Startable, IdentifyInterface {
   constructor (components: IdentifyComponents, init: IdentifyInit = {}) {
@@ -75,7 +75,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     }
   }
 
-  async identify (connection: Connection, options: AbortOptions = {}): Promise<IdentifyResult> {
+  async identify (connection: Connection, options: NewStreamOptions = {}): Promise<IdentifyResult> {
     const message = await this._identify(connection, options)
     const {
       publicKey,

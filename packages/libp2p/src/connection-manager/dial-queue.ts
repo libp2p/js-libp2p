@@ -22,7 +22,7 @@ import {
 import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
 import { findExistingConnection } from './utils.ts'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
-import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver } from '@libp2p/interface'
+import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver, DialTarget } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { PriorityQueueJobOptions } from '@libp2p/utils'
 import type { DNS } from '@multiformats/dns'
@@ -134,7 +134,7 @@ export class DialQueue {
    * The dial to the first address that is successfully able to upgrade a
    * connection will be used, all other dials will be aborted when that happens.
    */
-  async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
+  async dial (peerIdOrMultiaddr: DialTarget, options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null && options.force !== true) {
@@ -142,7 +142,7 @@ export class DialQueue {
 
       if (existingConnection != null) {
         this.log('already connected to %a', existingConnection.remoteAddr)
-        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected', existingConnection))
         return existingConnection
       }
     }
