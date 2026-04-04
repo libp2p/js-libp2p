@@ -267,8 +267,7 @@ describe('2 nodes', () => {
       nodes[1].pubsub.subscribe(topic)
 
       // await subscription change and heartbeat
-      await Promise.all(subscriptionChanges)
-      await Promise.all(heartbeats)
+      await Promise.all([...subscriptionChanges, ...heartbeats])
     })
 
     afterEach(async () => {
