@@ -911,6 +911,28 @@ describe('autonat v2 - client', () => {
       .to.be.true('Did not verify external multiaddr')
   })
 
+  it('should skip non-network addresses', async () => {
+    const nonNetworkAddress = multiaddr('/')
+
+    addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: nonNetworkAddress,
+      verified: false,
+      type: 'observed',
+      expires: 0
+    }])
+
+    const connection = await stubPeerResponse({
+      host: '123.123.123.123',
+      messages: {}
+    })
+
+    await service.client.verifyExternalAddresses(connection)
+    await delay(100)
+
+    expect(addressManager.confirmObservedAddr.called)
+      .to.be.false('Attempted to verify a non-network address')
+  })
+
   it('should time out when verifying an observed address', async () => {
     const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([{
