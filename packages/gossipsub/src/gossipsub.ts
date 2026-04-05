@@ -9,7 +9,10 @@ import {
   ACCEPT_FROM_WHITELIST_DURATION_MS,
   ACCEPT_FROM_WHITELIST_MAX_MESSAGES,
   ACCEPT_FROM_WHITELIST_THRESHOLD_SCORE,
-  BACKOFF_SLACK
+  BACKOFF_SLACK,
+  PartialMessagesMaxGroups,
+  PartialMessagesGroupTTLMs,
+  PartialMessagesMaxMetadataSize
 } from './constants.js'
 import { StrictNoSign, StrictSign, TopicValidatorResult } from './index.ts'
 import { defaultDecodeRpcLimits } from './message/decodeRpc.js'
@@ -52,12 +55,14 @@ import { multiaddrToIPStr } from './utils/multiaddr.js'
 import { getPublishConfigFromPeerId } from './utils/publishConfig.js'
 import { removeFirstNItemsFromSet, removeItemsFromSet } from './utils/set.js'
 import { SimpleTimeCache } from './utils/time-cache.js'
+import { BitwiseOrMerger } from './partial/bitwise-or-merger.js'
+import { PartialMessageState } from './partial/partial-message-state.js'
 import type { GossipSubComponents, GossipSubEvents, GossipsubMessage, GossipsubOpts, MeshPeer, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.ts'
 import type { DecodeRPCLimits } from './message/decodeRpc.js'
 import type { MessageCacheRecord } from './message-cache.js'
 import type { Metrics, ToSendGroupCount } from './metrics.js'
 import type { PeerScoreParams, PeerScoreThresholds, PeerScoreStatsDump } from './score/index.js'
-import type { MsgIdFn, PublishConfig, TopicStr, MsgIdStr, PeerIdStr, RejectReasonObj, FastMsgIdFn, DataTransform, MsgIdToStrFn, MessageId, PublishOpts } from './types.js'
+import type { MsgIdFn, PublishConfig, TopicStr, MsgIdStr, PeerIdStr, RejectReasonObj, FastMsgIdFn, DataTransform, MsgIdToStrFn, MessageId, PublishOpts, PartialSubscriptionOpts, PartialMessage, PartsMetadataMerger } from './types.js'
 import type {
   Connection, Stream, PeerId, Peer,
   Logger,
@@ -254,6 +259,29 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    */
   private readonly idontwants = new Map<PeerIdStr, Map<MsgIdStr, number>>()
 
+  // Partial Messages Extension fields
+
+  /** Topics we subscribe to with partial message support */
+  public readonly partialTopics = new Map<TopicStr, PartialSubscriptionOpts>()
+
+  /** Per-topic partial message group tracking */
+  private readonly partialMessageState = new Map<TopicStr, PartialMessageState>()
+
+  /** What partial opts each peer has signaled per topic */
+  private readonly peerPartialOpts = new Map<PeerIdStr, Map<TopicStr, PartialSubscriptionOpts>>()
+
+  /** Peers that have received our extension handshake */
+  private readonly sentExtensions = new Set<PeerIdStr>()
+
+  /** Configurable merger for parts metadata (default: BitwiseOrMerger) */
+  private readonly partsMetadataMerger: PartsMetadataMerger
+
+  /** Shared TextEncoder for topicID string->bytes conversion */
+  private readonly textEncoder = new TextEncoder()
+
+  /** Shared TextDecoder for topicID bytes->string conversion */
+  private readonly textDecoder = new TextDecoder()
+
   private readonly components: GossipSubComponents
 
   private directPeerInitial: ReturnType<typeof setTimeout> | null = null
@@ -407,6 +435,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.runOnLimitedConnection = options.runOnLimitedConnection
 
     this.allowedTopics = (opts.allowedTopics != null) ? new Set(opts.allowedTopics) : null
+
+    // Partial Messages Extension
+    this.partsMetadataMerger = options.partsMetadataMerger ?? new BitwiseOrMerger()
   }
 
   readonly [Symbol.toStringTag] = '@chainsafe/libp2p-gossipsub'
@@ -599,6 +630,15 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     if (this.directPeerInitial != null) { clearTimeout(this.directPeerInitial) }
     this.idontwantCounts.clear()
     this.idontwants.clear()
+
+    // Partial Messages Extension cleanup
+    this.partialTopics.clear()
+    for (const state of this.partialMessageState.values()) {
+      state.clear()
+    }
+    this.partialMessageState.clear()
+    this.peerPartialOpts.clear()
+    this.sentExtensions.clear()
 
     this.log('stopped')
   }
@@ -807,6 +847,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.idontwantCounts.delete(id)
     this.idontwants.delete(id)
 
+    // Remove from partial messages tracking
+    this.peerPartialOpts.delete(id)
+    this.sentExtensions.delete(id)
+    for (const state of this.partialMessageState.values()) {
+      state.removePeer(id)
+    }
+
     // Remove from peer scoring
     this.score.removePeer(id)
 
@@ -964,6 +1011,29 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
           this.handleReceivedSubscription(from, topic, subscribe)
 
+          // Track partial message opts from peer
+          const fromId = from.toString()
+          const normalizedOpts = this.normalizePartialSubscriptionOpts({
+            requestsPartial: subOpt.requestsPartial === true,
+            supportsSendingPartial: subOpt.supportsSendingPartial === true
+          })
+          const hasPartialOpts = normalizedOpts.requestsPartial || normalizedOpts.supportsSendingPartial
+
+          if (subscribe && hasPartialOpts) {
+            let peerOpts = this.peerPartialOpts.get(fromId)
+            if (peerOpts == null) {
+              peerOpts = new Map()
+              this.peerPartialOpts.set(fromId, peerOpts)
+            }
+            peerOpts.set(topic, normalizedOpts)
+          } else {
+            const peerOpts = this.peerPartialOpts.get(fromId)
+            peerOpts?.delete(topic)
+            if (peerOpts?.size === 0) {
+              this.peerPartialOpts.delete(fromId)
+            }
+          }
+
           subscriptions.push({ topic, subscribe })
         }
       })
@@ -997,6 +1067,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // Handle control messages
     if (rpc.control != null) {
       await this.handleControlMessage(from.toString(), rpc.control)
+    }
+
+    // Handle partial messages extension
+    if (rpc.partial != null) {
+      this.handleReceivedPartial(from, rpc.partial)
     }
   }
 
@@ -1204,7 +1279,17 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    */
   private sendSubscriptions (toPeer: PeerIdStr, topics: string[], subscribe: boolean): void {
     this.sendRpc(toPeer, {
-      subscriptions: topics.map((topic) => ({ topic, subscribe })),
+      subscriptions: topics.map((topic) => {
+        const subOpts: RPC.SubOpts = { topic, subscribe }
+        // Include partial message flags if this topic has partial support
+        const partialOpts = this.partialTopics.get(topic)
+        if (partialOpts != null) {
+          const normalizedOpts = this.normalizePartialSubscriptionOpts(partialOpts)
+          subOpts.requestsPartial = normalizedOpts.requestsPartial
+          subOpts.supportsSendingPartial = normalizedOpts.supportsSendingPartial
+        }
+        return subOpts
+      }),
       messages: []
     })
   }
@@ -1222,6 +1307,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     const prune = (controlMsg.graft?.length > 0) ? await this.handleGraft(id, controlMsg.graft) : []
     ;(controlMsg.prune?.length > 0) && (await this.handlePrune(id, controlMsg.prune))
     ;(controlMsg.idontwant?.length > 0) && this.handleIdontwant(id, controlMsg.idontwant)
+
+    // Handle extensions handshake - log that peer supports partial messages
+    if (controlMsg.extensions?.partialMessages === true) {
+      this.log('peer %s supports partial messages extension', id)
+    }
 
     if ((iwant.length === 0) && (ihave.length === 0) && (prune.length === 0)) {
       return
@@ -1763,6 +1853,223 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.leave(topic)
   }
 
+  // PARTIAL MESSAGES EXTENSION METHODS
+
+  /**
+   * Subscribe to a topic with partial message support.
+   * Sends updated SubOpts to peers indicating partial capabilities.
+   */
+  subscribePartial (topic: TopicStr, opts: PartialSubscriptionOpts): void {
+    if (this.status.code !== GossipStatusCode.started) {
+      throw new Error('Pubsub has not started')
+    }
+
+    this.partialTopics.set(topic, this.normalizePartialSubscriptionOpts(opts))
+
+    // Ensure we have a PartialMessageState for this topic
+    if (!this.partialMessageState.has(topic)) {
+      this.partialMessageState.set(topic, new PartialMessageState(
+        this.partsMetadataMerger,
+        this.opts.partialMessagesMaxGroups ?? PartialMessagesMaxGroups,
+        this.opts.partialMessagesGroupTTLMs ?? PartialMessagesGroupTTLMs
+      ))
+    }
+
+    // Subscribe to the topic normally if not already subscribed
+    if (!this.subscriptions.has(topic)) {
+      this.subscribe(topic)
+    } else {
+      // Re-send subscriptions to peers with partial flags
+      for (const peerId of this.peers.keys()) {
+        this.sendSubscriptions(peerId, [topic], true)
+      }
+    }
+  }
+
+  /**
+   * Remove partial message support for a topic.
+   * The topic remains subscribed for normal messages.
+   */
+  unsubscribePartial (topic: TopicStr): void {
+    if (this.status.code !== GossipStatusCode.started) {
+      throw new Error('Pubsub is not started')
+    }
+
+    const hadPartial = this.partialTopics.delete(topic)
+
+    if (hadPartial) {
+      // Clean up state
+      const state = this.partialMessageState.get(topic)
+      if (state != null) {
+        state.clear()
+        this.partialMessageState.delete(topic)
+      }
+
+      // Re-send subscription without partial flags
+      if (this.subscriptions.has(topic)) {
+        for (const peerId of this.peers.keys()) {
+          this.sendSubscriptions(peerId, [topic], true)
+        }
+      }
+    }
+  }
+
+  /**
+   * Publish a partial message to peers that support the partial messages extension.
+   * Sends the full partial (with partialMessage data) to peers that requestsPartial.
+   * Sends metadata-only to peers that supportsSendingPartial but don't requestsPartial.
+   */
+  publishPartial (partialMsg: PartialMessage): void {
+    if (this.status.code !== GossipStatusCode.started) {
+      throw new Error('Pubsub has not started')
+    }
+
+    const { topic, groupID, partialMessage, partsMetadata } = partialMsg
+
+    // Update our own state
+    let state = this.partialMessageState.get(topic)
+    if (state == null) {
+      state = new PartialMessageState(
+        this.partsMetadataMerger,
+        this.opts.partialMessagesMaxGroups ?? PartialMessagesMaxGroups,
+        this.opts.partialMessagesGroupTTLMs ?? PartialMessagesGroupTTLMs
+      )
+      this.partialMessageState.set(topic, state)
+    }
+    state.updateMetadata(groupID, this.components.peerId.toString(), partsMetadata)
+
+    const topicIDBytes = this.textEncoder.encode(topic)
+
+    // Send to all peers subscribed to this topic with partial support
+    const topicPeers = this.topics.get(topic)
+    if (topicPeers == null) {
+      return
+    }
+
+    for (const peerId of topicPeers) {
+      const peerOpts = this.peerPartialOpts.get(peerId)?.get(topic)
+      if (peerOpts == null) {
+        continue
+      }
+
+      if (peerOpts.requestsPartial) {
+        // Send full partial message (with data + metadata)
+        this.sendRpc(peerId, createGossipRpc([], undefined, {
+          topicID: topicIDBytes,
+          groupID,
+          partialMessage,
+          partsMetadata
+        }))
+      } else if (peerOpts.supportsSendingPartial) {
+        // Send metadata only
+        this.sendRpc(peerId, createGossipRpc([], undefined, {
+          topicID: topicIDBytes,
+          groupID,
+          partsMetadata
+        }))
+      }
+    }
+  }
+
+  /**
+   * Handle a received partial message from a peer.
+   * Updates state and dispatches event to the application.
+   */
+  private handleReceivedPartial (from: PeerId, partial: RPC.PartialMessagesExtension): void {
+    if (partial.topicID == null || partial.groupID == null || partial.partsMetadata == null) {
+      this.log('received incomplete partial message from %p, ignoring', from)
+      return
+    }
+
+    // Validate metadata size
+    if (partial.partsMetadata.length > PartialMessagesMaxMetadataSize) {
+      this.log('received oversized partsMetadata from %p (%d bytes), ignoring', from, partial.partsMetadata.length)
+      return
+    }
+
+    // Validate partial message payload size (if present)
+    if (partial.partialMessage != null && partial.partialMessage.length > this.decodeRpcLimits.maxPartialMessageSize) {
+      this.log('received oversized partialMessage from %p (%d bytes), ignoring', from, partial.partialMessage.length)
+      return
+    }
+
+    const topic = this.textDecoder.decode(partial.topicID)
+    const fromId = from.toString()
+
+    // Only process if we're subscribed with partial support for this topic
+    if (!this.partialTopics.has(topic)) {
+      return
+    }
+
+    if ((this.allowedTopics != null) && !this.allowedTopics.has(topic)) {
+      return
+    }
+
+    // Update state
+    let state = this.partialMessageState.get(topic)
+    if (state == null) {
+      state = new PartialMessageState(
+        this.partsMetadataMerger,
+        this.opts.partialMessagesMaxGroups ?? PartialMessagesMaxGroups,
+        this.opts.partialMessagesGroupTTLMs ?? PartialMessagesGroupTTLMs
+      )
+      this.partialMessageState.set(topic, state)
+    }
+    state.updateMetadata(partial.groupID, fromId, partial.partsMetadata)
+
+    // Dispatch event to application
+    const partialMsg: PartialMessage = {
+      topic,
+      groupID: partial.groupID,
+      partialMessage: partial.partialMessage,
+      partsMetadata: partial.partsMetadata
+    }
+
+    this.safeDispatchEvent<PartialMessage>('gossipsub:partial-message', {
+      detail: partialMsg
+    })
+  }
+
+  /**
+   * During heartbeat, gossip parts metadata to non-mesh peers that support partial messages.
+   */
+  private emitPartialGossip (peersToGossipByTopic: Map<string, Set<PeerIdStr>>): void {
+    for (const [topic, state] of this.partialMessageState) {
+      const groups = state.getGroupsForGossip()
+      if (groups.size === 0) {
+        continue
+      }
+
+      const topicIDBytes = this.textEncoder.encode(topic)
+      const peersToGossip = peersToGossipByTopic.get(topic)
+      if (peersToGossip == null) {
+        continue
+      }
+
+      for (const peerId of peersToGossip) {
+        const peerOpts = this.peerPartialOpts.get(peerId)?.get(topic)
+        if (peerOpts == null || !peerOpts.supportsSendingPartial) {
+          continue
+        }
+
+        // Send metadata for each group to this peer
+        for (const [_groupKey, metadata] of groups) {
+          // Convert hex key back to bytes for groupID
+          const groupIDBytes = new Uint8Array(_groupKey.length / 2)
+          for (let i = 0; i < groupIDBytes.length; i++) {
+            groupIDBytes[i] = parseInt(_groupKey.substring(i * 2, i * 2 + 2), 16)
+          }
+
+          this.sendRpc(peerId, createGossipRpc([], undefined, {
+            topicID: topicIDBytes,
+            groupID: groupIDBytes,
+            partsMetadata: metadata
+          }))
+        }
+      }
+    }
+  }
+
   /**
    * Join topic
    */
@@ -2287,6 +2594,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.gossip.delete(id)
     }
 
+    // Extension handshake: on first successful RPC to peer, include partialMessages=true if we have partial topics
+    let shouldMarkExtensionAsSent = false
+    if (this.partialTopics.size > 0 && !this.sentExtensions.has(id)) {
+      const rpcWithControl = ensureControl(rpc)
+      rpcWithControl.control.extensions = { partialMessages: true }
+      shouldMarkExtensionAsSent = true
+    }
+
     const rpcBytes = RPC.encode(rpc)
     try {
       outboundStream.push(rpcBytes)
@@ -2302,6 +2617,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
 
       return false
+    }
+
+    if (shouldMarkExtensionAsSent) {
+      this.sentExtensions.add(id)
     }
 
     this.metrics?.onRpcSent(rpc, rpcBytes.length)
@@ -2418,19 +2737,23 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.log('too many messages for gossip; will truncate IHAVE list (%d messages)', messageIDs.length)
     }
 
-    if (candidateToGossip.size === 0) { return }
+    const eligiblePeers = Array.from(candidateToGossip).filter((id) => {
+      return this.peerPartialOpts.get(id)?.get(topic)?.requestsPartial !== true
+    })
+
+    if (eligiblePeers.length === 0) { return }
     let target = this.opts.Dlazy
     const gossipFactor = this.opts.gossipFactor
-    const factor = gossipFactor * candidateToGossip.size
-    let peersToGossip: Set<PeerIdStr> | PeerIdStr[] = candidateToGossip
+    const factor = gossipFactor * eligiblePeers.length
+    let peersToGossip = eligiblePeers
     if (factor > target) {
       target = factor
     }
-    if (target > peersToGossip.size) {
-      target = peersToGossip.size
+    if (target > peersToGossip.length) {
+      target = peersToGossip.length
     } else {
       // only shuffle if needed
-      peersToGossip = shuffle(Array.from(peersToGossip)).slice(0, target)
+      peersToGossip = shuffle(peersToGossip.slice()).slice(0, target)
     }
 
     // Emit the IHAVE gossip to the selected peers up to the target
@@ -2473,6 +2796,21 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.log('Add gossip to %s', id)
     const gossip = this.gossip.get(id) ?? []
     this.gossip.set(id, gossip.concat(controlIHaveMsgs))
+  }
+
+  private normalizePartialSubscriptionOpts (opts: PartialSubscriptionOpts): PartialSubscriptionOpts {
+    if (opts.requestsPartial) {
+      return {
+        requestsPartial: true,
+        // Spec invariant: requesting partial implies ability to send partial
+        supportsSendingPartial: true
+      }
+    }
+
+    return {
+      requestsPartial: false,
+      supportsSendingPartial: opts.supportsSendingPartial === true
+    }
   }
 
   /**
@@ -2895,6 +3233,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     })
 
     this.emitGossip(peersToGossipByTopic)
+
+    // Emit partial message gossip (metadata) to non-mesh partial peers
+    this.emitPartialGossip(peersToGossipByTopic)
+
+    // Prune expired partial message groups
+    for (const state of this.partialMessageState.values()) {
+      state.pruneExpired()
+    }
 
     // send coalesced GRAFT/PRUNE messages (will piggyback gossip)
     await this.sendGraftPrune(tograft, toprune, noPX)

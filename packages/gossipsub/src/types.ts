@@ -176,3 +176,38 @@ export function rejectReasonFromAcceptance (
       throw new Error('Unreachable')
   }
 }
+
+/**
+ * A partial message to be sent or received via the partial messages extension.
+ * Contains either a partial message payload, parts metadata, or both.
+ */
+export interface PartialMessage {
+  /** The topic this partial message belongs to */
+  topic: TopicStr
+  /** Unique identifier for the group of partial messages */
+  groupID: Uint8Array
+  /** The partial message data (a subset of the full message) */
+  partialMessage?: Uint8Array
+  /** Metadata describing which parts are available */
+  partsMetadata: Uint8Array
+}
+
+/**
+ * Options for partial message subscription signaling.
+ * Sent in SubOpts to indicate partial message capabilities.
+ */
+export interface PartialSubscriptionOpts {
+  /** Whether this peer wants to receive partial messages */
+  requestsPartial: boolean
+  /** Whether this peer can send partial messages */
+  supportsSendingPartial: boolean
+}
+
+/**
+ * Merges parts metadata from multiple sources.
+ * The default implementation uses bitwise OR to combine bitmasks.
+ */
+export interface PartsMetadataMerger {
+  /** Merge two parts metadata buffers into a combined result */
+  merge(a: Uint8Array, b: Uint8Array): Uint8Array
+}

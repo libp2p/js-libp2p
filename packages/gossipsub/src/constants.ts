@@ -259,3 +259,29 @@ export const BACKOFF_SLACK = 1
 
 export const GossipsubIdontwantMinDataSize = 512
 export const GossipsubIdontwantMaxMessages = 512
+
+// Partial Messages Extension constants
+
+/**
+ * Maximum number of groups to track per topic in PartialMessageState.
+ * When exceeded, oldest groups are evicted (LRU).
+ *
+ * @default 128
+ */
+export const PartialMessagesMaxGroups = 128
+
+/**
+ * Time-to-live for partial message groups in milliseconds.
+ * Groups older than this are pruned during heartbeat.
+ *
+ * @default 120000 (2 minutes)
+ */
+export const PartialMessagesGroupTTLMs = 2 * minute
+
+/**
+ * Maximum size in bytes for parts metadata.
+ * Metadata larger than this will be rejected.
+ *
+ * @default 1024
+ */
+export const PartialMessagesMaxMetadataSize = 1024
