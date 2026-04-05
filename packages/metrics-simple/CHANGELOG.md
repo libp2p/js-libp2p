@@ -5,6 +5,28 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [2.0.11](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.10...simple-metrics-v2.0.11) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/logger bumped from ^6.2.2 to ^6.2.3
+
+## [2.0.10](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.9...simple-metrics-v2.0.10) (2026-03-04)
+
+
+### Bug Fixes
+
+* **metrics:** avoid consuming protocol frames before app readers ([#3394](https://github.com/libp2p/js-libp2p/issues/3394)) ([4db427d](https://github.com/libp2p/js-libp2p/commit/4db427d307923d2bfde3c7052f3abfb0456b5e61))
+
 ## [2.0.9](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.8...simple-metrics-v2.0.9) (2025-11-14)
 
 

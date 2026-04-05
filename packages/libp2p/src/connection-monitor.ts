@@ -96,10 +96,11 @@ export class ConnectionMonitor implements Startable {
       this.components.connectionManager.getConnections().forEach(conn => {
         Promise.resolve().then(async () => {
           let start = Date.now()
+          const signal = this.timeout.getTimeoutSignal({
+            signal: this.abortController?.signal
+          })
+
           try {
-            const signal = this.timeout.getTimeoutSignal({
-              signal: this.abortController?.signal
-            })
             const stream = await conn.newStream(this.protocol, {
               signal,
               runOnLimitedConnection: true
@@ -132,6 +133,8 @@ export class ConnectionMonitor implements Startable {
             // round trips (e.g. 1x for the mss header, then another for the
             // protocol) so divide the time it took by two
             conn.rtt = (Date.now() - start) / 2
+          } finally {
+            this.timeout.cleanUp(signal)
           }
         })
           .catch(err => {

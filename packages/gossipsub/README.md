@@ -1,7 +1,6 @@
 # js-libp2p-gossipsub
 
 [![](https://img.shields.io/badge/made%20by-ChainSafe-blue.svg?style=flat-square)](https://chainsafe.io/)
-[![Travis CI](https://flat.badgen.net/travis/ChainSafe/gossipsub-js)](https://travis-ci.com/ChainSafe/gossipsub-js)
 ![ES Version](https://img.shields.io/badge/ES-2017-yellow)
 ![Node Version](https://img.shields.io/badge/node-10.x-green)
 

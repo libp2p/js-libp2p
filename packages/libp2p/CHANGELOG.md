@@ -110,6 +110,84 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.1.7](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.6...libp2p-v3.1.7) (2026-03-27)
+
+
+### Bug Fixes
+
+* **connection-manager:** skip closing/closed connections in findExistingConnection ([d6f6f58](https://github.com/libp2p/js-libp2p/commit/d6f6f5818092e8b4e16dc06061fbe0a5c36fa95e))
+* **connection-manager:** skip stale connections in findExisting ([#3413](https://github.com/libp2p/js-libp2p/issues/3413)) ([d6f6f58](https://github.com/libp2p/js-libp2p/commit/d6f6f5818092e8b4e16dc06061fbe0a5c36fa95e))
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/interface-internal bumped from ^3.0.13 to ^3.0.14
+    * @libp2p/logger bumped from ^6.2.2 to ^6.2.3
+    * @libp2p/multistream-select bumped from ^7.0.13 to ^7.0.14
+    * @libp2p/peer-collections bumped from ^7.0.13 to ^7.0.14
+    * @libp2p/peer-id bumped from ^6.0.4 to ^6.0.5
+    * @libp2p/peer-store bumped from ^12.0.13 to ^12.0.14
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+
+## [3.1.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.5...libp2p-v3.1.6) (2026-03-12)
+
+
+### Bug Fixes
+
+* **registrar:** ensure onDisconnect respects notifyOnLimitedConnection ([#3376](https://github.com/libp2p/js-libp2p/issues/3376)) ([464e16e](https://github.com/libp2p/js-libp2p/commit/464e16e1371798a52526e94ff0f5bf865548b7bb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.12 to ^3.0.13
+    * @libp2p/multistream-select bumped from ^7.0.12 to ^7.0.13
+    * @libp2p/peer-collections bumped from ^7.0.12 to ^7.0.13
+    * @libp2p/peer-store bumped from ^12.0.12 to ^12.0.13
+    * @libp2p/utils bumped from ^7.0.12 to ^7.0.13
+
+## [3.1.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.4...libp2p-v3.1.5) (2026-03-03)
+
+
+### Bug Fixes
+
+* clean up adaptive timeout signals in connection monitor ([#3392](https://github.com/libp2p/js-libp2p/issues/3392)) ([f4b950d](https://github.com/libp2p/js-libp2p/commit/f4b950dc937a6cbd1a155b01995656991770a5f9))
+* setMaxConnections uses func arg in comparison  ([#3389](https://github.com/libp2p/js-libp2p/issues/3389)) ([8f0e1b2](https://github.com/libp2p/js-libp2p/commit/8f0e1b2db58bcabd7422a02cd961a172b8934500))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.11 to ^3.0.12
+    * @libp2p/multistream-select bumped from ^7.0.11 to ^7.0.12
+    * @libp2p/peer-collections bumped from ^7.0.11 to ^7.0.12
+    * @libp2p/peer-store bumped from ^12.0.11 to ^12.0.12
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.3...libp2p-v3.1.4) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.0.10 to ^3.0.11
+    * @libp2p/multistream-select bumped from ^7.0.10 to ^7.0.11
+    * @libp2p/peer-collections bumped from ^7.0.10 to ^7.0.11
+    * @libp2p/peer-store bumped from ^12.0.10 to ^12.0.11
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+
 ## [3.1.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.1.2...libp2p-v3.1.3) (2026-01-16)
 
 

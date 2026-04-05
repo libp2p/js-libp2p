@@ -79,6 +79,8 @@ export class AdaptiveTimeout {
   }
 
   cleanUp (signal: AdaptiveTimeoutSignal): void {
+    signal.clear()
+
     const time = Date.now() - signal.start
 
     if (signal.aborted) {

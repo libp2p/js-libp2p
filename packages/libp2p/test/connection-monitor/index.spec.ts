@@ -3,6 +3,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { echoStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { ConnectionMonitor } from '../../src/connection-monitor.js'
 import type { ComponentLogger, Stream, Connection } from '@libp2p/interface'
@@ -64,6 +65,26 @@ describe('connection monitor', () => {
     await delay(100)
 
     expect(connection.rtt).to.be.gte(0)
+  })
+
+  it('should clean up timeout signal listeners after each heartbeat', async () => {
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 10
+    })
+
+    await start(monitor)
+
+    const cleanUpSpy = Sinon.spy((monitor as any).timeout, 'cleanUp')
+
+    const connection = stubInterface<Connection>()
+    const stream = await echoStream()
+    connection.newStream.withArgs('/ipfs/ping/1.0.0').resolves(stream)
+
+    components.connectionManager.getConnections.returns([connection])
+
+    await delay(100)
+
+    expect(cleanUpSpy.callCount).to.be.gte(1)
   })
 
   it('should monitor the liveness of a connection that does not support ping', async () => {

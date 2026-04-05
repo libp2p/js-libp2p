@@ -58,7 +58,7 @@ Loading this module through a script tag will make its exports available as `Lib
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_multistream_select.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_multistream-select.html>
 
 # License
 

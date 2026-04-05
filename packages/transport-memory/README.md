@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/)
+A [libp2p transport](https://libp2p.io/docs/transports-overview/)
 that operates in-memory only.
 
 This is intended for testing and can only be used to connect two libp2p nodes

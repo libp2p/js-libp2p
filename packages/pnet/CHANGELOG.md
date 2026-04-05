@@ -1,5 +1,43 @@
 # Changelog
 
+## [3.0.15](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.14...pnet-v3.0.15) (2026-03-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+
+## [3.0.14](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.13...pnet-v3.0.14) (2026-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.12 to ^7.0.13
+
+## [3.0.13](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.12...pnet-v3.0.13) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+
+## [3.0.12](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.11...pnet-v3.0.12) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+
 ## [3.0.11](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.10...pnet-v3.0.11) (2026-01-16)
 
 

@@ -11,6 +11,21 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [6.0.5](https://github.com/libp2p/js-libp2p/compare/peer-id-v6.0.4...peer-id-v6.0.5) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+
 ## [6.0.4](https://github.com/libp2p/js-libp2p/compare/peer-id-v6.0.3...peer-id-v6.0.4) (2025-10-29)
 
 

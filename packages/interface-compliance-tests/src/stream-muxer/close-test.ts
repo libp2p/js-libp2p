@@ -9,15 +9,15 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message } from './fixtures/pb/message.js'
 import type { TestSetup } from '../index.js'
-import type { MultiaddrConnection, Stream, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
+import type { MultiaddrConnection, Stream, StreamCloseEvent, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 function randomBuffer (): Uint8Array {
   return uint8ArrayFromString(Math.random().toString())
 }
 
-async function * infiniteRandom (): AsyncGenerator<Uint8ArrayList, void, unknown> {
+async function * infiniteRandom (signal?: AbortSignal): AsyncGenerator<Uint8ArrayList, void, unknown> {
   while (true) {
-    await delay(10)
+    await delay(10, { signal })
     yield new Uint8ArrayList(randomBuffer())
   }
 }
@@ -153,18 +153,28 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       )
 
       const streamPipes = streams.map(async stream => {
-        for await (const buf of infiniteRandom()) {
-          if (stream.writeStatus !== 'writable') {
-            break
-          }
+        const controller = new AbortController()
+        const onClose = (evt: StreamCloseEvent): void => {
+          controller.abort(evt.error ?? new Error('stream closed'))
+        }
+        stream.addEventListener('close', onClose, { once: true })
 
-          const sendMore = stream.send(buf)
+        try {
+          for await (const buf of infiniteRandom(controller.signal)) {
+            if (stream.writeStatus !== 'writable') {
+              break
+            }
 
-          if (!sendMore) {
-            await pEvent(stream, 'drain', {
-              rejectionEvents: ['close']
-            })
+            const sendMore = stream.send(buf)
+
+            if (!sendMore) {
+              await pEvent(stream, 'drain', {
+                rejectionEvents: ['close']
+              })
+            }
           }
+        } finally {
+          stream.removeEventListener('close', onClose)
         }
       })
 

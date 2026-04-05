@@ -35,6 +35,51 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [7.0.14](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.13...peer-collections-v7.0.14) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/peer-id bumped from ^6.0.4 to ^6.0.5
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+
+## [7.0.13](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.12...peer-collections-v7.0.13) (2026-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.12 to ^7.0.13
+
+## [7.0.12](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.11...peer-collections-v7.0.12) (2026-03-03)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.11 to ^7.0.12
+
+## [7.0.11](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.10...peer-collections-v7.0.11) (2026-02-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.10 to ^7.0.11
+
 ## [7.0.10](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.9...peer-collections-v7.0.10) (2026-01-16)
 
 
