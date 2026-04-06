@@ -494,7 +494,9 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
           // the error propagate as an uncaught exception
           if (err.name === 'StreamStateError') {
             this.log('send failed during queue processing, stream is %s - %e', this.writeStatus, err)
-            this.writeBuffer.prepend(toSend)
+            // Requeue the defensive copy in case sendData mutated `toSend`
+            // before throwing.
+            this.writeBuffer.prepend(willSend)
             return false
           }
 
