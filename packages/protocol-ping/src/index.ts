@@ -23,11 +23,11 @@
  */
 
 import { Ping as PingClass } from './ping.js'
-import type { AbortOptions, DialTarget } from '@libp2p/interface'
+import type { DialProtocolOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface Ping {
-  ping(peer: DialTarget, options?: AbortOptions): Promise<number>
+  ping(peer: DialTarget, options?: DialProtocolOptions): Promise<number>
 }
 
 export interface PingInit {
