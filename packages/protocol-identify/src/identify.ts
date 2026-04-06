@@ -1,8 +1,8 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidMessageError, StreamStateError, serviceCapabilities } from '@libp2p/interface'
+import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
+import { UnexpectedEOFError, isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
 import { CODE_IP6, CODE_IP6ZONE, CODE_P2P } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
@@ -64,14 +64,55 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
-      const message = await pb.read(options)
-      try {
-          await pb.unwrap().unwrap().close(options)
-      } catch (err) {
-          // Remote may have already closed the stream, triggering a StreamStateError
-          if (!(err instanceof StreamStateError)) {
-              throw err
+      // Read all messages until the stream closes - go-libp2p may send multiple
+      // messages for large identify responses (e.g. splitting off SignedPeerRecord)
+      const MAX_IDENTIFY_MESSAGES = 10
+      const messages: IdentifyMessage[] = []
+
+      for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
+        try {
+          messages.push(await pb.read(options))
+        } catch (err) {
+          if (messages.length > 0 && err instanceof UnexpectedEOFError) {
+            break
           }
+
+          throw err
+        }
+      }
+
+      if (messages.length === 0) {
+        throw new InvalidMessageError('No identify message received')
+      }
+
+      await pb.unwrap().unwrap().close(options)
+
+      // Merge all messages into one - later messages supply missing fields
+      const message = messages[0]
+
+      for (const msg of messages.slice(1)) {
+        if (msg.protocolVersion != null) {
+          message.protocolVersion = msg.protocolVersion
+        }
+
+        if (msg.agentVersion != null) {
+          message.agentVersion = msg.agentVersion
+        }
+
+        if (msg.publicKey != null) {
+          message.publicKey = msg.publicKey
+        }
+
+        if (msg.observedAddr != null) {
+          message.observedAddr = msg.observedAddr
+        }
+
+        if (msg.signedPeerRecord != null) {
+          message.signedPeerRecord = msg.signedPeerRecord
+        }
+
+        message.listenAddrs = [...message.listenAddrs, ...msg.listenAddrs]
+        message.protocols = [...new Set([...message.protocols, ...msg.protocols])]
       }
 
       return message
