@@ -64,8 +64,8 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
-      // Read all messages until the stream closes - go-libp2p may send multiple
-      // messages for large identify responses (e.g. splitting off SignedPeerRecord)
+      // Large responses can be subdivided.
+      // Read all messages until the stream closes.
       const MAX_IDENTIFY_MESSAGES = 10
       const messages: IdentifyMessage[] = []
 
@@ -87,7 +87,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
       await pb.unwrap().unwrap().close(options)
 
-      // Merge all messages into one - later messages supply missing fields
+      // Merge any subsequent identify messages into the first response
       const message = messages[0]
 
       for (const msg of messages.slice(1)) {
