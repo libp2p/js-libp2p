@@ -102,7 +102,7 @@
     "libp2p": "^3.1.7",
     "p-defer": "^4.0.1",
     "p-event": "^7.0.0",
-    "p-retry": "^7.0.0",
+    "p-retry": "^8.0.0",
     "p-wait-for": "^6.0.0",
     "protons-runtime": "^6.0.1",
     "race-signal": "^2.0.0",
