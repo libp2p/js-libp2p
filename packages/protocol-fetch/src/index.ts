@@ -88,7 +88,7 @@ export interface Fetch {
    * })
    * ```
    */
-  protocol: string
+  readonly protocol: string
 
   /**
    * Sends a request to fetch the value associated with the given key from the given peer
