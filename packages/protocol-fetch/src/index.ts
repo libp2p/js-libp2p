@@ -43,7 +43,7 @@
  */
 
 import { Fetch as FetchClass } from './fetch.js'
-import type { AbortOptions, PeerId } from '@libp2p/interface'
+import type { DialProtocolOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
 export interface FetchInit {
@@ -75,9 +75,25 @@ export interface FetchComponents {
 
 export interface Fetch {
   /**
+   * The protocol this Fetch instance supports
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.register(libp2p.services.fetch.protocol, {
+   *   onConnect (peerId) {
+   *     // handle fetch peer connect
+   *   }
+   *   // ...etc
+   * })
+   * ```
+   */
+  readonly protocol: string
+
+  /**
    * Sends a request to fetch the value associated with the given key from the given peer
    */
-  fetch(peer: PeerId, key: string | Uint8Array, options?: AbortOptions): Promise<Uint8Array | undefined>
+  fetch(peer: DialTarget, key: string | Uint8Array, options?: DialProtocolOptions): Promise<Uint8Array | undefined>
 
   /**
    * Registers a new lookup callback that can map keys to values, for a given set of keys that

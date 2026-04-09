@@ -2,11 +2,12 @@ import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, TooMan
 import * as mss from '@libp2p/multistream-select'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
+import { CustomProgressEvent } from 'progress-events'
 import { CONNECTION_CLOSE_TIMEOUT, PROTOCOL_NEGOTIATION_TIMEOUT } from './connection-manager/constants.defaults.ts'
 import { isDirect } from './connection-manager/utils.ts'
 import { MuxerUnavailableError } from './errors.ts'
 import { DEFAULT_MAX_INBOUND_STREAMS, DEFAULT_MAX_OUTBOUND_STREAMS } from './registrar.ts'
-import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream, StreamMiddleware } from '@libp2p/interface'
+import type { AbortOptions, Logger, MessageStreamDirection, Connection as ConnectionInterface, Stream, NewStreamOptions, PeerId, ConnectionLimits, StreamMuxer, Metrics, PeerStore, MultiaddrConnection, MessageStreamEvents, MultiaddrConnectionTimeline, ConnectionStatus, MessageStream, StreamMiddleware, OpenStreamEvent, OpenedStreamEvent } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -132,6 +133,11 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
       protocols = [protocols]
     }
 
+    options.onProgress?.(new CustomProgressEvent<OpenStreamEvent>('connection:open-stream', {
+      connection: this,
+      protocols
+    }))
+
     this.log.trace('starting new stream for protocols %s', protocols)
     const muxedStream = await this.muxer.createStream({
       ...options,
@@ -186,7 +192,14 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
 
-      return await this.runMiddlewareChain(muxedStream, this, middleware)
+      const stream = await this.runMiddlewareChain(muxedStream, this, middleware)
+
+      options.onProgress?.(new CustomProgressEvent<OpenedStreamEvent>('connection:opened-stream', {
+        connection: this,
+        stream
+      }))
+
+      return stream
     } catch (err: any) {
       if (muxedStream.status === 'open') {
         muxedStream.abort(err)

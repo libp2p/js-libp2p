@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.1.27](https://github.com/libp2p/js-libp2p/compare/config-v1.1.26...config-v1.1.27) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/keychain bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/logger bumped from ^6.2.3 to ^6.2.4
+
+## [1.1.26](https://github.com/libp2p/js-libp2p/compare/config-v1.1.25...config-v1.1.26) (2026-03-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/keychain bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/logger bumped from ^6.2.2 to ^6.2.3
+
 ## [1.1.25](https://github.com/libp2p/js-libp2p/compare/config-v1.1.24...config-v1.1.25) (2026-01-16)
 
 

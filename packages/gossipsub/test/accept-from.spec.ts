@@ -69,7 +69,7 @@ describe('Gossipsub acceptFrom', () => {
     expect(scoreSpy.getCall(1)).to.not.be.ok()
 
     // after 1s
-    await new Promise((resolve) => setTimeout(resolve, 1001))
+    await new Promise((resolve) => setTimeout(resolve, 1100))
 
     gossipsub.acceptFrom(peerA)
     expect(scoreSpy.getCall(1).args[0]).to.be.equal(peerA)
