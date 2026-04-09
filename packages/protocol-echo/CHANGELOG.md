@@ -1,5 +1,22 @@
 # Changelog
 
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/echo-v3.0.15...echo-v3.1.0) (2026-04-08)
+
+
+### Features
+
+* add DialTarget type ([#3428](https://github.com/libp2p/js-libp2p/issues/3428)) ([2a3e547](https://github.com/libp2p/js-libp2p/commit/2a3e547380a62dffae31f7b5423dfcf1fc0c7433))
+* add high-level connection and stream progress events ([#3429](https://github.com/libp2p/js-libp2p/issues/3429)) ([709b3fa](https://github.com/libp2p/js-libp2p/commit/709b3fa2e94d99c77d97df2dda39b431f8b92878))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/interface-internal bumped from ^3.0.14 to ^3.1.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+
 ## [3.0.15](https://github.com/libp2p/js-libp2p/compare/echo-v3.0.14...echo-v3.0.15) (2026-03-27)
 
 

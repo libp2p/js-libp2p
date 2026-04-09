@@ -32,6 +32,21 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.0.14...interface-internal-v3.1.0) (2026-04-08)
+
+
+### Features
+
+* add DialTarget type ([#3428](https://github.com/libp2p/js-libp2p/issues/3428)) ([2a3e547](https://github.com/libp2p/js-libp2p/commit/2a3e547380a62dffae31f7b5423dfcf1fc0c7433))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/peer-collections bumped from ^7.0.14 to ^7.0.15
+
 ## [3.0.14](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.0.13...interface-internal-v3.0.14) (2026-03-27)
 
 
