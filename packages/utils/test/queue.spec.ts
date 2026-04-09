@@ -2,9 +2,11 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import pDefer from 'p-defer'
+import { CustomProgressEvent } from 'progress-events'
 import { Queue } from '../src/queue/index.js'
 import { TestSignal } from './fixtures/test-signal.js'
 import type { AbortOptions } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
 
 const fixture = Symbol('fixture')
 
@@ -863,5 +865,73 @@ describe('queue', () => {
 
     await expect(p).to.eventually.equal('hello')
     await expect(queue.add(job)).to.eventually.equal('hello')
+  })
+
+  it('should forward progress events to multiple consumers', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+    const queue = new Queue<string, ProgressJobOptions>({
+      concurrency: 1,
+      maxSize: 1
+    })
+    queue.pause()
+
+    const job = async (options: ProgressJobOptions): Promise<string> => {
+      options.onProgress?.(new CustomProgressEvent('before'))
+      await delay(100)
+      options.onProgress?.(new CustomProgressEvent('after'))
+      return 'hello'
+    }
+
+    const events: any[] = []
+
+    const p1 = queue.add(job, {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    const p2 = queue.queue[0].join({
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    queue.resume()
+
+    await Promise.all([
+      p1,
+      p2
+    ])
+
+    expect(events).to.have.lengthOf(4)
+  })
+
+  it('should consume synchronous progress events', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+    const queue = new Queue<string, ProgressJobOptions>({
+      concurrency: 1,
+      maxSize: 1
+    })
+
+    const events: any[] = []
+
+    const job = async (options: ProgressJobOptions): Promise<string> => {
+      options.onProgress?.(new CustomProgressEvent('before'))
+      await delay(100)
+      options.onProgress?.(new CustomProgressEvent('after'))
+      return 'hello'
+    }
+
+    await queue.add(job, {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    expect(events).to.have.lengthOf(2)
   })
 })

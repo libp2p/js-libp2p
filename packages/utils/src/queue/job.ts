@@ -4,6 +4,7 @@ import { raceSignal } from 'race-signal'
 import { JobRecipient } from './recipient.js'
 import type { JobStatus } from './index.js'
 import type { AbortOptions } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
 
 /**
  * Returns a random string
@@ -18,7 +19,7 @@ export interface JobTimeline {
   finished?: number
 }
 
-export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType = unknown> {
+export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptions, JobReturnType = unknown> {
   public id: string
   public fn: (options: JobOptions) => Promise<JobReturnType>
   public options: JobOptions
@@ -59,11 +60,11 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
     }
   }
 
-  async join (options: AbortOptions = {}): Promise<JobReturnType> {
-    const recipient = new JobRecipient<JobReturnType>(options.signal)
+  async join (options?: Partial<Pick<JobOptions, 'signal' | 'onProgress'>>): Promise<JobReturnType> {
+    const recipient = new JobRecipient<JobReturnType>(options)
     this.recipients.push(recipient)
 
-    options.signal?.addEventListener('abort', this.onAbort)
+    options?.signal?.addEventListener('abort', this.onAbort)
 
     return recipient.deferred.promise
   }
@@ -77,7 +78,12 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
 
       const result = await raceSignal(this.fn({
         ...(this.options ?? {}),
-        signal: this.controller.signal
+        signal: this.controller.signal,
+        onProgress: (evt: any): void => {
+          this.recipients.forEach(recipient => {
+            recipient.onProgress?.(evt)
+          })
+        }
       }), this.controller.signal)
 
       this.recipients.forEach(recipient => {
