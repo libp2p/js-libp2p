@@ -1,5 +1,5 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import type { Libp2pInit } from './index.js'
+import type { Libp2pInit } from './index.ts'
 import type { ServiceMap } from '@libp2p/interface'
 
 export async function validateConfig <T extends ServiceMap = Record<string, unknown>> (opts: Libp2pInit<T>): Promise<Libp2pInit<T>> {

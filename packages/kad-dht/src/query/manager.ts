@@ -9,8 +9,8 @@ import {
   ALPHA, K, DEFAULT_QUERY_TIMEOUT
 } from '../constants.js'
 import { convertBuffer } from '../utils.js'
-import { queryPath } from './query-path.js'
-import type { QueryFunc } from './types.js'
+import { queryPath } from './query-path.ts'
+import type { QueryFunc } from './types.ts'
 import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { ComponentLogger, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'

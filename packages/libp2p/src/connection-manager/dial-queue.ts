@@ -10,7 +10,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DialDeniedError, NoValidAddressesError } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
-import { defaultAddressSorter } from './address-sorter.js'
+import { defaultAddressSorter } from './address-sorter.ts'
 import {
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
@@ -18,10 +18,10 @@ import {
   LAST_DIAL_FAILURE_KEY,
   MAX_DIAL_QUEUE_LENGTH,
   LAST_DIAL_SUCCESS_KEY
-} from './constants.js'
-import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
+} from './constants.ts'
+import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.ts'
 import { findExistingConnection } from './utils.ts'
-import { DEFAULT_DIAL_PRIORITY } from './index.js'
+import { DEFAULT_DIAL_PRIORITY } from './index.ts'
 import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver, DialTarget } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { PriorityQueueJobOptions } from '@libp2p/utils'

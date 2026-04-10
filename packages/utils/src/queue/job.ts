@@ -1,8 +1,8 @@
 import { AbortError } from '@libp2p/interface'
 import { setMaxListeners } from 'main-event'
 import { raceSignal } from 'race-signal'
-import { JobRecipient } from './recipient.js'
-import type { JobStatus } from './index.js'
+import { JobRecipient } from './recipient.ts'
+import type { JobStatus } from './index.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 

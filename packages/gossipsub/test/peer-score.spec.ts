@@ -7,7 +7,7 @@ import sinon from 'sinon'
 import { ScorePenalty } from '../src/metrics.js'
 import { PeerScore, createPeerScoreParams, createTopicScoreParams } from '../src/score/index.js'
 import { RejectReason } from '../src/types.js'
-import { getMsgIdStr, makeTestMessage } from './utils/index.js'
+import { getMsgIdStr, makeTestMessage } from './utils/index.ts'
 import type { PeerScoreParams, TopicScoreParams } from '../src/score/peer-score-params.js'
 import type { PeerStats } from '../src/score/peer-stats.js'
 

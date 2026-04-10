@@ -20,10 +20,10 @@
 
 import { TLSSocket, connect } from 'node:tls'
 import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
-import { HandshakeTimeoutError } from './errors.js'
-import { generateCertificate, verifyPeerCertificate, toNodeDuplex, toMessageStream } from './utils.js'
-import { PROTOCOL } from './index.js'
-import type { TLSComponents } from './index.js'
+import { HandshakeTimeoutError } from './errors.ts'
+import { generateCertificate, verifyPeerCertificate, toNodeDuplex, toMessageStream } from './utils.ts'
+import { PROTOCOL } from './index.ts'
+import type { TLSComponents } from './index.ts'
 import type { ConnectionEncrypter, SecuredConnection, Logger, SecureConnectionOptions, CounterGroup, StreamMuxerFactory, MessageStream } from '@libp2p/interface'
 import type { TLSSocketOptions } from 'node:tls'
 
