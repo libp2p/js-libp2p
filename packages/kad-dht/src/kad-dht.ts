@@ -213,7 +213,9 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       metricsPrefix,
       prefixLength: init.prefixLength,
       splitThreshold: init.kBucketSplitThreshold,
-      network: this.network
+      network: this.network,
+      routingTableUpdateQueueConcurrency: init.routingTableUpdateQueueConcurrency ?? Math.max(1, Math.min(this.a * 2, 16)),
+      routingTableUpdatePeerTtl: init.routingTableUpdatePeerTtl
     })
 
     // all queries should wait for the initial query-self query to run so we have
@@ -229,8 +231,6 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     this.queryManager = new QueryManager(components, {
       disjointPaths: this.d,
       alpha: this.a,
-      routingUpdateQueueConcurrency: init.routingUpdateQueueConcurrency,
-      routingUpdatePeerTtl: init.routingUpdatePeerTtl,
       logPrefix,
       metricsPrefix,
       initialQuerySelfHasRun,
@@ -408,7 +408,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
     const signal = AbortSignal.timeout(this.onPeerConnectTimeout)
     setMaxListeners(Infinity, signal)
 
-    this.queryManager.queueRoutingTableUpdate(peerData.id, {
+    this.routingTable.queueRoutingTableUpdate(peerData.id, {
       signal
     })
   }

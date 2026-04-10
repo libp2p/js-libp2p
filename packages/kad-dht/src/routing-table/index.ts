@@ -26,6 +26,17 @@ export const KAD_PEER_TAG_VALUE = 1
 export const LAST_PING_THRESHOLD = 600000
 export const POPULATE_FROM_DATASTORE_ON_START = true
 export const POPULATE_FROM_DATASTORE_LIMIT = 1000
+export const ROUTING_UPDATE_PEER_TTL = 30_000
+
+interface RoutingTableUpdateQueueStats {
+  enqueued: number
+  deduped: number
+  completed: number
+  failed: number
+  aborted: number
+  cancelledBeforeStart: number
+  ttlSkipped: number
+}
 
 export interface RoutingTableInit {
   logPrefix: string
@@ -51,6 +62,8 @@ export interface RoutingTableInit {
   lastPingThreshold?: number
   closestPeerSetSize?: number
   closestPeerSetRefreshInterval?: number
+  routingTableUpdateQueueConcurrency?: number
+  routingTableUpdatePeerTtl?: number
 }
 
 export interface RoutingTableComponents {
@@ -96,6 +109,10 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     routingTableKadBucketMaxOccupancy: Metric
     kadBucketEvents: CounterGroup<'ping_old_contact' | 'ping_old_contact_error' | 'ping_new_contact' | 'ping_new_contact_error' | 'peer_added' | 'peer_removed'>
   }
+  private readonly routingUpdateQueue: PeerQueue<void>
+  private readonly routingUpdatePeerTtl: number
+  private readonly routingUpdateRecent: Map<string, number>
+  private readonly routingUpdateStats: RoutingTableUpdateQueueStats
 
   private shutdownController: AbortController
 
@@ -116,8 +133,25 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.peerRemoved = this.peerRemoved.bind(this)
     this.populateFromDatastoreOnStart = init.populateFromDatastoreOnStart ?? POPULATE_FROM_DATASTORE_ON_START
     this.populateFromDatastoreLimit = init.populateFromDatastoreLimit ?? POPULATE_FROM_DATASTORE_LIMIT
+    this.routingUpdatePeerTtl = init.routingTableUpdatePeerTtl ?? ROUTING_UPDATE_PEER_TTL
+    this.routingUpdateRecent = new Map()
+    this.routingUpdateStats = {
+      enqueued: 0,
+      deduped: 0,
+      completed: 0,
+      failed: 0,
+      aborted: 0,
+      cancelledBeforeStart: 0,
+      ttlSkipped: 0
+    }
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
+
+    this.routingUpdateQueue = new PeerQueue<void>({
+      concurrency: init.routingTableUpdateQueueConcurrency ?? PING_NEW_CONTACT_CONCURRENCY,
+      metricName: `${init.metricsPrefix}_routing_update_queue`,
+      metrics: this.components.metrics
+    })
 
     this.pingOldContactQueue = new PeerQueue({
       concurrency: init.pingOldContactConcurrency ?? PING_OLD_CONTACT_CONCURRENCY,
@@ -253,9 +287,99 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   async stop (): Promise<void> {
     this.running = false
     await stop(this.closestPeerTagger, this.kb)
+    this.routingUpdateStats.cancelledBeforeStart += this.routingUpdateQueue.queued
+    this.routingUpdateQueue.abort()
     this.pingOldContactQueue.abort()
     this.pingNewContactQueue.abort()
     this.shutdownController.abort()
+  }
+
+  getRoutingUpdateQueueStats (): {
+    queued: number
+    running: number
+    total: number
+    enqueued: number
+    deduped: number
+    completed: number
+    failed: number
+    aborted: number
+    cancelledBeforeStart: number
+    ttlSkipped: number
+  } {
+    return {
+      queued: this.routingUpdateQueue.queued,
+      running: this.routingUpdateQueue.running,
+      total: this.routingUpdateQueue.size,
+      ...this.routingUpdateStats
+    }
+  }
+
+  queueRoutingTableUpdate (peerId: PeerId, options: AbortOptions = {}): void {
+    const peerIdStr = peerId.toString()
+    const now = Date.now()
+
+    this.pruneRoutingUpdateRecent(now)
+
+    const updateAllowedAt = this.routingUpdateRecent.get(peerIdStr)
+    if (updateAllowedAt != null && updateAllowedAt > now) {
+      this.routingUpdateStats.ttlSkipped++
+      return
+    }
+
+    const existingJob = this.routingUpdateQueue.find(peerId)
+
+    if (existingJob != null) {
+      this.routingUpdateStats.deduped++
+      void existingJob.join(options).catch(() => {})
+      return
+    }
+
+    this.routingUpdateRecent.set(peerIdStr, now + this.routingUpdatePeerTtl)
+    this.routingUpdateStats.enqueued++
+
+    void this.routingUpdateQueue.add(async (jobOptions) => {
+      const signal = jobOptions.signal == null
+        ? this.shutdownController.signal
+        : anySignal([this.shutdownController.signal, jobOptions.signal])
+
+      setMaxListeners(Infinity, signal)
+
+      try {
+        await this.add(peerId, {
+          signal
+        })
+        this.routingUpdateStats.completed++
+      } catch (err: any) {
+        if (signal.aborted || err?.name === 'AbortError') {
+          this.routingUpdateStats.aborted++
+          return
+        }
+
+        this.routingUpdateStats.failed++
+        throw err
+      } finally {
+        if ('clear' in signal) {
+          (signal as any).clear()
+        }
+      }
+    }, {
+      peerId,
+      signal: options.signal
+    }).catch(err => {
+      this.log.error('could not update routing table for peer %p - %e', peerId, err)
+    })
+  }
+
+  private pruneRoutingUpdateRecent (now: number): void {
+    if (this.routingUpdateRecent.size < 4096) {
+      return
+    }
+
+    for (const [peerId, expiresAt] of this.routingUpdateRecent.entries()) {
+      if (expiresAt <= now) {
+        this.routingUpdateRecent.delete(peerId)
+      }
+    }
   }
 
   private async peerAdded (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void> {

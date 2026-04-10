@@ -114,10 +114,10 @@ describe('KadDHT', () => {
       await dht.dht.stop()
     })
 
-    it('should enqueue peer connect routing updates via query manager', async () => {
+    it('should enqueue peer connect routing updates via routing table', async () => {
       const dht = await testDHT.spawn(undefined, false)
 
-      const queueRoutingTableUpdateSpy = sinon.spy((dht.dht as any).queryManager, 'queueRoutingTableUpdate')
+      const queueRoutingTableUpdateSpy = sinon.spy((dht.dht as any).routingTable, 'queueRoutingTableUpdate')
 
       await dht.dht.onPeerConnect({
         id: peerIds[0].peerId,
@@ -130,8 +130,8 @@ describe('KadDHT', () => {
 
     it('should dedupe onPeerConnect routing updates via ttl', async () => {
       const dht = await testDHT.spawn({
-        routingUpdatePeerTtl: 60_000,
-        routingUpdateQueueConcurrency: 1
+        routingTableUpdatePeerTtl: 60_000,
+        routingTableUpdateQueueConcurrency: 1
       }, false)
 
       await dht.dht.start()

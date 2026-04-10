@@ -505,7 +505,7 @@ export interface KadDHTInit {
    *
    * @default min(alpha * 2, 16)
    */
-  routingUpdateQueueConcurrency?: number
+  routingTableUpdateQueueConcurrency?: number
 
   /**
    * Minimum time in ms between background routing table update attempts for
@@ -513,7 +513,7 @@ export interface KadDHTInit {
    *
    * @default 30_000
    */
-  routingUpdatePeerTtl?: number
+  routingTableUpdatePeerTtl?: number
 
   /**
    * How many bits of the KAD-ID of peers to use when creating the routing

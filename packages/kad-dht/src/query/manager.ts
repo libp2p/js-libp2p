@@ -1,4 +1,4 @@
-import { createScalableCuckooFilter, Queue } from '@libp2p/utils'
+import { createScalableCuckooFilter } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import merge from 'it-merge'
 import { setMaxListeners } from 'main-event'
@@ -26,8 +26,6 @@ export interface QueryManagerInit {
   metricsPrefix: string
   disjointPaths?: number
   alpha?: number
-  routingUpdateQueueConcurrency?: number
-  routingUpdatePeerTtl?: number
   initialQuerySelfHasRun: DeferredPromise<void>
   allowQueryWithZeroPeers?: boolean
   routingTable: RoutingTable
@@ -56,23 +54,9 @@ export class QueryManager implements Startable {
   private readonly peerId: PeerId
   private readonly connectionManager: ConnectionManager
   private readonly routingTable: RoutingTable
-  private readonly routingUpdateQueueConcurrency: number
-  private readonly routingUpdatePeerTtl: number
-  private readonly routingUpdateRecent: Map<string, number>
-  private readonly routingUpdateInFlight: Set<string>
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private readonly logPrefix: string
   private readonly allowQueryWithZeroPeers: boolean
-  private routingUpdateQueue?: Queue<void>
-  private routingUpdateStats: {
-    enqueued: number
-    deduped: number
-    completed: number
-    failed: number
-    aborted: number
-    cancelledBeforeStart: number
-    ttlSkipped: number
-  }
 
   constructor (components: QueryManagerComponents, init: QueryManagerInit) {
     this.logPrefix = init.logPrefix
@@ -80,24 +64,10 @@ export class QueryManager implements Startable {
     this.alpha = init.alpha ?? ALPHA
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
     this.routingTable = init.routingTable
-    this.routingUpdateQueueConcurrency = init.routingUpdateQueueConcurrency ?? Math.max(1, Math.min(this.alpha * 2, 16))
-    this.routingUpdatePeerTtl = init.routingUpdatePeerTtl ?? 30_000
-    this.routingUpdateRecent = new Map()
-    this.routingUpdateInFlight = new Set()
     this.logger = components.logger
     this.peerId = components.peerId
     this.connectionManager = components.connectionManager
     this.allowQueryWithZeroPeers = init.allowQueryWithZeroPeers ?? false
-    const routingUpdateStats = {
-      enqueued: 0,
-      deduped: 0,
-      completed: 0,
-      failed: 0,
-      aborted: 0,
-      cancelledBeforeStart: 0,
-      ttlSkipped: 0
-    }
-    this.routingUpdateStats = routingUpdateStats
 
     // allow us to stop queries on shut down
     this.shutDownController = new AbortController()
@@ -119,88 +89,11 @@ export class QueryManager implements Startable {
     cancelledBeforeStart: number
     ttlSkipped: number
   } {
-    return {
-      queued: this.routingUpdateQueue?.queued ?? 0,
-      running: this.routingUpdateQueue?.running ?? 0,
-      total: this.routingUpdateQueue?.size ?? 0,
-      ...this.routingUpdateStats
-    }
+    return this.routingTable.getRoutingUpdateQueueStats()
   }
 
   isStarted (): boolean {
     return this.running
-  }
-
-  queueRoutingTableUpdate (peerId: PeerId, options: AbortOptions = {}): void {
-    const queue = this.routingUpdateQueue
-
-    if (queue == null) {
-      return
-    }
-
-    const peerIdStr = peerId.toString()
-    const now = Date.now()
-
-    this.pruneRoutingUpdateRecent(now)
-
-    const updateAllowedAt = this.routingUpdateRecent.get(peerIdStr)
-    if (updateAllowedAt != null && updateAllowedAt > now) {
-      this.routingUpdateStats.ttlSkipped++
-      return
-    }
-
-    if (this.routingUpdateInFlight.has(peerIdStr)) {
-      this.routingUpdateStats.deduped++
-      return
-    }
-
-    this.routingUpdateInFlight.add(peerIdStr)
-    this.routingUpdateRecent.set(peerIdStr, now + this.routingUpdatePeerTtl)
-    this.routingUpdateStats.enqueued++
-
-    void queue.add(async () => {
-      const signal = options.signal == null
-        ? this.shutDownController.signal
-        : anySignal([this.shutDownController.signal, options.signal])
-
-      setMaxListeners(Infinity, signal)
-
-      try {
-        await this.routingTable.add(peerId, {
-          signal
-        })
-        this.routingUpdateStats.completed++
-      } catch (err: any) {
-        if (signal.aborted || err?.name === 'AbortError') {
-          this.routingUpdateStats.aborted++
-          return
-        }
-
-        this.routingUpdateStats.failed++
-        throw err
-      } finally {
-        this.routingUpdateInFlight.delete(peerIdStr)
-
-        if ('clear' in signal) {
-          (signal as any).clear()
-        }
-      }
-    }).catch(err => {
-      this.routingUpdateInFlight.delete(peerIdStr)
-      this.logger.forComponent(`${this.logPrefix}:routing-update`).error('could not update routing table for peer %p - %e', peerId, err)
-    })
-  }
-
-  private pruneRoutingUpdateRecent (now: number): void {
-    if (this.routingUpdateRecent.size < 4096) {
-      return
-    }
-
-    for (const [peerId, expiresAt] of this.routingUpdateRecent.entries()) {
-      if (expiresAt <= now) {
-        this.routingUpdateRecent.delete(peerId)
-      }
-    }
   }
 
   /**
@@ -217,10 +110,6 @@ export class QueryManager implements Startable {
     this.shutDownController = new AbortController()
     // make sure we don't make a lot of noise in the logs
     setMaxListeners(Infinity, this.shutDownController.signal)
-
-    this.routingUpdateQueue = new Queue<void>({
-      concurrency: this.routingUpdateQueueConcurrency
-    })
   }
 
   /**
@@ -228,13 +117,6 @@ export class QueryManager implements Startable {
    */
   async stop (): Promise<void> {
     this.running = false
-
-    if (this.routingUpdateQueue != null) {
-      this.routingUpdateStats.cancelledBeforeStart += this.routingUpdateQueue.queued
-      this.routingUpdateQueue.abort()
-      this.routingUpdateQueue = undefined
-    }
-    this.routingUpdateInFlight.clear()
 
     this.shutDownController.abort()
   }
@@ -352,12 +234,12 @@ export class QueryManager implements Startable {
           log.error('query error - %e', event.error)
         }
 
+        if (event.name === 'PEER_RESPONSE') {
+          this.routingTable.queueRoutingTableUpdate(event.from)
+        }
+
         signal.throwIfAborted()
         yield event
-
-        if (event.name === 'PEER_RESPONSE') {
-          this.queueRoutingTableUpdate(event.from)
-        }
       }
 
       queryFinished = true

@@ -146,16 +146,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
             peerKadId,
             signal
           })) {
-            events.push({
-              ...event,
-              path: {
-                index: path,
-                queued: queue.queued,
-                running: queue.running,
-                total: queue.size
-              }
-            })
-
             // if there are closer peers and the query has not completed, continue the query
             if (event.name === 'PEER_RESPONSE') {
               for (const closerPeer of event.closer) {
@@ -191,6 +181,16 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                 queryPeer(closerPeer, closerPeerKadId)
               }
             }
+
+            events.push({
+              ...event,
+              path: {
+                index: path,
+                queued: queue.queued,
+                running: queue.running,
+                total: queue.size
+              }
+            })
           }
         } catch (err: any) {
           // yield error event if query is continuing

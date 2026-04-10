@@ -152,6 +152,20 @@ describe('QueryManager', () => {
 
   beforeEach(async () => {
     routingTable.closestPeers.returns(peers.slice(0, K).map(p => p.peerId))
+    routingTable.queueRoutingTableUpdate.resetHistory()
+    routingTable.getRoutingUpdateQueueStats.resetHistory()
+    routingTable.getRoutingUpdateQueueStats.returns({
+      queued: 0,
+      running: 0,
+      total: 0,
+      enqueued: 0,
+      deduped: 0,
+      completed: 0,
+      failed: 0,
+      aborted: 0,
+      cancelledBeforeStart: 0,
+      ttlSkipped: 0
+    })
   })
 
   it('does not run queries before start', async () => {
@@ -999,10 +1013,7 @@ describe('QueryManager', () => {
     await manager.stop()
   })
 
-  it('should apply routing update ttl across queries', async () => {
-    routingTable.add.resetHistory()
-    routingTable.add.resetBehavior()
-
+  it('should queue routing table updates from peer response events', async () => {
     const manager = new QueryManager({
       peerId: ourPeerId,
       logger: defaultLogger(),
@@ -1010,12 +1021,10 @@ describe('QueryManager', () => {
         isDialable: async () => true
       })
     }, {
-      ...defaultInit(),
-      disjointPaths: 1,
-      alpha: 1,
-      routingUpdateQueueConcurrency: 1,
-      routingUpdatePeerTtl: 60_000
+      ...defaultInit()
     })
+
+    routingTable.closestPeers.returns([peers[0].peerId])
     await manager.start()
 
     const queryFunc: QueryFunc = async function * ({ peer, path }) {
@@ -1026,37 +1035,30 @@ describe('QueryManager', () => {
       })
     }
 
-    routingTable.closestPeers.returns([peers[0].peerId])
-
-    await all(manager.run(key, queryFunc))
     await all(manager.run(key, queryFunc))
 
-    for (let i = 0; i < 40; i++) {
-      const stats = manager.getRoutingUpdateQueueStats()
-
-      if (stats.completed >= 1) {
-        break
-      }
-
-      await delay(10)
-    }
-
-    const stats = manager.getRoutingUpdateQueueStats()
-
-    expect(routingTable.add.calledOnce).to.be.true()
-    expect(stats.enqueued).to.equal(1)
-    expect(stats.ttlSkipped).to.equal(1)
+    expect(routingTable.queueRoutingTableUpdate.calledOnce).to.be.true()
+    expect(routingTable.queueRoutingTableUpdate.firstCall.args[0].toString()).to.equal(peers[0].peerId.toString())
+    expect(routingTable.queueRoutingTableUpdate.firstCall.args).to.have.lengthOf(1)
 
     await manager.stop()
   })
 
-  it('should dedupe routing table updates while a peer update is in flight', async () => {
-    routingTable.add.resetHistory()
-    routingTable.add.resetBehavior()
+  it('should delegate routing update queue stats to the routing table', async () => {
+    const expectedStats = {
+      queued: 1,
+      running: 2,
+      total: 3,
+      enqueued: 4,
+      deduped: 5,
+      completed: 6,
+      failed: 7,
+      aborted: 8,
+      cancelledBeforeStart: 9,
+      ttlSkipped: 10
+    }
 
-    routingTable.add.callsFake(async () => {
-      await delay(25)
-    })
+    routingTable.getRoutingUpdateQueueStats.returns(expectedStats)
 
     const manager = new QueryManager({
       peerId: ourPeerId,
@@ -1065,214 +1067,10 @@ describe('QueryManager', () => {
         isDialable: async () => true
       })
     }, {
-      ...defaultInit(),
-      routingUpdateQueueConcurrency: 1,
-      routingUpdatePeerTtl: 0
-    })
-    await manager.start()
-
-    manager.queueRoutingTableUpdate(peers[0].peerId)
-    manager.queueRoutingTableUpdate(peers[0].peerId)
-
-    for (let i = 0; i < 40; i++) {
-      const stats = manager.getRoutingUpdateQueueStats()
-
-      if (stats.completed >= 1) {
-        break
-      }
-
-      await delay(10)
-    }
-
-    const stats = manager.getRoutingUpdateQueueStats()
-
-    expect(routingTable.add.calledOnce).to.be.true()
-    expect(stats.deduped).to.equal(1)
-    expect(stats.ttlSkipped).to.equal(0)
-
-    await manager.stop()
-  })
-
-  it('should count queued routing updates cancelled on stop', async () => {
-    routingTable.add.resetHistory()
-    routingTable.add.resetBehavior()
-
-    routingTable.add.callsFake(async () => {
-      await delay(100)
+      ...defaultInit()
     })
 
-    const manager = new QueryManager({
-      peerId: ourPeerId,
-      logger: defaultLogger(),
-      connectionManager: stubInterface<ConnectionManager>({
-        isDialable: async () => true
-      })
-    }, {
-      ...defaultInit(),
-      routingUpdateQueueConcurrency: 1,
-      routingUpdatePeerTtl: 0
-    })
-    await manager.start()
-
-    manager.queueRoutingTableUpdate(peers[0].peerId)
-    manager.queueRoutingTableUpdate(peers[1].peerId)
-    manager.queueRoutingTableUpdate(peers[2].peerId)
-
-    await delay(10)
-    await manager.stop()
-
-    const stats = manager.getRoutingUpdateQueueStats()
-
-    expect(stats.cancelledBeforeStart).to.be.greaterThan(0)
-  })
-
-  it('should enqueue a routing update again after ttl expires', async () => {
-    routingTable.add.resetHistory()
-    routingTable.add.resetBehavior()
-
-    const manager = new QueryManager({
-      peerId: ourPeerId,
-      logger: defaultLogger(),
-      connectionManager: stubInterface<ConnectionManager>({
-        isDialable: async () => true
-      })
-    }, {
-      ...defaultInit(),
-      routingUpdateQueueConcurrency: 1,
-      routingUpdatePeerTtl: 5
-    })
-    await manager.start()
-
-    manager.queueRoutingTableUpdate(peers[0].peerId)
-
-    for (let i = 0; i < 40; i++) {
-      const stats = manager.getRoutingUpdateQueueStats()
-
-      if (stats.completed >= 1) {
-        break
-      }
-
-      await delay(10)
-    }
-
-    await delay(10)
-    manager.queueRoutingTableUpdate(peers[0].peerId)
-
-    for (let i = 0; i < 40; i++) {
-      const stats = manager.getRoutingUpdateQueueStats()
-
-      if (stats.completed >= 2) {
-        break
-      }
-
-      await delay(10)
-    }
-
-    const stats = manager.getRoutingUpdateQueueStats()
-
-    expect(routingTable.add.calledTwice).to.be.true()
-    expect(stats.enqueued).to.equal(2)
-
-    await manager.stop()
-  })
-
-  it('should honor routing update queue concurrency', async () => {
-    routingTable.add.resetHistory()
-    routingTable.add.resetBehavior()
-
-    let running = 0
-    let maxRunning = 0
-
-    routingTable.add.callsFake(async () => {
-      running++
-      maxRunning = Math.max(maxRunning, running)
-
-      try {
-        await delay(20)
-      } finally {
-        running--
-      }
-    })
-
-    const manager = new QueryManager({
-      peerId: ourPeerId,
-      logger: defaultLogger(),
-      connectionManager: stubInterface<ConnectionManager>({
-        isDialable: async () => true
-      })
-    }, {
-      ...defaultInit(),
-      routingUpdateQueueConcurrency: 1,
-      routingUpdatePeerTtl: 0
-    })
-    await manager.start()
-
-    manager.queueRoutingTableUpdate(peers[0].peerId)
-    manager.queueRoutingTableUpdate(peers[1].peerId)
-    manager.queueRoutingTableUpdate(peers[2].peerId)
-
-    for (let i = 0; i < 80; i++) {
-      const stats = manager.getRoutingUpdateQueueStats()
-
-      if (stats.completed >= 3) {
-        break
-      }
-
-      await delay(10)
-    }
-
-    expect(routingTable.add.callCount).to.equal(3)
-    expect(maxRunning).to.equal(1)
-
-    await manager.stop()
-  })
-
-  it('should track aborted routing updates from update signal', async () => {
-    routingTable.add.resetHistory()
-    routingTable.add.resetBehavior()
-
-    routingTable.add.callsFake(async (_peer, options: any) => {
-      await delay(10)
-
-      if (options?.signal?.aborted === true) {
-        const err = new Error('aborted')
-        ;(err as any).name = 'AbortError'
-        throw err
-      }
-    })
-
-    const manager = new QueryManager({
-      peerId: ourPeerId,
-      logger: defaultLogger(),
-      connectionManager: stubInterface<ConnectionManager>({
-        isDialable: async () => true
-      })
-    }, {
-      ...defaultInit(),
-      routingUpdateQueueConcurrency: 1,
-      routingUpdatePeerTtl: 0
-    })
-    await manager.start()
-
-    manager.queueRoutingTableUpdate(peers[0].peerId, {
-      signal: AbortSignal.timeout(1)
-    })
-
-    for (let i = 0; i < 40; i++) {
-      const stats = manager.getRoutingUpdateQueueStats()
-
-      if (stats.aborted >= 1) {
-        break
-      }
-
-      await delay(10)
-    }
-
-    const stats = manager.getRoutingUpdateQueueStats()
-
-    expect(stats.aborted).to.equal(1)
-    expect(stats.failed).to.equal(0)
-
-    await manager.stop()
+    expect(manager.getRoutingUpdateQueueStats()).to.deep.equal(expectedStats)
+    expect(routingTable.getRoutingUpdateQueueStats.calledOnce).to.be.true()
   })
 })
