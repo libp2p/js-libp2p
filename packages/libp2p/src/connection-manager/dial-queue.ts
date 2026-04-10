@@ -19,9 +19,9 @@ import {
   MAX_DIAL_QUEUE_LENGTH,
   LAST_DIAL_SUCCESS_KEY
 } from './constants.ts'
+import { DEFAULT_DIAL_PRIORITY } from './index.ts'
 import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.ts'
 import { findExistingConnection } from './utils.ts'
-import { DEFAULT_DIAL_PRIORITY } from './index.ts'
 import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver, DialTarget } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { PriorityQueueJobOptions } from '@libp2p/utils'
