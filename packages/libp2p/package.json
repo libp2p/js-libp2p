@@ -50,16 +50,19 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./user-agent": {
       "types": "./dist/src/user-agent.d.ts",
       "browser": "./dist/src/user-agent.browser.js",
-      "import": "./dist/src/user-agent.js"
+      "import": "./dist/src/user-agent.js",
+      "module-sync": "./dist/src/user-agent.js"
     },
     "./version": {
       "types": "./dist/src/version.d.ts",
-      "import": "./dist/src/version.js"
+      "import": "./dist/src/version.js",
+      "module-sync": "./dist/src/version.js"
     }
   },
   "scripts": {
