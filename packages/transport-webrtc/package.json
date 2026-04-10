@@ -85,7 +85,7 @@
     "any-signal": "^4.1.1",
     "datastore-core": "^11.0.1",
     "delay": "^7.0.0",
-    "p-retry": "^7.0.0",
+    "p-retry": "^8.0.0",
     "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
