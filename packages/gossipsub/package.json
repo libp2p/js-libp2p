@@ -96,7 +96,7 @@
     "@libp2p/logger": "^6.2.4",
     "@libp2p/peer-store": "^12.0.15",
     "@types/node": "^22.18.1",
-    "@types/sinon": "^20.0.0",
+    "@types/sinon": "^21.0.1",
     "abortable-iterator": "^5.1.0",
     "aegir": "^47.0.21",
     "datastore-core": "^11.0.1",
