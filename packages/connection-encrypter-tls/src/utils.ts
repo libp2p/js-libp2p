@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import net from 'node:net'
 import { Duplex } from 'node:stream'
 import tls from 'node:tls'
