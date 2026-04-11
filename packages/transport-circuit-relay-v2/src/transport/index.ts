@@ -148,7 +148,7 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
     const destinationId = destinationAddr.getComponents().find(c => c.code === CODE_P2P)?.value
 
     if (relayId == null || destinationId == null) {
-      const errMsg = `ircuit relay dial to ${ma.toString()} failed as address did not have both relay and destination PeerIDs`
+      const errMsg = `circuit relay dial to ${ma.toString()} failed as address did not have both relay and destination PeerIDs`
       this.log.error(`c${errMsg}`)
       throw new DialError(`C${errMsg}`)
     }
