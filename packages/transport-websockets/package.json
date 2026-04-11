@@ -45,11 +45,13 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./filters": {
       "types": "./dist/src/filters.d.ts",
-      "import": "./dist/src/filters.js"
+      "import": "./dist/src/filters.js",
+      "module-sync": "./dist/src/filters.js"
     }
   },
   "scripts": {
