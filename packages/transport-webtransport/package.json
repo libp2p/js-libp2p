@@ -29,7 +29,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -44,8 +45,8 @@
     "test:firefox": "aegir test -t browser -- --browser firefox"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.2.0",
     "@chainsafe/libp2p-noise": "^17.0.0",
+    "@libp2p/interface": "^3.2.0",
     "@libp2p/peer-id": "^6.0.6",
     "@libp2p/utils": "^7.0.15",
     "@multiformats/multiaddr": "^13.0.1",

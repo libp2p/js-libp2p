@@ -13,23 +13,28 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
-    },
-    "./metrics": {
-      "types": "./dist/src/metrics.d.ts",
-      "import": "./dist/src/metrics.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./message": {
       "types": "./dist/src/message/index.d.ts",
-      "import": "./dist/src/message/index.js"
+      "import": "./dist/src/message/index.js",
+      "module-sync": "./dist/src/message/index.js"
+    },
+    "./metrics": {
+      "types": "./dist/src/metrics.d.ts",
+      "import": "./dist/src/metrics.js",
+      "module-sync": "./dist/src/metrics.js"
     },
     "./score": {
       "types": "./dist/src/score/index.d.ts",
-      "import": "./dist/src/score/index.js"
+      "import": "./dist/src/score/index.js",
+      "module-sync": "./dist/src/score/index.js"
     },
     "./types": {
       "types": "./dist/src/types.d.ts",
-      "import": "./dist/src/types.js"
+      "import": "./dist/src/types.js",
+      "module-sync": "./dist/src/types.js"
     }
   },
   "typesVersions": {
