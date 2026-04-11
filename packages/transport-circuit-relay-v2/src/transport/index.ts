@@ -165,7 +165,16 @@ export class CircuitRelayTransport implements Transport<CircuitRelayDialEvents> 
       })
 
       options.onProgress?.(new CustomProgressEvent('circuit-relay:open-connection'))
-      relayConnection = await this.components.connectionManager.openConnection(relayPeer, options)
+
+      try {
+        // Dial the concrete relay address first. Peer-id dialing can fail with
+        // NoValidAddressesError in nested relay/WebRTC flows if candidate
+        // address discovery/filtering returns no dialable addresses.
+        relayConnection = await this.components.connectionManager.openConnection(relayAddr, options)
+      } catch (err: any) {
+        this.log.error('opening direct relay connection to %a failed, falling back to peer dial for %p - %e', relayAddr, relayPeer, err)
+        relayConnection = await this.components.connectionManager.openConnection(relayPeer, options)
+      }
     } else {
       options.onProgress?.(new CustomProgressEvent('circuit-relay:reuse-connection'))
     }
