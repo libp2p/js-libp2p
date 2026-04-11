@@ -2,9 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 
 import { Libp2pRecord } from '@libp2p/record'
-import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import delay from 'delay'
 import all from 'it-all'
 import drain from 'it-drain'
 import filter from 'it-filter'
@@ -112,56 +110,6 @@ describe('KadDHT', () => {
       const dht = await testDHT.spawn(undefined, false)
 
       await dht.dht.stop()
-    })
-
-    it('should enqueue peer connect routing updates via routing table', async () => {
-      const dht = await testDHT.spawn(undefined, false)
-
-      const queueRoutingTableUpdateSpy = sinon.spy((dht.dht as any).routingTable, 'queueRoutingTableUpdate')
-
-      await dht.dht.onPeerConnect({
-        id: peerIds[0].peerId,
-        multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234')]
-      })
-
-      expect(queueRoutingTableUpdateSpy).to.have.property('calledOnce', true)
-      expect(queueRoutingTableUpdateSpy.firstCall.args[0].toString()).to.equal(peerIds[0].peerId.toString())
-    })
-
-    it('should dedupe onPeerConnect routing updates via ttl', async () => {
-      const dht = await testDHT.spawn({
-        routingTableUpdatePeerTtl: 60_000,
-        routingTableUpdateQueueConcurrency: 1
-      }, false)
-
-      await dht.dht.start()
-
-      const routingTableAddSpy = sinon.spy((dht.dht as any).routingTable, 'add')
-
-      await dht.dht.onPeerConnect({
-        id: peerIds[1].peerId,
-        multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/2234')]
-      })
-
-      await dht.dht.onPeerConnect({
-        id: peerIds[1].peerId,
-        multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/2234')]
-      })
-
-      for (let i = 0; i < 40; i++) {
-        const stats = (dht.dht as any).queryManager.getRoutingUpdateQueueStats()
-
-        if (stats.ttlSkipped >= 1 && stats.completed >= 1) {
-          break
-        }
-
-        await delay(10)
-      }
-
-      const stats = (dht.dht as any).queryManager.getRoutingUpdateQueueStats()
-
-      expect(routingTableAddSpy.callCount).to.equal(1)
-      expect(stats.ttlSkipped).to.be.greaterThan(0)
     })
   })
 

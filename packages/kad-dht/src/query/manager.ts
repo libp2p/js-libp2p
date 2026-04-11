@@ -13,7 +13,7 @@ import { queryPath } from './query-path.js'
 import type { QueryFunc } from './types.js'
 import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
-import type { AbortOptions, ComponentLogger, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { DeferredPromise } from 'p-defer'
 
@@ -75,21 +75,6 @@ export class QueryManager implements Startable {
     setMaxListeners(Infinity, this.shutDownController.signal)
 
     this.running = false
-  }
-
-  getRoutingUpdateQueueStats (): {
-    queued: number
-    running: number
-    total: number
-    enqueued: number
-    deduped: number
-    completed: number
-    failed: number
-    aborted: number
-    cancelledBeforeStart: number
-    ttlSkipped: number
-  } {
-    return this.routingTable.getRoutingUpdateQueueStats()
   }
 
   isStarted (): boolean {
@@ -158,6 +143,7 @@ export class QueryManager implements Startable {
 
     // query a subset of peers up to `kBucketSize / 2` in length
     let queryFinished = false
+
     try {
       if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
         log('routing table was empty, waiting for some peers before running%s query', options.isSelfQuery === true ? ' self' : '')
@@ -235,7 +221,18 @@ export class QueryManager implements Startable {
         }
 
         if (event.name === 'PEER_RESPONSE') {
-          this.routingTable.queueRoutingTableUpdate(event.from)
+          for (const peer of [...event.closer, ...event.providers]) {
+            // eslint-disable-next-line max-depth
+            if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
+              signal
+            }))) {
+              continue
+            }
+
+            await this.routingTable.add(peer.id, {
+              signal
+            })
+          }
         }
 
         signal.throwIfAborted()
