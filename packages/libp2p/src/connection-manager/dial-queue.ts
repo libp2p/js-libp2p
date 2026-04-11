@@ -221,10 +221,12 @@ export class DialQueue {
 
     // if we have no multiaddrs, only a peer id, set a flag so we will look the
     // peer up in the peer routing to obtain multiaddrs
-    let forcePeerLookup = options.multiaddrs.size === 0
+    const peerIdOnlyDial = options.multiaddrs.size === 0
+    let forcePeerLookup = peerIdOnlyDial
 
     let dialed = 0
     let dialIteration = 0
+    let retriedNoValidAddresses = false
     const errors: Error[] = []
 
     this.log('starting dial to %p', peerId)
@@ -251,10 +253,23 @@ export class DialQueue {
 
       // load addresses from address book, resolve and dnsaddrs, filter
       // undialables, add peer IDs, etc
-      const calculatedAddrs = await this.calculateMultiaddrs(peerId, addrs, {
-        ...options,
-        signal
-      })
+      let calculatedAddrs: Address[]
+
+      try {
+        calculatedAddrs = await this.calculateMultiaddrs(peerId, addrs, {
+          ...options,
+          signal
+        })
+      } catch (err: any) {
+        if (err.name === NoValidAddressesError.name && peerId != null && peerIdOnlyDial && !retriedNoValidAddresses) {
+          this.log('no valid addresses for %p, retrying once to pick up newly discovered peer store addresses', peerId)
+          retriedNoValidAddresses = true
+          forcePeerLookup = true
+          continue
+        }
+
+        throw err
+      }
 
       for (const addr of calculatedAddrs) {
         // skip any addresses we have previously failed to dial

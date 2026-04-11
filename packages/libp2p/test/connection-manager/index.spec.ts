@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { InvalidParametersError, KEEP_ALIVE, start, stop } from '@libp2p/interface'
+import { InvalidParametersError, KEEP_ALIVE, NotFoundError, start, stop } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -11,7 +11,7 @@ import { createLibp2p } from '../../src/index.js'
 import { getComponent } from '../fixtures/get-component.js'
 import { createDefaultConnectionManagerComponents } from './utils.js'
 import type { StubbedDefaultConnectionManagerComponents } from './utils.js'
-import type { Libp2p, Connection, MultiaddrConnection } from '@libp2p/interface'
+import type { Libp2p, Connection, MultiaddrConnection, Transport } from '@libp2p/interface'
 
 const defaultOptions = {
   maxConnections: 10,
@@ -417,6 +417,70 @@ describe('Connection Manager', () => {
     const conn = await connectionManager.openConnection(addr)
 
     expect(conn).to.equal(newConnection)
+  })
+
+  it('should retry peer-id openConnection when peer store gains an address during dial', async () => {
+    connectionManager = new DefaultConnectionManager(components, defaultOptions)
+    await connectionManager.start()
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const discoveredAddr = multiaddr('/ip4/123.123.123.123/tcp/4001')
+    const discoveredAddrWithPeer = discoveredAddr.encapsulate(`/p2p/${remotePeer}`)
+
+    let resolvePeerRouting: (() => void) | undefined
+    const peerRoutingBlocked = new Promise<void>((resolve) => {
+      resolvePeerRouting = resolve
+    })
+
+    const peerStoreReadStarted = pWaitFor(async () => components.peerStore.get.calledOnce)
+    let hasAddress = false
+
+    components.peerStore.get.callsFake(async () => {
+      if (!hasAddress) {
+        throw new NotFoundError('Not found')
+      }
+
+      return {
+        id: remotePeer,
+        addresses: [{
+          multiaddr: discoveredAddr,
+          isCertified: false
+        }],
+        protocols: [],
+        metadata: new Map(),
+        tags: new Map()
+      }
+    })
+
+    components.peerRouting.findPeer.callsFake(async () => {
+      await peerRoutingBlocked
+
+      return {
+        id: remotePeer,
+        multiaddrs: []
+      }
+    })
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    const connection = stubInterface<Connection>({
+      remotePeer,
+      remoteAddr: discoveredAddrWithPeer,
+      status: 'open'
+    })
+    components.transportManager.dial.callsFake(async (ma) => {
+      expect(ma.equals(discoveredAddrWithPeer)).to.equal(true)
+      return connection
+    })
+
+    const dialPromise = connectionManager.openConnection(remotePeer)
+    await peerStoreReadStarted
+
+    hasAddress = true
+    resolvePeerRouting?.()
+
+    await expect(dialPromise).to.eventually.equal(connection)
+    expect(components.peerStore.get.callCount).to.equal(2)
+    expect(components.transportManager.dial.calledOnce).to.equal(true)
   })
 
   it('should throw when setMaxConnections is less than 1', async () => {
