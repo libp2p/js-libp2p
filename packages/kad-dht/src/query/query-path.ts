@@ -159,7 +159,9 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                   continue
                 }
 
-                if (!(await connectionManager.isDialable(closerPeer.multiaddrs))) { // eslint-disable-line max-depth
+                if (!(await connectionManager.isDialable(closerPeer.multiaddrs, { // eslint-disable-line max-depth
+                  signal
+                }))) {
                   log('not querying undialable peer')
                   continue
                 }
