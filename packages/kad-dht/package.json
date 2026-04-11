@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/kad-dht",
-  "version": "16.1.6",
+  "version": "16.2.0",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht#readme",
@@ -29,7 +29,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -47,14 +48,14 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.13",
-    "@libp2p/interface": "^3.1.0",
-    "@libp2p/interface-internal": "^3.0.13",
-    "@libp2p/peer-collections": "^7.0.13",
-    "@libp2p/peer-id": "^6.0.4",
-    "@libp2p/ping": "^3.0.13",
-    "@libp2p/record": "^4.0.9",
-    "@libp2p/utils": "^7.0.13",
+    "@libp2p/crypto": "^5.1.15",
+    "@libp2p/interface": "^3.2.0",
+    "@libp2p/interface-internal": "^3.1.0",
+    "@libp2p/peer-collections": "^7.0.15",
+    "@libp2p/peer-id": "^6.0.6",
+    "@libp2p/ping": "^3.1.0",
+    "@libp2p/record": "^4.0.10",
+    "@libp2p/utils": "^7.0.15",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
     "any-signal": "^4.1.1",
@@ -73,18 +74,18 @@
     "p-defer": "^4.0.1",
     "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
-    "protons-runtime": "^5.6.0",
+    "protons-runtime": "^6.0.1",
     "race-signal": "^2.0.0",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.2",
-    "@libp2p/peer-store": "^12.0.13",
+    "@libp2p/logger": "^6.2.4",
+    "@libp2p/peer-store": "^12.0.15",
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
-    "@types/sinon": "^20.0.0",
+    "@types/sinon": "^21.0.1",
     "@types/which": "^3.0.4",
     "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
@@ -97,8 +98,8 @@
     "it-length-prefixed": "^10.0.1",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "p-retry": "^7.0.0",
-    "protons": "^7.7.0",
+    "p-retry": "^8.0.0",
+    "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "which": "^6.0.0"

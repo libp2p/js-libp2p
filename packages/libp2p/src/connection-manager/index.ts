@@ -12,7 +12,7 @@ import { ReconnectQueue } from './reconnect-queue.js'
 import { dnsaddrResolver } from './resolvers/index.ts'
 import { findExistingConnection, multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream, NewStreamOptions } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream, NewStreamOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -534,7 +534,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     return this.connections
   }
 
-  async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
+  async openConnection (peerIdOrMultiaddr: DialTarget, options: OpenConnectionOptions = {}): Promise<Connection> {
     if (!this.started) {
       throw new NotStartedError('Not started')
     }
@@ -543,6 +543,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     try {
       options.signal?.throwIfAborted()
+      options?.onProgress?.(new CustomProgressEvent('connection:open', peerIdOrMultiaddr))
 
       const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
@@ -558,6 +559,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           this.log('had an existing connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+          options.onProgress?.(new CustomProgressEvent('connection:opened', existingConnection))
+
           return existingConnection
         }
       }
@@ -601,13 +604,15 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         peerConnections.push(connection)
       }
 
+      options.onProgress?.(new CustomProgressEvent('connection:opened', connection))
+
       return connection
     } finally {
       this.outboundPendingConnections--
     }
   }
 
-  async openStream (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options: OpenConnectionOptions & NewStreamOptions = {}): Promise<Stream> {
+  async openStream (peerIdOrMultiaddr: DialTarget, protocol: string | string[], options: OpenConnectionOptions & NewStreamOptions = {}): Promise<Stream> {
     const connection = await this.openConnection(peerIdOrMultiaddr, options)
 
     return connection.newStream(protocol, options)

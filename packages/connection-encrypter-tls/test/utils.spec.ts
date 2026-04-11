@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { EventEmitter } from 'node:events'
 import { logger } from '@libp2p/logger'
 import { streamPair } from '@libp2p/utils'

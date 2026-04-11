@@ -400,7 +400,7 @@ describe('keychain', () => {
     })
 
     it('can rotate keychain passphrase', async () => {
-      const key = await generateKeyPair('RSA', 2048)
+      const key = await generateKeyPair('Ed25519')
       await kc.importKey('keyCreatedWithOldPassword', key)
 
       await kc.rotateKeychainPass(oldPass, 'newInsecurePassphrase')
@@ -434,7 +434,7 @@ describe('keychain', () => {
 
       // Dek with new password should work:
       await expect(importPrivateKey(pem, newDek))
-        .to.eventually.have.property('type', 'RSA')
+        .to.eventually.have.property('type', 'Ed25519')
     }).timeout(10000)
   })
 

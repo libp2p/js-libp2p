@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/dcutr",
-  "version": "3.0.13",
+  "version": "3.0.15",
   "description": "Implementation of the DCUtR Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-dcutr#readme",
@@ -26,7 +26,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -45,18 +46,18 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.1.0",
-    "@libp2p/interface-internal": "^3.0.13",
-    "@libp2p/utils": "^7.0.13",
+    "@libp2p/interface": "^3.2.0",
+    "@libp2p/interface-internal": "^3.1.0",
+    "@libp2p/utils": "^7.0.15",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
     "delay": "^7.0.0",
-    "protons-runtime": "^5.6.0",
+    "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
     "aegir": "^47.0.22",
-    "protons": "^7.7.0",
+    "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

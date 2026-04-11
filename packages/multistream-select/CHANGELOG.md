@@ -19,6 +19,31 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.15](https://github.com/libp2p/js-libp2p/compare/multistream-select-v7.0.14...multistream-select-v7.0.15) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+
+## [7.0.14](https://github.com/libp2p/js-libp2p/compare/multistream-select-v7.0.13...multistream-select-v7.0.14) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+
 ## [7.0.13](https://github.com/libp2p/js-libp2p/compare/multistream-select-v7.0.12...multistream-select-v7.0.13) (2026-03-12)
 
 
