@@ -17,6 +17,7 @@ export const PREFIX_LENGTH = 6
 export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
+export const ROUTING_TABLE_UPDATE_QUEUE_CONCURRENCY = 16
 export const PING_OLD_CONTACT_COUNT = 3
 export const PING_OLD_CONTACT_TIMEOUT = 2000
 export const PING_OLD_CONTACT_CONCURRENCY = 20
@@ -122,7 +123,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     setMaxListeners(Infinity, this.shutdownController.signal)
 
     this.routingTableUpdateQueue = new PeerQueue<void>({
-      concurrency: init.routingTableUpdateQueueConcurrency ?? PING_NEW_CONTACT_CONCURRENCY,
+      concurrency: init.routingTableUpdateQueueConcurrency ?? ROUTING_TABLE_UPDATE_QUEUE_CONCURRENCY,
       metricName: `${init.metricsPrefix}_routing_table_update_queue`,
       metrics: this.components.metrics
     })
