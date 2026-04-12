@@ -291,6 +291,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     await stop(this.closestPeerTagger, this.kb)
     this.routingUpdateStats.cancelledBeforeStart += this.routingUpdateQueue.queued
     this.routingUpdateQueue.abort()
+    this.routingUpdateRecent.clear()
     this.pingOldContactQueue.abort()
     this.pingNewContactQueue.abort()
     this.shutdownController.abort()
