@@ -46,23 +46,28 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./connection-encryption": {
       "types": "./dist/src/connection-encryption/index.d.ts",
-      "import": "./dist/src/connection-encryption/index.js"
+      "import": "./dist/src/connection-encryption/index.js",
+      "module-sync": "./dist/src/connection-encryption/index.js"
     },
     "./peer-discovery": {
       "types": "./dist/src/peer-discovery/index.d.ts",
-      "import": "./dist/src/peer-discovery/index.js"
+      "import": "./dist/src/peer-discovery/index.js",
+      "module-sync": "./dist/src/peer-discovery/index.js"
     },
     "./stream-muxer": {
       "types": "./dist/src/stream-muxer/index.d.ts",
-      "import": "./dist/src/stream-muxer/index.js"
+      "import": "./dist/src/stream-muxer/index.js",
+      "module-sync": "./dist/src/stream-muxer/index.js"
     },
     "./transport": {
       "types": "./dist/src/transport/index.d.ts",
-      "import": "./dist/src/transport/index.js"
+      "import": "./dist/src/transport/index.js",
+      "module-sync": "./dist/src/transport/index.js"
     }
   },
   "scripts": {
