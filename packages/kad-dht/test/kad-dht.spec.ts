@@ -126,7 +126,6 @@ describe('KadDHT', () => {
       expect(queueRoutingTableUpdateSpy).to.have.property('calledOnce', true)
       expect(queueRoutingTableUpdateSpy.firstCall.args[0].toString()).to.equal(peerIds[0].peerId.toString())
     })
-
   })
 
   describe('content fetching', () => {

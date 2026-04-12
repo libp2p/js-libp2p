@@ -1030,5 +1030,4 @@ describe('QueryManager', () => {
 
     await manager.stop()
   })
-
 })

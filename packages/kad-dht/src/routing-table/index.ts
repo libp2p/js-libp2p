@@ -302,7 +302,6 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
       this.log.error('could not update routing table for peer %p - %e', peerId, err)
     })
-
   }
 
   private async peerAdded (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void> {
