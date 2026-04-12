@@ -215,7 +215,7 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       splitThreshold: init.kBucketSplitThreshold,
       network: this.network,
       routingTableUpdateQueueConcurrency: init.routingTableUpdateQueueConcurrency ?? Math.max(1, Math.min(this.a * 2, 16)),
-      routingTableUpdatePeerTtl: init.routingTableUpdatePeerTtl
+      routingTableUpdateQueuePeerTtl: init.routingTableUpdatePeerTtl
     })
 
     // all queries should wait for the initial query-self query to run so we have

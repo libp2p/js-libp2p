@@ -164,7 +164,7 @@ describe('QueryManager', () => {
       failed: 0,
       aborted: 0,
       cancelledBeforeStart: 0,
-      ttlSkipped: 0
+      skippedDueToTTL: 0
     })
   })
 
@@ -1055,7 +1055,7 @@ describe('QueryManager', () => {
       failed: 7,
       aborted: 8,
       cancelledBeforeStart: 9,
-      ttlSkipped: 10
+      skippedDueToTTL: 10
     }
 
     routingTable.getRoutingUpdateQueueStats.returns(expectedStats)

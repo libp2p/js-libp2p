@@ -26,7 +26,9 @@ export const KAD_PEER_TAG_VALUE = 1
 export const LAST_PING_THRESHOLD = 600000
 export const POPULATE_FROM_DATASTORE_ON_START = true
 export const POPULATE_FROM_DATASTORE_LIMIT = 1000
-export const ROUTING_UPDATE_PEER_TTL = 30_000
+// kbucket already applies re-ping timing, this peer TTL is an extra guard against
+// repeated query/connect events flooding the routing-table-update queue.
+export const ROUTING_TABLE_UPDATE_QUEUE_PEER_TTL = 30_000
 
 interface RoutingTableUpdateQueueStats {
   enqueued: number
@@ -35,7 +37,7 @@ interface RoutingTableUpdateQueueStats {
   failed: number
   aborted: number
   cancelledBeforeStart: number
-  ttlSkipped: number
+  skippedDueToTTL: number
 }
 
 export interface RoutingTableInit {
@@ -63,7 +65,7 @@ export interface RoutingTableInit {
   closestPeerSetSize?: number
   closestPeerSetRefreshInterval?: number
   routingTableUpdateQueueConcurrency?: number
-  routingTableUpdatePeerTtl?: number
+  routingTableUpdateQueuePeerTtl?: number
 }
 
 export interface RoutingTableComponents {
@@ -110,7 +112,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     kadBucketEvents: CounterGroup<'ping_old_contact' | 'ping_old_contact_error' | 'ping_new_contact' | 'ping_new_contact_error' | 'peer_added' | 'peer_removed'>
   }
   private readonly routingUpdateQueue: PeerQueue<void>
-  private readonly routingUpdatePeerTtl: number
+  private readonly routingTableUpdateQueuePeerTtl: number
   private readonly routingUpdateRecent: Map<string, number>
   private readonly routingUpdateStats: RoutingTableUpdateQueueStats
 
@@ -133,7 +135,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.peerRemoved = this.peerRemoved.bind(this)
     this.populateFromDatastoreOnStart = init.populateFromDatastoreOnStart ?? POPULATE_FROM_DATASTORE_ON_START
     this.populateFromDatastoreLimit = init.populateFromDatastoreLimit ?? POPULATE_FROM_DATASTORE_LIMIT
-    this.routingUpdatePeerTtl = init.routingTableUpdatePeerTtl ?? ROUTING_UPDATE_PEER_TTL
+    this.routingTableUpdateQueuePeerTtl = init.routingTableUpdateQueuePeerTtl ?? ROUTING_TABLE_UPDATE_QUEUE_PEER_TTL
     this.routingUpdateRecent = new Map()
     this.routingUpdateStats = {
       enqueued: 0,
@@ -142,7 +144,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       failed: 0,
       aborted: 0,
       cancelledBeforeStart: 0,
-      ttlSkipped: 0
+      skippedDueToTTL: 0
     }
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
@@ -304,7 +306,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     failed: number
     aborted: number
     cancelledBeforeStart: number
-    ttlSkipped: number
+    skippedDueToTTL: number
   } {
     return {
       queued: this.routingUpdateQueue.queued,
@@ -322,7 +324,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     const updateAllowedAt = this.routingUpdateRecent.get(peerIdStr)
     if (updateAllowedAt != null && updateAllowedAt > now) {
-      this.routingUpdateStats.ttlSkipped++
+      this.routingUpdateStats.skippedDueToTTL++
       return
     }
 
@@ -334,7 +336,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       return
     }
 
-    this.routingUpdateRecent.set(peerIdStr, now + this.routingUpdatePeerTtl)
+    this.routingUpdateRecent.set(peerIdStr, now + this.routingTableUpdateQueuePeerTtl)
     this.routingUpdateStats.enqueued++
 
     void this.routingUpdateQueue.add(async (jobOptions) => {

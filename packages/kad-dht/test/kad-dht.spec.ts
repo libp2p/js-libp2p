@@ -151,7 +151,7 @@ describe('KadDHT', () => {
       for (let i = 0; i < 40; i++) {
         const stats = (dht.dht as any).queryManager.getRoutingUpdateQueueStats()
 
-        if (stats.ttlSkipped >= 1 && stats.completed >= 1) {
+        if (stats.skippedDueToTTL >= 1 && stats.completed >= 1) {
           break
         }
 
@@ -161,7 +161,7 @@ describe('KadDHT', () => {
       const stats = (dht.dht as any).queryManager.getRoutingUpdateQueueStats()
 
       expect(routingTableAddSpy.callCount).to.equal(1)
-      expect(stats.ttlSkipped).to.be.greaterThan(0)
+      expect(stats.skippedDueToTTL).to.be.greaterThan(0)
     })
   })
 

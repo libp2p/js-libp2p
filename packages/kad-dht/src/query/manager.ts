@@ -87,7 +87,7 @@ export class QueryManager implements Startable {
     failed: number
     aborted: number
     cancelledBeforeStart: number
-    ttlSkipped: number
+    skippedDueToTTL: number
   } {
     return this.routingTable.getRoutingUpdateQueueStats()
   }
