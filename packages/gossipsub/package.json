@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/gossipsub",
-  "version": "15.0.16",
+  "version": "15.0.17",
   "description": "A typescript implementation of gossipsub",
   "files": [
     "src",
@@ -13,23 +13,28 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
-    },
-    "./metrics": {
-      "types": "./dist/src/metrics.d.ts",
-      "import": "./dist/src/metrics.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./message": {
       "types": "./dist/src/message/index.d.ts",
-      "import": "./dist/src/message/index.js"
+      "import": "./dist/src/message/index.js",
+      "module-sync": "./dist/src/message/index.js"
+    },
+    "./metrics": {
+      "types": "./dist/src/metrics.d.ts",
+      "import": "./dist/src/metrics.js",
+      "module-sync": "./dist/src/metrics.js"
     },
     "./score": {
       "types": "./dist/src/score/index.d.ts",
-      "import": "./dist/src/score/index.js"
+      "import": "./dist/src/score/index.js",
+      "module-sync": "./dist/src/score/index.js"
     },
     "./types": {
       "types": "./dist/src/types.d.ts",
-      "import": "./dist/src/types.js"
+      "import": "./dist/src/types.js",
+      "module-sync": "./dist/src/types.js"
     }
   },
   "typesVersions": {
@@ -47,14 +52,16 @@
     "release": "aegir release --no-types",
     "build": "aegir build",
     "generate": "protons ./src/message/rpc.proto",
-    "pretest": "npm run build",
-    "pretest:e2e": "npm run build",
-    "benchmark": "yarn benchmark:files 'test/benchmark/**/*.test.ts'",
+    "benchmark": "yarn benchmark:files test/benchmark/**/*.test.ts",
     "benchmark:files": "NODE_OPTIONS='--max-old-space-size=4096 --loader=ts-node/esm' benchmark --config .benchrc.yaml --defaultBranch master",
-    "test": "aegir test -f './dist/test/*.spec.js'",
-    "test:unit": "aegir test -f './dist/test/unit/*.test.js' --target node",
-    "test:e2e": "aegir test -f './dist/test/e2e/*.spec.js'",
-    "test:browser": "npm run test -- --target browser"
+    "test": "aegir test -f dist/test/*.spec.js",
+    "test:node": "aegir test -t node -f dist/test/*.spec.js -f dist/test/unit/*.spec.js -f dist/test/e2e/*.spec.js",
+    "test:chrome": "aegir test -f dist/test/*.spec.js -t browser",
+    "test:chrome-webworker": "aegir test -f dist/test/*.spec.js -t webworker",
+    "test:firefox": "aegir test -f dist/test/*.spec.js -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -f dist/test/*.spec.js -t webworker -- --browser firefox",
+    "test:electron-main": "aegir test -f dist/test/*.spec.js -t electron-main",
+    "test:webkit": "aegir test -f dist/test/*.spec.js -t browser -- --browser webkit"
   },
   "repository": {
     "type": "git",
@@ -72,11 +79,11 @@
   },
   "homepage": "https://github.com/ChainSafe/js-libp2p-gossipsub#readme",
   "dependencies": {
-    "@libp2p/crypto": "^5.1.14",
-    "@libp2p/interface": "^3.1.1",
-    "@libp2p/interface-internal": "^3.0.14",
-    "@libp2p/peer-id": "^6.0.5",
-    "@libp2p/utils": "^7.0.14",
+    "@libp2p/crypto": "^5.1.15",
+    "@libp2p/interface": "^3.2.0",
+    "@libp2p/interface-internal": "^3.1.0",
+    "@libp2p/peer-id": "^6.0.6",
+    "@libp2p/utils": "^7.0.15",
     "@multiformats/multiaddr": "^13.0.1",
     "denque": "^2.1.0",
     "it-length-prefixed": "^10.0.1",
@@ -90,11 +97,11 @@
   "devDependencies": {
     "@chainsafe/as-sha256": "^1.2.0",
     "@dapplion/benchmark": "^1.0.0",
-    "@libp2p/floodsub": "^11.0.15",
-    "@libp2p/logger": "^6.2.3",
-    "@libp2p/peer-store": "^12.0.14",
+    "@libp2p/floodsub": "^11.0.16",
+    "@libp2p/logger": "^6.2.4",
+    "@libp2p/peer-store": "^12.0.15",
     "@types/node": "^22.18.1",
-    "@types/sinon": "^20.0.0",
+    "@types/sinon": "^21.0.1",
     "abortable-iterator": "^5.1.0",
     "aegir": "^47.0.21",
     "datastore-core": "^11.0.1",
@@ -103,7 +110,7 @@
     "mkdirp": "^3.0.1",
     "p-defer": "^4.0.0",
     "p-event": "^7.0.0",
-    "p-retry": "^7.0.0",
+    "p-retry": "^8.0.0",
     "p-wait-for": "^6.0.0",
     "protons": "^8.1.1",
     "sinon": "^21.0.0",

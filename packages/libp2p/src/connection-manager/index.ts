@@ -6,13 +6,13 @@ import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.js'
-import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
+import { ADDRESS_DIAL_TIMEOUT, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.js'
 import { DialQueue } from './dial-queue.js'
 import { ReconnectQueue } from './reconnect-queue.js'
 import { dnsaddrResolver } from './resolvers/index.ts'
 import { findExistingConnection, multiaddrToIpNet } from './utils.js'
 import type { IpNet } from '@chainsafe/netmask'
-import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream, NewStreamOptions } from '@libp2p/interface'
+import type { PendingDial, AddressSorter, Libp2pEvents, AbortOptions, ComponentLogger, Logger, Connection, MultiaddrConnection, ConnectionGater, Metrics, PeerId, PeerStore, Startable, PendingDialStatus, PeerRouting, IsDialableOptions, MultiaddrResolver, Stream, NewStreamOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { JobStatus } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -65,6 +65,16 @@ export interface ConnectionManagerInit {
    * @default 10_000
    */
   dialTimeout?: number
+
+  /**
+   * How long a single address dial attempt is allowed to take before the
+   * dialer moves on to the next address. This prevents a single slow or
+   * unreachable address from consuming the entire `dialTimeout` budget when
+   * multiple addresses are available for a peer.
+   *
+   * @default 6_000
+   */
+  addressDialTimeout?: number
 
   /**
    * How many ms to wait when closing a connection if an abort signal is not
@@ -261,6 +271,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       maxDialQueueLength: init.maxDialQueueLength ?? MAX_DIAL_QUEUE_LENGTH,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,
       dialTimeout: init.dialTimeout ?? DIAL_TIMEOUT,
+      addressDialTimeout: init.addressDialTimeout ?? ADDRESS_DIAL_TIMEOUT,
       resolvers: init.resolvers ?? {
         dnsaddr: dnsaddrResolver
       },
@@ -523,7 +534,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     return this.connections
   }
 
-  async openConnection (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
+  async openConnection (peerIdOrMultiaddr: DialTarget, options: OpenConnectionOptions = {}): Promise<Connection> {
     if (!this.started) {
       throw new NotStartedError('Not started')
     }
@@ -532,6 +543,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     try {
       options.signal?.throwIfAborted()
+      options?.onProgress?.(new CustomProgressEvent('connection:open', peerIdOrMultiaddr))
 
       const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
@@ -547,6 +559,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
           this.log('had an existing connection to %p as %a', peerId, existingConnection.remoteAddr)
 
           options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+          options.onProgress?.(new CustomProgressEvent('connection:opened', existingConnection))
+
           return existingConnection
         }
       }
@@ -590,13 +604,15 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
         peerConnections.push(connection)
       }
 
+      options.onProgress?.(new CustomProgressEvent('connection:opened', connection))
+
       return connection
     } finally {
       this.outboundPendingConnections--
     }
   }
 
-  async openStream (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], protocol: string | string[], options: OpenConnectionOptions & NewStreamOptions = {}): Promise<Stream> {
+  async openStream (peerIdOrMultiaddr: DialTarget, protocol: string | string[], options: OpenConnectionOptions & NewStreamOptions = {}): Promise<Stream> {
     const connection = await this.openConnection(peerIdOrMultiaddr, options)
 
     return connection.newStream(protocol, options)

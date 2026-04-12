@@ -27,7 +27,15 @@ async function nodesArePubSubPeers (node0: GossipSubAndComponents, node1: Gossip
         .getPeers()
         .map((p) => p.toString())
         .includes(node0.components.peerId.toString())
-      return node0SeesNode1 && node1SeesNode0
+
+      const node0StreamsReady =
+        node0.pubsub.streamsOutbound.has(node1.components.peerId.toString()) &&
+        node0.pubsub.streamsInbound.has(node1.components.peerId.toString())
+      const node1StreamsReady =
+        node1.pubsub.streamsOutbound.has(node0.components.peerId.toString()) &&
+        node1.pubsub.streamsInbound.has(node0.components.peerId.toString())
+
+      return node0SeesNode1 && node1SeesNode0 && node0StreamsReady && node1StreamsReady
     },
     {
       timeout
@@ -93,14 +101,16 @@ describe('2 nodes', () => {
     it('Subscribe to a topic', async () => {
       const topic = 'test_topic'
 
+      const subscriptionChanges = [
+        pEvent<'subscription-change', CustomEvent<SubscriptionChangeData>>(nodes[0].pubsub, 'subscription-change'),
+        pEvent<'subscription-change', CustomEvent<SubscriptionChangeData>>(nodes[1].pubsub, 'subscription-change')
+      ]
+
       nodes[0].pubsub.subscribe(topic)
       nodes[1].pubsub.subscribe(topic)
 
       // await subscription change
-      const [evt0] = await Promise.all([
-        pEvent<'subscription-change', CustomEvent<SubscriptionChangeData>>(nodes[0].pubsub, 'subscription-change'),
-        pEvent<'subscription-change', CustomEvent<SubscriptionChangeData>>(nodes[1].pubsub, 'subscription-change')
-      ])
+      const [evt0] = await Promise.all(subscriptionChanges)
 
       const { peerId: changedPeerId, subscriptions: changedSubs } = evt0.detail
 
@@ -118,14 +128,11 @@ describe('2 nodes', () => {
       expect(changedSubs[0].topic).to.equal(topic)
       expect(changedSubs[0].subscribe).to.equal(true)
 
-      // await heartbeats
-      await Promise.all([
-        pEvent(nodes[0].pubsub, 'gossipsub:heartbeat'),
-        pEvent(nodes[1].pubsub, 'gossipsub:heartbeat')
-      ])
-
-      expect((nodes[0].pubsub).mesh.get(topic)?.has(nodes[1].components.peerId.toString())).to.be.true()
-      expect((nodes[1].pubsub).mesh.get(topic)?.has(nodes[0].components.peerId.toString())).to.be.true()
+      // await mesh propagation
+      await pWaitFor(() => {
+        return (nodes[0].pubsub).mesh.get(topic)?.has(nodes[1].components.peerId.toString()) === true &&
+          (nodes[1].pubsub).mesh.get(topic)?.has(nodes[0].components.peerId.toString()) === true
+      }, { timeout: 10000 })
     })
   })
 
@@ -141,15 +148,22 @@ describe('2 nodes', () => {
       })
 
       // Create subscriptions
+      const subscriptionChanges = [
+        pEvent(nodes[0].pubsub, 'subscription-change'),
+        pEvent(nodes[1].pubsub, 'subscription-change')
+      ]
+      const heartbeats = [
+        pEvent(nodes[0].pubsub, 'gossipsub:heartbeat'),
+        pEvent(nodes[1].pubsub, 'gossipsub:heartbeat')
+      ]
+
       nodes[0].pubsub.subscribe(topic)
       nodes[1].pubsub.subscribe(topic)
 
       // await subscription change and heartbeat
       await Promise.all([
-        pEvent(nodes[0].pubsub, 'subscription-change'),
-        pEvent(nodes[1].pubsub, 'subscription-change'),
-        pEvent(nodes[0].pubsub, 'gossipsub:heartbeat'),
-        pEvent(nodes[1].pubsub, 'gossipsub:heartbeat')
+        ...subscriptionChanges,
+        ...heartbeats
       ])
     })
 
@@ -240,18 +254,20 @@ describe('2 nodes', () => {
       await connectAllPubSubNodes(nodes)
 
       // Create subscriptions
+      const subscriptionChanges = [
+        pEvent(nodes[0].pubsub, 'subscription-change'),
+        pEvent(nodes[1].pubsub, 'subscription-change')
+      ]
+      const heartbeats = [
+        pEvent(nodes[0].pubsub, 'gossipsub:heartbeat'),
+        pEvent(nodes[1].pubsub, 'gossipsub:heartbeat')
+      ]
+
       nodes[0].pubsub.subscribe(topic)
       nodes[1].pubsub.subscribe(topic)
 
       // await subscription change and heartbeat
-      await Promise.all([
-        pEvent(nodes[0].pubsub, 'subscription-change'),
-        pEvent(nodes[1].pubsub, 'subscription-change')
-      ])
-      await Promise.all([
-        pEvent(nodes[0].pubsub, 'gossipsub:heartbeat'),
-        pEvent(nodes[1].pubsub, 'gossipsub:heartbeat')
-      ])
+      await Promise.all([...subscriptionChanges, ...heartbeats])
     })
 
     afterEach(async () => {
@@ -259,16 +275,19 @@ describe('2 nodes', () => {
     })
 
     it('Unsubscribe from a topic', async () => {
-      nodes[0].pubsub.unsubscribe(topic)
-      expect(nodes[0].pubsub.getTopics()).to.be.empty()
-
-      const evt = await pEvent<'subscription-change', CustomEvent<SubscriptionChangeData>>(
+      const subscriptionChangePromise = pEvent<'subscription-change', CustomEvent<SubscriptionChangeData>>(
         nodes[1].pubsub,
         'subscription-change'
       )
+      const heartbeatPromise = pEvent(nodes[1].pubsub, 'gossipsub:heartbeat')
+
+      nodes[0].pubsub.unsubscribe(topic)
+      expect(nodes[0].pubsub.getTopics()).to.be.empty()
+
+      const evt = await subscriptionChangePromise
       const { peerId: changedPeerId, subscriptions: changedSubs } = evt.detail
 
-      await pEvent(nodes[1].pubsub, 'gossipsub:heartbeat')
+      await heartbeatPromise
 
       expect(nodes[1].pubsub.getPeers()).to.have.lengthOf(1)
       expect(nodes[1].pubsub.getSubscribers(topic)).to.be.empty()

@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { generateKeyPair, privateKeyToCryptoKeyPair } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, NotStartedError } from '@libp2p/interface'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'

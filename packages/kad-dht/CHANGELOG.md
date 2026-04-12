@@ -106,6 +106,29 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.2.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.1.7...kad-dht-v16.2.0) (2026-04-08)
+
+
+### Features
+
+* add DialTarget type ([#3428](https://github.com/libp2p/js-libp2p/issues/3428)) ([2a3e547](https://github.com/libp2p/js-libp2p/commit/2a3e547380a62dffae31f7b5423dfcf1fc0c7433))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/interface-internal bumped from ^3.0.14 to ^3.1.0
+    * @libp2p/peer-collections bumped from ^7.0.14 to ^7.0.15
+    * @libp2p/peer-id bumped from ^6.0.5 to ^6.0.6
+    * @libp2p/ping bumped from ^3.0.14 to ^3.1.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.3 to ^6.2.4
+    * @libp2p/peer-store bumped from ^12.0.14 to ^12.0.15
+
 ## [16.1.7](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.1.6...kad-dht-v16.1.7) (2026-03-27)
 
 

@@ -1,5 +1,6 @@
 import type { AbortOptions, Logger, TypedEventTarget, Stream, MessageStreamEvents, PeerId, MultiaddrConnectionTimeline, MessageStreamStatus, MessageStreamDirection } from './index.js'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { ProgressEvent, ProgressOptions } from 'progress-events'
 
 export type ConnectionStatus = MessageStreamStatus
 
@@ -26,7 +27,21 @@ export interface ConnectionLimits {
   seconds?: number
 }
 
-export interface NewStreamOptions extends AbortOptions {
+export interface OpenStreamEvent {
+  connection: Connection
+  protocols: string[]
+}
+
+export interface OpenedStreamEvent {
+  connection: Connection
+  stream: Stream
+}
+
+export type NewStreamProgressEvents =
+  ProgressEvent<'connection:open-stream', OpenStreamEvent>
+  | ProgressEvent<'connection:opened-stream', OpenedStreamEvent>
+
+export interface NewStreamOptions extends AbortOptions, ProgressOptions<NewStreamProgressEvents> {
   /**
    * If specified, and no handler has been registered with the registrar for the
    * successfully negotiated protocol, use this as the max outbound stream limit

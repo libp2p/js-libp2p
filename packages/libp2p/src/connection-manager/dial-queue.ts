@@ -12,6 +12,7 @@ import { DialDeniedError, NoValidAddressesError } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
 import { defaultAddressSorter } from './address-sorter.js'
 import {
+  ADDRESS_DIAL_TIMEOUT,
   DIAL_TIMEOUT,
   MAX_PARALLEL_DIALS,
   MAX_PEER_ADDRS_TO_DIAL,
@@ -22,7 +23,7 @@ import {
 import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
 import { findExistingConnection } from './utils.ts'
 import { DEFAULT_DIAL_PRIORITY } from './index.js'
-import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver } from '@libp2p/interface'
+import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver, DialTarget } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { PriorityQueueJobOptions } from '@libp2p/utils'
 import type { DNS } from '@multiformats/dns'
@@ -45,6 +46,7 @@ interface DialerInit {
   maxDialQueueLength?: number
   maxPeerAddrsToDial?: number
   dialTimeout?: number
+  addressDialTimeout?: number
   resolvers?: Record<string, MultiaddrResolver>
   connections?: PeerMap<Connection[]>
 }
@@ -54,6 +56,7 @@ const defaultOptions = {
   maxDialQueueLength: MAX_DIAL_QUEUE_LENGTH,
   maxPeerAddrsToDial: MAX_PEER_ADDRS_TO_DIAL,
   dialTimeout: DIAL_TIMEOUT,
+  addressDialTimeout: ADDRESS_DIAL_TIMEOUT,
   resolvers: {
     dnsaddr: dnsaddrResolver
   }
@@ -77,6 +80,7 @@ export class DialQueue {
   private readonly maxPeerAddrsToDial: number
   private readonly maxDialQueueLength: number
   private readonly dialTimeout: number
+  private readonly addressDialTimeout: number
   private shutDownController: AbortController
   private readonly connections: PeerMap<Connection[]>
   private readonly log: Logger
@@ -87,6 +91,7 @@ export class DialQueue {
     this.maxPeerAddrsToDial = init.maxPeerAddrsToDial ?? defaultOptions.maxPeerAddrsToDial
     this.maxDialQueueLength = init.maxDialQueueLength ?? defaultOptions.maxDialQueueLength
     this.dialTimeout = init.dialTimeout ?? defaultOptions.dialTimeout
+    this.addressDialTimeout = init.addressDialTimeout ?? defaultOptions.addressDialTimeout
     this.connections = init.connections ?? new PeerMap()
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
     this.components = components
@@ -134,7 +139,7 @@ export class DialQueue {
    * The dial to the first address that is successfully able to upgrade a
    * connection will be used, all other dials will be aborted when that happens.
    */
-  async dial (peerIdOrMultiaddr: PeerId | Multiaddr | Multiaddr[], options: OpenConnectionOptions = {}): Promise<Connection> {
+  async dial (peerIdOrMultiaddr: DialTarget, options: OpenConnectionOptions = {}): Promise<Connection> {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null && options.force !== true) {
@@ -142,7 +147,7 @@ export class DialQueue {
 
       if (existingConnection != null) {
         this.log('already connected to %a', existingConnection.remoteAddr)
-        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected'))
+        options.onProgress?.(new CustomProgressEvent('dial-queue:already-connected', existingConnection))
         return existingConnection
       }
     }
@@ -279,11 +284,17 @@ export class DialQueue {
 
         dialed++
 
+        // create a per-address signal so a single slow/unreachable address
+        // cannot consume the entire dialTimeout budget when multiple addresses
+        // are available - the outer batch signal can still abort everything
+        const addressSignal = anySignal([signal, AbortSignal.timeout(this.addressDialTimeout)])
+        setMaxListeners(Infinity, addressSignal)
+
         try {
           // try to dial the address
           const conn = await this.components.transportManager.dial(address.multiaddr, {
             ...options,
-            signal
+            signal: addressSignal
           })
 
           this.log('dial to %a succeeded', address.multiaddr)
@@ -323,12 +334,16 @@ export class DialQueue {
             }
           }
 
-          // the user/dial timeout/shutdown controller signal aborted
+          // the user/batch timeout/shutdown controller signal aborted - stop
+          // trying further addresses for this peer
           if (signal.aborted) {
             throw new TimeoutError(err.message)
           }
 
           errors.push(err)
+        } finally {
+          // unregister listeners on parent signals immediately to avoid leaks
+          addressSignal.clear()
         }
       }
     }
