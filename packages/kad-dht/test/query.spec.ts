@@ -153,19 +153,6 @@ describe('QueryManager', () => {
   beforeEach(async () => {
     routingTable.closestPeers.returns(peers.slice(0, K).map(p => p.peerId))
     routingTable.queueRoutingTableUpdate.resetHistory()
-    routingTable.getRoutingUpdateQueueStats.resetHistory()
-    routingTable.getRoutingUpdateQueueStats.returns({
-      queued: 0,
-      running: 0,
-      total: 0,
-      enqueued: 0,
-      deduped: 0,
-      completed: 0,
-      failed: 0,
-      aborted: 0,
-      cancelledBeforeStart: 0,
-      skippedDueToTTL: 0
-    })
   })
 
   it('does not run queries before start', async () => {
@@ -1044,33 +1031,4 @@ describe('QueryManager', () => {
     await manager.stop()
   })
 
-  it('should delegate routing update queue stats to the routing table', async () => {
-    const expectedStats = {
-      queued: 1,
-      running: 2,
-      total: 3,
-      enqueued: 4,
-      deduped: 5,
-      completed: 6,
-      failed: 7,
-      aborted: 8,
-      cancelledBeforeStart: 9,
-      skippedDueToTTL: 10
-    }
-
-    routingTable.getRoutingUpdateQueueStats.returns(expectedStats)
-
-    const manager = new QueryManager({
-      peerId: ourPeerId,
-      logger: defaultLogger(),
-      connectionManager: stubInterface<ConnectionManager>({
-        isDialable: async () => true
-      })
-    }, {
-      ...defaultInit()
-    })
-
-    expect(manager.getRoutingUpdateQueueStats()).to.deep.equal(expectedStats)
-    expect(routingTable.getRoutingUpdateQueueStats.calledOnce).to.be.true()
-  })
 })
