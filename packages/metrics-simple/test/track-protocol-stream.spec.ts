@@ -1,4 +1,4 @@
-import { StreamAbortEvent, TypedEventEmitter } from '@libp2p/interface'
+import { StreamAbortEvent, TypedEventEmitter, StreamCloseEvent } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
@@ -45,7 +45,7 @@ describe('SimpleMetrics - protocol stream counters', () => {
     const stream = makeStream('inbound', '/ping/1.0.0')
 
     metrics.trackProtocolStream(stream)
-    stream.dispatchEvent(new Event('close'))
+    stream.dispatchEvent(new StreamCloseEvent())
 
     const opened = await metrics.metrics.get('libp2p_protocol_streams_opened_total')?.collect()
     const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()
@@ -61,8 +61,8 @@ describe('SimpleMetrics - protocol stream counters', () => {
     const stream = makeStream('outbound', '/test/1.0.0')
 
     metrics.trackProtocolStream(stream)
-    stream.dispatchEvent(new Event('close'))
-    stream.dispatchEvent(new Event('close'))
+    stream.dispatchEvent(new StreamCloseEvent())
+    stream.dispatchEvent(new StreamCloseEvent())
 
     const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()
     const closeErrors = await metrics.metrics.get('libp2p_protocol_streams_close_errors_total')?.collect()
@@ -96,8 +96,8 @@ describe('SimpleMetrics - protocol stream counters', () => {
     metrics.trackProtocolStream(s3)
 
     // close only s1 and s3
-    s1.dispatchEvent(new Event('close'))
-    s3.dispatchEvent(new Event('close'))
+    s1.dispatchEvent(new StreamCloseEvent())
+    s3.dispatchEvent(new StreamCloseEvent())
 
     const opened = await metrics.metrics.get('libp2p_protocol_streams_opened_total')?.collect()
     const closed = await metrics.metrics.get('libp2p_protocol_streams_closed_total')?.collect()

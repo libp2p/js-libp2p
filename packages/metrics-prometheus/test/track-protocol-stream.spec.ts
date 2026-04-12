@@ -30,7 +30,7 @@ describe('prometheus protocol stream counters', () => {
     expect(scraped).to.include(`libp2p_protocol_streams_closed_total{${label}} 1`)
   })
 
-  it('records close-errors counter when stream aborts', async () => {
+  it('records opened and close-errors but not clean closed when stream aborts', async () => {
     const [outbound] = await streamPair()
 
     const metrics = prometheusMetrics({
@@ -47,5 +47,6 @@ describe('prometheus protocol stream counters', () => {
 
     expect(scraped).to.include(`libp2p_protocol_streams_opened_total{${label}} 1`)
     expect(scraped).to.include(`libp2p_protocol_streams_close_errors_total{${label}} 1`)
+    expect(scraped).not.to.include(`libp2p_protocol_streams_closed_total{${label}}`)
   })
 })

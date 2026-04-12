@@ -1,4 +1,4 @@
-import { StreamAbortEvent, TypedEventEmitter } from '@libp2p/interface'
+import { StreamAbortEvent, TypedEventEmitter, StreamCloseEvent } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { metrics as otelApi } from '@opentelemetry/api'
 import {
@@ -93,7 +93,7 @@ describe('opentelemetry protocol stream counters', () => {
     const label = `${stream.direction} ${stream.protocol}`
 
     metrics.trackProtocolStream(stream)
-    stream.dispatchEvent(new Event('close'))
+    stream.dispatchEvent(new StreamCloseEvent())
 
     await reader.forceFlush()
     const batches = exporter.getMetrics()
