@@ -6,7 +6,7 @@ import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { getPeerAddress } from '../get-peer.js'
 import { ConnectionPruner } from './connection-pruner.ts'
-import { DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.ts'
+import { ADDRESS_DIAL_TIMEOUT, DIAL_TIMEOUT, INBOUND_CONNECTION_THRESHOLD, MAX_CONNECTIONS, MAX_DIAL_QUEUE_LENGTH, MAX_INCOMING_PENDING_CONNECTIONS, MAX_PARALLEL_DIALS, MAX_PEER_ADDRS_TO_DIAL } from './constants.ts'
 import { DialQueue } from './dial-queue.ts'
 import { ReconnectQueue } from './reconnect-queue.ts'
 import { dnsaddrResolver } from './resolvers/index.ts'
@@ -65,6 +65,16 @@ export interface ConnectionManagerInit {
    * @default 10_000
    */
   dialTimeout?: number
+
+  /**
+   * How long a single address dial attempt is allowed to take before the
+   * dialer moves on to the next address. This prevents a single slow or
+   * unreachable address from consuming the entire `dialTimeout` budget when
+   * multiple addresses are available for a peer.
+   *
+   * @default 6_000
+   */
+  addressDialTimeout?: number
 
   /**
    * How many ms to wait when closing a connection if an abort signal is not
@@ -261,6 +271,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       maxDialQueueLength: init.maxDialQueueLength ?? MAX_DIAL_QUEUE_LENGTH,
       maxPeerAddrsToDial: init.maxPeerAddrsToDial ?? MAX_PEER_ADDRS_TO_DIAL,
       dialTimeout: init.dialTimeout ?? DIAL_TIMEOUT,
+      addressDialTimeout: init.addressDialTimeout ?? ADDRESS_DIAL_TIMEOUT,
       resolvers: init.resolvers ?? {
         dnsaddr: dnsaddrResolver
       },

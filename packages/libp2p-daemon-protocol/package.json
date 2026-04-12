@@ -43,15 +43,18 @@
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./stream-handler": {
       "types": "./dist/src/stream-handler.d.ts",
-      "import": "./dist/src/stream-handler.js"
+      "import": "./dist/src/stream-handler.js",
+      "module-sync": "./dist/src/stream-handler.js"
     },
     "./upgrader": {
       "types": "./dist/src/upgrader.d.ts",
-      "import": "./dist/src/upgrader.js"
+      "import": "./dist/src/upgrader.js",
+      "module-sync": "./dist/src/upgrader.js"
     }
   },
   "scripts": {
