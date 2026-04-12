@@ -29,7 +29,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -84,7 +85,7 @@
     "@libp2p/peer-store": "^12.0.15",
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
-    "@types/sinon": "^20.0.0",
+    "@types/sinon": "^21.0.1",
     "@types/which": "^3.0.4",
     "aegir": "^47.0.22",
     "benchmark": "^2.1.4",
@@ -97,7 +98,7 @@
     "it-length-prefixed": "^10.0.1",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "p-retry": "^7.0.0",
+    "p-retry": "^8.0.0",
     "protons": "^8.1.1",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",

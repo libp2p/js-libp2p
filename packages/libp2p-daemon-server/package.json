@@ -29,7 +29,8 @@
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -42,9 +43,9 @@
     "test:node": "aegir test -t node"
   },
   "dependencies": {
-    "@libp2p/gossipsub": "^15.0.17",
     "@libp2p/crypto": "^5.1.15",
     "@libp2p/daemon-protocol": "^8.0.5",
+    "@libp2p/gossipsub": "^15.0.17",
     "@libp2p/interface": "^3.2.0",
     "@libp2p/kad-dht": "^16.2.0",
     "@libp2p/logger": "^6.2.4",

@@ -35,7 +35,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -57,7 +58,6 @@
     "@libp2p/utils": "^7.0.15",
     "@multiformats/multiaddr": "^13.0.1",
     "@multiformats/multiaddr-matcher": "^3.0.1",
-    "@types/sinon": "^20.0.0",
     "main-event": "^1.0.1",
     "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
@@ -65,6 +65,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.4",
+    "@types/sinon": "^21.0.1",
     "aegir": "^47.0.22",
     "delay": "^7.0.0",
     "p-defer": "^4.0.1",

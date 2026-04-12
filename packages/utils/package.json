@@ -26,7 +26,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -52,7 +53,7 @@
     "@multiformats/multiaddr": "^13.0.1",
     "@sindresorhus/fnv1a": "^3.1.0",
     "any-signal": "^4.1.1",
-    "cborg": "^4.2.14",
+    "cborg": "^5.1.0",
     "delay": "^7.0.0",
     "is-loopback-addr": "^2.0.2",
     "it-length-prefixed": "^10.0.1",
@@ -63,6 +64,7 @@
     "netmask": "^2.0.2",
     "p-defer": "^4.0.1",
     "p-event": "^7.0.0",
+    "progress-events": "^1.1.0",
     "race-signal": "^2.0.0",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
