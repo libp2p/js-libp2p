@@ -7,7 +7,7 @@ import { GetProvidersHandler } from './handlers/get-providers.js'
 import { GetValueHandler } from './handlers/get-value.js'
 import { PingHandler } from './handlers/ping.js'
 import { PutValueHandler } from './handlers/put-value.js'
-import type { PeerInfoMapper, Validators } from '../index.js'
+import type { PeerInfoMapper, Selectors, Validators } from '../index.js'
 import type { PeerRouting } from '../peer-routing/index.js'
 import type { Providers } from '../providers.js'
 import type { FindNodeHandlerComponents } from './handlers/find-node.js'
@@ -26,6 +26,7 @@ export interface RPCInit {
   providers: Providers
   peerRouting: PeerRouting
   validators: Validators
+  selectors: Selectors
   logPrefix: string
   metricsPrefix: string
   datastorePrefix: string

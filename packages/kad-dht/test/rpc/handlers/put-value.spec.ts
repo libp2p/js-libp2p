@@ -11,7 +11,7 @@ import { MessageType } from '../../../src/message/dht.js'
 import { PutValueHandler } from '../../../src/rpc/handlers/put-value.js'
 import * as utils from '../../../src/utils.js'
 import { createPeerIdWithPrivateKey } from '../../utils/create-peer-id.js'
-import type { Validators } from '../../../src/index.js'
+import type { Selectors, Validators } from '../../../src/index.js'
 import type { Message } from '../../../src/message/dht.js'
 import type { PeerAndKey } from '../../utils/create-peer-id.js'
 import type { Datastore } from 'interface-datastore'
@@ -23,11 +23,13 @@ describe('rpc - handlers - PutValue', () => {
   let handler: PutValueHandler
   let datastore: Datastore
   let validators: Validators
+  let selectors: Selectors
 
   beforeEach(async () => {
     sourcePeer = await createPeerIdWithPrivateKey()
     datastore = new MemoryDatastore()
     validators = {}
+    selectors = {}
 
     const components = {
       datastore,
@@ -36,6 +38,7 @@ describe('rpc - handlers - PutValue', () => {
 
     handler = new PutValueHandler(components, {
       validators,
+      selectors,
       logPrefix: 'dht',
       datastorePrefix: '/dht'
     })
@@ -91,5 +94,71 @@ describe('rpc - handlers - PutValue', () => {
     // make sure some time has passed
     await delay(10)
     expect(rec.timeReceived.getTime()).to.be.lessThan(Date.now())
+  })
+
+  it('ignores older records when a namespace selector prefers existing values', async () => {
+    const recordKey = utils.bufferToRecordKey('/dht/record', uint8ArrayFromString('/val/hello'))
+    const existingRecord = new Libp2pRecord(
+      uint8ArrayFromString('/val/hello'),
+      uint8ArrayFromString('world2'),
+      new Date()
+    )
+
+    await datastore.put(recordKey, existingRecord.serialize().subarray())
+
+    const msg: Message = {
+      type: T,
+      key: uint8ArrayFromString('/val/hello'),
+      closer: [],
+      providers: [],
+      record: new Libp2pRecord(
+        uint8ArrayFromString('/val/hello'),
+        uint8ArrayFromString('world1'),
+        new Date()
+      ).serialize()
+    }
+
+    validators.val = async () => {}
+    selectors.val = (key, records) => {
+      return records[0][records[1].length - 1] > records[1][records[1].length - 1] ? 0 : 1
+    }
+
+    await handler.handle(sourcePeer.peerId, msg)
+
+    const updated = Libp2pRecord.deserialize(await datastore.get(recordKey))
+    expect(updated.value).to.equalBytes(uint8ArrayFromString('world2'))
+  })
+
+  it('stores newer records when a namespace selector prefers incoming values', async () => {
+    const recordKey = utils.bufferToRecordKey('/dht/record', uint8ArrayFromString('/val/hello'))
+    const existingRecord = new Libp2pRecord(
+      uint8ArrayFromString('/val/hello'),
+      uint8ArrayFromString('world1'),
+      new Date()
+    )
+
+    await datastore.put(recordKey, existingRecord.serialize().subarray())
+
+    const msg: Message = {
+      type: T,
+      key: uint8ArrayFromString('/val/hello'),
+      closer: [],
+      providers: [],
+      record: new Libp2pRecord(
+        uint8ArrayFromString('/val/hello'),
+        uint8ArrayFromString('world2'),
+        new Date()
+      ).serialize()
+    }
+
+    validators.val = async () => {}
+    selectors.val = (key, records) => {
+      return records[0][records[1].length - 1] > records[1][records[1].length - 1] ? 0 : 1
+    }
+
+    await handler.handle(sourcePeer.peerId, msg)
+
+    const updated = Libp2pRecord.deserialize(await datastore.get(recordKey))
+    expect(updated.value).to.equalBytes(uint8ArrayFromString('world2'))
   })
 })

@@ -13,7 +13,7 @@ import {
   valueEvent,
   queryErrorEvent
 } from '../query/events.js'
-import { bestRecord } from '../record/selectors.js'
+import { bestRecord, getRecordSelector } from '../record/selectors.js'
 import { verifyRecord } from '../record/validators.js'
 import { createPutRecord, bufferToRecordKey } from '../utils.js'
 import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.js'
@@ -147,6 +147,25 @@ export class ContentFetching {
 
     // store the record locally
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
+    const selector = getRecordSelector(this.selectors, key)
+
+    if (selector != null) {
+      try {
+        const existingRaw = await this.components.datastore.get(dsKey, options)
+        const existingRecord = Libp2pRecord.deserialize(existingRaw)
+        const selected = selector(key, [value, existingRecord.value])
+
+        if (selected !== 0) {
+          this.log('ignoring stale local value for key %b', key)
+          return
+        }
+      } catch (err: any) {
+        if (err.name !== 'NotFoundError') {
+          throw err
+        }
+      }
+    }
+
     this.log(`storing record for key ${dsKey.toString()}`)
     await this.components.datastore.put(dsKey, record.subarray(), options)
 

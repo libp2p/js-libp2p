@@ -1,7 +1,17 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MissingSelectorError } from '../errors.js'
-import type { Selectors } from '../index.js'
+import type { SelectFn, Selectors } from '../index.js'
+
+export function getRecordSelector (selectors: Selectors, key: Uint8Array): SelectFn | undefined {
+  const parts = uint8ArrayToString(key).split('/')
+
+  if (parts.length < 3) {
+    return
+  }
+
+  return selectors[parts[1].toString()]
+}
 
 /**
  * Select the best record out of the given records
@@ -11,16 +21,16 @@ export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8A
     throw new InvalidParametersError('No records given')
   }
 
-  const kStr = uint8ArrayToString(k)
-  const parts = kStr.split('/')
-
-  if (parts.length < 3) {
-    throw new InvalidParametersError('Record key does not have a selector function')
-  }
-
-  const selector = selectors[parts[1].toString()]
+  const selector = getRecordSelector(selectors, k)
 
   if (selector == null) {
+    const kStr = uint8ArrayToString(k)
+    const parts = kStr.split('/')
+
+    if (parts.length < 3) {
+      throw new InvalidParametersError('Record key does not have a selector function')
+    }
+
     throw new MissingSelectorError(`No selector function configured for key type "${parts[1]}"`)
   }
 
