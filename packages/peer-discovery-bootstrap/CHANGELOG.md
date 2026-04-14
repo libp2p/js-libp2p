@@ -83,6 +83,25 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [12.0.17](https://github.com/libp2p/js-libp2p/compare/bootstrap-v12.0.16...bootstrap-v12.0.17) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/interface-internal bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/peer-id bumped from ^6.0.6 to ^6.0.7
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.16 to ^7.0.17
+    * @libp2p/logger bumped from ^6.2.4 to ^6.2.5
+
 ## [12.0.16](https://github.com/libp2p/js-libp2p/compare/bootstrap-v12.0.15...bootstrap-v12.0.16) (2026-04-08)
 
 

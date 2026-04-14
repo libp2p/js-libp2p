@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.2.1](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.0...integration-tests-v1.2.1) (2026-04-14)
+
+
+### Dependencies
+
+* update p-retry to 8.x.x ([#3442](https://github.com/libp2p/js-libp2p/issues/3442)) ([aaf3fbb](https://github.com/libp2p/js-libp2p/commit/aaf3fbbe224bb7c62dfb9a2ffc8751794a93daec))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/gossipsub bumped from ^15.0.17 to ^15.0.18
+    * @libp2p/bootstrap bumped from ^12.0.16 to ^12.0.17
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.0 to ^4.2.1
+    * @libp2p/crypto bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/daemon-client bumped from ^10.0.17 to ^10.0.18
+    * @libp2p/daemon-server bumped from ^9.0.17 to ^9.0.18
+    * @libp2p/dcutr bumped from ^3.0.15 to ^3.0.16
+    * @libp2p/echo bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/fetch bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/floodsub bumped from ^11.0.16 to ^11.0.17
+    * @libp2p/identify bumped from ^4.1.0 to ^4.1.1
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/interface-compliance-tests bumped from ^7.0.16 to ^7.0.17
+    * @libp2p/interface-internal bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/interop bumped from ^14.0.17 to ^14.0.18
+    * @libp2p/kad-dht bumped from ^16.2.0 to ^16.2.1
+    * @libp2p/logger bumped from ^6.2.4 to ^6.2.5
+    * @libp2p/mdns bumped from ^12.0.16 to ^12.0.17
+    * @libp2p/memory bumped from ^2.0.15 to ^2.0.16
+    * @libp2p/mplex bumped from ^12.0.16 to ^12.0.17
+    * @libp2p/peer-collections bumped from ^7.0.15 to ^7.0.16
+    * @libp2p/peer-id bumped from ^6.0.6 to ^6.0.7
+    * @libp2p/ping bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/plaintext bumped from ^3.0.15 to ^3.0.16
+    * @libp2p/tcp bumped from ^11.0.15 to ^11.0.16
+    * @libp2p/tls bumped from ^3.0.15 to ^3.0.16
+    * @libp2p/utils bumped from ^7.0.15 to ^7.0.16
+    * @libp2p/webrtc bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/websockets bumped from ^10.1.8 to ^10.1.9
+    * @libp2p/webtransport bumped from ^6.0.17 to ^6.0.18
+    * libp2p bumped from ^3.2.0 to ^3.2.1
+
 ## [1.2.0](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.1.7...integration-tests-v1.2.0) (2026-04-08)
 
 
