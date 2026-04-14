@@ -185,7 +185,7 @@ describe('save', () => {
     await expect(spy.getCall(1).returnValue).to.eventually.have.property('updated', false)
   })
 
-  it('should not store a public key if part of peer id', async () => {
+  it('should only store a public key when not embedded in the peer id', async () => {
     // @ts-expect-error private fields
     const spy = sinon.spy(peerStore.store.datastore, 'put')
 
@@ -217,6 +217,15 @@ describe('save', () => {
 
     const dbPeerRsaKey = PeerPB.decode(spy.getCall(2).args[1])
     expect(dbPeerRsaKey).to.have.property('publicKey').that.equalBytes(publicKeyToProtobuf(rsaKey.publicKey))
+
+    const mldsaKey = await generateKeyPair('MLDSA')
+    const mldsaPeer = peerIdFromPrivateKey(mldsaKey)
+    await peerStore.save(mldsaPeer, {
+      publicKey: mldsaKey.publicKey
+    })
+
+    const dbPeerMldsaKey = PeerPB.decode(spy.getCall(3).args[1])
+    expect(dbPeerMldsaKey).to.have.property('publicKey').that.equalBytes(publicKeyToProtobuf(mldsaKey.publicKey!))
   })
 
   it('saves all of the fields', async () => {

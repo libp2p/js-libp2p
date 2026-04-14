@@ -165,8 +165,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     addr.observed = options.existingPeer?.peerPB.addresses?.find(addr => uint8ArrayEquals(addr.multiaddr, addr.multiaddr))?.observed ?? Date.now()
   })
 
-  // Ed25519 and secp256k1 have their public key embedded in them so no need to duplicate it
-  if (peerId.type !== 'RSA') {
+  // identity multihashes embed their public key, hashed peer ids do not
+  if (peerId.toMultihash().code !== 0x12) {
     delete output.publicKey
   }
 

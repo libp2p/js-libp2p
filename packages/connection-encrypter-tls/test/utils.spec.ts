@@ -1,6 +1,8 @@
 import 'reflect-metadata'
 import { EventEmitter } from 'node:events'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { logger } from '@libp2p/logger'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { streamPair } from '@libp2p/utils'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
@@ -8,13 +10,18 @@ import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.js'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { generateCertificate, toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.js'
 import * as testVectors from './fixtures/test-vectors.js'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
 
 describe('utils', () => {
+  before(function () {
+    this.timeout(60 * 1000)
+  })
+
   // unsupported key type
   it.skip('should verify correct ECDSA certificate', async () => {
     const peerId = await verifyPeerCertificate(testVectors.validECDSACertificate.cert)
@@ -32,6 +39,29 @@ describe('utils', () => {
     const peerId = await verifyPeerCertificate(testVectors.validSecp256k1Certificate.cert)
 
     expect(peerId.toString()).to.equal(testVectors.validSecp256k1Certificate.peerId.toString())
+  })
+
+  it('should verify generated MLDSA certificate', async () => {
+    const privateKey = await generateKeyPair('MLDSA')
+    const expectedPeerId = peerIdFromPrivateKey(privateKey)
+
+    const certificate = await generateCertificate(privateKey)
+    const certBytes = uint8ArrayFromString(certificate.cert.replace('-----BEGIN CERTIFICATE-----\n', '').replace('\n-----END CERTIFICATE-----', '').replace(/\n/g, ''), 'base64pad')
+    const peerId = await verifyPeerCertificate(certBytes)
+
+    expect(peerId.toString()).to.equal(expectedPeerId.toString())
+  })
+
+  it('should reject generated MLDSA certificate when expected peer id does not match', async () => {
+    const privateKey = await generateKeyPair('MLDSA')
+    const wrongPeerKey = await generateKeyPair('MLDSA')
+    const wrongPeerId = peerIdFromPrivateKey(wrongPeerKey)
+
+    const certificate = await generateCertificate(privateKey)
+    const certBytes = uint8ArrayFromString(certificate.cert.replace('-----BEGIN CERTIFICATE-----\n', '').replace('\n-----END CERTIFICATE-----', '').replace(/\n/g, ''), 'base64pad')
+
+    await expect(verifyPeerCertificate(certBytes, wrongPeerId, logger('libp2p'))).to.eventually.be.rejected
+      .with.property('name', 'UnexpectedPeerError')
   })
 
   it('should reject certificate with a the wrong peer id in the extension', async () => {

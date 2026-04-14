@@ -22,8 +22,8 @@ import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { RSAPeerId as RSAPeerIdClass, Ed25519PeerId as Ed25519PeerIdClass, Secp256k1PeerId as Secp256k1PeerIdClass, URLPeerId as URLPeerIdClass } from './peer-id.js'
-import type { Ed25519PeerId, RSAPeerId, URLPeerId, Secp256k1PeerId, PeerId, PublicKey, Ed25519PublicKey, Secp256k1PublicKey, RSAPublicKey, Ed25519PrivateKey, Secp256k1PrivateKey, RSAPrivateKey, PrivateKey } from '@libp2p/interface'
+import { RSAPeerId as RSAPeerIdClass, Ed25519PeerId as Ed25519PeerIdClass, Secp256k1PeerId as Secp256k1PeerIdClass, URLPeerId as URLPeerIdClass, MLDSAPeerId as MLDSAPeerIdClass, HashedPeerId as HashedPeerIdClass } from './peer-id.js'
+import type { Ed25519PeerId, RSAPeerId, URLPeerId, Secp256k1PeerId, MLDSAPeerId, HashedPeerId, PeerId, PublicKey, Ed25519PublicKey, Secp256k1PublicKey, RSAPublicKey, MLDSAPublicKey, Ed25519PrivateKey, Secp256k1PrivateKey, RSAPrivateKey, MLDSAPrivateKey, PrivateKey } from '@libp2p/interface'
 import type { MultibaseDecoder } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -31,7 +31,7 @@ import type { MultihashDigest } from 'multiformats/hashes/interface'
 const LIBP2P_KEY_CODE = 0x72
 const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 
-export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
+export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId | MLDSAPeerId | HashedPeerId {
   let multihash: MultihashDigest
 
   if (str.charAt(0) === '1' || str.charAt(0) === 'Q') {
@@ -55,6 +55,7 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
 export function peerIdFromPublicKey (publicKey: Ed25519PublicKey): Ed25519PeerId
 export function peerIdFromPublicKey (publicKey: Secp256k1PublicKey): Secp256k1PeerId
 export function peerIdFromPublicKey (publicKey: RSAPublicKey): RSAPeerId
+export function peerIdFromPublicKey (publicKey: MLDSAPublicKey): MLDSAPeerId
 export function peerIdFromPublicKey (publicKey: PublicKey): PeerId
 export function peerIdFromPublicKey (publicKey: PublicKey): PeerId {
   if (publicKey.type === 'Ed25519') {
@@ -72,6 +73,11 @@ export function peerIdFromPublicKey (publicKey: PublicKey): PeerId {
       multihash: publicKey.toCID().multihash,
       publicKey
     })
+  } else if (publicKey.type === 'MLDSA') {
+    return new MLDSAPeerIdClass({
+      multihash: publicKey.toCID().multihash,
+      publicKey
+    })
   }
 
   throw new UnsupportedKeyTypeError()
@@ -80,6 +86,7 @@ export function peerIdFromPublicKey (publicKey: PublicKey): PeerId {
 export function peerIdFromPrivateKey (privateKey: Ed25519PrivateKey): Ed25519PeerId
 export function peerIdFromPrivateKey (privateKey: Secp256k1PrivateKey): Secp256k1PeerId
 export function peerIdFromPrivateKey (privateKey: RSAPrivateKey): RSAPeerId
+export function peerIdFromPrivateKey (privateKey: MLDSAPrivateKey): MLDSAPeerId
 export function peerIdFromPrivateKey (privateKey: PrivateKey): PeerId
 export function peerIdFromPrivateKey (privateKey: PrivateKey): PeerId {
   return peerIdFromPublicKey(privateKey.publicKey)
@@ -87,7 +94,7 @@ export function peerIdFromPrivateKey (privateKey: PrivateKey): PeerId {
 
 export function peerIdFromMultihash (multihash: MultihashDigest): PeerId {
   if (isSha256Multihash(multihash)) {
-    return new RSAPeerIdClass({ multihash })
+    return new HashedPeerIdClass({ multihash })
   } else if (isIdentityMultihash(multihash)) {
     try {
       const publicKey = publicKeyFromMultihash(multihash)
@@ -108,7 +115,7 @@ export function peerIdFromMultihash (multihash: MultihashDigest): PeerId {
   throw new InvalidMultihashError('Supplied PeerID Multihash is invalid')
 }
 
-export function peerIdFromCID (cid: CID): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId {
+export function peerIdFromCID (cid: CID): Ed25519PeerId | Secp256k1PeerId | RSAPeerId | URLPeerId | MLDSAPeerId | HashedPeerId {
   if (cid?.multihash == null || cid.version == null || (cid.version === 1 && (cid.code !== LIBP2P_KEY_CODE) && cid.code !== TRANSPORT_IPFS_GATEWAY_HTTP_CODE)) {
     throw new InvalidCIDError('Supplied PeerID CID is invalid')
   }

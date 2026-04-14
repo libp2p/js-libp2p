@@ -1,8 +1,11 @@
+Certicom
+MLDSA
+RSAES
+SECG
 additionals
 backpressure
 blpop
 buildx
-Certicom
 chacha
 connmanager
 dialback
@@ -21,8 +24,6 @@ reprovides
 reproviding
 rlflx
 rpush
-RSAES
-SECG
 setbit
 stopstr
 supercop

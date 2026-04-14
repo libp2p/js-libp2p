@@ -21,7 +21,7 @@ import { identity } from 'multiformats/hashes/identity'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Ed25519PeerId as Ed25519PeerIdInterface, PeerIdType, RSAPeerId as RSAPeerIdInterface, URLPeerId as URLPeerIdInterface, Secp256k1PeerId as Secp256k1PeerIdInterface, PeerId, PublicKey, Ed25519PublicKey, Secp256k1PublicKey, RSAPublicKey } from '@libp2p/interface'
+import type { Ed25519PeerId as Ed25519PeerIdInterface, PeerIdType, RSAPeerId as RSAPeerIdInterface, URLPeerId as URLPeerIdInterface, Secp256k1PeerId as Secp256k1PeerIdInterface, MLDSAPeerId as MLDSAPeerIdInterface, HashedPeerId as HashedPeerIdInterface, PeerId, PublicKey, Ed25519PublicKey, Secp256k1PublicKey, RSAPublicKey, MLDSAPublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 const inspect = Symbol.for('nodejs.util.inspect.custom')
@@ -47,6 +47,16 @@ interface Ed25519PeerIdInit {
 interface Secp256k1PeerIdInit {
   multihash: MultihashDigest<0x0>
   publicKey: Secp256k1PublicKey
+}
+
+interface MLDSAPeerIdInit {
+  multihash: MultihashDigest<0x12>
+  publicKey?: MLDSAPublicKey
+}
+
+interface HashedPeerIdInit {
+  multihash: MultihashDigest<0x12>
+  publicKey?: RSAPublicKey | MLDSAPublicKey
 }
 
 class PeerIdImpl <DigestCode extends number> {
@@ -158,6 +168,28 @@ export class Secp256k1PeerId extends PeerIdImpl<0x0> implements Secp256k1PeerIdI
 
   constructor (init: Secp256k1PeerIdInit) {
     super({ ...init, type: 'secp256k1' })
+
+    this.publicKey = init.publicKey
+  }
+}
+
+export class MLDSAPeerId extends PeerIdImpl<0x12> implements MLDSAPeerIdInterface {
+  public readonly type = 'MLDSA'
+  public readonly publicKey?: MLDSAPublicKey
+
+  constructor (init: MLDSAPeerIdInit) {
+    super({ ...init, type: 'MLDSA' })
+
+    this.publicKey = init.publicKey
+  }
+}
+
+export class HashedPeerId extends PeerIdImpl<0x12> implements HashedPeerIdInterface {
+  public readonly type = 'hashed'
+  public readonly publicKey?: RSAPublicKey | MLDSAPublicKey
+
+  constructor (init: HashedPeerIdInit) {
+    super({ ...init, type: 'hashed' })
 
     this.publicKey = init.publicKey
   }

@@ -87,12 +87,16 @@
     "test:webkit": "aegir test -t browser -- --browser webkit",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
-    "generate": "protons ./src/keys/keys.proto"
+    "generate": "protons ./src/keys/keys.proto",
+    "bench:mldsa": "node ./benchmark/mldsa.cjs",
+    "bench:mldsa:noble": "MLDSA_BENCH_BACKENDS=noble node ./benchmark/mldsa.cjs",
+    "bench:mldsa:subtle": "MLDSA_BENCH_BACKENDS=node-subtle node ./benchmark/mldsa.cjs"
   },
   "dependencies": {
     "@libp2p/interface": "^3.2.0",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
+    "@noble/post-quantum": "^0.6.0",
     "multiformats": "^13.4.0",
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
@@ -110,6 +114,7 @@
     "./dist/src/hmac/index.js": "./dist/src/hmac/index.browser.js",
     "./dist/src/keys/ecdh/index.js": "./dist/src/keys/ecdh/index.browser.js",
     "./dist/src/keys/ed25519/index.js": "./dist/src/keys/ed25519/index.browser.js",
+    "./dist/src/keys/mldsa/index.js": "./dist/src/keys/mldsa/index.browser.js",
     "./dist/src/keys/rsa/index.js": "./dist/src/keys/rsa/index.browser.js",
     "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js",
     "./dist/src/webcrypto/webcrypto.js": "./dist/src/webcrypto/webcrypto.browser.js"

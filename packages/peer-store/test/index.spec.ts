@@ -44,6 +44,39 @@ describe('PersistentPeerStore', () => {
     expect(peers.length).to.equal(0)
   })
 
+  it('hydrates MLDSA hashed peer ids with stored public keys after reload', async () => {
+    const datastore = new MemoryDatastore()
+    const selfPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const remotePrivateKey = await generateKeyPair('MLDSA')
+    const remotePeerId = peerIdFromPrivateKey(remotePrivateKey)
+
+    const peerStoreA = persistentPeerStore({
+      peerId: selfPeerId,
+      events: new TypedEventEmitter(),
+      datastore,
+      logger: defaultLogger()
+    })
+
+    await peerStoreA.patch(remotePeerId, {
+      publicKey: remotePrivateKey.publicKey,
+      multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234')],
+      protocols: ['/ipfs/id/1.0.0']
+    })
+
+    const peerStoreB = persistentPeerStore({
+      peerId: selfPeerId,
+      events: new TypedEventEmitter(),
+      datastore,
+      logger: defaultLogger()
+    })
+
+    const peer = await peerStoreB.get(remotePeerId)
+
+    expect(peer.id.toString()).to.equal(remotePeerId.toString())
+    expect(peer.id).to.have.property('type', 'MLDSA')
+    expect(peer.id.publicKey?.equals(remotePrivateKey.publicKey!)).to.be.true()
+  })
+
   describe('has', () => {
     it('has peer data', async () => {
       await expect(peerStore.has(otherPeerId)).to.eventually.be.false()
