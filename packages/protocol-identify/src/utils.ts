@@ -2,11 +2,12 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { isPrivate } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.js'
+import { FIRST_IDENTIFY_MESSAGE_MAX_SIZE, IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE } from './consts.js'
+import { Identify as IdentifyMessage } from './pb/message.js'
 import type { IdentifyComponents, IdentifyInit } from './index.js'
-import type { Identify as IdentifyMessage } from './pb/message.js'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -169,6 +170,127 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   events.safeDispatchEvent('peer:identify', { detail: result })
 
   return result
+}
+
+/**
+ * Merge multiple received Identify messages into one
+ */
+export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMessage {
+  const merged: IdentifyMessage = { ...messages[0] }
+
+  for (const msg of messages.slice(1)) {
+    if (msg.protocolVersion != null) {
+      merged.protocolVersion = msg.protocolVersion
+    }
+    if (msg.agentVersion != null) {
+      merged.agentVersion = msg.agentVersion
+    }
+    if (msg.publicKey != null) {
+      merged.publicKey = msg.publicKey
+    }
+    if (msg.observedAddr != null) {
+      merged.observedAddr = msg.observedAddr
+    }
+    if (msg.signedPeerRecord != null) {
+      merged.signedPeerRecord = msg.signedPeerRecord
+    }
+    merged.listenAddrs = [...merged.listenAddrs, ...msg.listenAddrs]
+    merged.protocols = [...new Set([...merged.protocols, ...msg.protocols])]
+  }
+
+  return merged
+}
+
+/**
+ * Split an outgoing Identify message into chunks that respect the per-message size limits:
+ *   - first message SHOULD NOT exceed 2 KB
+ *   - subsequent messages SHOULD NOT exceed 4 KB
+ *
+ * Addresses are sorted so that publicly-reachable ones appear in the first
+ * message, improving backwards-compatibility with old receivers that stop
+ * after the first message.
+ */
+export function buildIdentifyMessages (msg: IdentifyMessage): IdentifyMessage[] {
+  // Sort: non-private (public + circuit-relay-via-public-relay) first
+  const sortedAddrs = [...msg.listenAddrs].sort((a, b) => {
+    try {
+      const aPublic = isPrivate(multiaddr(a)) ? 0 : 1
+      const bPublic = isPrivate(multiaddr(b)) ? 0 : 1
+      return bPublic - aPublic
+    } catch {
+      return 0
+    }
+  })
+
+  const full: IdentifyMessage = { ...msg, listenAddrs: sortedAddrs }
+  if (IdentifyMessage.encode(full).length <= FIRST_IDENTIFY_MESSAGE_MAX_SIZE) {
+    return [full]
+  }
+
+  const messages: IdentifyMessage[] = []
+  const remainingAddrs = [...sortedAddrs]
+  const remainingProtocols = [...msg.protocols]
+
+  // First message carries all scalar fields + signedPeerRecord, then as many
+  // addresses and protocols as fit within 2 KB.
+  const first: IdentifyMessage = {
+    protocolVersion: msg.protocolVersion,
+    agentVersion: msg.agentVersion,
+    publicKey: msg.publicKey,
+    observedAddr: msg.observedAddr,
+    signedPeerRecord: msg.signedPeerRecord,
+    listenAddrs: [],
+    protocols: []
+  }
+
+  while (remainingAddrs.length > 0) {
+    const candidate: IdentifyMessage = { ...first, listenAddrs: [...first.listenAddrs, remainingAddrs[0]] }
+    if (IdentifyMessage.encode(candidate).length <= FIRST_IDENTIFY_MESSAGE_MAX_SIZE) {
+      first.listenAddrs.push(remainingAddrs.shift()!)
+    } else {
+      break
+    }
+  }
+
+  while (remainingProtocols.length > 0) {
+    const candidate: IdentifyMessage = { ...first, protocols: [...first.protocols, remainingProtocols[0]] }
+    if (IdentifyMessage.encode(candidate).length <= FIRST_IDENTIFY_MESSAGE_MAX_SIZE) {
+      first.protocols.push(remainingProtocols.shift()!)
+    } else {
+      break
+    }
+  }
+
+  messages.push(first)
+
+  // Subsequent messages carry the remaining addresses and protocols in ≤4 KB chunks.
+  while (remainingAddrs.length > 0 || remainingProtocols.length > 0) {
+    const subsequent: IdentifyMessage = { listenAddrs: [], protocols: [] }
+
+    while (remainingAddrs.length > 0) {
+      const candidate: IdentifyMessage = { ...subsequent, listenAddrs: [...subsequent.listenAddrs, remainingAddrs[0]] }
+      if (IdentifyMessage.encode(candidate).length <= SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE) {
+        subsequent.listenAddrs.push(remainingAddrs.shift()!)
+      } else {
+        // Single address exceeds limit; send it anyway to avoid getting stuck.
+        subsequent.listenAddrs.push(remainingAddrs.shift()!)
+        break
+      }
+    }
+
+    while (remainingProtocols.length > 0) {
+      const candidate: IdentifyMessage = { ...subsequent, protocols: [...subsequent.protocols, remainingProtocols[0]] }
+      if (IdentifyMessage.encode(candidate).length <= SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE) {
+        subsequent.protocols.push(remainingProtocols.shift()!)
+      } else {
+        break
+      }
+    }
+
+    messages.push(subsequent)
+  }
+
+  return messages
 }
 
 export interface AbstractIdentifyInit extends IdentifyInit {

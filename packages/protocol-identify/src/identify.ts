@@ -11,7 +11,7 @@ import {
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION
 } from './consts.js'
 import { Identify as IdentifyMessage } from './pb/message.js'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
+import { AbstractIdentify, buildIdentifyMessages, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger, NewStreamOptions } from '@libp2p/interface'
 
@@ -87,35 +87,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
       await pb.unwrap().unwrap().close(options)
 
-      // Merge any subsequent identify messages into the first response
-      const message = messages[0]
-
-      for (const msg of messages.slice(1)) {
-        if (msg.protocolVersion != null) {
-          message.protocolVersion = msg.protocolVersion
-        }
-
-        if (msg.agentVersion != null) {
-          message.agentVersion = msg.agentVersion
-        }
-
-        if (msg.publicKey != null) {
-          message.publicKey = msg.publicKey
-        }
-
-        if (msg.observedAddr != null) {
-          message.observedAddr = msg.observedAddr
-        }
-
-        if (msg.signedPeerRecord != null) {
-          message.signedPeerRecord = msg.signedPeerRecord
-        }
-
-        message.listenAddrs = [...message.listenAddrs, ...msg.listenAddrs]
-        message.protocols = [...new Set([...message.protocols, ...msg.protocols])]
-      }
-
-      return message
+      return mergeIdentifyMessages(messages)
     } catch (err: any) {
       log?.error('identify failed - %e', err)
       stream?.abort(err)
@@ -226,7 +198,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     const pb = pbStream(stream).pb(IdentifyMessage)
 
     log('send response')
-    await pb.write({
+    const msgs = buildIdentifyMessages({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
       publicKey: publicKeyToProtobuf(this.components.privateKey.publicKey),
@@ -234,9 +206,11 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       signedPeerRecord,
       observedAddr,
       protocols: peerData.protocols
-    }, {
-      signal
     })
+
+    for (const msg of msgs) {
+      await pb.write(msg, { signal })
+    }
 
     log('close write')
     await pb.unwrap().unwrap().close({

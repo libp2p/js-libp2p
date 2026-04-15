@@ -519,6 +519,107 @@ describe('identify', () => {
     expect(result.observedAddr).to.be.undefined()
   })
 
+  it('should split large identify response into multiple messages', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    // Many private addresses so the response exceeds 2 KB
+    const manyAddrs = Array.from({ length: 300 }, (_, i) =>
+      multiaddr(`/ip4/10.0.${Math.floor(i / 256)}.${i % 256}/tcp/1234`)
+    )
+    components.addressManager.getAddresses.returns(manyAddrs)
+
+    // Supply a pre-sealed small signedPeerRecord so handleProtocol does not
+    // seal one containing all 300 addresses (which would be > 2 KB alone).
+    const selfRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: components.peerId,
+      multiaddrs: [multiaddr('/ip4/5.5.5.5/tcp/9000')]
+    }), components.privateKey)
+
+    components.peerStore.get.resolves({
+      id: components.peerId,
+      addresses: [],
+      protocols: ['/foo/1.0'],
+      metadata: new Map(),
+      tags: new Map(),
+      peerRecordEnvelope: selfRecord.marshal()
+    })
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remoteAddr: multiaddr('/ip4/5.5.5.5/tcp/9000')
+    })
+
+    void identify.handleProtocol(incomingStream, connection)
+
+    // Read all messages until the stream closes
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    const messages: IdentifyMessage[] = []
+
+    try {
+      for (let i = 0; i < 10; i++) {
+        messages.push(await pb.read())
+      }
+    } catch {
+      // stream closed after last message — expected
+    }
+
+    expect(messages.length).to.be.greaterThan(1, 'expected response to be split into multiple messages')
+
+    // Scalar fields only in first message
+    expect(messages[0].protocolVersion).to.be.ok()
+    expect(messages[0].agentVersion).to.be.ok()
+
+    // All addresses present across all messages
+    const allAddrs = messages.flatMap(m => m.listenAddrs)
+    expect(allAddrs).to.have.lengthOf(manyAddrs.length)
+  })
+
+  it('should order public addresses before private in the identify response', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const publicAddr = multiaddr('/ip4/1.2.3.4/tcp/1234')
+    // Many private addresses first, then the one public address at the end
+    const manyAddrs = [
+      ...Array.from({ length: 300 }, (_, i) =>
+        multiaddr(`/ip4/10.0.${Math.floor(i / 256)}.${i % 256}/tcp/1234`)
+      ),
+      publicAddr
+    ]
+    components.addressManager.getAddresses.returns(manyAddrs)
+
+    // Supply a pre-sealed small signedPeerRecord so it doesn't consume the whole first message.
+    const selfRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: components.peerId,
+      multiaddrs: [multiaddr('/ip4/5.5.5.5/tcp/9000')]
+    }), components.privateKey)
+
+    components.peerStore.get.resolves({
+      id: components.peerId,
+      addresses: [],
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map(),
+      peerRecordEnvelope: selfRecord.marshal()
+    })
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remoteAddr: multiaddr('/ip4/5.5.5.5/tcp/9000')
+    })
+
+    void identify.handleProtocol(incomingStream, connection)
+
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    const firstMessage = await pb.read()
+
+    const firstMessageAddrs = firstMessage.listenAddrs.map(a => multiaddr(a).toString())
+    expect(firstMessageAddrs).to.include('/ip4/1.2.3.4/tcp/1234', 'public address not in first message')
+  })
+
   it('should ignore observed non global unicast IPv6 addresses', async () => {
     identify = new Identify(components)
 
