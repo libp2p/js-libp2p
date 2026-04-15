@@ -202,6 +202,32 @@ export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMes
 }
 
 /**
+ * Greedily pack items from `remaining` into `current` as long as the encoded
+ * message produced by `buildCandidate` stays within `maxSize`.
+ *
+ * When `guaranteeFirst` is true the size check is skipped for the very first
+ * item so that the caller always makes progress (used when `current` must end
+ * up non-empty regardless of size).
+ */
+function packItems<T> (
+  current: T[],
+  remaining: T[],
+  maxSize: number,
+  buildCandidate: (items: T[]) => IdentifyMessage,
+  guaranteeFirst = false
+): void {
+  while (remaining.length > 0) {
+    if (!guaranteeFirst || current.length > 0) {
+      const candidate = buildCandidate([...current, remaining[0]])
+      if (IdentifyMessage.encode(candidate).length > maxSize) {
+        break
+      }
+    }
+    current.push(remaining.shift()!)
+  }
+}
+
+/**
  * Split an outgoing Identify message into chunks that respect the per-message size limits:
  *   - first message SHOULD NOT exceed 2 KB
  *   - subsequent messages SHOULD NOT exceed 4 KB
@@ -243,49 +269,46 @@ export function buildIdentifyMessages (msg: IdentifyMessage): IdentifyMessage[] 
     protocols: []
   }
 
-  while (remainingAddrs.length > 0) {
-    const candidate: IdentifyMessage = { ...first, listenAddrs: [...first.listenAddrs, remainingAddrs[0]] }
-    if (IdentifyMessage.encode(candidate).length <= FIRST_IDENTIFY_MESSAGE_MAX_SIZE) {
-      first.listenAddrs.push(remainingAddrs.shift()!)
-    } else {
-      break
-    }
+  packItems(first.listenAddrs, remainingAddrs, FIRST_IDENTIFY_MESSAGE_MAX_SIZE,
+    items => ({ ...first, listenAddrs: items }))
+
+  // If signedPeerRecord is so large that no address fits alongside it, defer it
+  // to its own standalone message so the first message can carry addresses instead.
+  // The deferred record may exceed 4 KB but cannot be subdivided.
+  let deferredSignedPeerRecord: Uint8Array | undefined
+  if (first.listenAddrs.length === 0 && remainingAddrs.length > 0 && first.signedPeerRecord != null) {
+    deferredSignedPeerRecord = first.signedPeerRecord
+    first.signedPeerRecord = undefined
+
+    // Re-pack without signedPeerRecord, guaranteeing at least one address.
+    packItems(first.listenAddrs, remainingAddrs, FIRST_IDENTIFY_MESSAGE_MAX_SIZE,
+      items => ({ ...first, listenAddrs: items }), true)
   }
 
-  while (remainingProtocols.length > 0) {
-    const candidate: IdentifyMessage = { ...first, protocols: [...first.protocols, remainingProtocols[0]] }
-    if (IdentifyMessage.encode(candidate).length <= FIRST_IDENTIFY_MESSAGE_MAX_SIZE) {
-      first.protocols.push(remainingProtocols.shift()!)
-    } else {
-      break
-    }
-  }
+  packItems(first.protocols, remainingProtocols, FIRST_IDENTIFY_MESSAGE_MAX_SIZE,
+    items => ({ ...first, protocols: items }))
 
   messages.push(first)
+
+  if (deferredSignedPeerRecord != null) {
+    const spr: IdentifyMessage = { listenAddrs: [], protocols: [], signedPeerRecord: deferredSignedPeerRecord }
+
+    packItems(spr.listenAddrs, remainingAddrs, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
+      items => ({ ...spr, listenAddrs: items }))
+    packItems(spr.protocols, remainingProtocols, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
+      items => ({ ...spr, protocols: items }))
+
+    messages.push(spr)
+  }
 
   // Subsequent messages carry the remaining addresses and protocols in ≤4 KB chunks.
   while (remainingAddrs.length > 0 || remainingProtocols.length > 0) {
     const subsequent: IdentifyMessage = { listenAddrs: [], protocols: [] }
 
-    while (remainingAddrs.length > 0) {
-      const candidate: IdentifyMessage = { ...subsequent, listenAddrs: [...subsequent.listenAddrs, remainingAddrs[0]] }
-      if (IdentifyMessage.encode(candidate).length <= SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE) {
-        subsequent.listenAddrs.push(remainingAddrs.shift()!)
-      } else {
-        // Single address exceeds limit; send it anyway to avoid getting stuck.
-        subsequent.listenAddrs.push(remainingAddrs.shift()!)
-        break
-      }
-    }
-
-    while (remainingProtocols.length > 0) {
-      const candidate: IdentifyMessage = { ...subsequent, protocols: [...subsequent.protocols, remainingProtocols[0]] }
-      if (IdentifyMessage.encode(candidate).length <= SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE) {
-        subsequent.protocols.push(remainingProtocols.shift()!)
-      } else {
-        break
-      }
-    }
+    packItems(subsequent.listenAddrs, remainingAddrs, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
+      items => ({ ...subsequent, listenAddrs: items }), true)
+    packItems(subsequent.protocols, remainingProtocols, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
+      items => ({ ...subsequent, protocols: items }))
 
     messages.push(subsequent)
   }

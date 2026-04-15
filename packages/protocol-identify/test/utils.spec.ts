@@ -57,6 +57,77 @@ describe('buildIdentifyMessages', () => {
     expect(allAddrs).to.have.lengthOf(listenAddrs.length)
   })
 
+  it('spans three or more messages when content exceeds 6 KB', () => {
+    // First message holds ≤2 KB, each subsequent holds ≤4 KB.
+    // 700 addresses × ~10 bytes each ≈ 7 KB — requires at least three messages.
+    const listenAddrs = manyPrivateAddrs(700)
+
+    const msg: IdentifyMessage = {
+      protocolVersion: '1.0.0',
+      agentVersion: 'test/1.0',
+      listenAddrs,
+      protocols: ['/foo/1.0', '/bar/1.0']
+    }
+
+    const messages = buildIdentifyMessages(msg)
+
+    expect(messages.length).to.be.greaterThan(2, 'expected at least three messages')
+
+    expect(IdentifyMessage.encode(messages[0]).length)
+      .to.be.lessThanOrEqual(FIRST_IDENTIFY_MESSAGE_MAX_SIZE)
+
+    for (const subsequent of messages.slice(1)) {
+      expect(IdentifyMessage.encode(subsequent).length)
+        .to.be.lessThanOrEqual(SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE)
+    }
+
+    // Every address must appear in exactly one message
+    const allAddrs = messages.flatMap(m => m.listenAddrs)
+    expect(allAddrs).to.have.lengthOf(listenAddrs.length)
+
+    // Scalar fields only in first message
+    expect(messages[0].protocolVersion).to.equal('1.0.0')
+    for (const subsequent of messages.slice(1)) {
+      expect(subsequent.protocolVersion).to.be.undefined()
+    }
+  })
+
+  it('returns a single message when signedPeerRecord and addresses together fit within 2 KB', () => {
+    const msg: IdentifyMessage = {
+      protocolVersion: '1.0.0',
+      signedPeerRecord: new Uint8Array(100).fill(1),
+      listenAddrs: [multiaddr('/ip4/1.2.3.4/tcp/1234').bytes],
+      protocols: ['/foo/1.0']
+    }
+
+    const messages = buildIdentifyMessages(msg)
+
+    expect(messages).to.have.lengthOf(1)
+    expect(messages[0].signedPeerRecord).to.deep.equal(msg.signedPeerRecord)
+    expect(messages[0].listenAddrs).to.have.lengthOf(1)
+  })
+
+  it('includes at least one address in the first message even when signedPeerRecord is large', () => {
+    // A signedPeerRecord large enough that scalar fields alone exceed 2 KB,
+    // which would prevent any addresses from fitting without special handling.
+    const largeSignedPeerRecord = new Uint8Array(2048).fill(1)
+
+    const msg: IdentifyMessage = {
+      protocolVersion: '1.0.0',
+      agentVersion: 'test/1.0',
+      signedPeerRecord: largeSignedPeerRecord,
+      listenAddrs: [multiaddr('/ip4/1.2.3.4/tcp/1234').bytes, ...manyPrivateAddrs(10)],
+      protocols: ['/foo/1.0']
+    }
+
+    const messages = buildIdentifyMessages(msg)
+
+    expect(messages[0].listenAddrs.length).to.be.greaterThan(0, 'first message must contain at least one address')
+
+    const allAddrs = messages.flatMap(m => m.listenAddrs)
+    expect(allAddrs).to.have.lengthOf(msg.listenAddrs.length)
+  })
+
   it('places public addresses before private addresses', () => {
     const publicAddr = multiaddr('/ip4/1.2.3.4/tcp/1234').bytes
     // Put the public address at the end of a large list of private ones
