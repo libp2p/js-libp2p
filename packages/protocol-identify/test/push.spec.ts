@@ -1,4 +1,5 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -126,8 +127,8 @@ describe('identify (push)', () => {
     const updatedProtocol = '/special-new-protocol/1.0.0'
     const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
 
-    const pb = pbStream(outgoingStream)
-    void pb.write({
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    await pb.write({
       publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       protocols: [
         updatedProtocol
@@ -135,7 +136,8 @@ describe('identify (push)', () => {
       listenAddrs: [
         updatedAddress.bytes
       ]
-    }, IdentifyMessage)
+    })
+    await outgoingStream.close()
 
     components.peerStore.patch.reset()
 
@@ -148,6 +150,60 @@ describe('identify (push)', () => {
     const update = components.peerStore.patch.getCall(0).args[1]
     expect(update.protocols).to.include(updatedProtocol)
     expect(update.addresses?.map(({ multiaddr }) => multiaddr.toString())).deep.equals([updatedAddress.toString()])
+  })
+
+  it('should handle multiple push messages and merge them', async () => {
+    identify = new IdentifyPush(components)
+
+    await start(identify)
+
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+
+    const addr1 = multiaddr('/ip4/127.0.0.1/tcp/1234')
+    const addr2 = multiaddr('/ip4/127.0.0.1/tcp/5678')
+    const protocol1 = '/protocol-a/1.0.0'
+    const protocol2 = '/protocol-b/1.0.0'
+    const sharedProtocol = '/shared/1.0.0'
+
+    // Simulate a sender that splits the push across two messages
+    const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: remotePeer,
+      multiaddrs: [addr1]
+    }), remotePrivateKey)
+
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    await pb.write({
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      listenAddrs: [addr1.bytes],
+      protocols: [protocol1, sharedProtocol]
+    })
+    await pb.write({
+      listenAddrs: [addr2.bytes],
+      protocols: [protocol2, sharedProtocol],
+      signedPeerRecord: signedPeerRecord.marshal()
+    })
+    await outgoingStream.close()
+
+    components.peerStore.patch.reset()
+
+    await identify.handleProtocol(incomingStream, connection)
+
+    expect(components.peerStore.patch.callCount).to.equal(1)
+
+    const update = components.peerStore.patch.getCall(0).args[1]
+
+    // Addresses from both messages should be present
+    const addrs = update.addresses?.map(({ multiaddr: ma }: { multiaddr: { toString(): string } }) => ma.toString()) ?? []
+    // signedPeerRecord was included so addresses come from that
+    expect(addrs).to.include(addr1.toString())
+
+    // signedPeerRecord from second message should be stored
+    expect(update.peerRecordEnvelope).to.deep.equal(signedPeerRecord.marshal())
   })
 
   it('should time out during push identify', async () => {

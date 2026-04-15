@@ -2,7 +2,7 @@ import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
+import { UnexpectedEOFError, isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
 import { CODE_IP6, CODE_IP6ZONE, CODE_P2P } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
@@ -11,7 +11,7 @@ import {
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION
 } from './consts.js'
 import { Identify as IdentifyMessage } from './pb/message.js'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.js'
+import { AbstractIdentify, buildIdentifyMessages, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages } from './utils.js'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.js'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger, NewStreamOptions } from '@libp2p/interface'
 
@@ -64,10 +64,30 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
-      const message = await pb.read(options)
+      // Large responses can be subdivided.
+      // Read all messages until the stream closes.
+      const MAX_IDENTIFY_MESSAGES = 10
+      const messages: IdentifyMessage[] = []
+
+      for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
+        try {
+          messages.push(await pb.read(options))
+        } catch (err) {
+          if (messages.length > 0 && err instanceof UnexpectedEOFError) {
+            break
+          }
+
+          throw err
+        }
+      }
+
+      if (messages.length === 0) {
+        throw new InvalidMessageError('No identify message received')
+      }
+
       await pb.unwrap().unwrap().close(options)
 
-      return message
+      return mergeIdentifyMessages(messages)
     } catch (err: any) {
       log?.error('identify failed - %e', err)
       stream?.abort(err)
@@ -178,7 +198,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     const pb = pbStream(stream).pb(IdentifyMessage)
 
     log('send response')
-    await pb.write({
+    const msgs = buildIdentifyMessages({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
       publicKey: publicKeyToProtobuf(this.components.privateKey.publicKey),
@@ -186,9 +206,11 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       signedPeerRecord,
       observedAddr,
       protocols: peerData.protocols
-    }, {
-      signal
     })
+
+    for (const msg of msgs) {
+      await pb.write(msg, { signal })
+    }
 
     log('close write')
     await pb.unwrap().unwrap().close({

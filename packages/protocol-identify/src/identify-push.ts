@@ -1,6 +1,6 @@
-import { serviceCapabilities } from '@libp2p/interface'
+import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { debounce, pbStream } from '@libp2p/utils'
+import { UnexpectedEOFError, debounce, pbStream } from '@libp2p/utils'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import parallel from 'it-parallel'
@@ -13,7 +13,7 @@ import {
   PUSH_DEBOUNCE_MS
 } from './consts.js'
 import { Identify as IdentifyMessage } from './pb/message.js'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.js'
+import { AbstractIdentify, buildIdentifyMessages, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages } from './utils.js'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.js'
 import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
@@ -99,15 +99,17 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
                 maxDataLength: self.maxMessageSize
               }).pb(IdentifyMessage)
 
-              await pb.write({
+              const msgs = buildIdentifyMessages({
                 listenAddrs: listenAddresses.map(ma => ma.bytes),
                 signedPeerRecord: signedPeerRecord.marshal(),
                 protocols: supportedProtocols,
                 agentVersion,
                 protocolVersion
-              }, {
-                signal
               })
+
+              for (const msg of msgs) {
+                await pb.write(msg, { signal })
+              }
 
               await stream.close({
                 signal
@@ -148,10 +150,27 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       maxDataLength: this.maxMessageSize
     }).pb(IdentifyMessage)
 
-    const message = await pb.read(options)
+    const messages: IdentifyMessage[] = []
+
+    for (let i = 0; i < 10; i++) {
+      try {
+        messages.push(await pb.read(options))
+      } catch (err) {
+        if (messages.length > 0 && err instanceof UnexpectedEOFError) {
+          break
+        }
+
+        throw err
+      }
+    }
+
+    if (messages.length === 0) {
+      throw new InvalidMessageError('No identify message received')
+    }
+
     await stream.close(options)
 
-    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, message)
+    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, mergeIdentifyMessages(messages))
 
     log.trace('handled push from %p', connection.remotePeer)
   }

@@ -82,6 +82,7 @@ describe('identify', () => {
 
     const [outgoingStream, incomingStream] = await streamPair()
     incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    void incomingStream.close()
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -109,6 +110,7 @@ describe('identify', () => {
       protocols: [],
       publicKey: publicKeyToProtobuf(otherPeer.publicKey)
     })))
+    void incomingStream.close()
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -164,6 +166,107 @@ describe('identify', () => {
     expect(outgoingStream).to.have.property('status', 'aborted')
   })
 
+  it('should succeed if the remote closes the stream after sending the identify response', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const message: IdentifyMessage = {
+      listenAddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/123').bytes
+      ],
+      protocols: [
+        '/foo/bar/1.0'
+      ],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+    }
+
+    const [outgoingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    const identifyPromise = identify.identify(connection)
+
+    // Wait for identify to register its stream listener
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+
+    // send the identify message with a trailing byte then close immediately.
+    const encoded = lp.encode.single(IdentifyMessage.encode(message)).subarray()
+    const combined = new Uint8Array(encoded.byteLength + 1)
+    combined.set(encoded)
+    outgoingStream.push(combined) // appends to readBuffer, schedules setTimeout(dispatchReadBuffer, 0)
+    outgoingStream.remoteWriteStatus = 'closed' // set before dispatchReadBuffer fires
+
+    const response = await identifyPromise
+
+    expect(response.peerId.toString()).to.equal(remotePeer.toString())
+    expect(response.protocols).to.deep.equal(message.protocols)
+    expect(response.listenAddrs.map(ma => ma.toString())).to.deep.equal(['/ip4/123.123.123.123/tcp/123'])
+  })
+
+  it('should merge multiple identify messages from the remote', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+
+    const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: remotePeer,
+      multiaddrs: [
+        multiaddr('/ip4/127.0.0.1/tcp/5678')
+      ]
+    }), remotePrivateKey)
+    const peerRecordEnvelope = signedPeerRecord.marshal()
+
+    // simulate go-libp2p splitting a large identify response into two messages:
+    // first message has everything except signedPeerRecord, second has only signedPeerRecord
+    const firstMessage: IdentifyMessage = {
+      listenAddrs: [
+        multiaddr('/ip4/123.123.123.123/tcp/123').bytes
+      ],
+      protocols: [
+        '/foo/bar/1.0'
+      ],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+    }
+    const secondMessage: IdentifyMessage = {
+      listenAddrs: [],
+      protocols: [],
+      signedPeerRecord: peerRecordEnvelope
+    }
+
+    const [outgoingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    const identifyPromise = identify.identify(connection)
+
+    // Wait for identify to register its stream listener
+    await new Promise<void>(resolve => setTimeout(resolve, 0))
+
+    const encoded1 = lp.encode.single(IdentifyMessage.encode(firstMessage)).subarray()
+    const encoded2 = lp.encode.single(IdentifyMessage.encode(secondMessage)).subarray()
+    const combined = new Uint8Array(encoded1.byteLength + encoded2.byteLength)
+    combined.set(encoded1)
+    combined.set(encoded2, encoded1.byteLength)
+    outgoingStream.push(combined) // appends to readBuffer, schedules setTimeout(dispatchReadBuffer, 0)
+    outgoingStream.remoteWriteStatus = 'closed' // set before dispatchReadBuffer fires
+
+    await identifyPromise
+
+    // should have stored the signedPeerRecord from the second message
+    expect(components.peerStore.patch.callCount).to.equal(1)
+    expect(components.peerStore.patch.getCall(0).args[1])
+      .to.have.property('peerRecordEnvelope').that.equalBytes(peerRecordEnvelope)
+  })
+
   it('should limit incoming identify message sizes', async () => {
     const maxMessageSize = 100
 
@@ -204,6 +307,7 @@ describe('identify', () => {
       agentVersion: 'secret-agent',
       protocolVersion: '9000'
     })))
+    void incomingStream.close()
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -257,6 +361,7 @@ describe('identify', () => {
       publicKey: publicKeyToProtobuf(remotePeer.publicKey),
       signedPeerRecord: oldPeerRecord.marshal()
     })))
+    void incomingStream.close()
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -308,6 +413,7 @@ describe('identify', () => {
 
     const [outgoingStream, incomingStream] = await streamPair()
     incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    void incomingStream.close()
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -356,6 +462,7 @@ describe('identify', () => {
 
     const [outgoingStream, incomingStream] = await streamPair()
     incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    void incomingStream.close()
     const connection = stubInterface<Connection>({
       remotePeer
     })
@@ -412,6 +519,107 @@ describe('identify', () => {
     expect(result.observedAddr).to.be.undefined()
   })
 
+  it('should split large identify response into multiple messages', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    // Many private addresses so the response exceeds 2 KB
+    const manyAddrs = Array.from({ length: 300 }, (_, i) =>
+      multiaddr(`/ip4/10.0.${Math.floor(i / 256)}.${i % 256}/tcp/1234`)
+    )
+    components.addressManager.getAddresses.returns(manyAddrs)
+
+    // Supply a pre-sealed small signedPeerRecord so handleProtocol does not
+    // seal one containing all 300 addresses (which would be > 2 KB alone).
+    const selfRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: components.peerId,
+      multiaddrs: [multiaddr('/ip4/5.5.5.5/tcp/9000')]
+    }), components.privateKey)
+
+    components.peerStore.get.resolves({
+      id: components.peerId,
+      addresses: [],
+      protocols: ['/foo/1.0'],
+      metadata: new Map(),
+      tags: new Map(),
+      peerRecordEnvelope: selfRecord.marshal()
+    })
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remoteAddr: multiaddr('/ip4/5.5.5.5/tcp/9000')
+    })
+
+    void identify.handleProtocol(incomingStream, connection)
+
+    // Read all messages until the stream closes
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    const messages: IdentifyMessage[] = []
+
+    try {
+      for (let i = 0; i < 10; i++) {
+        messages.push(await pb.read())
+      }
+    } catch {
+      // stream closed after last message — expected
+    }
+
+    expect(messages.length).to.be.greaterThan(1, 'expected response to be split into multiple messages')
+
+    // Scalar fields only in first message
+    expect(messages[0].protocolVersion).to.be.ok()
+    expect(messages[0].agentVersion).to.be.ok()
+
+    // All addresses present across all messages
+    const allAddrs = messages.flatMap(m => m.listenAddrs)
+    expect(allAddrs).to.have.lengthOf(manyAddrs.length)
+  })
+
+  it('should order public addresses before private in the identify response', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const publicAddr = multiaddr('/ip4/1.2.3.4/tcp/1234')
+    // Many private addresses first, then the one public address at the end
+    const manyAddrs = [
+      ...Array.from({ length: 300 }, (_, i) =>
+        multiaddr(`/ip4/10.0.${Math.floor(i / 256)}.${i % 256}/tcp/1234`)
+      ),
+      publicAddr
+    ]
+    components.addressManager.getAddresses.returns(manyAddrs)
+
+    // Supply a pre-sealed small signedPeerRecord so it doesn't consume the whole first message.
+    const selfRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: components.peerId,
+      multiaddrs: [multiaddr('/ip4/5.5.5.5/tcp/9000')]
+    }), components.privateKey)
+
+    components.peerStore.get.resolves({
+      id: components.peerId,
+      addresses: [],
+      protocols: [],
+      metadata: new Map(),
+      tags: new Map(),
+      peerRecordEnvelope: selfRecord.marshal()
+    })
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remoteAddr: multiaddr('/ip4/5.5.5.5/tcp/9000')
+    })
+
+    void identify.handleProtocol(incomingStream, connection)
+
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    const firstMessage = await pb.read()
+
+    const firstMessageAddrs = firstMessage.listenAddrs.map(a => multiaddr(a).toString())
+    expect(firstMessageAddrs).to.include('/ip4/1.2.3.4/tcp/1234', 'public address not in first message')
+  })
+
   it('should ignore observed non global unicast IPv6 addresses', async () => {
     identify = new Identify(components)
 
@@ -430,6 +638,7 @@ describe('identify', () => {
 
     const [outgoingStream, incomingStream] = await streamPair()
     incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    void incomingStream.close()
     const connection = stubInterface<Connection>({
       remotePeer
     })
