@@ -125,7 +125,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.routingTableUpdateQueue = new PeerQueue<void>({
       concurrency: init.routingTableUpdateQueueConcurrency ?? ROUTING_TABLE_UPDATE_QUEUE_CONCURRENCY,
       metricName: `${init.metricsPrefix}_routing_table_update_queue`,
-      metrics: this.components.metrics
+      metrics: this.components.metrics,
     })
 
     this.pingOldContactQueue = new PeerQueue({
@@ -277,10 +277,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     }
 
     void this.routingTableUpdateQueue.add(async (jobOptions) => {
-      const signal = jobOptions.signal == null
-        ? this.shutdownController.signal
-        : anySignal([this.shutdownController.signal, jobOptions.signal])
-
+      const signal = anySignal([this.shutdownController.signal, jobOptions.signal])
       setMaxListeners(Infinity, signal)
 
       try {
@@ -288,15 +285,13 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
           signal
         })
       } finally {
-        if ('clear' in signal) {
-          (signal as any).clear()
-        }
+        signal.clear()
       }
     }, {
       peerId,
       signal: options.signal
     }).catch(err => {
-      if (this.shutdownController.signal.aborted || (err as any)?.name === 'AbortError') {
+      if (this.shutdownController.signal.aborted || err?.name === 'AbortError') {
         return
       }
 
