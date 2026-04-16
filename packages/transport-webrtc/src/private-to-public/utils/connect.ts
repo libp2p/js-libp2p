@@ -127,7 +127,6 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
     // Creating the connection before completion of the noise
     // handshake ensures that the stream opening callback is set up
     const maConn = toMultiaddrConnection({
-      // @ts-expect-error types are broken
       peerConnection,
       remoteAddr: options.remoteAddr,
       metrics: options.events,

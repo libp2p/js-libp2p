@@ -129,7 +129,6 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
   })
 
   const muxerFactory = new DataChannelMuxerFactory({
-    // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     metrics: options.events,
     dataChannelOptions: options.dataChannel
