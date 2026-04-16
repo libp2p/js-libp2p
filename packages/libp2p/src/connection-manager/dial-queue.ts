@@ -488,7 +488,7 @@ export class DialQueue {
 
     // make sure we actually have some addresses to dial
     if (dedupedMultiaddrs.length === 0) {
-      throw new NoValidAddressesError('The dial request has no valid addresses')
+      throw new NoValidAddressesError(`The dial request has no valid addresses for peer: ${peerId?.toString() ?? 'unknown peer'}`)
     }
 
     const gatedAddrs: Address[] = []
@@ -505,7 +505,7 @@ export class DialQueue {
 
     // make sure we actually have some addresses to dial
     if (sortedGatedAddrs.length === 0) {
-      throw new DialDeniedError('The connection gater denied all addresses in the dial request')
+      throw new DialDeniedError(`The connection gater denied all addresses in the dial request for peer: ${peerId?.toString() ?? 'unknown peer'}`)
     }
 
     this.log.trace('addresses for %p before filtering', peerId ?? 'unknown peer', resolvedAddresses.map(({ multiaddr }) => multiaddr.toString()))
