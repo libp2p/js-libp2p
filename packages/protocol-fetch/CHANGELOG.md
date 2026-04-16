@@ -48,6 +48,49 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [4.1.1](https://github.com/libp2p/js-libp2p/compare/fetch-v4.1.0...fetch-v4.1.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/interface-internal bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/utils bumped from ^7.0.15 to ^7.0.16
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/peer-id bumped from ^6.0.6 to ^6.0.7
+
+## [4.1.0](https://github.com/libp2p/js-libp2p/compare/fetch-v4.0.14...fetch-v4.1.0) (2026-04-08)
+
+
+### Features
+
+* add high-level connection and stream progress events ([#3429](https://github.com/libp2p/js-libp2p/issues/3429)) ([709b3fa](https://github.com/libp2p/js-libp2p/commit/709b3fa2e94d99c77d97df2dda39b431f8b92878))
+
+
+### Bug Fixes
+
+* expose fetch instance protocol ([#3439](https://github.com/libp2p/js-libp2p/issues/3439)) ([1ecf0e3](https://github.com/libp2p/js-libp2p/commit/1ecf0e324d89bf5ec5ee4718ae853fe649af0b1a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/interface-internal bumped from ^3.0.14 to ^3.1.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/peer-id bumped from ^6.0.5 to ^6.0.6
+
 ## [4.0.14](https://github.com/libp2p/js-libp2p/compare/fetch-v4.0.13...fetch-v4.0.14) (2026-03-27)
 
 

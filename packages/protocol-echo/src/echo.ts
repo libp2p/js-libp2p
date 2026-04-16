@@ -2,8 +2,8 @@ import { ProtocolError, setMaxListeners, TimeoutError } from '@libp2p/interface'
 import { UnexpectedEOFError } from '@libp2p/utils'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.js'
-import type { Echo as EchoInterface, EchoComponents, EchoInit } from './index.js'
+import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.ts'
+import type { Echo as EchoInterface, EchoComponents, EchoInit } from './index.ts'
 import type { DialProtocolOptions, DialTarget, Startable, Stream } from '@libp2p/interface'
 
 /**

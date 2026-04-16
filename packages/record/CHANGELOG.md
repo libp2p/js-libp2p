@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.11](https://github.com/libp2p/js-libp2p/compare/record-v4.0.10...record-v4.0.11) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
 ## [4.0.10](https://github.com/libp2p/js-libp2p/compare/record-v4.0.9...record-v4.0.10) (2026-03-27)
 
 

@@ -1,7 +1,7 @@
 import type { AbortOptions } from './index.ts'
-import type { PublicKey } from './keys.js'
-import type { PeerId } from './peer-id.js'
-import type { PeerInfo } from './peer-info.js'
+import type { PublicKey } from './keys.ts'
+import type { PeerId } from './peer-id.ts'
+import type { PeerInfo } from './peer-info.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**

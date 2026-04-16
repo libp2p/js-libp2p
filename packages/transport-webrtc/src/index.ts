@@ -252,10 +252,10 @@
  * ```
  */
 
-import { WebRTCTransport } from './private-to-private/transport.js'
-import { WebRTCDirectTransport } from './private-to-public/transport.js'
-import type { WebRTCTransportComponents, WebRTCTransportInit } from './private-to-private/transport.js'
-import type { WebRTCTransportDirectInit, WebRTCDirectTransportComponents } from './private-to-public/transport.js'
+import { WebRTCTransport } from './private-to-private/transport.ts'
+import { WebRTCDirectTransport } from './private-to-public/transport.ts'
+import type { WebRTCTransportComponents, WebRTCTransportInit } from './private-to-private/transport.ts'
+import type { WebRTCTransportDirectInit, WebRTCDirectTransportComponents } from './private-to-public/transport.ts'
 import type { Transport } from '@libp2p/interface'
 
 export interface DataChannelOptions {

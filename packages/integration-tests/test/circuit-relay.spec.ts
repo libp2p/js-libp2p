@@ -13,7 +13,7 @@ import { Circuit } from '@multiformats/multiaddr-matcher'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { pEvent } from 'p-event'
-import { hasRelay } from './fixtures/utils.js'
+import { hasRelay } from './fixtures/utils.ts'
 import type { Libp2p, Connection, PeerId } from '@libp2p/interface'
 
 describe('circuit-relay', () => {

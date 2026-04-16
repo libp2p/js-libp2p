@@ -75,7 +75,7 @@
  * ```
  */
 
-import { UPnPNAT as UPnPNATClass } from './upnp-nat.js'
+import { UPnPNAT as UPnPNATClass } from './upnp-nat.ts'
 import type { UPnPNAT as UPnPNATClient, MapPortOptions } from '@achingbrain/nat-port-mapper'
 import type { ComponentLogger, Libp2pEvents, NodeInfo, PeerId } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'

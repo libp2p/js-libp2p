@@ -1,7 +1,7 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
-import { MUXER_PROTOCOL } from './constants.js'
-import { createStream, WebRTCStream } from './stream.js'
-import type { DataChannelOptions } from './index.js'
+import { MUXER_PROTOCOL } from './constants.ts'
+import { createStream, WebRTCStream } from './stream.ts'
+import type { DataChannelOptions } from './index.ts'
 import type { ComponentLogger, CounterGroup, StreamMuxer, StreamMuxerFactory, CreateStreamOptions, MultiaddrConnection } from '@libp2p/interface'
 
 export interface DataChannelMuxerFactoryInit {

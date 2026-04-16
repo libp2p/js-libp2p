@@ -44,6 +44,33 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.16](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.15...dcutr-v3.0.16) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/interface-internal bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/utils bumped from ^7.0.15 to ^7.0.16
+
+## [3.0.15](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.14...dcutr-v3.0.15) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/interface-internal bumped from ^3.0.14 to ^3.1.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+
 ## [3.0.14](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.13...dcutr-v3.0.14) (2026-03-27)
 
 

@@ -37,5 +37,5 @@
  * ```
  */
 
-export { loadOrCreateSelfKey } from './load-private-key.js'
-export type { LoadOrCreateSelfKeyOptions } from './load-private-key.js'
+export { loadOrCreateSelfKey } from './load-private-key.ts'
+export type { LoadOrCreateSelfKeyOptions } from './load-private-key.ts'

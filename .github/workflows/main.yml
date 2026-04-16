@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 env:
   CACHE_DIRS: |
@@ -14,7 +14,6 @@ env:
     ./doc/node_modules
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -51,7 +50,6 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
         node: [lts/*]
-      fail-fast: true
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -248,16 +246,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [
-      test-node,
-      test-chrome,
-      test-chrome-webworker,
-      test-firefox,
-      test-firefox-webworker,
-      test-electron-main,
-      test-electron-renderer,
-      test-interop
-      # transport-interop
-    ]
+        test-node,
+        test-chrome,
+        test-chrome-webworker,
+        test-firefox,
+        test-firefox-webworker,
+        test-electron-main,
+        test-electron-renderer,
+        test-interop,
+        # transport-interop
+      ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
@@ -279,7 +277,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
@@ -298,8 +296,8 @@ jobs:
       - if: ${{ steps.release.outputs.releases_created != 'true' }}
         name: Run release rc
         run: |
-            git update-index --assume-unchanged packages/libp2p/src/version.ts
-            npm run --if-present release:rc
+          git update-index --assume-unchanged packages/libp2p/src/version.ts
+          npm run --if-present release:rc
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

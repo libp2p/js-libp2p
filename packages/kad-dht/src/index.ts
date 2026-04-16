@@ -132,9 +132,9 @@
  * ```
  */
 
-import { KadDHT as KadDHTClass } from './kad-dht.js'
-import { MessageType } from './message/dht.js'
-import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
+import { KadDHT as KadDHTClass } from './kad-dht.ts'
+import { MessageType } from './message/dht.ts'
+import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.ts'
 import type { Libp2pEvents, ComponentLogger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey, AbortOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
