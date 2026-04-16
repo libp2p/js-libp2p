@@ -61,6 +61,38 @@ describe('peer-routing', () => {
     peerRouting = new PeerRouting(components, init)
   })
 
+  describe('findPeerLocal', () => {
+    it('should return undefined when peer exists locally but has no addresses', async () => {
+      const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+      init.routingTable.find.withArgs(peerId).resolves(peerId)
+      components.peerStore.get.withArgs(peerId).resolves(stubInterface<Peer>({
+        id: peerId,
+        addresses: []
+      }))
+
+      await expect(peerRouting.findPeerLocal(peerId)).to.eventually.equal(undefined)
+    })
+
+    it('should return peer info when peer has addresses', async () => {
+      const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const address = multiaddr('/ip4/127.0.0.1/tcp/4001')
+
+      components.peerStore.get.withArgs(peerId).resolves(stubInterface<Peer>({
+        id: peerId,
+        addresses: [{
+          isCertified: false,
+          multiaddr: address
+        }]
+      }))
+
+      await expect(peerRouting.findPeerLocal(peerId)).to.eventually.deep.equal({
+        id: peerId,
+        multiaddrs: [address]
+      })
+    })
+  })
+
   describe('getClosestPeersOffline', () => {
     it('should only return DHT servers', async () => {
       const key = Uint8Array.from([0, 1, 2, 3, 4])
