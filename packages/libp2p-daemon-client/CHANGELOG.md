@@ -4,6 +4,29 @@
 
 * update all deps ([#348](https://github.com/libp2p/js-libp2p-daemon/issues/348)) ([44bf148](https://github.com/libp2p/js-libp2p-daemon/commit/44bf148f37b9f4091dc8ed26cf343e196607ebbc))
 
+## [10.0.19](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.18...daemon-client-v10.0.19) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-protocol bumped from ^8.0.6 to ^8.0.7
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/logger bumped from ^6.2.5 to ^6.2.6
+    * @libp2p/peer-id bumped from ^6.0.7 to ^6.0.8
+    * @libp2p/tcp bumped from ^11.0.16 to ^11.0.17
+    * @libp2p/utils bumped from ^7.0.16 to ^7.0.17
+  * devDependencies
+    * @libp2p/daemon-server bumped from ^9.0.18 to ^9.0.19
+    * @libp2p/gossipsub bumped from ^15.0.18 to ^15.0.19
+    * @libp2p/kad-dht bumped from ^16.2.1 to ^16.2.2
+
 ## [10.0.18](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.17...daemon-client-v10.0.18) (2026-04-14)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.12](https://github.com/libp2p/js-libp2p/compare/record-v4.0.11...record-v4.0.12) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
 ## [4.0.11](https://github.com/libp2p/js-libp2p/compare/record-v4.0.10...record-v4.0.11) (2026-04-14)
 
 

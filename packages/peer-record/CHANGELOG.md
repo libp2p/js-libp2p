@@ -60,6 +60,22 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [9.0.9](https://github.com/libp2p/js-libp2p/compare/peer-record-v9.0.8...peer-record-v9.0.9) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/peer-id bumped from ^6.0.7 to ^6.0.8
+
 ## [9.0.8](https://github.com/libp2p/js-libp2p/compare/peer-record-v9.0.7...peer-record-v9.0.8) (2026-04-14)
 
 
