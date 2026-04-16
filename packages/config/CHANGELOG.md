@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.29](https://github.com/libp2p/js-libp2p/compare/config-v1.1.28...config-v1.1.29) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/keychain bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/logger bumped from ^6.2.5 to ^6.2.6
+
 ## [1.1.28](https://github.com/libp2p/js-libp2p/compare/config-v1.1.27...config-v1.1.28) (2026-04-14)
 
 
