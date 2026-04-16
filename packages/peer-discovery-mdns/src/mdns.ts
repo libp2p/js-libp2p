@@ -1,8 +1,8 @@
 import { peerDiscoverySymbol, serviceCapabilities } from '@libp2p/interface'
 import { TypedEventEmitter } from 'main-event'
 import multicastDNS from 'multicast-dns'
-import * as query from './query.js'
-import { stringGen } from './utils.js'
+import * as query from './query.ts'
+import { stringGen } from './utils.ts'
 import type { ComponentLogger, Logger, PeerDiscovery, PeerDiscoveryEvents, PeerInfo, Startable } from '@libp2p/interface'
 import type { AddressManager } from '@libp2p/interface-internal'
 

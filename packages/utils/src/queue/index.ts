@@ -4,12 +4,12 @@ import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
 import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'
-import { Job } from './job.js'
+import { Job } from './job.ts'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 
-export type { Job, JobTimeline } from './job.js'
-export type { JobRecipient } from './recipient.js'
+export type { Job, JobTimeline } from './job.ts'
+export type { JobRecipient } from './recipient.ts'
 
 export interface Comparator<T> {
   (a: T, b: T): -1 | 0 | 1

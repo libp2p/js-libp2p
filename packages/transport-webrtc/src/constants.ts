@@ -1,5 +1,5 @@
 import { encodingLength } from 'uint8-varint'
-import { Message } from './private-to-public/pb/message.js'
+import { Message } from './private-to-public/pb/message.ts'
 
 /**
  * STUN servers help clients discover their own public IPs.

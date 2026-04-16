@@ -1,6 +1,6 @@
 import { Histogram as PromHistogram } from 'prom-client'
-import { normalizeString } from './utils.js'
-import type { PrometheusCalculatedHistogramOptions } from './index.js'
+import { normalizeString } from './utils.ts'
+import type { PrometheusCalculatedHistogramOptions } from './index.ts'
 import type { StopTimer, Histogram } from '@libp2p/interface'
 import type { CollectFunction } from 'prom-client'
 

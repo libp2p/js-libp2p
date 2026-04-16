@@ -22,7 +22,7 @@
  * ```
  */
 
-import { Ping as PingClass } from './ping.js'
+import { Ping as PingClass } from './ping.ts'
 import type { DialProtocolOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
@@ -51,4 +51,4 @@ export function ping (init: PingInit = {}): (components: PingComponents) => Ping
   return (components) => new PingClass(components, init)
 }
 
-export { PING_PROTOCOL } from './constants.js'
+export { PING_PROTOCOL } from './constants.ts'

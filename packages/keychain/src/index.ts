@@ -49,7 +49,7 @@
  * A key benefit is that now the key chain can be used in browser with the [js-datastore-level](https://github.com/ipfs/js-datastore-level) implementation.
  */
 
-import { Keychain as KeychainClass } from './keychain.js'
+import { Keychain as KeychainClass } from './keychain.ts'
 import type { ComponentLogger, PrivateKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
