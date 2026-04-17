@@ -1,6 +1,6 @@
 import { InvalidPrivateKeyError, InvalidPublicKeyError } from '@libp2p/interface'
 import { secp256k1 as secp } from '@noble/curves/secp256k1.js'
-import { Secp256k1PublicKey as Secp256k1PublicKeyClass, Secp256k1PrivateKey as Secp256k1PrivateKeyClass } from './secp256k1.js'
+import { Secp256k1PublicKey as Secp256k1PublicKeyClass, Secp256k1PrivateKey as Secp256k1PrivateKeyClass } from './secp256k1.ts'
 import type { Secp256k1PublicKey, Secp256k1PrivateKey } from '@libp2p/interface'
 
 const PRIVATE_KEY_BYTE_LENGTH = 32

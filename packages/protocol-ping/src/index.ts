@@ -22,13 +22,12 @@
  * ```
  */
 
-import { Ping as PingClass } from './ping.js'
-import type { AbortOptions, PeerId } from '@libp2p/interface'
+import { Ping as PingClass } from './ping.ts'
+import type { DialProtocolOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
-import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface Ping {
-  ping(peer: PeerId | Multiaddr | Multiaddr[], options?: AbortOptions): Promise<number>
+  ping(peer: DialTarget, options?: DialProtocolOptions): Promise<number>
 }
 
 export interface PingInit {
@@ -52,4 +51,4 @@ export function ping (init: PingInit = {}): (components: PingComponents) => Ping
   return (components) => new PingClass(components, init)
 }
 
-export { PING_PROTOCOL } from './constants.js'
+export { PING_PROTOCOL } from './constants.ts'

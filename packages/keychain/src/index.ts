@@ -22,7 +22,7 @@
  *
  * The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multihash) of its public key.
  *
- * The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto.js) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
+ * The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
  *
  * ## Private key storage
  *
@@ -32,7 +32,7 @@
  *
  * ```TypeScript
  * const defaultOptions = {
- *   // See https://cryptosense.com/parameter-choice-for-pbkdf2/
+ *   // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
  *   dek: {
  *     keyLength: 512 / 8,
  *     iterationCount: 1000,
@@ -49,7 +49,7 @@
  * A key benefit is that now the key chain can be used in browser with the [js-datastore-level](https://github.com/ipfs/js-datastore-level) implementation.
  */
 
-import { Keychain as KeychainClass } from './keychain.js'
+import { Keychain as KeychainClass } from './keychain.ts'
 import type { ComponentLogger, PrivateKey } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 

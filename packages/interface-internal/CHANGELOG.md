@@ -32,6 +32,75 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [3.1.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.1...interface-internal-v3.1.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/peer-collections bumped from ^7.0.16 to ^7.0.17
+
+## [3.1.1](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.0...interface-internal-v3.1.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/peer-collections bumped from ^7.0.15 to ^7.0.16
+
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.0.14...interface-internal-v3.1.0) (2026-04-08)
+
+
+### Features
+
+* add DialTarget type ([#3428](https://github.com/libp2p/js-libp2p/issues/3428)) ([2a3e547](https://github.com/libp2p/js-libp2p/commit/2a3e547380a62dffae31f7b5423dfcf1fc0c7433))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/peer-collections bumped from ^7.0.14 to ^7.0.15
+
+## [3.0.14](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.0.13...interface-internal-v3.0.14) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/peer-collections bumped from ^7.0.13 to ^7.0.14
+
+## [3.0.13](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.0.12...interface-internal-v3.0.13) (2026-03-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.12 to ^7.0.13
+
 ## [3.0.12](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.0.11...interface-internal-v3.0.12) (2026-03-03)
 
 

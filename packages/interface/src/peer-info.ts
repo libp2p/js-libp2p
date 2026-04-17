@@ -1,11 +1,11 @@
-import type { PeerId } from './peer-id.js'
+import type { PeerId } from './peer-id.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * A `PeerInfo` is a lightweight object that represents a remote peer, it can be
  * obtained from peer discovery mechanisms, HTTP RPC endpoints, etc.
  *
- * @see https://docs.libp2p.io/concepts/fundamentals/peers/#peer-info
+ * @see https://libp2p.io/docs/peers/#peer-info
  */
 export interface PeerInfo {
   /**

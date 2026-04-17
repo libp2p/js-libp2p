@@ -4,7 +4,7 @@ import { ping } from '@libp2p/ping'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import { pEvent } from 'p-event'
-import { createBaseOptions } from './fixtures/base-options.js'
+import { createBaseOptions } from './fixtures/base-options.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('Protocol prefix is configurable', () => {

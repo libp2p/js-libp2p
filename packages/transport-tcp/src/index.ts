@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on the TCP networking stack.
+ * A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on the TCP networking stack.
  *
  * @example
  *
@@ -27,7 +27,7 @@
  * ```
  */
 
-import { TCP } from './tcp.js'
+import { TCP } from './tcp.ts'
 import type { ComponentLogger, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
 

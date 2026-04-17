@@ -1,6 +1,6 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { Ed25519PublicKey as Ed25519PublicKeyClass, Ed25519PrivateKey as Ed25519PrivateKeyClass } from './ed25519.js'
-import * as crypto from './index.js'
+import { Ed25519PublicKey as Ed25519PublicKeyClass, Ed25519PrivateKey as Ed25519PrivateKeyClass } from './ed25519.ts'
+import * as crypto from './index.ts'
 import type { Ed25519PublicKey, Ed25519PrivateKey } from '@libp2p/interface'
 
 export function unmarshalEd25519PrivateKey (bytes: Uint8Array): Ed25519PrivateKey {

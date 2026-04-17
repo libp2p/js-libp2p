@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
+ * A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
  *
  * > ⚠️ **Note**
  * >
@@ -31,13 +31,13 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
-import createListener from './listener.js'
-import { webtransportMuxer } from './muxer.js'
+import createListener from './listener.ts'
+import { webtransportMuxer } from './muxer.ts'
 import { toMultiaddrConnection } from './session-to-conn.ts'
-import { isSubset } from './utils/is-subset.js'
-import { parseMultiaddr } from './utils/parse-multiaddr.js'
+import { isSubset } from './utils/is-subset.ts'
+import { parseMultiaddr } from './utils/parse-multiaddr.ts'
 import { WebTransportMessageStream } from './utils/webtransport-message-stream.ts'
-import WebTransport from './webtransport.js'
+import WebTransport from './webtransport.ts'
 import type { Upgrader, Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultihashDigest } from 'multiformats/hashes/interface'

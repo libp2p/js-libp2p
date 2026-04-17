@@ -36,6 +36,78 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.17](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.16...utils-v7.0.17) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/logger bumped from ^6.2.5 to ^6.2.6
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.7 to ^6.0.8
+
+## [7.0.16](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.15...utils-v7.0.16) (2026-04-14)
+
+
+### Bug Fixes
+
+* propagate progress events and events before async work ([#3445](https://github.com/libp2p/js-libp2p/issues/3445)) ([b30baa9](https://github.com/libp2p/js-libp2p/commit/b30baa93ae6a8099a06966fa85083aff3052efc1))
+* propagte job progress events and support synchronous events ([b30baa9](https://github.com/libp2p/js-libp2p/commit/b30baa93ae6a8099a06966fa85083aff3052efc1))
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* update cborg to 5.x.x ([#3441](https://github.com/libp2p/js-libp2p/issues/3441)) ([edc2f3c](https://github.com/libp2p/js-libp2p/commit/edc2f3c08da329df0a7d36177ab512b2c2e1a54a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/logger bumped from ^6.2.4 to ^6.2.5
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.6 to ^6.0.7
+
+## [7.0.15](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.14...utils-v7.0.15) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/logger bumped from ^6.2.3 to ^6.2.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.5 to ^6.0.6
+
+## [7.0.14](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.13...utils-v7.0.14) (2026-03-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/logger bumped from ^6.2.2 to ^6.2.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.4 to ^6.0.5
+
+## [7.0.13](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.12...utils-v7.0.13) (2026-03-12)
+
+
+### Bug Fixes
+
+* **utils:** clear repeatingTask anySignal per run ([#3401](https://github.com/libp2p/js-libp2p/issues/3401)) ([e19d110](https://github.com/libp2p/js-libp2p/commit/e19d1109390aed39d5020200a2dd4c1fe6f35217))
+
 ## [7.0.12](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.11...utils-v7.0.12) (2026-03-03)
 
 

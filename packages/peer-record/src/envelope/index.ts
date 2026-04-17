@@ -3,8 +3,8 @@ import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
-import { Envelope as Protobuf } from './envelope.js'
-import { InvalidSignatureError } from './errors.js'
+import { Envelope as Protobuf } from './envelope.ts'
+import { InvalidSignatureError } from './errors.ts'
 import type { Record, Envelope, PrivateKey, PublicKey, AbortOptions } from '@libp2p/interface'
 
 export interface RecordEnvelopeInit {

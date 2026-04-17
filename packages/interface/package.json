@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interface",
-  "version": "3.1.0",
+  "version": "3.2.2",
   "description": "The interface implemented by a libp2p node",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interface#readme",
@@ -30,7 +30,8 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     }
   },
   "scripts": {
@@ -45,7 +46,7 @@
     "@multiformats/multiaddr": "^13.0.1",
     "main-event": "^1.0.1",
     "multiformats": "^13.4.0",
-    "progress-events": "^1.0.1",
+    "progress-events": "^1.1.0",
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {

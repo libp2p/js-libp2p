@@ -63,7 +63,7 @@ $ npm i @libp2p/opentelemetry-metrics
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_opentelemetry_metrics.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_opentelemetry-metrics.html>
 
 # License
 
