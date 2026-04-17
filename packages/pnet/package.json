@@ -47,7 +47,7 @@
     "@libp2p/crypto": "^5.1.17",
     "@libp2p/interface": "^3.2.2",
     "@libp2p/utils": "^7.0.17",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^2.4.9",
     "uint8arrays": "^5.1.0",
     "xsalsa20": "^1.2.0"
   },

@@ -49,7 +49,7 @@
     "@libp2p/interface-internal": "^3.1.2",
     "p-event": "^7.0.0",
     "race-signal": "^2.0.0",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^2.4.9",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {

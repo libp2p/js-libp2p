@@ -61,7 +61,7 @@
     "main-event": "^1.0.1",
     "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
-    "uint8arraylist": "^2.4.8"
+    "uint8arraylist": "^2.4.9"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.6",

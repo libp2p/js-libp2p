@@ -56,7 +56,7 @@
     "main-event": "^1.0.1",
     "nanoid": "^5.1.5",
     "race-signal": "^2.0.0",
-    "uint8arraylist": "^2.4.8"
+    "uint8arraylist": "^2.4.9"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.6",

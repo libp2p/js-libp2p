@@ -51,7 +51,7 @@
     "@libp2p/utils": "^7.0.17",
     "main-event": "^1.0.1",
     "protons-runtime": "^6.0.1",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^2.4.9",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {

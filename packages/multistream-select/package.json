@@ -55,7 +55,7 @@
     "@libp2p/interface": "^3.2.2",
     "@libp2p/utils": "^7.0.17",
     "it-length-prefixed": "^10.0.1",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^2.4.9",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {

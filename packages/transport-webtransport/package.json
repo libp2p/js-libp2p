@@ -54,7 +54,7 @@
     "multiformats": "^13.3.6",
     "progress-events": "^1.0.1",
     "race-signal": "^2.0.0",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^2.4.9",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {

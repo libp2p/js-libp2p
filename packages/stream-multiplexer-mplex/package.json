@@ -60,7 +60,7 @@
     "@libp2p/utils": "^7.0.17",
     "it-pushable": "^3.2.3",
     "uint8-varint": "^2.0.4",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^2.4.9",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {

@@ -56,7 +56,7 @@
     "multiformats": "^13.4.0",
     "protons-runtime": "^6.0.1",
     "uint8-varint": "^2.0.4",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^2.4.9",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
