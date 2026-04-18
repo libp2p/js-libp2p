@@ -125,13 +125,6 @@ export class ConnectionMonitor implements Startable {
               signal
             })
           } catch (err: any) {
-            // If the probe opened the stream but threw before stream.close()
-            // (e.g. the signal aborted during write/read), the stream is
-            // still counted against maxOutboundStreams on the muxer. Release
-            // the slot so future probes can still open a new stream on this
-            // connection — otherwise the next probe fails fast with
-            // TooManyOutboundProtocolStreamsError and the monitor is
-            // permanently starved for this connection.
             if (stream != null && stream.status !== 'closed' && stream.status !== 'aborted') {
               stream.abort(err instanceof Error ? err : new Error(String(err)))
             }
