@@ -2,6 +2,7 @@ import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
 import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -128,7 +129,7 @@ describe('identify (push)', () => {
 
     const pb = pbStream(outgoingStream)
     void pb.write({
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey!),
       protocols: [
         updatedProtocol
       ],
@@ -149,6 +150,49 @@ describe('identify (push)', () => {
     expect(update.protocols).to.include(updatedProtocol)
     expect(update.addresses?.map(({ multiaddr }) => multiaddr.toString())).deep.equals([updatedAddress.toString()])
   })
+
+  for (const variant of ['MLDSA44', 'MLDSA65', 'MLDSA87'] as const) {
+    it(`should handle incoming push with an ${variant} signed peer record at default max message size`, async () => {
+      identify = new IdentifyPush(components)
+
+      await start(identify)
+
+      const remotePrivateKey = await generateKeyPair('MLDSA', variant)
+      const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+      const [outgoingStream, incomingStream] = await streamPair()
+      const connection = stubInterface<Connection>({
+        remotePeer
+      })
+
+      const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+        peerId: remotePeer,
+        multiaddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/48323')
+        ]
+      }), remotePrivateKey)
+
+      const pb = pbStream(outgoingStream)
+      void pb.write({
+        publicKey: publicKeyToProtobuf(remotePrivateKey.publicKey),
+        protocols: [
+          '/special-new-protocol/1.0.0'
+        ],
+        listenAddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/48322').bytes
+        ],
+        signedPeerRecord: signedPeerRecord.marshal()
+      }, IdentifyMessage)
+
+      components.peerStore.patch.reset()
+
+      await identify.handleProtocol(incomingStream, connection)
+
+      expect(components.peerStore.patch.callCount).to.equal(1)
+      const update = components.peerStore.patch.getCall(0).args[1]
+      expect(update.addresses?.map(({ multiaddr }) => multiaddr.toString())).deep.equals(['/ip4/127.0.0.1/tcp/48323'])
+      expect(update.addresses?.[0]).to.have.property('isCertified', true)
+    })
+  }
 
   it('should time out during push identify', async () => {
     identify = new IdentifyPush(components, {

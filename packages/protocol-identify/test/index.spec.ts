@@ -126,6 +126,53 @@ describe('identify', () => {
     expect(response.listenAddrs.map(ma => ma.toString())).to.deep.equal(['/ip4/123.123.123.123/tcp/123'])
   })
 
+  for (const variant of ['MLDSA44', 'MLDSA65', 'MLDSA87'] as const) {
+    it(`should handle an ${variant} signed peer record at default max message size`, async () => {
+      identify = new Identify(components)
+
+      await start(identify)
+
+      const remotePrivateKey = await generateKeyPair('MLDSA', variant)
+      const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+      const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+        peerId: remotePeer,
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/456')
+        ]
+      }), remotePrivateKey)
+      const message: IdentifyMessage = {
+        listenAddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/123').bytes
+        ],
+        protocols: [
+          '/foo/bar/1.0'
+        ],
+        publicKey: publicKeyToProtobuf(remotePrivateKey.publicKey),
+        signedPeerRecord: signedPeerRecord.marshal()
+      }
+
+      const [outgoingStream, incomingStream] = await streamPair()
+      incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+      const connection = stubInterface<Connection>({
+        remotePeer
+      })
+      connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+      const response = await identify.identify(connection)
+
+      expect(response.peerId.toString()).to.equal(remotePeer.toString())
+      expect(response.signedPeerRecord).to.exist()
+      expect(response.listenAddrs.map(ma => ma.toString())).to.deep.equal(['/ip4/123.123.123.123/tcp/123'])
+
+      // should have stored addresses from signed peer record
+      const peer = components.peerStore.patch.getCall(0).args[1]
+      expect(peer.addresses).to.deep.equal([{
+        isCertified: true,
+        multiaddr: multiaddr('/ip4/123.123.123.123/tcp/456')
+      }])
+    })
+  }
+
   it('should throw if identified peer is the wrong peer', async () => {
     identify = new Identify(components)
 
