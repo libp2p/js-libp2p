@@ -65,7 +65,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ChainSafe/js-libp2p-gossipsub.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "keywords": [
     "libp2p",
@@ -75,9 +75,9 @@
   "author": "Cayman Nava",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ChainSafe/js-libp2p-gossipsub/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
-  "homepage": "https://github.com/ChainSafe/js-libp2p-gossipsub#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/gossipsub#readme",
   "dependencies": {
     "@libp2p/crypto": "^5.1.17",
     "@libp2p/interface": "^3.2.2",
