@@ -2,7 +2,7 @@ import { randomBytes } from '@libp2p/crypto'
 import { serviceCapabilities } from '@libp2p/interface'
 import { AdaptiveTimeout, byteStream } from '@libp2p/utils'
 import { setMaxListeners } from 'main-event'
-import type { ComponentLogger, Logger, Metrics, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, Startable, Stream } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 
@@ -99,9 +99,10 @@ export class ConnectionMonitor implements Startable {
           const signal = this.timeout.getTimeoutSignal({
             signal: this.abortController?.signal
           })
+          let stream: Stream | undefined
 
           try {
-            const stream = await conn.newStream(this.protocol, {
+            stream = await conn.newStream(this.protocol, {
               signal,
               runOnLimitedConnection: true
             })
@@ -124,6 +125,17 @@ export class ConnectionMonitor implements Startable {
               signal
             })
           } catch (err: any) {
+            // If the probe opened the stream but threw before stream.close()
+            // (e.g. the signal aborted during write/read), the stream is
+            // still counted against maxOutboundStreams on the muxer. Release
+            // the slot so future probes can still open a new stream on this
+            // connection — otherwise the next probe fails fast with
+            // TooManyOutboundProtocolStreamsError and the monitor is
+            // permanently starved for this connection.
+            if (stream != null && stream.status !== 'closed' && stream.status !== 'aborted') {
+              stream.abort(err instanceof Error ? err : new Error(String(err)))
+            }
+
             if (err.name !== 'UnsupportedProtocolError') {
               throw err
             }

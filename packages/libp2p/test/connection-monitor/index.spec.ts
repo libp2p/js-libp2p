@@ -170,6 +170,37 @@ describe('connection monitor', () => {
     expect(connection.abort).to.have.property('called', false)
   })
 
+  it('should abort the probe stream when the ping exchange fails', async () => {
+    // Regression: if the probe opens a stream but throws during write/read,
+    // stream.close() is never reached and the stream remains counted against
+    // maxOutboundStreams on the muxer. The catch block must release the slot
+    // by calling stream.abort() so the next probe can still open a stream.
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 50,
+      pingTimeout: {
+        maxTimeout: 50
+      }
+    })
+
+    await start(monitor)
+
+    const stream = stubInterface<Stream>()
+    // Simulate the status the muxer would assign to an opened-but-not-closed
+    // stream: it's still 'open' from the muxer's perspective until abort/close
+    // drives it to a terminal state.
+    ;(stream as any).status = 'open'
+    // Make sink (called by bs.write) throw as if the timeout signal aborted.
+    ;(stream.send as any).throws(new Error('simulated signal abort during write'))
+
+    const connection = stubInterface<Connection>()
+    connection.newStream.withArgs('/ipfs/ping/1.0.0').resolves(stream)
+    components.connectionManager.getConnections.returns([connection])
+
+    await delay(200)
+
+    expect(stream.abort).to.have.property('called', true)
+  })
+
   it('should abort a connection that fails when abortConnectionOnPingFailure is true', async () => {
     monitor = new ConnectionMonitor(components, {
       pingInterval: 10,
