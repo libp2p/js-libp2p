@@ -18,6 +18,7 @@ import { sortDHTs } from './utils/sort-closest-peers.js'
 import { TestDHT } from './utils/test-dht.js'
 import type { PeerAndKey } from './utils/create-peer-id.js'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'VALUE'): Promise<ValueEvent>
@@ -125,6 +126,59 @@ describe('KadDHT', () => {
 
       expect(queueRoutingTableUpdateSpy).to.have.property('calledOnce', true)
       expect(queueRoutingTableUpdateSpy.firstCall.args[0].toString()).to.equal(peerIds[0].peerId.toString())
+    })
+
+    it('should not count queue wait time towards onPeerConnectTimeout', async function () {
+      this.timeout(5_000)
+
+      const dht = await testDHT.spawn({
+        onPeerConnectTimeout: 10,
+        routingTableUpdateQueueConcurrency: 1
+      }, false)
+
+      const routingTable = (dht.dht as any).routingTable
+      const originalAdd = routingTable.add.bind(routingTable)
+
+      let releaseFirstAdd: () => void = () => {}
+      let firstAddStarted: () => void = () => {}
+      const firstAddStartedPromise = new Promise<void>((resolve) => {
+        firstAddStarted = resolve
+      })
+
+      const addStub = sinon.stub(routingTable, 'add').callsFake(async (...args: unknown[]) => {
+        const [peerId, options] = args as [PeerId, AbortOptions | undefined]
+
+        if (peerId.equals(peerIds[0].peerId)) {
+          firstAddStarted()
+          await new Promise<void>((resolve) => {
+            releaseFirstAdd = resolve
+          })
+        }
+
+        return originalAdd(peerId, options)
+      })
+
+      try {
+        await dht.dht.onPeerConnect({
+          id: peerIds[0].peerId,
+          multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234')]
+        })
+
+        await firstAddStartedPromise
+
+        await dht.dht.onPeerConnect({
+          id: peerIds[1].peerId,
+          multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/1235')]
+        })
+
+        await new Promise(resolve => setTimeout(resolve, 25))
+        releaseFirstAdd()
+
+        await routingTable.routingTableUpdateQueue.onIdle()
+        expect(await dht.dht.routingTable.find(peerIds[1].peerId)).to.equal(peerIds[1].peerId)
+      } finally {
+        addStub.restore()
+      }
     })
   })
 

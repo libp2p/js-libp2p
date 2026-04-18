@@ -2,7 +2,7 @@ import { NotFoundError, contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSy
 import { isPrivate } from '@libp2p/utils'
 import { Circuit } from '@multiformats/multiaddr-matcher'
 import drain from 'it-drain'
-import { setMaxListeners, TypedEventEmitter } from 'main-event'
+import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import { ALPHA, ON_PEER_CONNECT_TIMEOUT, PROTOCOL } from './constants.js'
 import { ContentFetching } from './content-fetching/index.js'
@@ -214,7 +214,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       prefixLength: init.prefixLength,
       splitThreshold: init.kBucketSplitThreshold,
       network: this.network,
-      routingTableUpdateQueueConcurrency: init.routingTableUpdateQueueConcurrency ?? Math.max(1, Math.min(this.a * 2, 16))
+      routingTableUpdateQueueConcurrency: init.routingTableUpdateQueueConcurrency ?? Math.max(1, Math.min(this.a * 2, 16)),
+      routingTableUpdateMaxQueueSize: init.routingTableUpdateMaxQueueSize
     })
 
     // all queries should wait for the initial query-self query to run so we have
@@ -404,11 +405,8 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
       return
     }
 
-    const signal = AbortSignal.timeout(this.onPeerConnectTimeout)
-    setMaxListeners(Infinity, signal)
-
     this.routingTable.queueRoutingTableUpdate(peerData.id, {
-      signal
+      activeTimeout: this.onPeerConnectTimeout
     })
   }
 

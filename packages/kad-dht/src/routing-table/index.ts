@@ -18,6 +18,7 @@ export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
 export const ROUTING_TABLE_UPDATE_QUEUE_CONCURRENCY = 16
+export const ROUTING_TABLE_UPDATE_MAX_QUEUE_SIZE = 16_384
 export const PING_OLD_CONTACT_COUNT = 3
 export const PING_OLD_CONTACT_TIMEOUT = 2000
 export const PING_OLD_CONTACT_CONCURRENCY = 20
@@ -53,6 +54,11 @@ export interface RoutingTableInit {
   closestPeerSetSize?: number
   closestPeerSetRefreshInterval?: number
   routingTableUpdateQueueConcurrency?: number
+  routingTableUpdateMaxQueueSize?: number
+}
+
+export interface QueueRoutingTableUpdateOptions extends AbortOptions {
+  activeTimeout?: number
 }
 
 export interface RoutingTableComponents {
@@ -126,6 +132,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
       concurrency: init.routingTableUpdateQueueConcurrency ?? ROUTING_TABLE_UPDATE_QUEUE_CONCURRENCY,
       metricName: `${init.metricsPrefix}_routing_table_update_queue`,
       metrics: this.components.metrics,
+      maxSize: init.routingTableUpdateMaxQueueSize ?? ROUTING_TABLE_UPDATE_MAX_QUEUE_SIZE
     })
 
     this.pingOldContactQueue = new PeerQueue({
@@ -268,7 +275,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.shutdownController.abort()
   }
 
-  queueRoutingTableUpdate (peerId: PeerId, options: AbortOptions = {}): void {
+  queueRoutingTableUpdate (peerId: PeerId, options: QueueRoutingTableUpdateOptions = {}): void {
     const existingJob = this.routingTableUpdateQueue.find(peerId)
 
     if (existingJob != null) {
@@ -277,19 +284,26 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     }
 
     void this.routingTableUpdateQueue.add(async (jobOptions) => {
-      const signal = anySignal([this.shutdownController.signal, jobOptions.signal])
-      setMaxListeners(Infinity, signal)
+      let addOptions = jobOptions
+      let signal: ReturnType<typeof anySignal> | undefined
+
+      if (options.activeTimeout != null) {
+        signal = anySignal([jobOptions.signal, AbortSignal.timeout(options.activeTimeout)])
+        setMaxListeners(Infinity, signal)
+        addOptions = {
+          ...jobOptions,
+          signal
+        }
+      }
 
       try {
-        await this.add(peerId, {
-          signal
-        })
+        await this.add(peerId, addOptions)
       } finally {
-        signal.clear()
+        signal?.clear()
       }
     }, {
       peerId,
-      signal: options.signal
+      signal: this.shutdownController.signal
     }).catch(err => {
       if (this.shutdownController.signal.aborted || err?.name === 'AbortError') {
         return

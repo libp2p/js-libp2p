@@ -508,6 +508,13 @@ export interface KadDHTInit {
   routingTableUpdateQueueConcurrency?: number
 
   /**
+   * Maximum number of pending routing table updates from query responses.
+   *
+   * @default 16384
+   */
+  routingTableUpdateMaxQueueSize?: number
+
+  /**
    * How many bits of the KAD-ID of peers to use when creating the routing
    * table.
    *
@@ -695,8 +702,9 @@ export interface KadDHTInit {
 
   /**
    * When a peer that supports the KAD-DHT protocol connects we try to add it to
-   * the routing table. This setting is how long we will try to do that for in
-   * ms.
+   * the routing table. This setting is how long an active routing table update
+   * may run for in ms once it starts processing. Time spent waiting in the
+   * routing table update queue does not count towards this timeout.
    *
    * @default 10_000
    */
