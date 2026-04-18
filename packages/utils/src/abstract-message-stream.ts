@@ -98,7 +98,10 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       if (this.writableNeedsDrain) {
         this.log.trace('drain event received, continue sending data')
         this.writableNeedsDrain = false
-        this.processSendQueue()
+
+        queueMicrotask(() => {
+          this.processSendQueue()
+        })
       }
 
       this.onDrainPromise?.resolve()
