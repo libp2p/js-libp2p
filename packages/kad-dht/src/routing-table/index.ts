@@ -11,6 +11,7 @@ import type { Network } from '../network.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
+import type { ClearableSignal } from 'any-signal'
 
 export const KBUCKET_SIZE = 20
 export const PREFIX_LENGTH = 6
@@ -285,7 +286,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
 
     void this.routingTableUpdateQueue.add(async (jobOptions) => {
       let addOptions = jobOptions
-      let signal: ReturnType<typeof anySignal> | undefined
+      let signal: ClearableSignal | undefined
 
       if (options.activeTimeout != null) {
         signal = anySignal([jobOptions.signal, AbortSignal.timeout(options.activeTimeout)])
