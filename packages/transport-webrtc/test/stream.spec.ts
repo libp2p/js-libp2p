@@ -8,7 +8,6 @@ import { stubInterface } from 'sinon-ts'
 import { MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
 import { Message } from '../src/private-to-public/pb/message.js'
 import { createStream } from '../src/stream.js'
-import { isFirefox } from '../src/util.ts'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import { receiveFinAck, receiveRemoteCloseWrite } from './util.ts'
 import type { WebRTCStream } from '../src/stream.js'
@@ -39,14 +38,7 @@ describe('Max message size', () => {
     const sendMore = webrtcStream.send(data)
     expect(sendMore).to.be.true()
 
-    if (isFirefox) {
-      // TODO: firefox can deliver small messages out of order - remove once a
-      // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
-      // available in playwright-test
-      expect(channel.send).to.have.property('callCount', 1)
-    } else {
-      expect(channel.send).to.have.property('callCount', 2)
-    }
+    expect(channel.send).to.have.property('callCount', 2)
 
     const bytes = channel.send.getCalls().reduce((acc, curr) => {
       return acc + curr.args[0].byteLength
@@ -54,13 +46,8 @@ describe('Max message size', () => {
 
     expect(bytes).to.be.lessThan(MAX_MESSAGE_SIZE)
 
-    if (isFirefox) {
-      // minus 2x bytes because there is no flag field in the protobuf message
-      expect(channel.send.getCall(0).args[0]).to.have.lengthOf(MAX_MESSAGE_SIZE - 2)
-    } else {
-      // minus 2x bytes because there is no flag field in the protobuf message
-      expect(channel.send.getCall(1).args[0]).to.have.lengthOf(MAX_MESSAGE_SIZE - 4)
-    }
+    // minus 2x bytes because there is no flag field in the protobuf message
+    expect(channel.send.getCall(1).args[0]).to.have.lengthOf(MAX_MESSAGE_SIZE - 4)
   })
 
   it(`sends messages greater than ${MAX_MESSAGE_SIZE} bytes in parts`, async () => {
