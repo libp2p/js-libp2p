@@ -12,7 +12,7 @@ import { isFirefox } from '../src/util.ts'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import { receiveFinAck, receiveRemoteCloseWrite } from './util.ts'
 import type { WebRTCStream } from '../src/stream.js'
-import type { Stream } from '@libp2p/interface'
+import type { Stream, StreamCloseEvent } from '@libp2p/interface'
 
 describe('Max message size', () => {
   it(`sends messages smaller or equal to ${MAX_MESSAGE_SIZE} bytes in one`, async () => {
@@ -82,6 +82,69 @@ describe('Max message size', () => {
     for (let i = 0; i < channel.send.callCount; i++) {
       expect(channel.send.getCall(i).args[0]).to.have.length.that.is.lessThanOrEqual(MAX_MESSAGE_SIZE)
     }
+  })
+})
+
+describe('Datachannel send errors', () => {
+  let pcA: RTCPeerConnection
+  let pcB: RTCPeerConnection
+
+  afterEach(() => {
+    pcA?.close()
+    pcB?.close()
+  })
+
+  it('aborts the stream when underlying datachannel is closed mid-send', async () => {
+    // open a real datachannel pair so we can trigger the JS-vs-native state
+    // divergence in the node-datachannel polyfill: peerConnection.close()
+    // synchronously closes the native datachannel at the C++ level, but the
+    // polyfill's cached readyState only updates when the onClosed callback
+    // fires on the next event loop tick. Calling send() in that race window
+    // passes the readyState guard and reaches the native binding, which
+    // throws "DataChannel is closed"
+    pcA = new RTCPeerConnection()
+    pcB = new RTCPeerConnection()
+    const channelA = pcA.createDataChannel('test', { negotiated: true, id: 91 })
+    const channelB = pcB.createDataChannel('test', { negotiated: true, id: 91 })
+
+    pcA.onicecandidate = ({ candidate }) => {
+      if (candidate != null) {
+        pcB.addIceCandidate(candidate).catch(() => {})
+      }
+    }
+    pcB.onicecandidate = ({ candidate }) => {
+      if (candidate != null) {
+        pcA.addIceCandidate(candidate).catch(() => {})
+      }
+    }
+
+    await pcA.setLocalDescription(await pcA.createOffer())
+    await pcB.setRemoteDescription(pcA.localDescription as RTCSessionDescriptionInit)
+    await pcB.setLocalDescription(await pcB.createAnswer())
+    await pcA.setRemoteDescription(pcB.localDescription as RTCSessionDescriptionInit)
+
+    await Promise.all([
+      pEvent(channelA, 'open', { rejectionEvents: ['close', 'error'] }),
+      pEvent(channelB, 'open', { rejectionEvents: ['close', 'error'] })
+    ])
+
+    const webrtcStream = createStream({
+      channel: channelA,
+      direction: 'outbound',
+      closeTimeout: 1,
+      log: defaultLogger().forComponent('test')
+    })
+
+    // synchronously close the native peer; polyfill readyState is still 'open'
+    pcA.close()
+    expect(channelA.readyState).to.equal('open')
+
+    const closeEventPromise = pEvent<'close', StreamCloseEvent>(webrtcStream, 'close')
+    webrtcStream.send(new Uint8Array([1, 2, 3, 4]))
+    const closeEvent = await closeEventPromise
+
+    expect(closeEvent.error).to.exist()
+    expect(webrtcStream.status).to.equal('aborted')
   })
 })
 
