@@ -145,11 +145,7 @@ export class WebRTCStream extends AbstractStream {
         this.channel.send(buf)
       }
     } catch (err: any) {
-      // channel.send can throw synchronously when the underlying datachannel
-      // is closed (e.g. because the native libdatachannel state diverged from
-      // the polyfill's cached readyState). Treat as a transport failure and
-      // abort the stream so the error surfaces to consumers instead of going
-      // uncaught.
+      // channel.send can throw synchronously if the polyfill's cached readyState is stale
       this.log.error('error sending datachannel message - %e', err)
       this.abort(err)
     }

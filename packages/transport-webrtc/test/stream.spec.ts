@@ -83,19 +83,14 @@ describe('Datachannel send errors', () => {
   })
 
   it('aborts the stream when underlying datachannel is closed mid-send', async function () {
-    // the state divergence reproduced here is specific to the
-    // node-datachannel polyfill; native browser WebRTC does not exhibit it
+    // polyfill-specific race; native browser WebRTC doesn't exhibit it
     if (!isNode && !isElectronMain) {
       return this.skip()
     }
 
-    // open a real datachannel pair so we can trigger the JS-vs-native state
-    // divergence in the node-datachannel polyfill: peerConnection.close()
-    // synchronously closes the native datachannel at the C++ level, but the
-    // polyfill's cached readyState only updates when the onClosed callback
-    // fires on the next event loop tick. Calling send() in that race window
-    // passes the readyState guard and reaches the native binding, which
-    // throws "DataChannel is closed"
+    // the node-datachannel polyfill's cached readyState updates on the next
+    // tick after onClosed fires, so closing the peer leaves a window where
+    // send() passes the guard and hits an already-closed native channel
     pcA = new RTCPeerConnection()
     pcB = new RTCPeerConnection()
     const channelA = pcA.createDataChannel('test', { negotiated: true, id: 91 })
@@ -129,7 +124,6 @@ describe('Datachannel send errors', () => {
       log: defaultLogger().forComponent('test')
     })
 
-    // synchronously close the native peer; polyfill readyState is still 'open'
     pcA.close()
     expect(channelA.readyState).to.equal('open')
 
