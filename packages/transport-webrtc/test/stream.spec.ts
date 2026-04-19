@@ -5,6 +5,7 @@ import * as lengthPrefixed from 'it-length-prefixed'
 import { bytes } from 'multiformats'
 import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
+import { isNode, isElectronMain } from 'wherearewe'
 import { MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
 import { Message } from '../src/private-to-public/pb/message.js'
 import { createStream } from '../src/stream.js'
@@ -81,7 +82,13 @@ describe('Datachannel send errors', () => {
     pcB?.close()
   })
 
-  it('aborts the stream when underlying datachannel is closed mid-send', async () => {
+  it('aborts the stream when underlying datachannel is closed mid-send', async function () {
+    // the state divergence reproduced here is specific to the
+    // node-datachannel polyfill; native browser WebRTC does not exhibit it
+    if (!isNode && !isElectronMain) {
+      return this.skip()
+    }
+
     // open a real datachannel pair so we can trigger the JS-vs-native state
     // divergence in the node-datachannel polyfill: peerConnection.close()
     // synchronously closes the native datachannel at the C++ level, but the

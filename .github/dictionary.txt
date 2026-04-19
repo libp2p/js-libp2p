@@ -10,6 +10,7 @@ dout
 getbit
 hopr
 incrby
+libdatachannel
 microtask
 nothrow
 peerStore
