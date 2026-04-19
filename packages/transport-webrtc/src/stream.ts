@@ -7,7 +7,6 @@ import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { DEFAULT_FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.ts'
 import { Message } from './private-to-public/pb/message.ts'
-import { isFirefox } from './util.ts'
 import type { DataChannelOptions } from './index.ts'
 import type { AbortOptions, MessageStreamDirection, Logger } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
@@ -139,14 +138,6 @@ export class WebRTCStream extends AbstractStream {
     }
 
     this.log.trace('sending message, channel state "%s"', this.channel.readyState)
-
-    if (isFirefox) {
-      // TODO: firefox can deliver small messages out of order - remove once a
-      // browser with https://bugzilla.mozilla.org/show_bug.cgi?id=1983831 is
-      // available in playwright-test
-      this.channel.send(data.subarray())
-      return
-    }
 
     // send message without copying data
     for (const buf of data) {
