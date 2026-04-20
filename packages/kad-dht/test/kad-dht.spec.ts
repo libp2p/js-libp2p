@@ -2,6 +2,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 
 import { Libp2pRecord } from '@libp2p/record'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import drain from 'it-drain'
@@ -17,6 +18,7 @@ import { sortDHTs } from './utils/sort-closest-peers.ts'
 import { TestDHT } from './utils/test-dht.ts'
 import type { PeerAndKey } from './utils/create-peer-id.ts'
 import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
+import type { AbortOptions, PeerId } from '@libp2p/interface'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'VALUE'): Promise<ValueEvent>
@@ -110,6 +112,73 @@ describe('KadDHT', () => {
       const dht = await testDHT.spawn(undefined, false)
 
       await dht.dht.stop()
+    })
+
+    it('should enqueue peer connect routing updates via routing table', async () => {
+      const dht = await testDHT.spawn(undefined, false)
+
+      const queueRoutingTableUpdateSpy = sinon.spy((dht.dht as any).routingTable, 'queueRoutingTableUpdate')
+
+      await dht.dht.onPeerConnect({
+        id: peerIds[0].peerId,
+        multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234')]
+      })
+
+      expect(queueRoutingTableUpdateSpy).to.have.property('calledOnce', true)
+      expect(queueRoutingTableUpdateSpy.firstCall.args[0].toString()).to.equal(peerIds[0].peerId.toString())
+    })
+
+    it('should not count queue wait time towards onPeerConnectTimeout', async function () {
+      this.timeout(5_000)
+
+      const dht = await testDHT.spawn({
+        onPeerConnectTimeout: 10,
+        routingTableUpdateQueueConcurrency: 1
+      }, false)
+
+      const routingTable = (dht.dht as any).routingTable
+      const originalAdd = routingTable.add.bind(routingTable)
+
+      let releaseFirstAdd: () => void = () => {}
+      let firstAddStarted: () => void = () => {}
+      const firstAddStartedPromise = new Promise<void>((resolve) => {
+        firstAddStarted = resolve
+      })
+
+      const addStub = sinon.stub(routingTable, 'add').callsFake(async (...args: unknown[]) => {
+        const [peerId, options] = args as [PeerId, AbortOptions | undefined]
+
+        if (peerId.equals(peerIds[0].peerId)) {
+          firstAddStarted()
+          await new Promise<void>((resolve) => {
+            releaseFirstAdd = resolve
+          })
+        }
+
+        return originalAdd(peerId, options)
+      })
+
+      try {
+        await dht.dht.onPeerConnect({
+          id: peerIds[0].peerId,
+          multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234')]
+        })
+
+        await firstAddStartedPromise
+
+        await dht.dht.onPeerConnect({
+          id: peerIds[1].peerId,
+          multiaddrs: [multiaddr('/ip4/127.0.0.1/tcp/1235')]
+        })
+
+        await new Promise(resolve => setTimeout(resolve, 25))
+        releaseFirstAdd()
+
+        await routingTable.routingTableUpdateQueue.onIdle()
+        expect(await dht.dht.routingTable.find(peerIds[1].peerId)).to.equal(peerIds[1].peerId)
+      } finally {
+        addStub.restore()
+      }
     })
   })
 
