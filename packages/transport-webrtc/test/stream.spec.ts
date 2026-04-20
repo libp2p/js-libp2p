@@ -5,13 +5,14 @@ import * as lengthPrefixed from 'it-length-prefixed'
 import { bytes } from 'multiformats'
 import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
+import { isNode, isElectronMain } from 'wherearewe'
 import { MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from '../src/constants.js'
 import { Message } from '../src/private-to-public/pb/message.js'
 import { createStream } from '../src/stream.js'
 import { RTCPeerConnection } from '../src/webrtc/index.js'
 import { receiveFinAck, receiveRemoteCloseWrite } from './util.ts'
 import type { WebRTCStream } from '../src/stream.js'
-import type { Stream } from '@libp2p/interface'
+import type { Stream, StreamCloseEvent } from '@libp2p/interface'
 
 describe('Max message size', () => {
   it(`sends messages smaller or equal to ${MAX_MESSAGE_SIZE} bytes in one`, async () => {
@@ -69,6 +70,69 @@ describe('Max message size', () => {
     for (let i = 0; i < channel.send.callCount; i++) {
       expect(channel.send.getCall(i).args[0]).to.have.length.that.is.lessThanOrEqual(MAX_MESSAGE_SIZE)
     }
+  })
+})
+
+describe('Datachannel send errors', () => {
+  let pcA: RTCPeerConnection
+  let pcB: RTCPeerConnection
+
+  afterEach(() => {
+    pcA?.close()
+    pcB?.close()
+  })
+
+  it('aborts the stream when underlying datachannel is closed mid-send', async function () {
+    // polyfill-specific race; native browser WebRTC doesn't exhibit it
+    if (!isNode && !isElectronMain) {
+      return this.skip()
+    }
+
+    // the node-datachannel polyfill's cached readyState updates on the next
+    // tick after onClosed fires, so closing the peer leaves a window where
+    // send() passes the guard and hits an already-closed native channel
+    pcA = new RTCPeerConnection()
+    pcB = new RTCPeerConnection()
+    const channelA = pcA.createDataChannel('test', { negotiated: true, id: 91 })
+    const channelB = pcB.createDataChannel('test', { negotiated: true, id: 91 })
+
+    pcA.onicecandidate = ({ candidate }) => {
+      if (candidate != null) {
+        pcB.addIceCandidate(candidate).catch(() => {})
+      }
+    }
+    pcB.onicecandidate = ({ candidate }) => {
+      if (candidate != null) {
+        pcA.addIceCandidate(candidate).catch(() => {})
+      }
+    }
+
+    await pcA.setLocalDescription(await pcA.createOffer())
+    await pcB.setRemoteDescription(pcA.localDescription as RTCSessionDescriptionInit)
+    await pcB.setLocalDescription(await pcB.createAnswer())
+    await pcA.setRemoteDescription(pcB.localDescription as RTCSessionDescriptionInit)
+
+    await Promise.all([
+      pEvent(channelA, 'open', { rejectionEvents: ['close', 'error'] }),
+      pEvent(channelB, 'open', { rejectionEvents: ['close', 'error'] })
+    ])
+
+    const webrtcStream = createStream({
+      channel: channelA,
+      direction: 'outbound',
+      closeTimeout: 1,
+      log: defaultLogger().forComponent('test')
+    })
+
+    pcA.close()
+    expect(channelA.readyState).to.equal('open')
+
+    const closeEventPromise = pEvent<'close', StreamCloseEvent>(webrtcStream, 'close')
+    webrtcStream.send(new Uint8Array([1, 2, 3, 4]))
+    const closeEvent = await closeEventPromise
+
+    expect(closeEvent.error).to.exist()
+    expect(webrtcStream.status).to.equal('aborted')
   })
 })
 

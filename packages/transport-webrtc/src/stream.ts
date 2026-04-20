@@ -139,9 +139,15 @@ export class WebRTCStream extends AbstractStream {
 
     this.log.trace('sending message, channel state "%s"', this.channel.readyState)
 
-    // send message without copying data
-    for (const buf of data) {
-      this.channel.send(buf)
+    try {
+      // send message without copying data
+      for (const buf of data) {
+        this.channel.send(buf)
+      }
+    } catch (err: any) {
+      // channel.send can throw synchronously if the polyfill's cached readyState is stale
+      this.log.error('error sending datachannel message - %e', err)
+      this.abort(err)
     }
   }
 
