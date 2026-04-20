@@ -1,7 +1,7 @@
 import { AdaptiveTimeout, Queue } from '@libp2p/utils'
 import drain from 'it-drain'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
-import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_THRESHOLD, REPROVIDE_TIMEOUT } from './constants.ts'
+import { PROVIDERS_VALIDITY, REPROVIDE_CONCURRENCY, REPROVIDE_INTERVAL, REPROVIDE_MAX_QUEUE_SIZE, REPROVIDE_SORT_BATCH_SIZE, REPROVIDE_THRESHOLD, REPROVIDE_TIMEOUT } from './constants.ts'
 import { convertBuffer, parseProviderKey, readProviderTime, timeOperationMethod } from './utils.ts'
 import type { ContentRouting } from './content-routing/index.ts'
 import type { OperationMetrics } from './kad-dht.ts'
@@ -27,6 +27,7 @@ export interface ReproviderInit {
   operationMetrics: OperationMetrics
   concurrency?: number
   maxQueueSize?: number
+  sortBatchSize?: number
   threshold?: number
   validity?: number
   interval?: number
@@ -52,6 +53,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
   private running: boolean
   private shutdownController?: AbortController
   private readonly reprovideThreshold: number
+  private readonly sortBatchSize: number
   private readonly contentRouting: ContentRouting
   private readonly datastorePrefix: string
   private readonly addressManager: AddressManager
@@ -78,6 +80,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
     this.addressManager = components.addressManager
     this.datastorePrefix = `${init.datastorePrefix}/provider`
     this.reprovideThreshold = init.threshold ?? REPROVIDE_THRESHOLD
+    this.sortBatchSize = init.sortBatchSize ?? REPROVIDE_SORT_BATCH_SIZE
     this.maxQueueSize = init.maxQueueSize ?? REPROVIDE_MAX_QUEUE_SIZE
     this.validity = init.validity ?? PROVIDERS_VALIDITY
     this.interval = init.interval ?? REPROVIDE_INTERVAL
@@ -121,14 +124,18 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
    * reprovided consecutively. Since nearby CIDs in the keyspace share the
    * same K closest peers, connections opened for one CID are likely to be
    * reused for the next, reducing the number of new dials per reprovide run.
+   *
+   * To avoid unbounded memory growth, CIDs are sorted and queued in batches
+   * of at most `sortBatchSize` entries.
    */
   private async processRecords (options?: AbortOptions): Promise<void> {
     try {
       this.safeDispatchEvent('reprovide:start')
       this.log('starting reprovide/cleanup')
 
-      // collect CIDs that need reproviding so we can sort them before queueing
-      const toReprovide: CID[] = []
+      // Accumulate CIDs for batched Kademlia-key sorting. Flushed every
+      // sortBatchSize entries so the array never grows without bound.
+      const batch: CID[] = []
 
       // Get all provider entries from the datastore
       for await (const entry of this.datastore.query({
@@ -155,40 +162,19 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           // collect for reproviding
           if (this.shouldReprovide(isSelf, expires)) {
             this.log('scheduling reprovide of %c', cid)
-            toReprovide.push(cid)
+            batch.push(cid)
+
+            if (batch.length >= this.sortBatchSize) {
+              await this.sortAndQueueBatch(batch.splice(0), options)
+            }
           }
         } catch (err: any) {
           this.log.error('error processing datastore key %s - %s', entry.key, err.message)
         }
       }
 
-      // sort collected CIDs by their Kademlia key so XOR-adjacent CIDs are
-      // queued consecutively — peers responsible for one CID are likely to
-      // also be responsible for adjacent CIDs, so connections can be reused
-      if (toReprovide.length > 1) {
-        const kadKeys = await Promise.all(
-          toReprovide.map(cid => convertBuffer(cid.multihash.bytes, options))
-        )
-
-        const sortable = toReprovide.map((cid, i) => ({ cid, kadKey: kadKeys[i] }))
-        sortable.sort((a, b) => {
-          for (let i = 0; i < a.kadKey.length; i++) {
-            if (a.kadKey[i] !== b.kadKey[i]) {
-              return a.kadKey[i] - b.kadKey[i]
-            }
-          }
-          return 0
-        })
-
-        toReprovide.splice(0, toReprovide.length, ...sortable.map(({ cid }) => cid))
-      }
-
-      // queue reprovides in Kademlia key order
-      for (const cid of toReprovide) {
-        this.queueReprovide(cid)
-          .catch(err => {
-            this.log.error('could not reprovide %c - %e', cid, err)
-          })
+      if (batch.length > 0) {
+        await this.sortAndQueueBatch(batch, options)
       }
 
       this.log('reprovide/cleanup successful')
@@ -205,6 +191,33 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           })
         }, this.interval)
       }
+    }
+  }
+
+  private async sortAndQueueBatch (batch: CID[], options?: AbortOptions): Promise<void> {
+    if (batch.length > 1) {
+      const kadKeys = await Promise.all(
+        batch.map(cid => convertBuffer(cid.multihash.bytes, options))
+      )
+
+      const sortable = batch.map((cid, i) => ({ cid, kadKey: kadKeys[i] }))
+      sortable.sort((a, b) => {
+        for (let i = 0; i < a.kadKey.length; i++) {
+          if (a.kadKey[i] !== b.kadKey[i]) {
+            return a.kadKey[i] - b.kadKey[i]
+          }
+        }
+        return 0
+      })
+
+      batch = sortable.map(({ cid }) => cid)
+    }
+
+    for (const cid of batch) {
+      this.queueReprovide(cid)
+        .catch(err => {
+          this.log.error('could not reprovide %c - %e', cid, err)
+        })
     }
   }
 

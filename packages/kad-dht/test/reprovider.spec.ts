@@ -197,6 +197,7 @@ describe('reprovider', () => {
     }
 
     // recreate reprovider with concurrency=1 so provides are strictly sequential
+    // sortBatchSize >= cids.length so all CIDs are sorted in one batch
     reprovider = new Reprovider(components, {
       logPrefix: 'libp2p',
       datastorePrefix: '/dht',
@@ -206,6 +207,7 @@ describe('reprovider', () => {
       validity: 200,
       interval: 200,
       concurrency: 1,
+      sortBatchSize: cids.length,
       operationMetrics: {}
     })
 
@@ -251,6 +253,81 @@ describe('reprovider', () => {
       expect(comparison).to.be.lessThanOrEqual(0,
         `CID at position ${i - 1} should have a smaller or equal Kademlia key than position ${i}`
       )
+    }
+  })
+
+  it('should sort within each batch when CID count exceeds sortBatchSize', async function () {
+    this.timeout(5000)
+
+    const cids = [
+      CID.parse('QmZ8eiDPqQqWR17EPxiwCDgrKPVhCHLcyn6xSCNpFAdAZb'),
+      CID.parse('QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n'),
+      CID.parse('QmRgutAxd8t7oGkSm4wmeuByG6M51wcTso6cubDdQtuEfL'),
+      CID.parse('QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB'),
+      CID.parse('QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN')
+    ]
+
+    for (const cid of cids) {
+      await providers.addProvider(cid, components.peerId)
+    }
+
+    // sortBatchSize=2: CIDs are sorted in batches of 2. Ordering within each
+    // batch is verified; cross-batch ordering is intentionally not guaranteed.
+    reprovider = new Reprovider(components, {
+      logPrefix: 'libp2p',
+      datastorePrefix: '/dht',
+      metricsPrefix: '',
+      contentRouting,
+      threshold: 100,
+      validity: 200,
+      interval: 200,
+      concurrency: 1,
+      sortBatchSize: 2,
+      operationMetrics: {}
+    })
+
+    const provisionMultihashes: Uint8Array[] = []
+
+    let resolveWhenDone!: () => void
+    const whenAllDone = new Promise<void>(resolve => { resolveWhenDone = resolve })
+    let provided = 0
+
+    contentRouting.provide.callsFake(async function * (cid: CID) {
+      provisionMultihashes.push(cid.multihash.bytes)
+      provided++
+      if (provided === cids.length) {
+        resolveWhenDone()
+      }
+      yield * []
+    })
+
+    await start(reprovider)
+    await pEvent(reprovider, 'reprovide:start')
+    await pEvent(reprovider, 'reprovide:end')
+    await whenAllDone
+
+    expect(provisionMultihashes).to.have.lengthOf(cids.length)
+
+    // verify ordering within each batch of sortBatchSize
+    const batchSize = 2
+    for (let b = 0; b < provisionMultihashes.length; b += batchSize) {
+      const batchEnd = Math.min(b + batchSize, provisionMultihashes.length)
+      for (let i = b + 1; i < batchEnd; i++) {
+        const prevKey = await convertBuffer(provisionMultihashes[i - 1])
+        const currKey = await convertBuffer(provisionMultihashes[i])
+
+        let comparison = 0
+        for (let j = 0; j < prevKey.length; j++) {
+          if (prevKey[j] !== currKey[j]) {
+            comparison = prevKey[j] - currKey[j]
+            break
+          }
+        }
+
+        expect(comparison).to.be.lessThanOrEqual(0,
+          `within batch: CID at position ${i - 1} should have a smaller or equal Kademlia key than position ${i}`
+        )
+      }
     }
   })
 
