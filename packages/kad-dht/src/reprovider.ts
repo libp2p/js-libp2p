@@ -158,15 +158,15 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
             await this.datastore.delete(entry.key, options)
           }
 
-          // if the provider is us and we are within the reprovide threshold,
-          // collect for reproviding
-          if (this.shouldReprovide(isSelf, expires)) {
-            this.log('scheduling reprovide of %c', cid)
-            batch.push(cid)
+          if (!this.shouldReprovide(isSelf, expires)) {
+            continue
+          }
 
-            if (batch.length >= this.sortBatchSize) {
-              await this.sortAndQueueBatch(batch.splice(0), options)
-            }
+          this.log('scheduling reprovide of %c', cid)
+          batch.push(cid)
+
+          if (batch.length >= this.sortBatchSize) {
+            await this.sortAndQueueBatch(batch.splice(0), options)
           }
         } catch (err: any) {
           this.log.error('error processing datastore key %s - %s', entry.key, err.message)
