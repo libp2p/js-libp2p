@@ -8,7 +8,7 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import Sinon from 'sinon'
-import { createPeers } from './fixtures/create-peers.js'
+import { createPeers } from './fixtures/create-peers.ts'
 import type { Echo } from '@libp2p/echo'
 import type { Libp2p, Stream } from '@libp2p/interface'
 

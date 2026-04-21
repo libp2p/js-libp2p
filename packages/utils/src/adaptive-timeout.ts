@@ -1,6 +1,6 @@
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
-import { MovingAverage } from './moving-average.js'
+import { MovingAverage } from './moving-average.ts'
 import type { MetricGroup, Metrics } from '@libp2p/interface'
 import type { ClearableSignal } from 'any-signal'
 

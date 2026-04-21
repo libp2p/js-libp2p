@@ -21,7 +21,6 @@ import type { QueryFunc } from '../query/types.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { GetClosestPeersOptions } from '../routing-table/k-bucket.ts'
 import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
-import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AbortOptions } from 'it-pushable'
 
 export interface PeerRoutingComponents {
@@ -29,7 +28,6 @@ export interface PeerRoutingComponents {
   peerStore: PeerStore
   logger: ComponentLogger
   metrics?: Metrics
-  connectionManager: ConnectionManager
 }
 
 export interface PeerRoutingInit {
@@ -265,29 +263,17 @@ export class PeerRouting {
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (let { peer, path } of peers.peers) {
-      try {
-        if (peer.multiaddrs.length === 0) {
-          peer = await self.components.peerStore.getInfo(peer.id, options)
+    for (const { peer, path } of peers.peers) {
+      yield finalPeerEvent({
+        from: this.components.peerId,
+        peer,
+        path: {
+          index: path.index,
+          queued: 0,
+          running: 0,
+          total: 0
         }
-
-        if (peer.multiaddrs.length === 0) {
-          continue
-        }
-
-        yield finalPeerEvent({
-          from: this.components.peerId,
-          peer: await self.components.peerStore.getInfo(peer.id, options),
-          path: {
-            index: path.index,
-            queued: 0,
-            running: 0,
-            total: 0
-          }
-        }, options)
-      } catch {
-        continue
-      }
+      }, options)
     }
   }
 

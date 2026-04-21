@@ -132,9 +132,9 @@
  * ```
  */
 
-import { KadDHT as KadDHTClass } from './kad-dht.js'
-import { MessageType } from './message/dht.js'
-import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.js'
+import { KadDHT as KadDHTClass } from './kad-dht.ts'
+import { MessageType } from './message/dht.ts'
+import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.ts'
 import type { Libp2pEvents, ComponentLogger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey, AbortOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
@@ -501,6 +501,20 @@ export interface KadDHTInit {
   disjointPaths?: number
 
   /**
+   * Concurrency for background routing table updates from query responses.
+   *
+   * @default min(alpha * 2, 16)
+   */
+  routingTableUpdateQueueConcurrency?: number
+
+  /**
+   * Maximum number of pending routing table updates from query responses.
+   *
+   * @default 16384
+   */
+  routingTableUpdateMaxQueueSize?: number
+
+  /**
    * How many bits of the KAD-ID of peers to use when creating the routing
    * table.
    *
@@ -688,8 +702,9 @@ export interface KadDHTInit {
 
   /**
    * When a peer that supports the KAD-DHT protocol connects we try to add it to
-   * the routing table. This setting is how long we will try to do that for in
-   * ms.
+   * the routing table. This setting is how long an active routing table update
+   * may run for in ms once it starts processing. Time spent waiting in the
+   * routing table update queue does not count towards this timeout.
    *
    * @default 10_000
    */

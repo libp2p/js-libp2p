@@ -3,7 +3,7 @@ import { createScalableCuckooFilter } from '@libp2p/utils'
 import merge from 'it-merge'
 import parallel from 'it-parallel'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { NoPeerRoutersError, QueriedForSelfError } from './errors.js'
+import { NoPeerRoutersError, QueriedForSelfError } from './errors.ts'
 import type { Logger, Metrics, PeerId, PeerInfo, PeerRouting, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { ComponentLogger } from '@libp2p/logger'
 

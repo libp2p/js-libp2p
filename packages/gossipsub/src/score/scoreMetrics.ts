@@ -1,5 +1,5 @@
-import type { PeerScoreParams } from './peer-score-params.js'
-import type { PeerStats } from './peer-stats.js'
+import type { PeerScoreParams } from './peer-score-params.ts'
+import type { PeerStats } from './peer-stats.ts'
 
 type TopicLabel = string
 type TopicStr = string

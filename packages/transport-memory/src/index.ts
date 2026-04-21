@@ -42,7 +42,7 @@
  * ```
  */
 
-import { MemoryTransport } from './memory.js'
+import { MemoryTransport } from './memory.ts'
 import type { Transport, ComponentLogger, UpgraderOptions, PeerId } from '@libp2p/interface'
 
 export interface MemoryTransportComponents {

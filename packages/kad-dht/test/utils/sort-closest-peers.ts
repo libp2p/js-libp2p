@@ -3,7 +3,7 @@ import map from 'it-map'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { convertPeerId } from '../../src/utils.js'
-import type { PeerAndKey } from './create-peer-id.js'
+import type { PeerAndKey } from './create-peer-id.ts'
 import type { KadDHTPeer } from './test-dht.ts'
 
 /**

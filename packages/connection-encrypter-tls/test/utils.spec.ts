@@ -9,7 +9,7 @@ import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.js'
-import * as testVectors from './fixtures/test-vectors.js'
+import * as testVectors from './fixtures/test-vectors.ts'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)

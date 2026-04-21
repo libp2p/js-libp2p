@@ -42,7 +42,7 @@
  * ```
  */
 
-import { Echo as EchoClass } from './echo.js'
+import { Echo as EchoClass } from './echo.ts'
 import type { DialProtocolOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Uint8ArrayList } from 'uint8arraylist'
