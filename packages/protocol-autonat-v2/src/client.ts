@@ -1,6 +1,6 @@
 import { InvalidParametersError, ProtocolError, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { peerSet } from '@libp2p/peer-collections'
-import { createScalableCuckooFilter, isGlobalUnicast, isNetworkAddress, isPrivate, PeerQueue, repeatingTask, trackedMap, pbStream, getNetConfig } from '@libp2p/utils'
+import { createScalableCuckooFilter, isGlobalUnicast, isPrivate, PeerQueue, repeatingTask, trackedMap, pbStream, getNetConfig, tryGetNetConfig } from '@libp2p/utils'
 import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
 import { DEFAULT_CONNECTION_THRESHOLD, DIAL_DATA_CHUNK_SIZE, MAX_DIAL_DATA_BYTES, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, TIMEOUT } from './constants.ts'
@@ -288,12 +288,12 @@ export class AutoNATv2Client implements Startable {
           return false
         }
 
-        if (!isNetworkAddress(addr.multiaddr)) {
+        const options = tryGetNetConfig(addr.multiaddr)
+
+        if (options == null) {
           // skip non-network addresses
           return false
         }
-
-        const options = getNetConfig(addr.multiaddr)
 
         if (options.type === 'ip6') {
           // do not send IPv6 addresses to peers without IPv6 addresses
@@ -407,25 +407,16 @@ export class AutoNATv2Client implements Startable {
     // if the remote peer has IPv6 addresses, we can probably send them an IPv6
     // address to verify, otherwise only send them IPv4 addresses
     const supportsIPv6 = peer.addresses.some(({ multiaddr }) => {
-      if (!isNetworkAddress(multiaddr)) {
-        return false
-      }
-
-      return getNetConfig(multiaddr).type === 'ip6'
+      return tryGetNetConfig(multiaddr)?.type === 'ip6'
     })
 
-    // get multiaddrs this peer is eligible to verify
-    if (!isNetworkAddress(connection.remoteAddr)) {
-      return
-    }
-
-    const remoteAddrConfig = getNetConfig(connection.remoteAddr)
-
     // only ip4/ip6 remote addrs can be mapped to a stable network segment
-    if (remoteAddrConfig.type !== 'ip4' && remoteAddrConfig.type !== 'ip6') {
+    const remoteAddrConfig = tryGetNetConfig(connection.remoteAddr)
+    if (remoteAddrConfig?.type !== 'ip4' && remoteAddrConfig?.type !== 'ip6') {
       return
     }
 
+    // get multiaddrs this peer is eligible to verify
     const segment = this.getNetworkSegment(connection.remoteAddr)
     const results = this.getUnverifiedMultiaddrs(segment, supportsIPv6)
 
