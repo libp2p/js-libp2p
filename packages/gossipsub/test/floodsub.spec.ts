@@ -5,8 +5,8 @@ import delay from 'delay'
 import { pEvent } from 'p-event'
 import pRetry from 'p-retry'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { connectPubsubNodes, createComponents } from './utils/create-pubsub.js'
-import type { GossipSubAndComponents } from './utils/create-pubsub.js'
+import { connectPubsubNodes, createComponents } from './utils/create-pubsub.ts'
+import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 import type { SubscriptionChangeData, Message } from '../src/index.js'
 
 describe.skip('gossipsub fallbacks to floodsub', () => {

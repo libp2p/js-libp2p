@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { GossipSub as GossipSubClass } from '../src/gossipsub.js'
-import { fastMsgIdFn } from './utils/msgId.js'
+import { fastMsgIdFn } from './utils/msgId.ts'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
@@ -69,7 +69,7 @@ describe('Gossipsub acceptFrom', () => {
     expect(scoreSpy.getCall(1)).to.not.be.ok()
 
     // after 1s
-    await new Promise((resolve) => setTimeout(resolve, 1001))
+    await new Promise((resolve) => setTimeout(resolve, 1100))
 
     gossipsub.acceptFrom(peerA)
     expect(scoreSpy.getCall(1).args[0]).to.be.equal(peerA)

@@ -3,9 +3,9 @@ import drain from 'it-drain'
 import last from 'it-last'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { convertBuffer } from '../src/utils.js'
-import { sortDHTs } from './utils/sort-closest-peers.js'
-import { TestDHT } from './utils/test-dht.js'
-import type { KadDHTPeer } from './utils/test-dht.js'
+import { sortDHTs } from './utils/sort-closest-peers.ts'
+import { TestDHT } from './utils/test-dht.ts'
+import type { KadDHTPeer } from './utils/test-dht.ts'
 
 describe('multiple nodes', function () {
   this.timeout(60 * 1000)

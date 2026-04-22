@@ -1,6 +1,6 @@
 import { PeerMap } from '@libp2p/peer-collections'
 import { getNetConfig, isNetworkAddress } from '@libp2p/utils'
-import { multiaddrToIpNet, safelyCloseConnectionIfUnused } from './utils.js'
+import { multiaddrToIpNet, safelyCloseConnectionIfUnused } from './utils.ts'
 import type { IpNet } from '@chainsafe/netmask'
 import type { Libp2pEvents, Logger, ComponentLogger, PeerStore, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'

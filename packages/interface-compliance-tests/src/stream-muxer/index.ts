@@ -1,7 +1,7 @@
-import baseTest from './base-test.js'
-import closeTest from './close-test.js'
-import steamTest from './stream-test.js'
-import stressTest from './stress-test.js'
+import baseTest from './base-test.ts'
+import closeTest from './close-test.ts'
+import steamTest from './stream-test.ts'
+import stressTest from './stress-test.ts'
 import type { TestSetup } from '../index.js'
 import type { StreamMuxerFactory } from '@libp2p/interface'
 

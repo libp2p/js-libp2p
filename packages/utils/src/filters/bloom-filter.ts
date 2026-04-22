@@ -3,8 +3,8 @@ import { randomBytes } from '@libp2p/crypto'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { alloc } from 'uint8arrays/alloc'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { fnv1a } from './hashes.js'
-import type { Filter } from './index.js'
+import { fnv1a } from './hashes.ts'
+import type { Filter } from './index.ts'
 
 const LN2_SQUARED = Math.LN2 * Math.LN2
 

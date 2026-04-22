@@ -1,4 +1,4 @@
-import type { Stream, TypedEventTarget, MessageStream, AbortOptions } from './index.js'
+import type { Stream, TypedEventTarget, MessageStream, AbortOptions } from './index.ts'
 
 /**
  * User-facing message stream muxer options

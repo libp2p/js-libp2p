@@ -41,8 +41,8 @@
  * ```
  */
 
-import { IdentifyPush as IdentifyPushClass } from './identify-push.js'
-import { Identify as IdentifyClass } from './identify.js'
+import { IdentifyPush as IdentifyPushClass } from './identify-push.ts'
+import { Identify as IdentifyClass } from './identify.ts'
 import type { IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, PeerId, PeerStore, Connection, PrivateKey, NewStreamOptions } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
