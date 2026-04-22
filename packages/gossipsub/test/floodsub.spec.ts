@@ -74,7 +74,9 @@ describe('gossipsub fallbacks to floodsub', () => {
       await connectPubsubNodes(nodeGs, nodeFs)
 
       await pRetry(() => {
+        // eslint-disable-next-line max-nested-callbacks
         expect(nodeGs.pubsub.getPeers().map((s) => s.toString())).to.not.include(nodeFs.components.peerId.toString())
+        // eslint-disable-next-line max-nested-callbacks
         expect(nodeFs.pubsub.getPeers().map((s) => s.toString())).to.not.include(nodeGs.components.peerId.toString())
       })
     })
