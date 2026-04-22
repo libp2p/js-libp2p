@@ -4,6 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { concat } from 'uint8arrays'
@@ -290,7 +291,7 @@ describe('gossip', () => {
     expect(peerInfoB?.tags.get(topic)).to.be.undefined()
   })
 
-  it.skip('should reject incoming messages bigger than maxInboundDataLength limit', async function () {
+  it('should reject incoming messages bigger than maxInboundDataLength limit', async function () {
     this.timeout(10e4)
     const nodeA = nodes[0]
     const nodeB = nodes[1]
@@ -316,14 +317,40 @@ describe('gossip', () => {
     }>
     sinon.spy(nodeBSpy, 'handlePeerReadStreamError')
 
-    // This should lead to handlePeerReadStreamError at nodeB
-    await nodeA.pubsub.publish(topic, new Uint8Array(5000000))
-    await pEvent(nodeA.pubsub, 'gossipsub:heartbeat')
-    const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
-    expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+    await pWaitFor(() => {
+      const nodeAMesh = nodeA.pubsub.mesh.get(topic)
+      const nodeBMesh = nodeB.pubsub.mesh.get(topic)
 
-    // unset spy
-    nodeBSpy.handlePeerReadStreamError.restore()
+      if (nodeAMesh == null || nodeBMesh == null) {
+        return false
+      }
+
+      return nodeAMesh.has(nodeB.components.peerId.toString()) && nodeBMesh.has(nodeA.components.peerId.toString())
+    }, { timeout: 5000 })
+
+    const messagePromise = pEvent(nodeB.pubsub, 'message', { timeout: 2000 })
+      .then(() => true)
+      .catch(() => false)
+
+    try {
+      // This should not be delivered to nodeB
+      await nodeA.pubsub.publish(topic, new Uint8Array(5000000))
+      await pEvent(nodeA.pubsub, 'gossipsub:heartbeat')
+
+      const sawReadStreamError = await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
+        .then(() => true)
+        .catch(() => false)
+
+      if (sawReadStreamError) {
+        const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
+        expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+      }
+
+      const messageReceived = await messagePromise
+      expect(messageReceived).to.equal(false)
+    } finally {
+      nodeBSpy.handlePeerReadStreamError.restore()
+    }
   })
 
   it('should send piggyback control into other sent messages', async function () {

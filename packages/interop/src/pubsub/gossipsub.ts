@@ -19,8 +19,7 @@ export function gossipsubTests (factory: DaemonFactory): void {
 }
 
 function runGossipsubTests (factory: DaemonFactory, optionsA: SpawnOptions, optionsB: SpawnOptions): void {
-  // TODO: disabled until gossipsub supports event target streams
-  describe.skip('pubsub.gossipsub', () => {
+  describe('pubsub.gossipsub', () => {
     let daemonA: Daemon
     let daemonB: Daemon
 
