@@ -492,6 +492,9 @@ describe('stream-pair', () => {
       outgoing.dispatchEvent(new Event('drain'))
     }).to.not.throw()
 
+    // drain handler defers processSendQueue via queueMicrotask - wait for it
+    await new Promise<void>((resolve) => { queueMicrotask(resolve) })
+
     expect(stub.calledOnce).to.be.true()
     expect(outgoing.writeBufferLength).to.equal(payload.byteLength)
 
@@ -540,6 +543,10 @@ describe('stream-pair', () => {
     expect(() => {
       outgoing.dispatchEvent(new Event('drain'))
     }).to.not.throw()
+
+    // drain handler defers processSendQueue via queueMicrotask - wait for it
+    await new Promise<void>((resolve) => { queueMicrotask(resolve) })
+
     expect(outgoing.writeBufferLength).to.equal(payload.byteLength)
 
     // simulate a later drain event after writableNeedsDrain is set again
@@ -547,6 +554,8 @@ describe('stream-pair', () => {
     expect(() => {
       outgoing.dispatchEvent(new Event('drain'))
     }).to.not.throw()
+
+    await new Promise<void>((resolve) => { queueMicrotask(resolve) })
 
     expect(stub.callCount).to.equal(2)
     expect(outgoing.writeBufferLength).to.equal(0)
