@@ -3,6 +3,7 @@ import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { encode } from 'it-length-prefixed'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -291,7 +292,7 @@ describe('gossip', () => {
     expect(peerInfoB?.tags.get(topic)).to.be.undefined()
   })
 
-  it('should reject incoming messages bigger than maxInboundDataLength limit', async function () {
+  it('should reject oversized publish rpc during send due to maxInboundDataLength', async function () {
     this.timeout(10e4)
     const nodeA = nodes[0]
     const nodeB = nodes[1]
@@ -312,6 +313,8 @@ describe('gossip', () => {
     await Promise.all(twoNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
 
     // set spy. NOTE: Forcing private property to be public
+    const nodeALogErrorSpy = sinon.spy((nodeA.pubsub as any).log, 'error')
+
     const nodeBSpy = nodeB.pubsub as Partial<GossipSubClass> as SinonStubbedInstance<{
       handlePeerReadStreamError: GossipSubClass['handlePeerReadStreamError']
     }>
@@ -341,6 +344,12 @@ describe('gossip', () => {
         .then(() => true)
         .catch(() => false)
 
+      const sawWriteStreamError = nodeALogErrorSpy.getCalls().some((call) => {
+        return call.args.some((arg) => arg?.name === 'InvalidDataLengthError')
+      })
+
+      expect(sawReadStreamError || sawWriteStreamError).to.equal(true)
+
       if (sawReadStreamError) {
         const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
         expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
@@ -348,6 +357,44 @@ describe('gossip', () => {
 
       const messageReceived = await messagePromise
       expect(messageReceived).to.equal(false)
+    } finally {
+      nodeALogErrorSpy.restore()
+      nodeBSpy.handlePeerReadStreamError.restore()
+    }
+  })
+
+  it('should reject oversized inbound rpc due to maxInboundDataLength', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+
+    const twoNodes = [nodeA, nodeB]
+
+    // every node connected to every other
+    await connectAllPubSubNodes(twoNodes)
+
+    // await mesh rebalancing
+    await Promise.all(twoNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const nodeBSpy = nodeB.pubsub as Partial<GossipSubClass> as SinonStubbedInstance<{
+      handlePeerReadStreamError: GossipSubClass['handlePeerReadStreamError']
+    }>
+    sinon.spy(nodeBSpy, 'handlePeerReadStreamError')
+
+    try {
+      const connection = nodeA.components.connectionManager.getConnections(nodeB.components.peerId)[0]
+
+      if (connection == null) {
+        throw new Error('Connection not found')
+      }
+
+      const stream = await connection.newStream((nodeA.pubsub as any).protocols)
+      stream.send(encode.single(new Uint8Array(5000000), { maxDataLength: 6000000 }))
+
+      await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
+
+      const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
+      expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
     } finally {
       nodeBSpy.handlePeerReadStreamError.restore()
     }

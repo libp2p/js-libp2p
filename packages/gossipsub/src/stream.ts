@@ -30,8 +30,8 @@ export class OutboundStream {
     return this.rawStream.protocol
   }
 
-  async push (data: Uint8Array): Promise<void> {
-    return this.pushPrefixed(encode.single(data))
+  push (data: Uint8Array): void {
+    this.pushPrefixed(encode.single(data))
   }
 
   /**
