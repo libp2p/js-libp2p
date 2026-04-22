@@ -4,11 +4,12 @@ import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
 import { debounce } from '../debounce.js'
 import { QueueFullError } from '../errors.js'
-import { Job } from './job.js'
+import { Job } from './job.ts'
 import type { AbortOptions, Metrics } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
 
-export type { Job, JobTimeline } from './job.js'
-export type { JobRecipient } from './recipient.js'
+export type { Job, JobTimeline } from './job.ts'
+export type { JobRecipient } from './recipient.ts'
 
 export interface Comparator<T> {
   (a: T, b: T): -1 | 0 | 1
@@ -118,7 +119,7 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
  * 1. Items remain at the head of the queue while they are running so `queue.size` includes `queue.pending` items - this is so interested parties can join the results of a queue item while it is running
  * 2. The options for a job are stored separately to the job in order for them to be modified while they are still in the queue
  */
-export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = AbortOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
+export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & ProgressOptions = AbortOptions> extends TypedEventEmitter<QueueEvents<JobReturnType, JobOptions>> {
   public concurrency: number
   public maxSize: number
   public queue: Array<Job<JobOptions, JobReturnType>>
@@ -257,9 +258,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
     const job = new Job<JobOptions, JobReturnType>(fn, options)
     this.enqueue(job)
     this.safeDispatchEvent('add')
-    this.tryToStartAnother()
 
-    return job.join(options)
+    const result = job.join(options)
       .then(result => {
         this.safeDispatchEvent('completed', { detail: result })
         this.safeDispatchEvent('success', { detail: { job, result } })
@@ -281,6 +281,10 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions = Ab
 
         throw err
       })
+
+    this.tryToStartAnother()
+
+    return result
   }
 
   /**

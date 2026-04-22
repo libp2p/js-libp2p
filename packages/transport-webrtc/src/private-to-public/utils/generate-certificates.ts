@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { base64url } from 'multiformats/bases/base64'

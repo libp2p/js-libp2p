@@ -5,7 +5,7 @@ import type { RPC } from '../../src/message/rpc.js'
 import type { TopicStr } from '../../src/types.js'
 import type { PeerId } from '@libp2p/interface'
 
-export * from './msgId.js'
+export * from './msgId.ts'
 
 export const createPeerId = async (): Promise<PeerId> => {
   const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))

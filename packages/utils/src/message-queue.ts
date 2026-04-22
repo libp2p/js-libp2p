@@ -3,7 +3,7 @@ import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
 import { raceSignal } from 'race-signal'
 import { isUint8ArrayList, Uint8ArrayList } from 'uint8arraylist'
-import { Queue } from './queue/index.js'
+import { Queue } from './queue/index.ts'
 import type { AbortOptions, Logger } from '@libp2p/interface'
 
 const DEFAULT_CHUNK_SIZE = 1024 * 64

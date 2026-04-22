@@ -5,8 +5,8 @@ import * as lp from 'it-length-prefixed'
 import pDefer from 'p-defer'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message, MessageType } from '../src/message/dht.js'
-import { TestDHT } from './utils/test-dht.js'
-import type { KadDHTPeer } from './utils/test-dht.js'
+import { TestDHT } from './utils/test-dht.ts'
+import type { KadDHTPeer } from './utils/test-dht.ts'
 import type { DialTarget } from '@libp2p/interface'
 
 describe('Network', () => {

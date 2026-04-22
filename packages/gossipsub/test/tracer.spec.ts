@@ -5,7 +5,7 @@ import delay from 'delay'
 import * as constants from '../src/constants.js'
 import { IWantTracer } from '../src/tracer.js'
 import { messageIdToString } from '../src/utils/messageIdToString.js'
-import { makeTestMessage, getMsgId, getMsgIdStr } from './utils/index.js'
+import { makeTestMessage, getMsgId, getMsgIdStr } from './utils/index.ts'
 
 describe('IWantTracer', () => {
   it('should track broken promises', async function () {

@@ -4,19 +4,22 @@ import { anySignal } from 'any-signal'
 import parallel from 'it-parallel'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import * as utils from '../utils.js'
-import { ClosestPeers } from './closest-peers.js'
-import { KBucket, isLeafBucket } from './k-bucket.js'
-import type { Bucket, GetClosestPeersOptions, LeafBucket, Peer } from './k-bucket.js'
+import { ClosestPeers } from './closest-peers.ts'
+import { KBucket, isLeafBucket } from './k-bucket.ts'
+import type { Bucket, GetClosestPeersOptions, LeafBucket, Peer } from './k-bucket.ts'
 import type { Network } from '../network.js'
 import type { AbortOptions, ComponentLogger, CounterGroup, Logger, Metric, Metrics, PeerId, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
+import type { ClearableSignal } from 'any-signal'
 
 export const KBUCKET_SIZE = 20
 export const PREFIX_LENGTH = 6
 export const PING_NEW_CONTACT_TIMEOUT = 2000
 export const PING_NEW_CONTACT_CONCURRENCY = 20
 export const PING_NEW_CONTACT_MAX_QUEUE_SIZE = 100
+export const ROUTING_TABLE_UPDATE_QUEUE_CONCURRENCY = 16
+export const ROUTING_TABLE_UPDATE_MAX_QUEUE_SIZE = 16_384
 export const PING_OLD_CONTACT_COUNT = 3
 export const PING_OLD_CONTACT_TIMEOUT = 2000
 export const PING_OLD_CONTACT_CONCURRENCY = 20
@@ -51,6 +54,12 @@ export interface RoutingTableInit {
   lastPingThreshold?: number
   closestPeerSetSize?: number
   closestPeerSetRefreshInterval?: number
+  routingTableUpdateQueueConcurrency?: number
+  routingTableUpdateMaxQueueSize?: number
+}
+
+export interface QueueRoutingTableUpdateOptions extends AbortOptions {
+  activeTimeout?: number
 }
 
 export interface RoutingTableComponents {
@@ -82,6 +91,7 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   private readonly pingNewContactQueue: PeerQueue<boolean>
   private readonly pingOldContactTimeout: AdaptiveTimeout
   private readonly pingOldContactQueue: PeerQueue<boolean>
+  private readonly routingTableUpdateQueue: PeerQueue<void>
   private readonly populateFromDatastoreOnStart: boolean
   private readonly populateFromDatastoreLimit: number
   private readonly protocol: string
@@ -118,6 +128,13 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
     this.populateFromDatastoreLimit = init.populateFromDatastoreLimit ?? POPULATE_FROM_DATASTORE_LIMIT
     this.shutdownController = new AbortController()
     setMaxListeners(Infinity, this.shutdownController.signal)
+
+    this.routingTableUpdateQueue = new PeerQueue<void>({
+      concurrency: init.routingTableUpdateQueueConcurrency ?? ROUTING_TABLE_UPDATE_QUEUE_CONCURRENCY,
+      metricName: `${init.metricsPrefix}_routing_table_update_queue`,
+      metrics: this.components.metrics,
+      maxSize: init.routingTableUpdateMaxQueueSize ?? ROUTING_TABLE_UPDATE_MAX_QUEUE_SIZE
+    })
 
     this.pingOldContactQueue = new PeerQueue({
       concurrency: init.pingOldContactConcurrency ?? PING_OLD_CONTACT_CONCURRENCY,
@@ -253,9 +270,48 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
   async stop (): Promise<void> {
     this.running = false
     await stop(this.closestPeerTagger, this.kb)
+    this.routingTableUpdateQueue.abort()
     this.pingOldContactQueue.abort()
     this.pingNewContactQueue.abort()
     this.shutdownController.abort()
+  }
+
+  queueRoutingTableUpdate (peerId: PeerId, options: QueueRoutingTableUpdateOptions = {}): void {
+    const existingJob = this.routingTableUpdateQueue.find(peerId)
+
+    if (existingJob != null) {
+      void existingJob.join(options).catch(() => {})
+      return
+    }
+
+    void this.routingTableUpdateQueue.add(async (jobOptions) => {
+      let addOptions = jobOptions
+      let signal: ClearableSignal | undefined
+
+      if (options.activeTimeout != null) {
+        signal = anySignal([jobOptions.signal, AbortSignal.timeout(options.activeTimeout)])
+        setMaxListeners(Infinity, signal)
+        addOptions = {
+          ...jobOptions,
+          signal
+        }
+      }
+
+      try {
+        await this.add(peerId, addOptions)
+      } finally {
+        signal?.clear()
+      }
+    }, {
+      peerId,
+      signal: this.shutdownController.signal
+    }).catch(err => {
+      if (this.shutdownController.signal.aborted || err?.name === 'AbortError') {
+        return
+      }
+
+      this.log.error('could not update routing table for peer %p - %e', peerId, err)
+    })
   }
 
   private async peerAdded (peer: Peer, bucket: LeafBucket, options?: AbortOptions): Promise<void> {
