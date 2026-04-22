@@ -110,3 +110,15 @@ export function getNetConfig (ma: Multiaddr): NetConfig {
 
   return config
 }
+
+/**
+ * Like `getNetConfig` but returns `null` instead of throwing when the
+ * multiaddr does not start with a network address.
+ */
+export function tryGetNetConfig (ma: Multiaddr): NetConfig | null {
+  try {
+    return getNetConfig(ma)
+  } catch {
+    return null
+  }
+}
