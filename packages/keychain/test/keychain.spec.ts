@@ -6,6 +6,7 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { Key } from 'interface-datastore/key'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { isKeychain } from '../src/index.js'
 import { Keychain as KeychainClass } from '../src/keychain.js'
 import { importPrivateKey } from '../src/utils/import.js'
 import type { KeychainInit, Keychain, KeyInfo } from '../src/index.js'
@@ -39,6 +40,16 @@ describe('keychain', () => {
         logger
       }, {})
     }()).to.eventually.be.ok()
+  })
+
+  it('is a keychain', async () => {
+    expect(isKeychain(ks)).to.be.true()
+  })
+
+  it('should not be a keychain', async () => {
+    expect(isKeychain()).to.be.false()
+    expect(isKeychain({})).to.be.false()
+    expect(isKeychain(true)).to.be.false()
   })
 
   it('can override the self key name', async () => {

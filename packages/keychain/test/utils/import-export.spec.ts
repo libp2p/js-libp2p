@@ -1,4 +1,3 @@
-/* eslint-env mocha */
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
 import { base58btc } from 'multiformats/bases/base58'
