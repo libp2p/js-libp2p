@@ -28,6 +28,7 @@ import type { SpawnOptions, Daemon, DaemonFactory } from '@libp2p/interop'
 import type { Ping } from '@libp2p/ping'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Libp2pOptions, ServiceFactoryMap } from 'libp2p'
+import { quic } from '@libp2p/quic'
 
 /**
  * @packageDocumentation
@@ -53,6 +54,8 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   } else {
     if (options.transport == null || options.transport === 'tcp') {
       opts.push('-hostAddrs=/ip4/127.0.0.1/tcp/0')
+    } else if (options.transport === 'quic') {
+      opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1')
     } else if (options.transport === 'webtransport') {
       opts.push('-hostAddrs=/ip4/127.0.0.1/udp/0/quic-v1/webtransport')
     } else if (options.transport === 'webrtc-direct') {
@@ -152,6 +155,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
       listen: []
     },
     transports: [
+      quic(),
       tcp(),
       circuitRelayTransport(),
       webRTCDirect()
@@ -163,6 +167,8 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
   if (options.noListen !== true) {
     if (options.transport == null || options.transport === 'tcp') {
       opts.addresses?.listen?.push('/ip4/127.0.0.1/tcp/0')
+    } else if (options.transport === 'quic') {
+      opts.addresses?.listen?.push('/ip4/127.0.0.1/udp/0/quic-v1')
     } else if (options.transport === 'webrtc-direct') {
       opts.addresses?.listen?.push('/ip4/127.0.0.1/udp/0/webrtc-direct')
     } else {

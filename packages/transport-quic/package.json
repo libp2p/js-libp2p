@@ -1,0 +1,82 @@
+{
+  "name": "@libp2p/quic",
+  "version": "0.0.0",
+  "description": "A QUIC transport for libp2p",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-quic#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "IPFS",
+    "QUIC",
+    "libp2p",
+    "network",
+    "p2p",
+    "peer",
+    "peer-to-peer"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
+    "build": "aegir build",
+    "test": "aegir test -t node",
+    "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
+    "test:chrome-webworker": "aegir test -t webworker -f ./dist/test/browser.js",
+    "test:firefox": "aegir test -t browser -f ./dist/test/browser.js -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
+    "test:node": "aegir test -t node --cov"
+  },
+  "dependencies": {
+    "@libp2p/interface": "^3.1.1",
+    "@libp2p/peer-id": "^6.0.8",
+    "@libp2p/tls": "^3.0.17",
+    "@libp2p/utils": "^7.0.14",
+    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr-matcher": "^3.0.2",
+    "@types/sinon": "^20.0.0",
+    "progress-events": "^1.1.0",
+    "race-signal": "^2.0.0",
+    "uint8arraylist": "^2.4.9",
+    "uint8arrays": "^5.1.1"
+  },
+  "devDependencies": {
+    "@libp2p/crypto": "^5.1.17",
+    "@libp2p/logger": "^6.2.3",
+    "aegir": "^47.0.26",
+    "p-defer": "^4.0.1",
+    "p-wait-for": "^6.0.0",
+    "sinon": "^21.0.3",
+    "sinon-ts": "^2.0.0",
+    "wherearewe": "^2.0.1"
+  },
+  "browser": {
+    "./dist/src/quic.js": "./dist/src/quic.browser.js"
+  },
+  "sideEffects": false
+}

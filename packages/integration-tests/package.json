@@ -38,6 +38,7 @@
     "@libp2p/mdns": "^12.0.18",
     "@libp2p/memory": "^2.0.17",
     "@libp2p/mplex": "^12.0.18",
+    "@libp2p/quic": "^0.0.0",
     "@chainsafe/libp2p-noise": "^17.0.0",
     "@libp2p/peer-collections": "^7.0.17",
     "@libp2p/peer-id": "^6.0.8",
