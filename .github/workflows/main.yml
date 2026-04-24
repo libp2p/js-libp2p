@@ -36,12 +36,7 @@ jobs:
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
-      - run: npm run --if-present lint
-      - run: npm run --if-present dep-check
-      - run: npm run --if-present docs:no-publish
-      - run: git diff --exit-code
-      - run: npm run --if-present doc-check
-      - run: npm run --if-present spell-check
+      - run: npm run prepush
 
   test-node:
     needs: build
