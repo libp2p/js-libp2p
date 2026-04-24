@@ -328,6 +328,40 @@ describe('identify', () => {
     expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
   })
 
+  it('should ignore empty listen multiaddrs', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    const message: IdentifyMessage = {
+      protocolVersion: 'protocol version',
+      agentVersion: 'agent version',
+      listenAddrs: [
+        new Uint8Array(0),
+        multiaddr('/ip4/127.0.0.1/tcp/1234').bytes
+      ],
+      protocols: ['protocols'],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+    }
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    await identify.identify(connection)
+
+    const peer = components.peerStore.patch.getCall(0).args[1]
+    expect(peer.addresses).to.deep.equal([{
+      isCertified: false,
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
+    }])
+  })
+
   it('should prefer addresses from signed peer record', async () => {
     identify = new Identify(components)
 
@@ -373,6 +407,52 @@ describe('identify', () => {
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
     }])
     expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
+  })
+
+  it('should ignore empty multiaddrs from signed peer record', async () => {
+    identify = new Identify(components)
+
+    await start(identify)
+
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+
+    const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+      peerId: remotePeer,
+      multiaddrs: [
+        multiaddr('/'),
+        multiaddr('/ip4/127.0.0.1/tcp/5678')
+      ],
+      seqNumber: BigInt(Date.now() * 2)
+    }), remotePrivateKey)
+    const peerRecordEnvelope = signedPeerRecord.marshal()
+
+    const message: IdentifyMessage = {
+      protocolVersion: 'protocol version',
+      agentVersion: 'agent version',
+      listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
+      protocols: ['protocols'],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      signedPeerRecord: peerRecordEnvelope
+    }
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    const result = await identify.identify(connection)
+
+    const peer = components.peerStore.patch.getCall(0).args[1]
+    expect(peer.addresses).to.deep.equal([{
+      isCertified: true,
+      multiaddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
+    }])
+    expect(result.signedPeerRecord?.addresses.map(ma => ma.toString())).to.deep.equal([
+      '/ip4/127.0.0.1/tcp/5678'
+    ])
   })
 
   it('should not send un-routable observed addresses', async () => {
