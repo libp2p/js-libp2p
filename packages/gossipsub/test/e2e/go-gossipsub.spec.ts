@@ -607,7 +607,7 @@ describe('go-libp2p-pubsub gossipsub tests', function () {
     }
   })
 
-  it.skip('test gossipsub control piggyback', async function () {
+  it('test gossipsub control piggyback', async function () {
     // Create 10 gossipsub nodes
     // Densely connect nodes
     // Subscribe to a 'flood' topic, all nodes
@@ -653,6 +653,8 @@ describe('go-libp2p-pubsub gossipsub tests', function () {
     for (let i = 0; i < 5; i++) {
       psubs.forEach((ps) => { ps.pubsub.subscribe(`${topic}${i}`) })
     }
+
+    await Promise.all(psubs.map(async (ps) => awaitEvents(ps.pubsub, 'gossipsub:heartbeat', 2)))
 
     // wait for the flood to stop
     await backgroundFlood
