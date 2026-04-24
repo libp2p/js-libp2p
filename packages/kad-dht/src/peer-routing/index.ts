@@ -93,11 +93,18 @@ export class PeerRouting {
     }
 
     if (peerData != null) {
+      const multiaddrs = peerData.addresses.map((address) => address.multiaddr)
+
+      if (multiaddrs.length === 0) {
+        this.log('findPeerLocal found %p in peer store but it has no addresses', peer)
+        return undefined
+      }
+
       this.log('findPeerLocal found %p in peer store', peer)
 
       return {
         id: peerData.id,
-        multiaddrs: peerData.addresses.map((address) => address.multiaddr)
+        multiaddrs
       }
     }
 
