@@ -351,7 +351,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = uint8ArrayConcat(new Array(160).fill(0).map(() => randomBytes(65535)))
+      const input = uint8ArrayConcat(new Array(160).fill(0).map(() => randomBytes(65536)))
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
