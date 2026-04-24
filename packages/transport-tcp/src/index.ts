@@ -27,7 +27,7 @@
  * ```
  */
 
-import { TCP } from './tcp.js'
+import { TCP } from './tcp.ts'
 import type { ComponentLogger, CounterGroup, Metrics, CreateListenerOptions, DialTransportOptions, Transport, OutboundConnectionUpgradeEvents } from '@libp2p/interface'
 import type { ProgressEvent } from 'progress-events'
 

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/gossipsub",
-  "version": "15.0.17",
+  "version": "15.0.19",
   "description": "A typescript implementation of gossipsub",
   "files": [
     "src",
@@ -65,7 +65,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ChainSafe/js-libp2p-gossipsub.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "keywords": [
     "libp2p",
@@ -75,15 +75,15 @@
   "author": "Cayman Nava",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ChainSafe/js-libp2p-gossipsub/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
-  "homepage": "https://github.com/ChainSafe/js-libp2p-gossipsub#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/gossipsub#readme",
   "dependencies": {
-    "@libp2p/crypto": "^5.1.15",
-    "@libp2p/interface": "^3.2.0",
-    "@libp2p/interface-internal": "^3.1.0",
-    "@libp2p/peer-id": "^6.0.6",
-    "@libp2p/utils": "^7.0.15",
+    "@libp2p/crypto": "^5.1.17",
+    "@libp2p/interface": "^3.2.2",
+    "@libp2p/interface-internal": "^3.1.2",
+    "@libp2p/peer-id": "^6.0.8",
+    "@libp2p/utils": "^7.0.17",
     "@multiformats/multiaddr": "^13.0.1",
     "denque": "^2.1.0",
     "it-length-prefixed": "^10.0.1",
@@ -97,9 +97,9 @@
   "devDependencies": {
     "@chainsafe/as-sha256": "^1.2.0",
     "@dapplion/benchmark": "^1.0.0",
-    "@libp2p/floodsub": "^11.0.16",
-    "@libp2p/logger": "^6.2.4",
-    "@libp2p/peer-store": "^12.0.15",
+    "@libp2p/floodsub": "^11.0.18",
+    "@libp2p/logger": "^6.2.6",
+    "@libp2p/peer-store": "^12.0.17",
     "@types/node": "^22.18.1",
     "@types/sinon": "^21.0.1",
     "abortable-iterator": "^5.1.0",

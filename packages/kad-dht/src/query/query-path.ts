@@ -4,7 +4,7 @@ import { pushable } from 'it-pushable'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
 import { convertPeerId, convertBuffer } from '../utils.js'
-import { pathEndedEvent, queryErrorEvent } from './events.js'
+import { pathEndedEvent, queryErrorEvent } from './events.ts'
 import type { QueryEvent } from '../index.js'
 import type { QueryFunc } from '../query/types.js'
 import type { Logger, PeerId, RoutingOptions, AbortOptions, PeerInfo } from '@libp2p/interface'
@@ -159,7 +159,9 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                   continue
                 }
 
-                if (!(await connectionManager.isDialable(closerPeer.multiaddrs))) { // eslint-disable-line max-depth
+                if (!(await connectionManager.isDialable(closerPeer.multiaddrs, { // eslint-disable-line max-depth
+                  signal
+                }))) {
                   log('not querying undialable peer')
                   continue
                 }

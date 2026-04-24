@@ -4,7 +4,7 @@ import all from 'it-all'
 import pDefer from 'p-defer'
 import { CustomProgressEvent } from 'progress-events'
 import { Queue } from '../src/queue/index.js'
-import { TestSignal } from './fixtures/test-signal.js'
+import { TestSignal } from './fixtures/test-signal.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { ProgressOptions } from 'progress-events'
 

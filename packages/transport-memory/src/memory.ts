@@ -1,9 +1,9 @@
 import { ConnectionFailedError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { Memory } from '@multiformats/multiaddr-matcher'
-import { connections } from './connections.js'
-import { MemoryTransportListener } from './listener.js'
-import type { MemoryTransportComponents, MemoryTransportInit } from './index.js'
+import { connections } from './connections.ts'
+import { MemoryTransportListener } from './listener.ts'
+import type { MemoryTransportComponents, MemoryTransportInit } from './index.ts'
 import type { Connection, Transport, Listener, CreateListenerOptions, DialTransportOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

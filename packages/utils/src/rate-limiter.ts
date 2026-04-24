@@ -1,4 +1,4 @@
-import { RateLimitError } from './errors.js'
+import { RateLimitError } from './errors.ts'
 
 export interface RateLimiterInit {
   /**

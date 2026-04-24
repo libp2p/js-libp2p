@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/fetch",
-  "version": "4.1.0",
+  "version": "4.1.2",
   "description": "Implementation of the Fetch Protocol",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-fetch#readme",
@@ -46,17 +46,17 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.2.0",
-    "@libp2p/interface-internal": "^3.1.0",
-    "@libp2p/utils": "^7.0.15",
+    "@libp2p/interface": "^3.2.2",
+    "@libp2p/interface-internal": "^3.1.2",
+    "@libp2p/utils": "^7.0.17",
     "main-event": "^1.0.1",
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.1.15",
-    "@libp2p/peer-id": "^6.0.6",
+    "@libp2p/crypto": "^5.1.17",
+    "@libp2p/peer-id": "^6.0.8",
     "aegir": "^47.0.22",
     "protons": "^8.1.1",
     "sinon": "^21.0.0",

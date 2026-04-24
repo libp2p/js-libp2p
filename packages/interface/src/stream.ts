@@ -1,5 +1,5 @@
 import type { AbortOptions } from './index.ts'
-import type { MessageStream, MessageStreamReadStatus, MessageStreamWriteStatus } from './message-stream.js'
+import type { MessageStream, MessageStreamReadStatus, MessageStreamWriteStatus } from './message-stream.ts'
 
 /**
  * A Stream is a lightweight data channel between two peers that can be written

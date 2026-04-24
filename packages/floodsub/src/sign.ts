@@ -1,7 +1,7 @@
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toRpcMessage } from './utils.js'
+import { toRpcMessage } from './utils.ts'
 import type { PubSubRPCMessage } from './floodsub.ts'
 import type { SignedMessage } from './index.ts'
 import type { PeerId, PrivateKey, PublicKey } from '@libp2p/interface'

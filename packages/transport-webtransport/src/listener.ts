@@ -1,4 +1,4 @@
-import type { WebTransportCertificate } from './index.js'
+import type { WebTransportCertificate } from './index.ts'
 import type { Connection, Upgrader, Listener, CreateListenerOptions, PeerId, ComponentLogger, Metrics } from '@libp2p/interface'
 
 export interface WebTransportListenerComponents {

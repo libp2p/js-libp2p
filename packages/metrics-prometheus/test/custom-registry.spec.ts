@@ -2,7 +2,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import client, { Registry } from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
-import { randomMetricName } from './fixtures/random-metric-name.js'
+import { randomMetricName } from './fixtures/random-metric-name.ts'
 
 describe('custom registry', () => {
   it('should set a metric in the custom registry and not in the global registry', async () => {

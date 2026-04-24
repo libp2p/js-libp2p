@@ -1,5 +1,5 @@
 import process from 'node:process'
-import * as pkg from './version.js'
+import * as pkg from './version.ts'
 
 export function userAgent (name?: string, version?: string): string {
   let platform = 'node'

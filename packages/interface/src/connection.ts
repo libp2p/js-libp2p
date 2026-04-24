@@ -1,4 +1,4 @@
-import type { AbortOptions, Logger, TypedEventTarget, Stream, MessageStreamEvents, PeerId, MultiaddrConnectionTimeline, MessageStreamStatus, MessageStreamDirection } from './index.js'
+import type { AbortOptions, Logger, TypedEventTarget, Stream, MessageStreamEvents, PeerId, MultiaddrConnectionTimeline, MessageStreamStatus, MessageStreamDirection } from './index.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent, ProgressOptions } from 'progress-events'
 

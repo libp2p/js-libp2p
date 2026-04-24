@@ -33,8 +33,8 @@
  */
 
 import { pubSubSymbol } from './constants.ts'
-import { FloodSub as FloodSubClass } from './floodsub.js'
-import type { PubSubRPC } from './floodsub.js'
+import { FloodSub as FloodSubClass } from './floodsub.ts'
+import type { PubSubRPC } from './floodsub.ts'
 import type { ComponentLogger, PeerId, PrivateKey, PublicKey, TypedEventTarget } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 

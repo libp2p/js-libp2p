@@ -9,8 +9,8 @@ import {
   ALPHA, K, DEFAULT_QUERY_TIMEOUT
 } from '../constants.js'
 import { convertBuffer } from '../utils.js'
-import { queryPath } from './query-path.js'
-import type { QueryFunc } from './types.js'
+import { queryPath } from './query-path.ts'
+import type { QueryFunc } from './types.ts'
 import type { QueryEvent } from '../index.js'
 import type { RoutingTable } from '../routing-table/index.js'
 import type { ComponentLogger, Metrics, PeerId, RoutingOptions, Startable } from '@libp2p/interface'
@@ -143,7 +143,6 @@ export class QueryManager implements Startable {
 
     // query a subset of peers up to `kBucketSize / 2` in length
     let queryFinished = false
-
     try {
       if (this.routingTable.size === 0 && !this.allowQueryWithZeroPeers) {
         log('routing table was empty, waiting for some peers before running%s query', options.isSelfQuery === true ? ' self' : '')
@@ -221,18 +220,7 @@ export class QueryManager implements Startable {
         }
 
         if (event.name === 'PEER_RESPONSE') {
-          for (const peer of [...event.closer, ...event.providers]) {
-            // eslint-disable-next-line max-depth
-            if (!(await this.connectionManager.isDialable(peer.multiaddrs, {
-              signal
-            }))) {
-              continue
-            }
-
-            await this.routingTable.add(peer.id, {
-              signal
-            })
-          }
+          this.routingTable.queueRoutingTableUpdate(event.from)
         }
 
         signal.throwIfAborted()

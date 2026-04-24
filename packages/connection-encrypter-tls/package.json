@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tls",
-  "version": "3.0.15",
+  "version": "3.0.17",
   "description": "A connection encrypter that uses TLS 1.3",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-tls#readme",
@@ -17,6 +17,22 @@
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -28,6 +44,11 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js",
       "module-sync": "./dist/src/index.js"
+    },
+    "./utils": {
+      "types": "./dist/src/utils.d.ts",
+      "import": "./dist/src/utils.js",
+      "module-sync": "./dist/src/utils.js"
     }
   },
   "scripts": {
@@ -42,10 +63,10 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.15",
-    "@libp2p/interface": "^3.2.0",
-    "@libp2p/peer-id": "^6.0.6",
-    "@libp2p/utils": "^7.0.15",
+    "@libp2p/crypto": "^5.1.17",
+    "@libp2p/interface": "^3.2.2",
+    "@libp2p/peer-id": "^6.0.8",
+    "@libp2p/utils": "^7.0.17",
     "@peculiar/asn1-schema": "^2.4.0",
     "@peculiar/asn1-x509": "^2.4.0",
     "@peculiar/webcrypto": "^1.5.0",
@@ -58,7 +79,7 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.4",
+    "@libp2p/logger": "^6.2.6",
     "aegir": "^47.0.22",
     "protons": "^8.1.1",
     "sinon": "^21.0.0",

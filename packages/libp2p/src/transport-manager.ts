@@ -2,7 +2,7 @@ import { FaultTolerance, InvalidParametersError, NotStartedError } from '@libp2p
 import { trackedMap } from '@libp2p/utils'
 import { IP4, IP6 } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
-import { TransportUnavailableError, UnsupportedListenAddressError, UnsupportedListenAddressesError } from './errors.js'
+import { TransportUnavailableError, UnsupportedListenAddressError, UnsupportedListenAddressesError } from './errors.ts'
 import type { Libp2pEvents, ComponentLogger, Logger, Connection, Metrics, Startable, Listener, Transport, Upgrader } from '@libp2p/interface'
 import type { AddressManager, TransportManager, TransportManagerDialOptions } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'

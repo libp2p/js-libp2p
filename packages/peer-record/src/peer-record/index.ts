@@ -4,8 +4,8 @@ import * as Digest from 'multiformats/hashes/digest'
 import {
   ENVELOPE_DOMAIN_PEER_RECORD,
   ENVELOPE_PAYLOAD_TYPE_PEER_RECORD
-} from './consts.js'
-import { PeerRecord as Protobuf } from './peer-record.js'
+} from './consts.ts'
+import { PeerRecord as Protobuf } from './peer-record.ts'
 import { arrayEquals } from './utils.ts'
 import type { PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'

@@ -13,7 +13,7 @@ import { webTransport } from '@libp2p/webtransport'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebSockets, WebTransport } from '@multiformats/multiaddr-matcher'
 import { createLibp2p } from 'libp2p'
-import { hasRelay, isFirefox } from './fixtures/utils.js'
+import { hasRelay, isFirefox } from './fixtures/utils.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('circuit-relay discovery', () => {

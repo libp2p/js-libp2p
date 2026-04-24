@@ -40,9 +40,9 @@
  */
 
 import { TypedEventEmitter } from 'main-event'
-import { CircuitRelayServer } from './server/index.js'
+import { CircuitRelayServer } from './server/index.ts'
 import { CircuitRelayTransport } from './transport/index.ts'
-import type { Limit } from './pb/index.js'
+import type { Limit } from './pb/index.ts'
 import type { ComponentLogger, ConnectionGater, Libp2pEvents, Metrics, PeerId, PeerStore, PrivateKey, TopologyFilter, Transport, TypedEventTarget, Upgrader } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
@@ -87,7 +87,7 @@ export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServi
 export {
   RELAY_V2_HOP_CODEC,
   RELAY_V2_STOP_CODEC
-} from './constants.js'
+} from './constants.ts'
 
 export interface ServerReservationStoreInit {
   /**
