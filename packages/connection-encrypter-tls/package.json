@@ -17,6 +17,22 @@
   },
   "type": "module",
   "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
   "files": [
     "src",
     "dist",
@@ -28,6 +44,11 @@
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js",
       "module-sync": "./dist/src/index.js"
+    },
+    "./utils": {
+      "types": "./dist/src/utils.d.ts",
+      "import": "./dist/src/utils.js",
+      "module-sync": "./dist/src/utils.js"
     }
   },
   "scripts": {
