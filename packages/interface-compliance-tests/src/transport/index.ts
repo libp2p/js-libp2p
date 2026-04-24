@@ -1,3 +1,4 @@
+import { randomBytes } from '@libp2p/crypto'
 import { stop, TimeoutError } from '@libp2p/interface'
 import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
@@ -10,6 +11,7 @@ import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { concat as uint8ArrayConcat } from 'uint8arrays'
 import { isValidTick } from '../is-valid-tick.js'
 import { createPeer, getTransportManager, getUpgrader } from './utils.ts'
 import type { TestSetup } from '../index.js'
@@ -333,7 +335,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = new Uint8Array(1024).fill(5)
+      const input = randomBytes(1024)
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
@@ -349,7 +351,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = new Uint8Array(1024 * 1024 * 10).fill(5)
+      const input = uint8ArrayConcat(new Array(160).fill(0).map(() => randomBytes(65535)))
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
