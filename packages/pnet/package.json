@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/pnet",
-  "version": "3.0.18",
+  "version": "3.0.19",
   "description": "Implementation of Connection protection management via a shared secret",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/pnet#readme",
@@ -46,7 +46,7 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.17",
     "@libp2p/interface": "^3.2.2",
-    "@libp2p/utils": "^7.0.17",
+    "@libp2p/utils": "^7.1.0",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0",
     "xsalsa20": "^1.2.0"

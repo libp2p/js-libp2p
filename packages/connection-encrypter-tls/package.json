@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tls",
-  "version": "3.0.17",
+  "version": "3.1.0",
   "description": "A connection encrypter that uses TLS 1.3",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-tls#readme",
@@ -66,7 +66,7 @@
     "@libp2p/crypto": "^5.1.17",
     "@libp2p/interface": "^3.2.2",
     "@libp2p/peer-id": "^6.0.8",
-    "@libp2p/utils": "^7.0.17",
+    "@libp2p/utils": "^7.1.0",
     "@peculiar/asn1-schema": "^2.4.0",
     "@peculiar/asn1-x509": "^2.4.0",
     "@peculiar/webcrypto": "^1.5.0",
