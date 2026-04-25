@@ -1,7 +1,7 @@
 import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
-import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.ts'
+import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX_V1 } from './constants.ts'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
 import type { PeerConnection } from 'node-datachannel'
@@ -106,6 +106,6 @@ export async function getRtcConfiguration (config?: RTCConfiguration | (() => RT
   return config
 }
 
-export const genUfrag = (len: number = 32): string => {
-  return UFRAG_PREFIX + [...Array(len)].map(() => UFRAG_ALPHABET.at(Math.floor(Math.random() * UFRAG_ALPHABET.length))).join('')
+export const genUfrag = (len: number = 32, prefix: string = UFRAG_PREFIX_V1): string => {
+  return prefix + [...Array(len)].map(() => UFRAG_ALPHABET.at(Math.floor(Math.random() * UFRAG_ALPHABET.length))).join('')
 }

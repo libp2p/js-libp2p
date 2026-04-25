@@ -12,18 +12,21 @@ const crypto = new Crypto()
 
 interface DirectRTCPeerConnectionInit extends RTCConfiguration {
   ufrag: string
+  pwd: string
   peerConnection: PeerConnection
 }
 
 export class DirectRTCPeerConnection extends RTCPeerConnection {
   private peerConnection: PeerConnection
   private readonly ufrag: string
+  private readonly pwd: string
 
   constructor (init: DirectRTCPeerConnectionInit) {
     super(init)
 
     this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
+    this.pwd = init.pwd
 
     // make sure C++ peer connection is garbage collected
     // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
@@ -40,10 +43,10 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
     // have to set ufrag before creating offer
-    if (this.connectionState === 'new') {
+    if (this.connectionState === 'new' && !this.ufrag.startsWith('libp2p+webrtc+v2/')) {
       this.peerConnection?.setLocalDescription('offer', {
         iceUfrag: this.ufrag,
-        icePwd: this.ufrag
+        icePwd: this.pwd
       })
     }
 
@@ -55,7 +58,7 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
     if (this.connectionState === 'new') {
       this.peerConnection?.setLocalDescription('answer', {
         iceUfrag: this.ufrag,
-        icePwd: this.ufrag
+        icePwd: this.pwd
       })
     }
 
@@ -92,6 +95,7 @@ export interface CreateDialerRTCPeerConnectionOptions {
   certificate?: TransportCertificate
   events?: CounterGroup
   dataChannel?: DataChannelOptions
+  pwd?: string
 }
 
 export async function createDialerRTCPeerConnection (role: 'client', ufrag: string, options?: CreateDialerRTCPeerConnectionOptions): Promise<{ peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }>
@@ -113,10 +117,12 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
   }
 
   const rtcConfig = typeof options.rtcConfiguration === 'function' ? await options.rtcConfiguration() : options.rtcConfiguration
+  const pwd = options.pwd ?? ufrag
 
   const peerConnection = new DirectRTCPeerConnection({
     ...rtcConfig,
     ufrag,
+    pwd,
     peerConnection: new PeerConnection(`${role}-${Date.now()}`, {
       disableFingerprintVerification: true,
       disableAutoNegotiation: true,

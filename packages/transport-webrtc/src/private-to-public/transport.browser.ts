@@ -2,6 +2,7 @@ import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
+import { UFRAG_PREFIX_V1 } from '../constants.js'
 import { UnimplementedError } from '../error.ts'
 import { genUfrag } from '../util.js'
 import { connect } from './utils/connect.ts'
@@ -30,6 +31,13 @@ export interface WebRTCMetrics {
 }
 
 export interface WebRTCTransportDirectInit {
+  /**
+   * Select which WebRTC Direct flow to dial with.
+   *
+   * @default 'v1'
+   */
+  version?: 'v1' | 'v2'
+
   /**
    * The default configuration used by all created RTCPeerConnections
    */
@@ -84,7 +92,10 @@ export class WebRTCDirectTransport implements Transport {
       theirPeerId = peerIdFromString(remotePeerString)
     }
 
-    const ufrag = genUfrag()
+    const ufrag = this.init.version === 'v2'
+      ? genUfrag(32, '')
+      : genUfrag(32, UFRAG_PREFIX_V1)
+    const pwd = this.init.version === 'v2' ? genUfrag(22, '') : ufrag
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
     const {
@@ -92,7 +103,8 @@ export class WebRTCDirectTransport implements Transport {
       muxerFactory
     } = await createDialerRTCPeerConnection('client', ufrag, {
       rtcConfiguration: typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {},
-      dataChannel: this.init.dataChannel
+      dataChannel: this.init.dataChannel,
+      pwd
     })
 
     try {
@@ -102,6 +114,7 @@ export class WebRTCDirectTransport implements Transport {
         logger: this.components.logger,
         events: this.metrics?.dialerEvents,
         signal: options.signal,
+        version: this.init.version,
         remoteAddr: ma,
         dataChannel: this.init.dataChannel,
         upgrader: options.upgrader,
