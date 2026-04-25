@@ -369,7 +369,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const echoProtocol = dialer.services.echo.protocol
 
       for (let i = 0; i < 2_000; i++) {
-        const input = new Uint8Array(1024).fill(5)
+        const input = randomBytes(1024)
         const output = await dialer.services.echo.echo(connection.remotePeer, input, {
           signal: AbortSignal.timeout(timeout)
         })
