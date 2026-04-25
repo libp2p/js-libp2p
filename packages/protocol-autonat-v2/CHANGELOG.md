@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.18](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.0.17...autonat-v2-v2.0.18) (2026-04-25)
+
+
+### Bug Fixes
+
+* **autonat-v2:** spurious exceptions ([#3400](https://github.com/libp2p/js-libp2p/issues/3400)) ([61d594a](https://github.com/libp2p/js-libp2p/commit/61d594a6c9af2b6f42b7d50d88891efbc8d76b27))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/peer-collections bumped from ^7.0.17 to ^7.0.18
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
 ## [2.0.17](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.0.16...autonat-v2-v2.0.17) (2026-04-16)
 
 
