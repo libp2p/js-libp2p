@@ -1,4 +1,5 @@
 import { expect } from 'aegir/chai'
+import { isElectronMain, isNode } from 'wherearewe'
 import { createDialerRTCPeerConnection } from '../src/private-to-public/utils/get-rtcpeerconnection.ts'
 import { getIcePwdFromSdp } from '../src/private-to-public/utils/sdp.ts'
 import { parseStunUsernameUfrags } from '../src/private-to-public/utils/stun-listener.ts'
@@ -22,7 +23,11 @@ describe('stun listener username parsing', () => {
     expect(parseStunUsernameUfrags('libp2p+webrtc+v2/server', '')).to.be.undefined()
   })
 
-  it('should support pre-seeded distinct v2 ICE credentials on node', async () => {
+  it('should support pre-seeded distinct v2 ICE credentials on node', async function () {
+    if (!isNode && !isElectronMain) {
+      return this.skip()
+    }
+
     const clientUfrag = 'clientUfrag123456'
     const clientPwd = 'clientPassword1234567890'
     const { peerConnection } = await createDialerRTCPeerConnection('client', clientUfrag, {
