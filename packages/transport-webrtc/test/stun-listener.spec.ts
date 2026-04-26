@@ -2,7 +2,7 @@ import { expect } from 'aegir/chai'
 import { isElectronMain, isNode } from 'wherearewe'
 import { createDialerRTCPeerConnection } from '../src/private-to-public/utils/get-rtcpeerconnection.ts'
 import { getIcePwdFromSdp } from '../src/private-to-public/utils/sdp.ts'
-import { parseStunUsernameUfrags } from '../src/private-to-public/utils/stun-listener.ts'
+import { parseStunUsernameUfrags } from '../src/private-to-public/utils/stun.ts'
 
 function getIceUfragFromSdp (sdp: string | undefined): string | undefined {
   return sdp?.match(/^a=ice-ufrag:(?<ufrag>[^\r\n]+)$/m)?.groups?.ufrag

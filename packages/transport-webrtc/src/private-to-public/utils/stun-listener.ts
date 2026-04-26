@@ -1,7 +1,9 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { IceUdpMuxListener } from 'node-datachannel'
 import { decodeV2ClientPwd } from './sdp.ts'
+import { parseStunUsernameUfrags } from './stun.ts'
 import type { Logger } from '@libp2p/interface'
+import type { IceUdpMuxRequest } from 'node-datachannel'
 import type { AddressInfo } from 'node:net'
 
 export interface StunServer {
@@ -13,20 +15,9 @@ export interface Callback {
   (serverUfrag: string, clientUfrag: string, clientPwd: string | undefined, remoteHost: string, remotePort: number): void
 }
 
-export function parseStunUsernameUfrags (serverUfrag: string, clientUfrag: string): { serverUfrag: string, clientUfrag: string } | undefined {
-  if (serverUfrag.length === 0 || clientUfrag.length === 0) {
-    return undefined
-  }
-
-  return {
-    serverUfrag,
-    clientUfrag
-  }
-}
-
 export async function stunListener (host: string, port: number, log: Logger, cb: Callback): Promise<StunServer> {
   const listener = new IceUdpMuxListener(port, host)
-  listener.onUnhandledStunRequest(request => {
+  listener.onUnhandledStunRequest((request: IceUdpMuxRequest) => {
     if (request.localUfrag == null || request.ufrag == null) {
       if (request.ufrag != null) {
         log.trace('incoming legacy STUN packet from %s:%d %s', request.host, request.port, request.ufrag)
