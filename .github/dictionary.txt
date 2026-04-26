@@ -26,6 +26,7 @@ SECG
 setbit
 stopstr
 supercop
+ufrags
 unuse
 userland
 xxhandshake
