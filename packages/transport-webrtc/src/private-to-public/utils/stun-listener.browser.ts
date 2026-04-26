@@ -1,6 +1,7 @@
 import { UnimplementedError } from '../../error.ts'
-export { parseStunUsernameUfrags } from './stun.ts'
 import type { Logger } from '@libp2p/interface'
+
+export { parseStunUsernameUfrags } from './stun.ts'
 
 export interface StunServer {
   close(): Promise<void>
