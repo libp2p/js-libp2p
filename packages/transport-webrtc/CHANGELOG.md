@@ -111,6 +111,25 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.20](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.19...webrtc-v6.0.20) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/keychain bumped from ^6.0.14 to ^6.1.0
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
+## [6.0.19](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.18...webrtc-v6.0.19) (2026-04-20)
+
+
+### Bug Fixes
+
+* **transport-webrtc:** abort stream when datachannel send throws ([#3469](https://github.com/libp2p/js-libp2p/issues/3469)) ([20bfcb3](https://github.com/libp2p/js-libp2p/commit/20bfcb3f951dc97b4d734e791b335b9b55f4bffd))
+* **transport-webrtc:** disconnected is not a terminal state ([#3461](https://github.com/libp2p/js-libp2p/issues/3461)) ([48f66c4](https://github.com/libp2p/js-libp2p/commit/48f66c41ef1cbdac246c6b02fb61962ea9b8fc84))
+
 ## [6.0.18](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.17...webrtc-v6.0.18) (2026-04-16)
 
 

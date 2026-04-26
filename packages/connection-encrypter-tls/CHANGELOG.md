@@ -6,6 +6,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/tls-v3.0.17...tls-v3.1.0) (2026-04-25)
+
+
+### Features
+
+* export TLS utils ([#3476](https://github.com/libp2p/js-libp2p/issues/3476)) ([5466a8d](https://github.com/libp2p/js-libp2p/commit/5466a8def5d3573b4ca5c4fc38630a0da9e533e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
 ## [3.0.17](https://github.com/libp2p/js-libp2p/compare/tls-v3.0.16...tls-v3.0.17) (2026-04-16)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/plaintext",
-  "version": "3.0.17",
+  "version": "3.0.18",
   "description": "An insecure connection encrypter",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-plaintext#readme",
@@ -49,7 +49,7 @@
     "@libp2p/crypto": "^5.1.17",
     "@libp2p/interface": "^3.2.2",
     "@libp2p/peer-id": "^6.0.8",
-    "@libp2p/utils": "^7.0.17",
+    "@libp2p/utils": "^7.1.0",
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
     "uint8arrays": "^5.1.0"
