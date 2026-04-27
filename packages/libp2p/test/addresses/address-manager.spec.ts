@@ -226,6 +226,33 @@ describe('Address Manager', () => {
     expect(peerStore.patch).to.have.property('callCount', 1)
   })
 
+  it('should update the peer store when a verified observed address is removed', async () => {
+    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: Sinon.stub().returns([]),
+        getListeners: Sinon.stub().returns([])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    am.addObservedAddr(multiaddr(ma))
+    am.confirmObservedAddr(multiaddr(ma))
+
+    await delay(1500)
+
+    expect(peerStore.patch).to.have.property('callCount', 1)
+
+    am.removeObservedAddr(multiaddr(ma))
+
+    await delay(1500)
+
+    expect(peerStore.patch).to.have.property('callCount', 2)
+  })
+
   it('should strip our peer address from added observed addresses', () => {
     const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new AddressManager({
