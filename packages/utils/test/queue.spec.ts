@@ -934,4 +934,74 @@ describe('queue', () => {
 
     expect(events).to.have.lengthOf(2)
   })
+
+  it('should not recurse infinitely when two jobs progress-feed each other (issue #3484)', async () => {
+    // Reproduces the recursion crash where two jobs in different queues
+    // have onProgress callbacks that ultimately call back into each
+    // other's dispatcher. Without the per-job re-entry guard in Job.run,
+    // this throws `RangeError: Maximum call stack size exceeded`.
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queueA = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueB = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let aSynthOP: ((evt: any) => void) | undefined
+    let bSynthOP: ((evt: any) => void) | undefined
+
+    const aReady = pDefer<void>()
+    const bReady = pDefer<void>()
+    const aHold = pDefer<void>()
+    const bHold = pDefer<void>()
+
+    const eventsAtA: any[] = []
+    const eventsAtB: any[] = []
+
+    const pA = queueA.add(async (options) => {
+      aSynthOP = options.onProgress
+      aReady.resolve()
+      await aHold.promise
+      return 'a'
+    }, {
+      onProgress: (evt) => {
+        eventsAtA.push(evt)
+        bSynthOP?.(evt)
+      }
+    })
+
+    const pB = queueB.add(async (options) => {
+      bSynthOP = options.onProgress
+      bReady.resolve()
+      await bHold.promise
+      return 'b'
+    }, {
+      onProgress: (evt) => {
+        eventsAtB.push(evt)
+        aSynthOP?.(evt)
+      }
+    })
+
+    // Wait for both jobs to start running and capture their synthesised
+    // onProgress dispatchers.
+    await Promise.all([aReady.promise, bReady.promise])
+
+    // Kick a single progress event into the cycle. With the guard this
+    // returns cleanly; without it, V8 throws RangeError.
+    expect(() => {
+      aSynthOP?.(new CustomProgressEvent('kick'))
+    }).to.not.throw()
+
+    // Each recipient should observe the event exactly once: the first
+    // hop into A's recipient, then the forward into B's recipient. The
+    // attempt to come back into aSynthOP is short-circuited because A's
+    // dispatcher is already running.
+    expect(eventsAtA).to.have.lengthOf(1)
+    expect(eventsAtB).to.have.lengthOf(1)
+
+    aHold.resolve()
+    bHold.resolve()
+
+    await Promise.all([pA, pB])
+  })
 })

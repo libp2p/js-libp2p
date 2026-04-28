@@ -27,6 +27,7 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
   public status: JobStatus
   public readonly timeline: JobTimeline
   private readonly controller: AbortController
+  private dispatchingProgress: boolean
 
   constructor (fn: (options: JobOptions) => Promise<JobReturnType>, options: any) {
     this.id = randomId()
@@ -40,6 +41,8 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
 
     this.controller = new AbortController()
     setMaxListeners(Infinity, this.controller.signal)
+
+    this.dispatchingProgress = false
 
     this.onAbort = this.onAbort.bind(this)
   }
@@ -80,9 +83,25 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
         ...(this.options ?? {}),
         signal: this.controller.signal,
         onProgress: (evt: any): void => {
-          this.recipients.forEach(recipient => {
-            recipient.onProgress?.(evt)
-          })
+          // Guard against re-entrant progress dispatch when two jobs'
+          // recipients form a cycle (issue #3484). Without this, a single
+          // progress event would recurse synchronously until the call
+          // stack overflows. Non-cyclic dispatches behave identically;
+          // only a synchronous re-entry into the same job's dispatcher
+          // is short-circuited.
+          if (this.dispatchingProgress) {
+            return
+          }
+
+          this.dispatchingProgress = true
+
+          try {
+            this.recipients.forEach(recipient => {
+              recipient.onProgress?.(evt)
+            })
+          } finally {
+            this.dispatchingProgress = false
+          }
         }
       }), this.controller.signal)
 
