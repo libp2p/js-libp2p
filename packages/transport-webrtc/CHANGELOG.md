@@ -111,6 +111,13 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.21](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.20...webrtc-v6.0.21) (2026-04-29)
+
+
+### Dependencies
+
+* update node-datachannel to 0.32.x ([#3481](https://github.com/libp2p/js-libp2p/issues/3481)) ([10b2bdf](https://github.com/libp2p/js-libp2p/commit/10b2bdf50bdde0af14fd8ff39377abd7beab6d75))
+
 ## [6.0.20](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.19...webrtc-v6.0.20) (2026-04-25)
 
 

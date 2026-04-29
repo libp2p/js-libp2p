@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.2.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.2.3...libp2p-v3.2.4) (2026-04-29)
+
+
+### Bug Fixes
+
+* emit self:peer:update on observed address removal ([#3483](https://github.com/libp2p/js-libp2p/issues/3483)) ([3a5e46e](https://github.com/libp2p/js-libp2p/commit/3a5e46eaa2baa370d808e3e1bd6a0cea9f1ef7bc))
+
 ## [3.2.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.2.2...libp2p-v3.2.3) (2026-04-25)
 
 
