@@ -37,6 +37,10 @@ export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined)
   }
 }
 
+function isNonEmptyMultiaddr (addr: Multiaddr): boolean {
+  return addr.bytes.length > 0
+}
+
 export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
   log('received identify from %p', connection.remotePeer)
 
@@ -47,9 +51,13 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   const peer: PeerData = {}
 
   if (message.listenAddrs.length > 0) {
-    peer.addresses = message.listenAddrs.map(buf => ({
+    const listenAddrs = message.listenAddrs
+      .map(buf => getCleanMultiaddr(buf))
+      .filter((addr): addr is Multiaddr => addr != null && isNonEmptyMultiaddr(addr))
+
+    peer.addresses = listenAddrs.map(multiaddr => ({
       isCertified: false,
-      multiaddr: multiaddr(buf)
+      multiaddr
     }))
   }
 
@@ -120,15 +128,17 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     // store the signed record for next time
     peer.peerRecordEnvelope = peerRecordEnvelope
 
+    const peerRecordMultiaddrs = peerRecord.multiaddrs.filter(isNonEmptyMultiaddr)
+
     // override the stored addresses with the signed multiaddrs
-    peer.addresses = peerRecord.multiaddrs.map(multiaddr => ({
+    peer.addresses = peerRecordMultiaddrs.map(multiaddr => ({
       isCertified: true,
       multiaddr
     }))
 
     output = {
       seq: peerRecord.seqNumber,
-      addresses: peerRecord.multiaddrs
+      addresses: peerRecordMultiaddrs
     }
   } else {
     log('%p did not send a signed peer record', connection.remotePeer)
