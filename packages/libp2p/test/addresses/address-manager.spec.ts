@@ -5,6 +5,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
+import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { AddressManager } from '../../src/address-manager/index.js'
@@ -224,6 +225,29 @@ describe('Address Manager', () => {
     await delay(1500)
 
     expect(peerStore.patch).to.have.property('callCount', 1)
+  })
+
+  it('should update the peer store when a verified observed address is removed', async () => {
+    const ma = '/ip4/123.123.123.123/tcp/39201'
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: Sinon.stub().returns([]),
+        getListeners: Sinon.stub().returns([])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    am.addObservedAddr(multiaddr(ma))
+    am.confirmObservedAddr(multiaddr(ma))
+
+    await pWaitFor(() => peerStore.patch.callCount === 1, { timeout: 2000 })
+
+    am.removeObservedAddr(multiaddr(ma))
+
+    await pWaitFor(() => peerStore.patch.callCount === 2, { timeout: 2000 })
   })
 
   it('should strip our peer address from added observed addresses', () => {
