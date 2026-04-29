@@ -36,16 +36,16 @@
 import { InvalidParametersError, serviceCapabilities } from '@libp2p/interface'
 import { isAsyncGenerator, isGenerator, isPromise } from '@libp2p/utils'
 import { trace, metrics, context, SpanStatusCode } from '@opentelemetry/api'
-import { OpenTelemetryCounterGroup } from './counter-group.ts'
-import { OpenTelemetryCounter } from './counter.ts'
-import { OpenTelemetryHistogramGroup } from './histogram-group.ts'
-import { OpenTelemetryHistogram } from './histogram.ts'
-import { OpenTelemetryMetricGroup } from './metric-group.ts'
-import { OpenTelemetryMetric } from './metric.ts'
-import { OpenTelemetrySummaryGroup } from './summary-group.ts'
-import { OpenTelemetrySummary } from './summary.ts'
-import { collectSystemMetrics } from './system-metrics.ts'
-import type { MultiaddrConnection, Stream, Metric, MetricGroup, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, NodeInfo, TraceFunctionOptions, TraceGeneratorFunctionOptions, TraceAttributes, ComponentLogger, Logger, MessageStream } from '@libp2p/interface'
+import { OpenTelemetryCounterGroup } from './counter-group.js'
+import { OpenTelemetryCounter } from './counter.js'
+import { OpenTelemetryHistogramGroup } from './histogram-group.js'
+import { OpenTelemetryHistogram } from './histogram.js'
+import { OpenTelemetryMetricGroup } from './metric-group.js'
+import { OpenTelemetryMetric } from './metric.js'
+import { OpenTelemetrySummaryGroup } from './summary-group.js'
+import { OpenTelemetrySummary } from './summary.js'
+import { collectSystemMetrics } from './system-metrics.js'
+import type { MultiaddrConnection, Stream, StreamCloseEvent, Metric, MetricGroup, Metrics, CalculatedMetricOptions, MetricOptions, Counter, CounterGroup, Histogram, HistogramOptions, HistogramGroup, Summary, SummaryOptions, SummaryGroup, CalculatedHistogramOptions, CalculatedSummaryOptions, NodeInfo, TraceFunctionOptions, TraceGeneratorFunctionOptions, TraceAttributes, ComponentLogger, Logger, MessageStream } from '@libp2p/interface'
 import type { Span, Attributes, Meter, Observable } from '@opentelemetry/api'
 
 // see https://betterstack.com/community/guides/observability/opentelemetry-metrics-nodejs/#prerequisites
@@ -93,6 +93,9 @@ class OpenTelemetryMetrics implements Metrics {
   private readonly log: Logger
   private metrics: Map<string, OpenTelemetryMetric | OpenTelemetryMetricGroup | OpenTelemetryCounter | OpenTelemetryCounterGroup | OpenTelemetryHistogram | OpenTelemetryHistogramGroup | OpenTelemetrySummary | OpenTelemetrySummaryGroup>
   private observables: Map<string, Observable>
+  private readonly streamsOpened: CounterGroup
+  private readonly streamsClosed: CounterGroup
+  private readonly streamsCloseErrors: CounterGroup
 
   constructor (components: OpenTelemetryComponents, init?: OpenTelemetryMetricsInit) {
     this.log = components.logger.forComponent('libp2p:open-telemetry-metrics')
@@ -118,6 +121,19 @@ class OpenTelemetryMetrics implements Metrics {
 
         return output
       }
+    })
+
+    this.streamsOpened = this.registerCounterGroup('libp2p_protocol_streams_opened_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams opened, by direction and protocol'
+    })
+    this.streamsClosed = this.registerCounterGroup('libp2p_protocol_streams_closed_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams closed, by direction and protocol'
+    })
+    this.streamsCloseErrors = this.registerCounterGroup('libp2p_protocol_streams_close_errors_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams that ended with an error (abort, reset, etc.), by direction and protocol'
     })
 
     collectSystemMetrics(this, init)
@@ -188,6 +204,19 @@ class OpenTelemetryMetrics implements Metrics {
     }
 
     this._track(stream, stream.protocol)
+
+    const label = `${stream.direction} ${stream.protocol}`
+
+    this.streamsOpened.increment({ [label]: 1 })
+
+    stream.addEventListener('close', (evt: Event) => {
+      const e = evt as StreamCloseEvent
+      if (e.error != null) {
+        this.streamsCloseErrors.increment({ [label]: 1 })
+      } else {
+        this.streamsClosed.increment({ [label]: 1 })
+      }
+    }, { once: true })
   }
 
   registerMetric (name: string, opts: CalculatedMetricOptions): void

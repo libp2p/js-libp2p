@@ -12,7 +12,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createConnection } from '../../src/connection.js'
 import { UnhandledProtocolError } from '../../src/errors.ts'
 import type { ConnectionComponents, ConnectionInit } from '../../src/connection.js'
-import type { MultiaddrConnection, PeerStore, Stream, StreamMuxer } from '@libp2p/interface'
+import type { MultiaddrConnection, PeerStore, Stream, StreamMuxer, Metrics } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -468,5 +468,65 @@ describe('connection', () => {
     expect(middleware1.called).to.be.true()
     expect(middleware2.called).to.be.false()
     expect(incomingStream).to.have.nested.property('abort.called', true)
+  })
+
+  it('should call trackProtocolStream when a new outbound stream is opened', async () => {
+    const metrics = stubInterface<Metrics>()
+
+    const connection = createConnection({
+      ...components,
+      metrics
+    }, init)
+
+    await connection.newStream([ECHO_PROTOCOL])
+
+    // trackProtocolStream must be called exactly once with the negotiated stream
+    expect(metrics.trackProtocolStream.callCount).to.equal(1)
+    expect(metrics.trackProtocolStream.firstCall.args[0]).to.have.property('protocol', ECHO_PROTOCOL)
+    expect(metrics.trackProtocolStream.firstCall.args[0]).to.have.property('direction', 'outbound')
+  })
+
+  it('should call trackProtocolStream when an inbound stream is opened', async () => {
+    const streamProtocol = '/test/protocol'
+    const metrics = stubInterface<Metrics>()
+
+    registrar.getHandler.withArgs(streamProtocol).returns({
+      handler: () => {},
+      options: {}
+    })
+    registrar.getMiddleware.withArgs(streamProtocol).returns([])
+    registrar.getProtocols.returns([streamProtocol])
+
+    const stubbedMuxer = stubInterface<StreamMuxer>({ streams: [] })
+
+    createConnection({
+      ...components,
+      metrics
+    }, {
+      ...init,
+      muxer: stubbedMuxer
+    })
+
+    // grab the inbound stream listener registered on the muxer
+    const onIncomingStream = stubbedMuxer.addEventListener.getCall(0).args[1]
+
+    if (onIncomingStream == null || typeof onIncomingStream !== 'function') {
+      throw new Error('No incoming stream handler registered')
+    }
+
+    const incomingStream = stubInterface<Stream>({
+      log: defaultLogger().forComponent('stream'),
+      protocol: streamProtocol,
+      direction: 'inbound'
+    })
+
+    onIncomingStream(new CustomEvent('stream', { detail: incomingStream }))
+
+    // inbound stream handling is async
+    await delay(100)
+
+    expect(metrics.trackProtocolStream.callCount).to.equal(1)
+    expect(metrics.trackProtocolStream.firstCall.args[0]).to.have.property('protocol', streamProtocol)
+    expect(metrics.trackProtocolStream.firstCall.args[0]).to.have.property('direction', 'inbound')
   })
 })
