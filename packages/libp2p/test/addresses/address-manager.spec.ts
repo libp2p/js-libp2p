@@ -243,11 +243,11 @@ describe('Address Manager', () => {
     am.addObservedAddr(multiaddr(ma))
     am.confirmObservedAddr(multiaddr(ma))
 
-    await pWaitFor(() => peerStore.patch.callCount === 1)
+    await pWaitFor(() => peerStore.patch.callCount === 1, { timeout: 2000 })
 
     am.removeObservedAddr(multiaddr(ma))
 
-    await pWaitFor(() => peerStore.patch.callCount === 2)
+    await pWaitFor(() => peerStore.patch.callCount === 2, { timeout: 2000 })
   })
 
   it('should strip our peer address from added observed addresses', () => {
