@@ -779,8 +779,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.streamsInbound.delete(id)
 
     // remove peer from topics map
-    for (const peers of this.topics.values()) {
+    for (const [topic, peers] of this.topics) {
       peers.delete(id)
+      if (peers.size === 0) {
+        this.topics.delete(topic)
+      }
     }
 
     // Remove this peer from the mesh
@@ -1007,17 +1010,21 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.log('subscription update from %p topic %s', from, topic)
 
     let topicSet = this.topics.get(topic)
-    if (topicSet == null) {
-      topicSet = new Set()
-      this.topics.set(topic, topicSet)
-    }
 
     if (subscribe) {
+      if (topicSet == null) {
+        topicSet = new Set()
+        this.topics.set(topic, topicSet)
+      }
+
       // subscribe peer to new topic
       topicSet.add(from.toString())
-    } else {
+    } else if (topicSet != null) {
       // unsubscribe from existing topic
       topicSet.delete(from.toString())
+      if (topicSet.size === 0) {
+        this.topics.delete(topic)
+      }
     }
 
     // TODO: rust-libp2p has A LOT more logic here
