@@ -14,7 +14,7 @@ import { isNode, isElectronMain } from 'wherearewe'
 import { WebRTCDirectTransport } from '../src/private-to-public/transport.js'
 import { supportsIpV6 } from './util.ts'
 import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.js'
-import type { Upgrader, Listener, Transport } from '@libp2p/interface'
+import type { Connection, Upgrader, Listener, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -33,6 +33,32 @@ function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
 }
 
 const LISTEN_SUPPORTED = isNode || isElectronMain
+
+async function createTransportComponents (): Promise<WebRTCDirectTransportComponents> {
+  const privateKey = await generateKeyPair('Ed25519')
+  const datastore = new MemoryDatastore()
+  const logger = defaultLogger()
+
+  return {
+    peerId: peerIdFromPrivateKey(privateKey),
+    logger,
+    transportManager: stubInterface<TransportManager>(),
+    privateKey,
+    upgrader: stubInterface<Upgrader>({
+      createInboundAbortSignal: (signal) => {
+        return anySignal([
+          AbortSignal.timeout(5_000),
+          signal
+        ])
+      }
+    }),
+    datastore,
+    keychain: keychain()({
+      datastore,
+      logger
+    })
+  }
+}
 
 describe('WebRTCDirect Transport', () => {
   let components: WebRTCDirectTransportComponents
@@ -301,5 +327,95 @@ describe('WebRTCDirect Transport', () => {
 
     await listener.close()
     await otherListener.close()
+  })
+
+  it('v1 client can dial dual server', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    let inboundCalled = false
+    let outboundCalled = false
+    const outboundConnection = stubInterface<Connection>()
+
+    const serverListener = transport.createListener({
+      upgrader: stubInterface<Upgrader>({
+        upgradeInbound: async () => {
+          inboundCalled = true
+        }
+      })
+    })
+
+    const clientTransport = new WebRTCDirectTransport(await createTransportComponents())
+    await start(clientTransport)
+
+    try {
+      await serverListener.listen(multiaddr('/ip4/127.0.0.1/udp/0'))
+      const addrs = serverListener.getAddrs()
+      const serverAddr = addrs.find(addr => getNetConfig(addr).host === '127.0.0.1') ?? addrs[0]
+
+      const conn = await clientTransport.dial(serverAddr, {
+        upgrader: stubInterface<Upgrader>({
+          upgradeOutbound: async () => {
+            outboundCalled = true
+            return outboundConnection
+          }
+        }),
+        signal: AbortSignal.timeout(15_000)
+      })
+
+      expect(conn).to.equal(outboundConnection)
+      expect(inboundCalled).to.be.true()
+      expect(outboundCalled).to.be.true()
+    } finally {
+      await serverListener.close()
+      await stop(clientTransport)
+    }
+  })
+
+  it('v2 client can dial dual server', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    let inboundCalled = false
+    let outboundCalled = false
+    const outboundConnection = stubInterface<Connection>()
+
+    const serverListener = transport.createListener({
+      upgrader: stubInterface<Upgrader>({
+        upgradeInbound: async () => {
+          inboundCalled = true
+        }
+      })
+    })
+
+    const clientTransport = new WebRTCDirectTransport(await createTransportComponents(), {
+      version: 'v2'
+    })
+    await start(clientTransport)
+
+    try {
+      await serverListener.listen(multiaddr('/ip4/127.0.0.1/udp/0'))
+      const addrs = serverListener.getAddrs()
+      const serverAddr = addrs.find(addr => getNetConfig(addr).host === '127.0.0.1') ?? addrs[0]
+
+      const conn = await clientTransport.dial(serverAddr, {
+        upgrader: stubInterface<Upgrader>({
+          upgradeOutbound: async () => {
+            outboundCalled = true
+            return outboundConnection
+          }
+        }),
+        signal: AbortSignal.timeout(15_000)
+      })
+
+      expect(conn).to.equal(outboundConnection)
+      expect(inboundCalled).to.be.true()
+      expect(outboundCalled).to.be.true()
+    } finally {
+      await serverListener.close()
+      await stop(clientTransport)
+    }
   })
 })

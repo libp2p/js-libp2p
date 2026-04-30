@@ -1,6 +1,9 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { IceUdpMuxListener } from 'node-datachannel'
+import { decodeV2ClientPwd } from './sdp.ts'
+import { parseStunUsernameUfrags } from './stun.ts'
 import type { Logger } from '@libp2p/interface'
+import type { IceUdpMuxRequest } from 'node-datachannel'
 import type { AddressInfo } from 'node:net'
 
 export interface StunServer {
@@ -9,19 +12,39 @@ export interface StunServer {
 }
 
 export interface Callback {
-  (ufrag: string, remoteHost: string, remotePort: number): void
+  (serverUfrag: string, clientUfrag: string, clientPwd: string | undefined, remoteHost: string, remotePort: number): void
 }
 
 export async function stunListener (host: string, port: number, log: Logger, cb: Callback): Promise<StunServer> {
   const listener = new IceUdpMuxListener(port, host)
-  listener.onUnhandledStunRequest(request => {
-    if (request.ufrag == null) {
+  listener.onUnhandledStunRequest((request: IceUdpMuxRequest) => {
+    if (request.localUfrag == null || request.ufrag == null) {
+      if (request.ufrag != null) {
+        log.trace('incoming legacy STUN packet from %s:%d %s', request.host, request.port, request.ufrag)
+        cb(request.ufrag, request.ufrag, undefined, request.host, request.port)
+      }
+
       return
     }
 
-    log.trace('incoming STUN packet from %s:%d %s', request.host, request.port, request.ufrag)
+    if (!request.localUfrag.startsWith('libp2p+webrtc+v2/')) {
+      log.trace('incoming legacy STUN packet from %s:%d %s', request.host, request.port, request.ufrag)
+      cb(request.ufrag, request.ufrag, undefined, request.host, request.port)
+      return
+    }
 
-    cb(request.ufrag, request.host, request.port)
+    const parsed = parseStunUsernameUfrags(request.localUfrag, request.ufrag)
+
+    if (parsed == null) {
+      log.trace('incoming STUN packet from %s:%d had invalid ufrags %s %s', request.host, request.port, request.localUfrag, request.ufrag)
+      return
+    }
+
+    log.trace('incoming STUN packet from %s:%d %s:%s', request.host, request.port, request.localUfrag, request.ufrag)
+
+    const clientPwd = decodeV2ClientPwd(parsed.serverUfrag)
+
+    cb(parsed.serverUfrag, parsed.clientUfrag, clientPwd, request.host, request.port)
   })
 
   return {
