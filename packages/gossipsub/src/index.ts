@@ -193,6 +193,17 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
   maxInboundDataLength?: number
 
   /**
+   * Specify max size in bytes for outbound messages. Attempting to publish a
+   * message larger than this will throw before any network I/O occurs.
+   *
+   * Defaults to 4 MiB (4 * 1024 * 1024), which matches the it-length-prefixed
+   * library default. Increase this value when publishing large payloads.
+   *
+   * @default 4194304
+   */
+  maxOutboundDataLength?: number
+
+  /**
    * If provided, only allow topics in this list
    */
   allowedTopics?: string[] | Set<string>

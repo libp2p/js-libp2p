@@ -6,6 +6,8 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 interface OutboundStreamOpts {
   /** Max size in bytes for pushable buffer. If full, will throw on .push */
   maxBufferSize?: number
+  /** Max size in bytes for a single outbound message. Defaults to 4 MiB. */
+  maxDataLength?: number
 }
 
 interface InboundStreamOpts {
@@ -14,7 +16,11 @@ interface InboundStreamOpts {
 }
 
 export class OutboundStream {
+  private readonly maxDataLength?: number
+
   constructor (private readonly rawStream: Stream, errCallback: (e: Error) => void, opts: OutboundStreamOpts) {
+    this.maxDataLength = opts.maxDataLength
+
     if (opts.maxBufferSize != null) {
       rawStream.maxWriteBufferLength = opts.maxBufferSize
     }
@@ -31,7 +37,7 @@ export class OutboundStream {
   }
 
   async push (data: Uint8Array): Promise<void> {
-    return this.pushPrefixed(encode.single(data))
+    return this.pushPrefixed(encode.single(data, { maxDataLength: this.maxDataLength }))
   }
 
   /**

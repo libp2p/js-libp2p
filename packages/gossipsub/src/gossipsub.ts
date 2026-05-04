@@ -672,7 +672,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
           runOnLimitedConnection: this.runOnLimitedConnection
         }),
         (e) => { this.log.error('outbound pipe error', e) },
-        { maxBufferSize: this.opts.maxOutboundBufferSize }
+        { maxBufferSize: this.opts.maxOutboundBufferSize, maxDataLength: this.opts.maxOutboundDataLength }
       )
 
       this.log('create outbound stream %p', peerId)
@@ -2042,6 +2042,15 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     const startMs = Date.now()
     const transformedData = (this.dataTransform != null) ? this.dataTransform.outboundTransform(topic, data) : data
 
+    const maxOutboundDataLength = this.opts.maxOutboundDataLength ?? (4 * 1024 * 1024)
+    if (transformedData.byteLength > maxOutboundDataLength) {
+      throw new Error(
+        `Message is too large (${transformedData.byteLength} bytes). ` +
+        `The current limit is ${maxOutboundDataLength} bytes. ` +
+        'Increase the maxOutboundDataLength option to send larger messages.'
+      )
+    }
+
     if (this.publishConfig == null) {
       throw Error('PublishError.Uninitialized')
     }
@@ -2142,7 +2151,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    */
   private sendRpcInBatch (tosend: Set<PeerIdStr>, rpc: RPC): void {
     const rpcBytes = RPC.encode(rpc)
-    const prefixedData = encode.single(rpcBytes)
+    const prefixedData = encode.single(rpcBytes, { maxDataLength: this.opts.maxOutboundDataLength })
     for (const id of tosend) {
       const outboundStream = this.streamsOutbound.get(id)
       if (outboundStream == null) {
