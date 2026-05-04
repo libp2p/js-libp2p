@@ -51,9 +51,7 @@ async function spawn (createMuxer: (maConn: MultiaddrConnection) => Promise<Stre
       const sendMore = outboundStream.send(buf)
 
       if (sendMore === false) {
-        await pEvent(outboundStream, 'drain', {
-          rejectionEvents: ['close']
-        })
+        await outboundStream.onDrain()
       }
     }
 

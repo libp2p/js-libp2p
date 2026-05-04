@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.1.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.17...utils-v7.1.0) (2026-04-25)
+
+
+### Features
+
+* **utils:** add tryGetNetConfig helper ([#3471](https://github.com/libp2p/js-libp2p/issues/3471)) ([d57fe74](https://github.com/libp2p/js-libp2p/commit/d57fe74c032627c4440a400592c2b1273e15ed40))
+
 ## [7.0.17](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.16...utils-v7.0.17) (2026-04-16)
 
 

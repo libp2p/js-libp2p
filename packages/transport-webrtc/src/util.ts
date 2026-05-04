@@ -1,13 +1,9 @@
-import { detect } from 'detect-browser'
 import pDefer from 'p-defer'
 import pTimeout from 'p-timeout'
 import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.ts'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
 import type { PeerConnection } from 'node-datachannel'
-
-const browser = detect()
-export const isFirefox = ((browser != null) && browser.name === 'firefox')
 
 export const nopSource = async function * nop (): AsyncGenerator<Uint8Array, any, unknown> {}
 
