@@ -4,7 +4,8 @@ import {
   reliableTransportsFirst,
   loopbackAddressLast,
   publicAddressesFirst,
-  circuitRelayAddressesLast
+  circuitRelayAddressesLast,
+  defaultMultiaddrSorter
 } from '../../src/multiaddr/sorters.js'
 
 describe('multiaddr sorters', () => {
@@ -97,6 +98,45 @@ describe('multiaddr sorters', () => {
       const a = multiaddr('/ip4/1.1.1.1/tcp/123')
       const b = multiaddr('/ip4/2.2.2.2/tcp/456')
       expect(circuitRelayAddressesLast(a, b)).to.equal(0)
+    })
+  })
+
+  describe('defaultMultiaddrSorter', () => {
+    it('orders public, then private, with loopback last', () => {
+      const pub = multiaddr('/ip4/123.123.123.123/tcp/123')
+      const priv = multiaddr('/ip4/192.168.0.1/tcp/123')
+      const loopback = multiaddr('/ip4/127.0.0.1/tcp/123')
+
+      const sorted = defaultMultiaddrSorter([loopback, priv, pub].sort(() => Math.random() < 0.5 ? -1 : 1))
+      expect(sorted.map(ma => ma.toString())).to.deep.equal([
+        pub.toString(),
+        priv.toString(),
+        loopback.toString()
+      ])
+    })
+
+    it('places circuit-relay addresses after direct addresses', () => {
+      const direct = multiaddr('/ip4/123.123.123.123/tcp/123/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const relay = multiaddr('/ip4/123.123.123.123/tcp/123/p2p/QmNnooDu7bfjPFoTZYxMNLWUQJyrVwtbZg5gBMjTezGAJN/p2p-circuit/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+
+      const sorted = defaultMultiaddrSorter([relay, direct])
+      expect(sorted.map(ma => ma.toString())).to.deep.equal([
+        direct.toString(),
+        relay.toString()
+      ])
+    })
+
+    it('orders by reliable transports as innermost tiebreaker', () => {
+      const tcp = multiaddr('/ip4/123.123.123.123/tcp/123/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const wss = multiaddr('/ip4/123.123.123.123/tcp/123/wss/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+      const webRTCDirect = multiaddr('/ip4/123.123.123.123/udp/123/webrtc-direct/p2p/QmcrQZ6RJdpYuGvZqD5QEHAv6qX4BrQLJLQPQUrTrzdcgm')
+
+      const sorted = defaultMultiaddrSorter([webRTCDirect, wss, tcp].sort(() => Math.random() < 0.5 ? -1 : 1))
+      expect(sorted.map(ma => ma.toString())).to.deep.equal([
+        tcp.toString(),
+        wss.toString(),
+        webRTCDirect.toString()
+      ])
     })
   })
 })

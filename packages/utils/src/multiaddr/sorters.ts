@@ -131,3 +131,17 @@ export function circuitRelayAddressesLast (a: Multiaddr, b: Multiaddr): -1 | 0 |
 
   return 0
 }
+
+/**
+ * Sort multiaddrs by the default multiaddr-only ordering: loopback addresses
+ * last, public addresses first, circuit-relay addresses last, with reliable
+ * transports as the innermost tiebreaker.
+ */
+export function defaultMultiaddrSorter (multiaddrs: Multiaddr[]): Multiaddr[] {
+  return multiaddrs.sort((a, b) =>
+    loopbackAddressLast(a, b) ||
+    publicAddressesFirst(a, b) ||
+    circuitRelayAddressesLast(a, b) ||
+    reliableTransportsFirst(a, b)
+  )
+}
