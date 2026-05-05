@@ -189,11 +189,16 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       this.metrics?.dialerEvents.increment({ ready: true })
 
       // this promise resolves/throws when the session is closed
-      wt.closed.catch((err: Error) => {
-        this.log.error('error on remote wt session close - %e', err)
-      })
-        .finally(() => {
+      wt.closed
+        .then(() => {
           cleanUpWTSession('remote_close')
+        })
+        .catch((err: Error) => {
+          this.log.error('error on remote wt session close - %e', err)
+          // Call cleanUpWTSession first so closed=true is set before maConn.abort()
+          // triggers sendReset() → cleanUpWTSession() to prevent a double wt.close() call
+          cleanUpWTSession('remote_close')
+          maConn?.abort(err)
         })
 
       this.metrics?.dialerEvents.increment({ open: true })
