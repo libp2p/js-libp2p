@@ -1,5 +1,13 @@
 # Changelog
 
+## [15.0.21](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.20...gossipsub-v15.0.21) (2026-05-04)
+
+
+### Bug Fixes
+
+* **gossipsub:** use monotonic seqnos ([#3487](https://github.com/libp2p/js-libp2p/issues/3487)) ([d1ab982](https://github.com/libp2p/js-libp2p/commit/d1ab98294b65f9d19506efa270bf80fedaaa145b))
+* **gossipsub:** use monotonic seqnos for spec compliance and kubo interop ([d1ab982](https://github.com/libp2p/js-libp2p/commit/d1ab98294b65f9d19506efa270bf80fedaaa145b))
+
 ## [15.0.20](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.19...gossipsub-v15.0.20) (2026-04-25)
 
 
