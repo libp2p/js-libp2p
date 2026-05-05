@@ -6,12 +6,15 @@ import { setMaxListeners } from 'main-event'
 import { DEFAULT_CONNECTION_THRESHOLD, DIAL_DATA_CHUNK_SIZE, MAX_DIAL_DATA_BYTES, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, TIMEOUT } from './constants.ts'
 import { DialBack, DialBackResponse, DialResponse, DialStatus, Message } from './pb/index.ts'
 import { randomNumber } from './utils.ts'
-import type { AutoNATv2Components, AutoNATv2ServiceInit } from './index.ts'
+import type { AutoNATv2Components, AutoNATv2Events, AutoNATv2ServiceInit } from './index.ts'
 import type { Logger, Connection, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { AddressType } from '@libp2p/interface-internal'
 import type { PeerSet } from '@libp2p/peer-collections'
 import type { Filter, RepeatingTask } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventEmitter } from 'main-event'
+
+export type DispatchAutoNATv2Event = TypedEventEmitter<AutoNATv2Events>['safeDispatchEvent']
 
 // if more than 3 peers manage to dial us on what we believe to be our external
 // IP then we are convinced that it is, in fact, our external IP
@@ -68,6 +71,12 @@ export interface AutoNATv2ClientInit extends AutoNATv2ServiceInit {
   dialBackProtocol: string
   maxDialDataBytes?: bigint
   dialDataChunkSize?: number
+  safeDispatchEvent: DispatchAutoNATv2Event
+}
+
+interface Verdict {
+  addr: Multiaddr
+  state: 'verifying' | 'reachable' | 'unreachable'
 }
 
 export class AutoNATv2Client implements Startable {
@@ -84,14 +93,17 @@ export class AutoNATv2Client implements Startable {
   private readonly log: Logger
   private topologyId?: string
   private readonly dialResults: Map<string, DialResults>
+  private readonly verdicts: Map<string, Verdict>
   private readonly findPeers: RepeatingTask
   private readonly addressFilter: Filter
   private readonly connectionThreshold: number
   private readonly queue: PeerQueue
   private readonly nonces: Set<bigint>
+  private readonly safeDispatchEvent: DispatchAutoNATv2Event
 
   constructor (components: AutoNATv2Components, init: AutoNATv2ClientInit) {
     this.components = components
+    this.safeDispatchEvent = init.safeDispatchEvent
     this.log = components.logger.forComponent('libp2p:auto-nat-v2:client')
     this.started = false
     this.dialRequestProtocol = init.dialRequestProtocol
@@ -105,6 +117,7 @@ export class AutoNATv2Client implements Startable {
       name: 'libp2p_autonat_v2_dial_results',
       metrics: components.metrics
     })
+    this.verdicts = new Map()
     this.findPeers = repeatingTask(this.findRandomPeers.bind(this), 60_000)
     this.addressFilter = createScalableCuckooFilter(1024)
     this.queue = new PeerQueue({
@@ -115,6 +128,24 @@ export class AutoNATv2Client implements Startable {
     this.dialDataChunkSize = init.dialDataChunkSize ?? DIAL_DATA_CHUNK_SIZE
 
     this.nonces = new Set()
+  }
+
+  get verifying (): Multiaddr[] {
+    return [...this.verdicts.values()]
+      .filter(v => v.state === 'verifying')
+      .map(v => v.addr)
+  }
+
+  get reachable (): Multiaddr[] {
+    return [...this.verdicts.values()]
+      .filter(v => v.state === 'reachable')
+      .map(v => v.addr)
+  }
+
+  get unreachable (): Multiaddr[] {
+    return [...this.verdicts.values()]
+      .filter(v => v.state === 'unreachable')
+      .map(v => v.addr)
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/autonat-v2'
@@ -170,6 +201,7 @@ export class AutoNATv2Client implements Startable {
     }
 
     this.dialResults.clear()
+    this.verdicts.clear()
     this.findPeers.stop()
     this.started = false
   }
@@ -358,6 +390,14 @@ export class AutoNATv2Client implements Startable {
         }
 
         this.dialResults.set(addrString, results)
+
+        // First-ever probe of this address — surface as verifying. Re-probes
+        // of an address that already has a verdict stay silent: the verdicts
+        // entry persists across re-probes and only flips on an actual change.
+        if (!this.verdicts.has(addrString)) {
+          this.verdicts.set(addrString, { addr: addr.multiaddr, state: 'verifying' })
+          this.safeDispatchEvent('address:verifying', { detail: { addr: addr.multiaddr } })
+        }
       }
 
       output.push(results)
@@ -368,24 +408,29 @@ export class AutoNATv2Client implements Startable {
 
   /**
    * Removes any multiaddr result objects created for old multiaddrs that we are
-   * no longer waiting on
+   * no longer waiting on, and prunes verdicts for addresses no longer tracked
+   * by the AddressManager (emitting `address:removed` for each).
    */
   private removeOutdatedMultiaddrResults (): void {
-    const unverifiedMultiaddrs = new Set(this.components.addressManager.getAddressesWithMetadata()
-      .filter(({ expires }) => {
-        if (expires < Date.now()) {
-          return true
-        }
-
-        return false
-      })
+    const allAddresses = this.components.addressManager.getAddressesWithMetadata()
+    const allKeys = new Set(allAddresses.map(({ multiaddr }) => multiaddr.toString()))
+    const unverifiedKeys = new Set(allAddresses
+      .filter(({ expires }) => expires < Date.now())
       .map(({ multiaddr }) => multiaddr.toString())
     )
 
     for (const multiaddr of this.dialResults.keys()) {
-      if (!unverifiedMultiaddrs.has(multiaddr)) {
+      if (!unverifiedKeys.has(multiaddr)) {
         this.log.trace('remove results for %a', multiaddr)
         this.dialResults.delete(multiaddr)
+      }
+    }
+
+    for (const [key, verdict] of this.verdicts) {
+      if (!allKeys.has(key)) {
+        this.log.trace('verdict no longer applies for %a', verdict.addr)
+        this.verdicts.delete(key)
+        this.safeDispatchEvent('address:removed', { detail: { addr: verdict.addr } })
       }
     }
   }
@@ -605,6 +650,8 @@ export class AutoNATv2Client implements Startable {
 
     // abort & remove any outstanding verification jobs for this multiaddr
     results.result = true
+
+    this.recordVerdict(results.multiaddr, 'reachable')
   }
 
   private unconfirmAddress (results: DialResults): void {
@@ -615,6 +662,20 @@ export class AutoNATv2Client implements Startable {
 
     // abort & remove any outstanding verification jobs for this multiaddr
     results.result = false
+
+    this.recordVerdict(results.multiaddr, 'unreachable')
+  }
+
+  private recordVerdict (addr: Multiaddr, state: 'reachable' | 'unreachable'): void {
+    const key = addr.toString()
+    const previous = this.verdicts.get(key)?.state
+
+    if (previous === state) {
+      return
+    }
+
+    this.verdicts.set(key, { addr, state })
+    this.safeDispatchEvent(`address:${state}`, { detail: { addr } })
   }
 
   private getNetworkSegment (ma: Multiaddr): string {

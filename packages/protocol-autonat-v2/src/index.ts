@@ -25,6 +25,18 @@
 import { AutoNATv2Service } from './autonat.ts'
 import type { ComponentLogger, Metrics, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
+
+export interface AddressReachabilityChange {
+  addr: Multiaddr
+}
+
+export interface AutoNATv2Events {
+  'address:verifying': CustomEvent<AddressReachabilityChange>
+  'address:reachable': CustomEvent<AddressReachabilityChange>
+  'address:unreachable': CustomEvent<AddressReachabilityChange>
+  'address:removed': CustomEvent<AddressReachabilityChange>
+}
 
 export interface AutoNATv2ServiceInit {
   /**
