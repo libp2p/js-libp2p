@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/gossipsub",
-  "version": "15.0.20",
+  "version": "15.0.21",
   "description": "A typescript implementation of gossipsub",
   "files": [
     "src",

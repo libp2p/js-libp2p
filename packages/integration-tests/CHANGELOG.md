@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.5](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.4...integration-tests-v1.2.5) (2026-05-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/gossipsub bumped from ^15.0.20 to ^15.0.21
+    * @libp2p/bootstrap bumped from ^12.0.19 to ^12.0.20
+    * @libp2p/daemon-client bumped from ^10.0.21 to ^10.0.22
+    * @libp2p/daemon-server bumped from ^9.0.21 to ^9.0.22
+    * @libp2p/interface-compliance-tests bumped from ^7.0.19 to ^7.0.20
+    * @libp2p/interop bumped from ^14.0.21 to ^14.0.22
+    * @libp2p/mdns bumped from ^12.0.19 to ^12.0.20
+    * @libp2p/mplex bumped from ^12.0.19 to ^12.0.20
+    * @libp2p/webrtc bumped from ^6.0.20 to ^6.0.21
+    * @libp2p/webtransport bumped from ^6.0.21 to ^6.0.22
+    * libp2p bumped from ^3.2.3 to ^3.2.4
+
 ## [1.2.4](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.3...integration-tests-v1.2.4) (2026-04-25)
 
 

@@ -4,6 +4,16 @@
 
 * update all deps ([#348](https://github.com/libp2p/js-libp2p-daemon/issues/348)) ([44bf148](https://github.com/libp2p/js-libp2p-daemon/commit/44bf148f37b9f4091dc8ed26cf343e196607ebbc))
 
+## [10.0.22](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.21...daemon-client-v10.0.22) (2026-05-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-server bumped from ^9.0.21 to ^9.0.22
+    * @libp2p/gossipsub bumped from ^15.0.20 to ^15.0.21
+
 ## [10.0.21](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.20...daemon-client-v10.0.21) (2026-04-25)
 
 
