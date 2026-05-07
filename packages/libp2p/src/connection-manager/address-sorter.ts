@@ -5,10 +5,6 @@ import {
   circuitRelayAddressesLast
 } from '@libp2p/utils'
 import type { Address } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
-
-const asMultiaddr = (fn: (a: Multiaddr, b: Multiaddr) => -1 | 0 | 1) =>
-  (a: Address, b: Address): -1 | 0 | 1 => fn(a.multiaddr, b.multiaddr)
 
 /**
  * Compare function for array.sort() that moves certified addresses to the start
@@ -25,10 +21,11 @@ export function certifiedAddressesFirst (a: Address, b: Address): -1 | 0 | 1 {
 }
 
 export function defaultAddressSorter (addresses: Address[]): Address[] {
-  return addresses
-    .sort(asMultiaddr(reliableTransportsFirst))
-    .sort(certifiedAddressesFirst)
-    .sort(asMultiaddr(circuitRelayAddressesLast))
-    .sort(asMultiaddr(publicAddressesFirst))
-    .sort(asMultiaddr(loopbackAddressLast))
+  return addresses.sort((a, b) =>
+    loopbackAddressLast(a.multiaddr, b.multiaddr) ||
+    publicAddressesFirst(a.multiaddr, b.multiaddr) ||
+    circuitRelayAddressesLast(a.multiaddr, b.multiaddr) ||
+    certifiedAddressesFirst(a, b) ||
+    reliableTransportsFirst(a.multiaddr, b.multiaddr)
+  )
 }
