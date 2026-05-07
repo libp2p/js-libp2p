@@ -83,12 +83,8 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
         ...(this.options ?? {}),
         signal: this.controller.signal,
         onProgress: (evt: any): void => {
-          // Guard against re-entrant progress dispatch when two jobs'
-          // recipients form a cycle (issue #3484). Without this, a single
-          // progress event would recurse synchronously until the call
-          // stack overflows. Non-cyclic dispatches behave identically;
-          // only a synchronous re-entry into the same job's dispatcher
-          // is short-circuited.
+          // Recipients can transitively re-enter this dispatcher; without
+          // this guard a single event recurses until the stack overflows.
           if (this.dispatchingProgress) {
             return
           }
