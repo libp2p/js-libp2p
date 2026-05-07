@@ -191,7 +191,7 @@ describe('autonat v2 - events', () => {
     }
   }
 
-  it('emits address:verifying when probe starts for an unverdicted address', async () => {
+  it('emits address:verifying when probe starts for a new address', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
@@ -229,7 +229,7 @@ describe('autonat v2 - events', () => {
     expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
   })
 
-  it('does not re-emit address:verifying on re-probe of a verdict\'d address', async () => {
+  it('does not re-emit address:verifying on re-probe of a reachable address', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
@@ -245,7 +245,7 @@ describe('autonat v2 - events', () => {
     await driveConnections(await stubResponses(4, addr, DialStatus.OK, 200))
     await delay(200)
 
-    // verifying should still be 1 — no re-emission for a verdict'd address.
+    // verifying should still be 1 — no re-emission for a reachable address.
     expect(verifying).to.have.lengthOf(1)
     expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
   })
@@ -457,7 +457,7 @@ describe('autonat v2 - events', () => {
     expect(service.reachable).to.deep.equal([])
   })
 
-  it('does not emit any event when an un-verdicted address disappears', async () => {
+  it('does not emit any event when a new address disappears before being probed', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
