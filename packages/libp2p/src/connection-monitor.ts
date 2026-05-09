@@ -11,7 +11,14 @@ const PROTOCOL_VERSION = '1.0.0'
 const PROTOCOL_NAME = 'ping'
 const PROTOCOL_PREFIX = 'ipfs'
 const PING_LENGTH = 32
-const DEFAULT_ABORT_CONNECTION_ON_PING_FAILURE = true
+// Probe failures are not reliable evidence a connection is dead under real
+// WAN conditions — trans-continental RTT, event-loop contention, and transient
+// network jitter routinely cause a single 10s ping exchange to fail. Yamux
+// keepalive detects genuinely dead connections at the muxer layer without
+// tearing down the TCP socket, so aborting on a single probe failure is
+// measurable self-harm at non-trivial scale. Applications that want the
+// aggressive behaviour can still opt in by setting this to true.
+const DEFAULT_ABORT_CONNECTION_ON_PING_FAILURE = false
 
 export interface ConnectionMonitorInit {
   /**
@@ -38,9 +45,12 @@ export interface ConnectionMonitorInit {
   pingTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 
   /**
-   * If true, any connection that fails the ping will be aborted
+   * If true, any connection that fails the ping will be aborted. Defaults to
+   * false because a single 10s probe failure is not reliable evidence that
+   * the connection is dead under real WAN conditions. Set to true to restore
+   * the previous aggressive behaviour.
    *
-   * @default true
+   * @default false
    */
   abortConnectionOnPingFailure?: boolean
 

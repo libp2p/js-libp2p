@@ -112,7 +112,8 @@ describe('connection monitor', () => {
       pingInterval: 50,
       pingTimeout: {
         maxTimeout: 50
-      }
+      },
+      abortConnectionOnPingFailure: true
     })
 
     await start(monitor)
@@ -133,7 +134,8 @@ describe('connection monitor', () => {
 
   it('should abort a connection that fails', async () => {
     monitor = new ConnectionMonitor(components, {
-      pingInterval: 10
+      pingInterval: 10,
+      abortConnectionOnPingFailure: true
     })
 
     await start(monitor)
@@ -148,6 +150,25 @@ describe('connection monitor', () => {
     await delay(500)
 
     expect(connection.abort).to.have.property('called', true)
+  })
+
+  it('should not abort a connection that fails by default', async () => {
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 10
+    })
+
+    await start(monitor)
+
+    const connection = stubInterface<Connection>()
+    connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
+      throw new ConnectionClosedError('Connection closed')
+    })
+
+    components.connectionManager.getConnections.returns([connection])
+
+    await delay(500)
+
+    expect(connection.abort).to.have.property('called', false)
   })
 
   it('should not abort a connection that fails when abortConnectionOnPingFailure is false', async () => {
