@@ -206,6 +206,70 @@ describe('identify (push)', () => {
     expect(update.peerRecordEnvelope).to.deep.equal(signedPeerRecord.marshal())
   })
 
+  it('should reject incoming push when remote closes the stream without sending any message', async () => {
+    identify = new IdentifyPush(components)
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({ remotePeer })
+
+    // Close the writer side without sending any bytes. The push handler reads
+    // from the incoming stream; with no messages received the receive loop's
+    // EOF propagates as UnexpectedEOFError (the InvalidMessageError fallback
+    // is only reachable after a successful loop completion with zero messages).
+    outgoingStream.remoteWriteStatus = 'closed'
+    incomingStream.remoteWriteStatus = 'closed'
+    void outgoingStream.close()
+
+    components.peerStore.patch.reset()
+
+    await expect(identify.handleProtocol(incomingStream, connection))
+      .to.eventually.be.rejected()
+      .with.property('name', 'UnexpectedEOFError')
+
+    expect(components.peerStore.patch.callCount).to.equal(0)
+  })
+
+  it('should succeed even if close() throws after a successful read (C2 regression)', async () => {
+    identify = new IdentifyPush(components)
+    await start(identify)
+
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({ remotePeer })
+
+    const updatedProtocol = '/special-new-protocol/1.0.0'
+    const updatedAddress = multiaddr('/ip4/127.0.0.1/tcp/48322')
+
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    await pb.write({
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      protocols: [updatedProtocol],
+      listenAddrs: [updatedAddress.bytes]
+    })
+    await outgoingStream.close()
+
+    // Force close() on the incoming (server-side) stream to throw after the
+    // message has been read. The push handler awaits stream.close(options) and
+    // wraps it in try/catch; the read result must still be consumed.
+    const originalClose = incomingStream.close.bind(incomingStream)
+    incomingStream.close = async (...args: any[]) => {
+      await originalClose(...args)
+      throw Object.assign(new Error('simulated close-after-read failure'), { name: 'StreamStateError' })
+    }
+
+    components.peerStore.patch.reset()
+
+    await identify.handleProtocol(incomingStream, connection)
+
+    // patch should still happen — close error must be swallowed.
+    expect(components.peerStore.patch.callCount).to.equal(1)
+    const update = components.peerStore.patch.getCall(0).args[1]
+    expect(update.protocols).to.include(updatedProtocol)
+  })
+
   it('should time out during push identify', async () => {
     identify = new IdentifyPush(components, {
       timeout: 10
