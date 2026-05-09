@@ -1,9 +1,7 @@
-import { UnexpectedEOFError } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { isEofLike, mergeIdentifyMessages } from '../src/utils.js'
-import type { Stream } from '@libp2p/interface'
+import { mergeIdentifyMessages } from '../src/utils.js'
 
 describe('mergeIdentifyMessages', () => {
   it('returns a single message unchanged', () => {
@@ -84,25 +82,5 @@ describe('mergeIdentifyMessages', () => {
 
     expect(merged.protocolVersion).to.equal('1.0.0')
     expect(merged.agentVersion).to.equal('agent/1.0')
-  })
-})
-
-describe('isEofLike', () => {
-  it('returns true for UnexpectedEOFError', () => {
-    const err = new UnexpectedEOFError('eof')
-    const stream = { remoteWriteStatus: 'writable' } as any as Stream
-    expect(isEofLike(err, stream)).to.be.true()
-  })
-
-  it('returns true when remote write side is no longer writable', () => {
-    const err = new Error('reset')
-    const stream = { remoteWriteStatus: 'closed' } as any as Stream
-    expect(isEofLike(err, stream)).to.be.true()
-  })
-
-  it('returns false for non-eof errors when stream is still writable', () => {
-    const err = new Error('parse error')
-    const stream = { remoteWriteStatus: 'writable' } as any as Stream
-    expect(isEofLike(err, stream)).to.be.false()
   })
 })

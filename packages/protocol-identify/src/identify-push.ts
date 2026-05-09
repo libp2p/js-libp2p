@@ -14,7 +14,7 @@ import {
   PUSH_DEBOUNCE_MS
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, isEofLike, mergeIdentifyMessages } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages } from './utils.ts'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.ts'
 import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
@@ -154,8 +154,9 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
       try {
         messages.push(await pb.read(options))
-      } catch (err) {
-        if (messages.length > 0 && isEofLike(err, stream)) {
+      } catch (err: any) {
+        // remote finished or stream torn down — keep what we have
+        if (messages.length > 0 && (err?.name === 'UnexpectedEOFError' || stream.remoteWriteStatus !== 'writable')) {
           break
         }
 
@@ -164,13 +165,14 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
     }
 
     if (messages.length >= MAX_IDENTIFY_MESSAGES) {
-      log('reached MAX_IDENTIFY_MESSAGES (%d) without EOF, returning truncated identify push', MAX_IDENTIFY_MESSAGES)
+      log('reached MAX_IDENTIFY_MESSAGES, returning truncated identify push')
     }
 
     try {
       await stream.close(options)
-    } catch (err) {
+    } catch (err: any) {
       log.trace('error closing identify-push stream after read - %e', err)
+      stream.abort(err)
     }
 
     await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, mergeIdentifyMessages(messages))
