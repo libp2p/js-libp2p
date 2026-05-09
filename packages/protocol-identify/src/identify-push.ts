@@ -1,6 +1,6 @@
 import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { UnexpectedEOFError, debounce, pbStream } from '@libp2p/utils'
+import { debounce, pbStream } from '@libp2p/utils'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import drain from 'it-drain'
 import parallel from 'it-parallel'
@@ -8,12 +8,13 @@ import { setMaxListeners } from 'main-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
+  MAX_IDENTIFY_MESSAGES,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
   PUSH_DEBOUNCE_MS
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, isEofLike, mergeIdentifyMessages } from './utils.ts'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.ts'
 import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
@@ -150,11 +151,11 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
 
     const messages: IdentifyMessage[] = []
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
       try {
         messages.push(await pb.read(options))
       } catch (err) {
-        if (messages.length > 0 && err instanceof UnexpectedEOFError) {
+        if (messages.length > 0 && isEofLike(err, stream)) {
           break
         }
 
@@ -166,7 +167,15 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       throw new InvalidMessageError('No identify message received')
     }
 
-    await stream.close(options)
+    if (messages.length >= MAX_IDENTIFY_MESSAGES) {
+      log('reached MAX_IDENTIFY_MESSAGES (%d) without EOF, returning truncated identify push', MAX_IDENTIFY_MESSAGES)
+    }
+
+    try {
+      await stream.close(options)
+    } catch (err) {
+      log.trace('error closing identify-push stream after read - %e', err)
+    }
 
     await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, mergeIdentifyMessages(messages))
 
