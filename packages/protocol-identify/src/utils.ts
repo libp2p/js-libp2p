@@ -2,10 +2,9 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { defaultMultiaddrSorter } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { FIRST_IDENTIFY_MESSAGE_MAX_SIZE, IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE } from './consts.ts'
+import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
 import type { IdentifyComponents, IdentifyInit } from './index.ts'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
@@ -199,112 +198,6 @@ export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMes
   }
 
   return merged
-}
-
-/**
- * Greedily pack items from `remaining` into `current` as long as the encoded
- * message produced by `buildCandidate` stays within `maxSize`.
- *
- * When `guaranteeFirst` is true the size check is skipped for the very first
- * item so that the caller always makes progress (used when `current` must end
- * up non-empty regardless of size).
- */
-function packItems<T> (
-  current: T[],
-  remaining: T[],
-  maxSize: number,
-  buildCandidate: (items: T[]) => IdentifyMessage,
-  guaranteeFirst = false
-): void {
-  while (remaining.length > 0) {
-    if (!guaranteeFirst || current.length > 0) {
-      const candidate = buildCandidate([...current, remaining[0]])
-      if (IdentifyMessage.encode(candidate).length > maxSize) {
-        break
-      }
-    }
-    current.push(remaining.shift()!)
-  }
-}
-
-/**
- * Split an outgoing Identify message into chunks that respect the per-message size limits:
- *   - first message SHOULD NOT exceed 2 KB
- *   - subsequent messages SHOULD NOT exceed 4 KB
- *
- * Addresses are sorted so that publicly-reachable ones appear in the first
- * message, improving backwards-compatibility with old receivers that stop
- * after the first message.
- */
-export function buildIdentifyMessages (msg: IdentifyMessage): IdentifyMessage[] {
-  const sortedAddrs = defaultMultiaddrSorter(msg.listenAddrs.map(a => multiaddr(a))).map((ma: Multiaddr) => ma.bytes)
-
-  const full: IdentifyMessage = { ...msg, listenAddrs: sortedAddrs }
-  if (IdentifyMessage.encode(full).length <= FIRST_IDENTIFY_MESSAGE_MAX_SIZE) {
-    return [full]
-  }
-
-  const messages: IdentifyMessage[] = []
-  const remainingAddrs = [...sortedAddrs]
-  const remainingProtocols = [...msg.protocols]
-
-  // First message carries all scalar fields + signedPeerRecord, then as many
-  // addresses and protocols as fit within 2 KB.
-  const first: IdentifyMessage = {
-    protocolVersion: msg.protocolVersion,
-    agentVersion: msg.agentVersion,
-    publicKey: msg.publicKey,
-    observedAddr: msg.observedAddr,
-    signedPeerRecord: msg.signedPeerRecord,
-    listenAddrs: [],
-    protocols: []
-  }
-
-  packItems(first.listenAddrs, remainingAddrs, FIRST_IDENTIFY_MESSAGE_MAX_SIZE,
-    items => ({ ...first, listenAddrs: items }))
-
-  // If signedPeerRecord is so large that no address fits alongside it, defer it
-  // to its own standalone message so the first message can carry addresses instead.
-  // The deferred record may exceed 4 KB but cannot be subdivided.
-  let deferredSignedPeerRecord: Uint8Array | undefined
-  if (first.listenAddrs.length === 0 && remainingAddrs.length > 0 && first.signedPeerRecord != null) {
-    deferredSignedPeerRecord = first.signedPeerRecord
-    first.signedPeerRecord = undefined
-
-    // Re-pack without signedPeerRecord, guaranteeing at least one address.
-    packItems(first.listenAddrs, remainingAddrs, FIRST_IDENTIFY_MESSAGE_MAX_SIZE,
-      items => ({ ...first, listenAddrs: items }), true)
-  }
-
-  packItems(first.protocols, remainingProtocols, FIRST_IDENTIFY_MESSAGE_MAX_SIZE,
-    items => ({ ...first, protocols: items }))
-
-  messages.push(first)
-
-  if (deferredSignedPeerRecord != null) {
-    const spr: IdentifyMessage = { listenAddrs: [], protocols: [], signedPeerRecord: deferredSignedPeerRecord }
-
-    packItems(spr.listenAddrs, remainingAddrs, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
-      items => ({ ...spr, listenAddrs: items }))
-    packItems(spr.protocols, remainingProtocols, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
-      items => ({ ...spr, protocols: items }))
-
-    messages.push(spr)
-  }
-
-  // Subsequent messages carry the remaining addresses and protocols in ≤4 KB chunks.
-  while (remainingAddrs.length > 0 || remainingProtocols.length > 0) {
-    const subsequent: IdentifyMessage = { listenAddrs: [], protocols: [] }
-
-    packItems(subsequent.listenAddrs, remainingAddrs, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
-      items => ({ ...subsequent, listenAddrs: items }), true)
-    packItems(subsequent.protocols, remainingProtocols, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE,
-      items => ({ ...subsequent, protocols: items }))
-
-    messages.push(subsequent)
-  }
-
-  return messages
 }
 
 export interface AbstractIdentifyInit extends IdentifyInit {

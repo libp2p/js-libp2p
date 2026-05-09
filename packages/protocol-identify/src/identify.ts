@@ -11,7 +11,7 @@ import {
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, buildIdentifyMessages, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages } from './utils.ts'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.ts'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger, NewStreamOptions } from '@libp2p/interface'
 
@@ -198,7 +198,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     const pb = pbStream(stream).pb(IdentifyMessage)
 
     log('send response')
-    const msgs = buildIdentifyMessages({
+    await pb.write({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
       publicKey: publicKeyToProtobuf(this.components.privateKey.publicKey),
@@ -206,11 +206,9 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       signedPeerRecord,
       observedAddr,
       protocols: peerData.protocols
+    }, {
+      signal
     })
-
-    for (const msg of msgs) {
-      await pb.write(msg, { signal })
-    }
 
     log('close write')
     await pb.unwrap().unwrap().close({

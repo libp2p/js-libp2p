@@ -13,7 +13,7 @@ import {
   PUSH_DEBOUNCE_MS
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, buildIdentifyMessages, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages } from './utils.ts'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.ts'
 import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
@@ -99,17 +99,15 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
                 maxDataLength: self.maxMessageSize
               }).pb(IdentifyMessage)
 
-              const msgs = buildIdentifyMessages({
+              await pb.write({
                 listenAddrs: listenAddresses.map(ma => ma.bytes),
                 signedPeerRecord: signedPeerRecord.marshal(),
                 protocols: supportedProtocols,
                 agentVersion,
                 protocolVersion
+              }, {
+                signal
               })
-
-              for (const msg of msgs) {
-                await pb.write(msg, { signal })
-              }
 
               await stream.close({
                 signal
