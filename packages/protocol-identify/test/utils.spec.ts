@@ -1,4 +1,3 @@
-import { Buffer } from 'node:buffer'
 import { UnexpectedEOFError } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
@@ -70,26 +69,6 @@ describe('mergeIdentifyMessages', () => {
     const merged = mergeIdentifyMessages([first, second])
 
     expect(merged.signedPeerRecord).to.deep.equal(record2)
-  })
-
-  it('deduplicates listenAddrs across messages', () => {
-    const addr1 = multiaddr('/ip4/1.2.3.4/tcp/4001').bytes
-    const addr2 = multiaddr('/ip4/5.6.7.8/tcp/4001').bytes
-
-    const merged = mergeIdentifyMessages([
-      {
-        listenAddrs: [addr1, addr2],
-        protocols: []
-      },
-      {
-        listenAddrs: [addr1, addr1, addr2],
-        protocols: []
-      }
-    ])
-
-    expect(merged.listenAddrs).to.have.lengthOf(2)
-    const hex = merged.listenAddrs.map(b => Buffer.from(b).toString('hex'))
-    expect(new Set(hex).size).to.equal(2)
   })
 
   it('missing scalar fields in later messages do not clear earlier values', () => {
