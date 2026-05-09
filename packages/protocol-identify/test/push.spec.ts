@@ -206,6 +206,51 @@ describe('identify (push)', () => {
     expect(update.peerRecordEnvelope).to.deep.equal(signedPeerRecord.marshal())
   })
 
+  it('should propagate UnexpectedEOFError when remote closes incoming push without sending', async () => {
+    identify = new IdentifyPush(components)
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({ remotePeer })
+    void outgoingStream.close()
+
+    components.peerStore.patch.reset()
+
+    await expect(identify.handleProtocol(incomingStream, connection))
+      .to.eventually.be.rejected()
+      .with.property('name', 'UnexpectedEOFError')
+    expect(components.peerStore.patch.callCount).to.equal(0)
+  })
+
+  it('should still consume the push message when close() throws after a successful read', async () => {
+    identify = new IdentifyPush(components)
+    await start(identify)
+
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({ remotePeer })
+
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    await pb.write({
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      protocols: ['/foo/1.0'],
+      listenAddrs: []
+    })
+    await outgoingStream.close()
+
+    const originalClose = incomingStream.close.bind(incomingStream)
+    incomingStream.close = async (...args: any[]) => {
+      await originalClose(...args)
+      throw Object.assign(new Error('simulated close failure'), { name: 'StreamStateError' })
+    }
+
+    components.peerStore.patch.reset()
+    await identify.handleProtocol(incomingStream, connection)
+    expect(components.peerStore.patch.callCount).to.equal(1)
+  })
+
   it('should time out during push identify', async () => {
     identify = new IdentifyPush(components, {
       timeout: 10

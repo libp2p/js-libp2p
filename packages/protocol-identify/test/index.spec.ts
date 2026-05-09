@@ -267,6 +267,50 @@ describe('identify', () => {
       .to.have.property('peerRecordEnvelope').that.equalBytes(peerRecordEnvelope)
   })
 
+  it('should propagate UnexpectedEOFError to the caller when remote closes without sending', async () => {
+    identify = new Identify(components)
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({ remotePeer })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+    void incomingStream.close()
+
+    await expect(identify.identify(connection))
+      .to.eventually.be.rejected()
+      .with.property('name', 'UnexpectedEOFError')
+  })
+
+  it('should still resolve with the message when close() throws after a successful read', async () => {
+    identify = new Identify(components)
+    await start(identify)
+
+    const remotePrivateKey = await generateKeyPair('Ed25519')
+    const remotePeer = peerIdFromPrivateKey(remotePrivateKey)
+    const message: IdentifyMessage = {
+      listenAddrs: [],
+      protocols: ['/foo/1.0'],
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+    }
+
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({ remotePeer })
+    connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
+
+    const originalClose = outgoingStream.close.bind(outgoingStream)
+    outgoingStream.close = async (...args: any[]) => {
+      await originalClose(...args)
+      throw Object.assign(new Error('simulated close failure'), { name: 'StreamStateError' })
+    }
+
+    incomingStream.send(lp.encode.single(IdentifyMessage.encode(message)))
+    void incomingStream.close()
+
+    const result = await identify.identify(connection)
+    expect(result.protocols).to.include('/foo/1.0')
+  })
+
   it('should limit incoming identify message sizes', async () => {
     const maxMessageSize = 100
 
