@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.3...echo-v3.1.4) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.3 to ^3.1.4
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
 ## [3.1.3](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.2...echo-v3.1.3) (2026-04-25)
 
 
