@@ -125,9 +125,7 @@ export class ConnectionMonitor implements Startable {
               signal
             })
           } catch (err: any) {
-            if (stream != null && stream.status !== 'closed' && stream.status !== 'aborted') {
-              stream.abort(err instanceof Error ? err : new Error(String(err)))
-            }
+            stream?.abort(err)
 
             if (err.name !== 'UnsupportedProtocolError') {
               throw err
