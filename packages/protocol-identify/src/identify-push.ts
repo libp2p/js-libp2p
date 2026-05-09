@@ -155,12 +155,11 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       try {
         messages.push(await pb.read(options))
       } catch (err: any) {
-        // remote finished or stream torn down — keep what we have
-        if (messages.length > 0 && (err?.name === 'UnexpectedEOFError' || stream.remoteWriteStatus !== 'writable')) {
-          break
+        if (messages.length === 0) {
+          throw err
         }
-
-        throw err
+        log.trace('stopped reading identify push - %e', err)
+        break
       }
     }
 

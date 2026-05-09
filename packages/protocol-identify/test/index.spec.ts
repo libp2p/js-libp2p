@@ -328,7 +328,7 @@ describe('identify', () => {
     expect(result.protocols).to.not.include('/test/10/1.0.0')
   })
 
-  it('should reject when peer sends invalid bytes mid-stream', async () => {
+  it('should return successfully-read messages when peer sends garbage bytes mid-stream', async () => {
     identify = new Identify(components)
     await start(identify)
 
@@ -349,20 +349,17 @@ describe('identify', () => {
     await new Promise<void>(resolve => setTimeout(resolve, 0))
 
     const encoded1 = lp.encode.single(IdentifyMessage.encode(firstMessage)).subarray()
-    // Append a varint length prefix that promises far more bytes than provided.
-    // The pb.read() in the second iteration will see the prefix, try to read,
-    // hit EOF early without remoteWriteStatus changing, and throw.
-    // With remoteWriteStatus still 'writable', isEofLike returns false and the
-    // error propagates.
+    // Append a varint length prefix that promises more bytes than provided so
+    // pb.read on iteration 2 will block until the abort signal fires.
     const garbage = new Uint8Array([0xff, 0xff, 0xff, 0xff, 0x07])
     const combined = new Uint8Array(encoded1.byteLength + garbage.byteLength)
     combined.set(encoded1)
     combined.set(garbage, encoded1.byteLength)
 
     outgoingStream.push(combined)
-    // Note: do NOT set remoteWriteStatus to 'closed' - keep it 'writable'.
 
-    await expect(identifyPromise).to.eventually.be.rejected()
+    const result = await identifyPromise
+    expect(result.protocols).to.include('/foo/bar/1.0')
   })
 
   it('should return the message when remote resets the stream after a successful write', async () => {
