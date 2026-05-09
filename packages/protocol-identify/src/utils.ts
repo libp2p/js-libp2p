@@ -4,6 +4,7 @@ import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
 import type { IdentifyComponents, IdentifyInit } from './index.ts'
@@ -175,7 +176,11 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
  * Merge multiple received Identify messages into one
  */
 export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMessage {
-  const merged: IdentifyMessage = { ...messages[0] }
+  const merged: IdentifyMessage = {
+    ...messages[0],
+    listenAddrs: dedupBytes(messages[0].listenAddrs),
+    protocols: [...new Set(messages[0].protocols)]
+  }
 
   for (const msg of messages.slice(1)) {
     if (msg.protocolVersion != null) {
@@ -193,11 +198,26 @@ export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMes
     if (msg.signedPeerRecord != null) {
       merged.signedPeerRecord = msg.signedPeerRecord
     }
-    merged.listenAddrs = [...merged.listenAddrs, ...msg.listenAddrs]
+    merged.listenAddrs = dedupBytes([...merged.listenAddrs, ...msg.listenAddrs])
     merged.protocols = [...new Set([...merged.protocols, ...msg.protocols])]
   }
 
   return merged
+}
+
+/**
+ * Deduplicate a list of byte arrays by their content. Set cannot be used
+ * directly because Uint8Array equality is reference-based.
+ */
+function dedupBytes (bytes: Uint8Array[]): Uint8Array[] {
+  const seen = new Map<string, Uint8Array>()
+  for (const buf of bytes) {
+    const key = uint8ArrayToString(buf, 'base64')
+    if (!seen.has(key)) {
+      seen.set(key, buf)
+    }
+  }
+  return [...seen.values()]
 }
 
 export interface AbstractIdentifyInit extends IdentifyInit {
