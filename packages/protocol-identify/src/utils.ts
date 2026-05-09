@@ -2,12 +2,12 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { isPrivate } from '@libp2p/utils'
+import { defaultMultiaddrSorter } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { FIRST_IDENTIFY_MESSAGE_MAX_SIZE, IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE } from './consts.js'
-import { Identify as IdentifyMessage } from './pb/message.js'
-import type { IdentifyComponents, IdentifyInit } from './index.js'
+import { FIRST_IDENTIFY_MESSAGE_MAX_SIZE, IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY, SUBSEQUENT_IDENTIFY_MESSAGE_MAX_SIZE } from './consts.ts'
+import { Identify as IdentifyMessage } from './pb/message.ts'
+import type { IdentifyComponents, IdentifyInit } from './index.ts'
 import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -237,16 +237,7 @@ function packItems<T> (
  * after the first message.
  */
 export function buildIdentifyMessages (msg: IdentifyMessage): IdentifyMessage[] {
-  // Sort: non-private (public + circuit-relay-via-public-relay) first
-  const sortedAddrs = [...msg.listenAddrs].sort((a, b) => {
-    try {
-      const aPublic = isPrivate(multiaddr(a)) ? 0 : 1
-      const bPublic = isPrivate(multiaddr(b)) ? 0 : 1
-      return bPublic - aPublic
-    } catch {
-      return 0
-    }
-  })
+  const sortedAddrs = defaultMultiaddrSorter(msg.listenAddrs.map(a => multiaddr(a))).map((ma: Multiaddr) => ma.bytes)
 
   const full: IdentifyMessage = { ...msg, listenAddrs: sortedAddrs }
   if (IdentifyMessage.encode(full).length <= FIRST_IDENTIFY_MESSAGE_MAX_SIZE) {

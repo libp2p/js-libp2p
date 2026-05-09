@@ -4,8 +4,8 @@ import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.js'
-import type { PingComponents, PingInit, Ping as PingInterface } from './index.js'
+import { PROTOCOL_PREFIX, PROTOCOL_NAME, PING_LENGTH, PROTOCOL_VERSION, TIMEOUT, MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS } from './constants.ts'
+import type { PingComponents, PingInit, Ping as PingInterface } from './index.ts'
 import type { Stream, Startable, Connection, StreamMessageEvent, DialTarget, DialProtocolOptions } from '@libp2p/interface'
 
 export class Ping implements Startable, PingInterface {

@@ -8,7 +8,7 @@ import { sha512 } from '@noble/hashes/sha2.js'
 import * as asn1js from 'asn1js'
 import { base64 } from 'multiformats/bases/base64'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { ITERATIONS, KEY_SIZE, SALT_LENGTH } from './constants.js'
+import { ITERATIONS, KEY_SIZE, SALT_LENGTH } from './constants.ts'
 import type { ECDSAPrivateKey, Ed25519PrivateKey, PrivateKey, RSAPrivateKey, Secp256k1PrivateKey } from '@libp2p/interface'
 import type { Multibase } from 'multiformats/bases/interface'
 

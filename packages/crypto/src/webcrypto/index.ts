@@ -1,3 +1,3 @@
-import webcrypto from './webcrypto.js'
+import webcrypto from './webcrypto.ts'
 
 export default webcrypto

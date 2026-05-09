@@ -10,8 +10,8 @@ import {
   connectPubsubNodes,
   createComponentsArray
 
-} from './utils/create-pubsub.js'
-import type { GossipSubAndComponents } from './utils/create-pubsub.js'
+} from './utils/create-pubsub.ts'
+import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 import type { Message, SubscriptionChangeData } from '../src/index.js'
 
 const shouldNotHappen = (): never => expect.fail()

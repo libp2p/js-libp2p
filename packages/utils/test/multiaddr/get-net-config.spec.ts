@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { getNetConfig } from '../../src/index.ts'
+import { getNetConfig, tryGetNetConfig } from '../../src/index.ts'
 
 describe('multiaddr getNetConfig', () => {
   it('throws on empty multiaddr', () => {
@@ -31,5 +31,24 @@ describe('multiaddr getNetConfig', () => {
       protocol: 'tcp',
       port: 1000
     })
+  })
+})
+
+describe('multiaddr tryGetNetConfig', () => {
+  it('returns config for a network multiaddr', () => {
+    expect(tryGetNetConfig(multiaddr('/ip4/127.0.0.1/tcp/1000'))).to.deep.equal({
+      type: 'ip4',
+      host: '127.0.0.1',
+      protocol: 'tcp',
+      port: 1000
+    })
+  })
+
+  it('returns null for an empty multiaddr', () => {
+    expect(tryGetNetConfig(multiaddr())).to.be.null()
+  })
+
+  it('returns null for a non-network multiaddr', () => {
+    expect(tryGetNetConfig(multiaddr('/p2p/12D3KooWK43NgYJKLv3Rerrac9YQ5gz7tpFnmreLYH3AdEAa3PhW'))).to.be.null()
   })
 })

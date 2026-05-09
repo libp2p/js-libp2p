@@ -2,8 +2,8 @@ import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { GossipsubHeartbeatInterval } from '../src/constants.js'
-import { createComponents } from './utils/create-pubsub.js'
-import type { GossipSubAndComponents } from './utils/create-pubsub.js'
+import { createComponents } from './utils/create-pubsub.ts'
+import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 
 describe('heartbeat', () => {
   let node: GossipSubAndComponents

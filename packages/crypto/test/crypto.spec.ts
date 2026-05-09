@@ -6,7 +6,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyToProtobuf } from '../src/keys/index.js'
 import pbkdf2 from '../src/pbkdf2.js'
 import randomBytes from '../src/random-bytes.js'
-import fixtures from './fixtures/go-key-rsa.js'
+import fixtures from './fixtures/go-key-rsa.ts'
 import type { RSAPrivateKey } from '@libp2p/interface'
 
 describe('libp2p-crypto', function () {

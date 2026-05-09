@@ -1,8 +1,8 @@
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_LIMITED_CONNECTION, WRITE_BLOCK_SIZE } from './constants.js'
-import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.js'
+import { MAX_INBOUND_STREAMS, MAX_OUTBOUND_STREAMS, PROTOCOL_NAME, RUN_ON_LIMITED_CONNECTION, WRITE_BLOCK_SIZE } from './constants.ts'
+import type { PerfOptions, PerfOutput, PerfComponents, PerfInit, Perf as PerfInterface } from './index.ts'
 import type { Logger, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

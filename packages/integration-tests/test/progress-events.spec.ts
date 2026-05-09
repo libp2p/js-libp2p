@@ -1,6 +1,6 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
-import { createPeers } from './fixtures/create-peers.js'
+import { createPeers } from './fixtures/create-peers.ts'
 import type { Echo } from '@libp2p/echo'
 import type { Libp2p } from 'libp2p'
 import type { ProgressEventListener } from 'progress-events'

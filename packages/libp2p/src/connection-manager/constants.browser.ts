@@ -1,4 +1,4 @@
-export * from './constants.defaults.js'
+export * from './constants.defaults.ts'
 
 /**
  * @see https://libp2p.github.io/js-libp2p/interfaces/libp2p.index.ConnectionManagerInit.html#maxConnections

@@ -4,7 +4,7 @@ import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { base64urlToBuffer } from '../../util.js'
 import webcrypto from '../../webcrypto/index.js'
-import type { Curve } from './index.js'
+import type { Curve } from './index.ts'
 import type { ECDHKey, ECDHKeyPair, JWKEncodedPrivateKey, JWKEncodedPublicKey } from '../interface.js'
 
 const curveLengths = {

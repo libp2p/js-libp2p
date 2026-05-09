@@ -2,8 +2,8 @@ import { ConnectionFailedError, InvalidMessageError, InvalidMultiaddrError } fro
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CustomProgressEvent } from 'progress-events'
 import { RTCIceCandidate } from '../webrtc/index.js'
-import { Message } from './pb/message.js'
-import type { WebRTCDialEvents } from './transport.js'
+import { Message } from './pb/message.ts'
+import type { WebRTCDialEvents } from './transport.ts'
 import type { RTCPeerConnection } from '../webrtc/index.js'
 import type { AbortOptions, LoggerOptions, PeerId, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -86,7 +86,6 @@ function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<voi
         promise.resolve()
         break
       case 'failed':
-      case 'disconnected':
       case 'closed':
         promise.reject(new ConnectionFailedError(`RTCPeerConnection connection state became "${pc.connectionState}"`))
         break

@@ -4,17 +4,17 @@ import { encode } from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import * as Digest from 'multiformats/hashes/digest'
-import * as constants from './constants.js'
+import * as constants from './constants.ts'
 import {
   ACCEPT_FROM_WHITELIST_DURATION_MS,
   ACCEPT_FROM_WHITELIST_MAX_MESSAGES,
   ACCEPT_FROM_WHITELIST_THRESHOLD_SCORE,
   BACKOFF_SLACK
-} from './constants.js'
+} from './constants.ts'
 import { StrictNoSign, StrictSign, TopicValidatorResult } from './index.ts'
-import { defaultDecodeRpcLimits } from './message/decodeRpc.js'
-import { RPC } from './message/rpc.js'
-import { MessageCache } from './message-cache.js'
+import { defaultDecodeRpcLimits } from './message/decodeRpc.ts'
+import { RPC } from './message/rpc.ts'
+import { MessageCache } from './message-cache.ts'
 import {
   ChurnReason,
   getMetrics,
@@ -23,17 +23,17 @@ import {
 
   ScorePenalty
 
-} from './metrics.js'
+} from './metrics.ts'
 import {
   PeerScore,
 
   createPeerScoreParams,
   createPeerScoreThresholds
 
-} from './score/index.js'
-import { computeAllPeersScoreWeights } from './score/scoreMetrics.js'
-import { InboundStream, OutboundStream } from './stream.js'
-import { IWantTracer } from './tracer.js'
+} from './score/index.ts'
+import { computeAllPeersScoreWeights } from './score/scoreMetrics.ts'
+import { InboundStream, OutboundStream } from './stream.ts'
+import { IWantTracer } from './tracer.ts'
 import {
 
   ValidateError,
@@ -43,21 +43,21 @@ import {
 
   rejectReasonFromAcceptance
 
-} from './types.js'
-import { buildRawMessage, validateToRawMessage } from './utils/buildRawMessage.js'
-import { createGossipRpc, ensureControl } from './utils/create-gossip-rpc.js'
-import { shuffle, messageIdToString } from './utils/index.js'
-import { msgIdFnStrictNoSign, msgIdFnStrictSign } from './utils/msgIdFn.js'
-import { multiaddrToIPStr } from './utils/multiaddr.js'
-import { getPublishConfigFromPeerId } from './utils/publishConfig.js'
-import { removeFirstNItemsFromSet, removeItemsFromSet } from './utils/set.js'
-import { SimpleTimeCache } from './utils/time-cache.js'
+} from './types.ts'
+import { buildRawMessage, validateToRawMessage } from './utils/buildRawMessage.ts'
+import { createGossipRpc, ensureControl } from './utils/create-gossip-rpc.ts'
+import { shuffle, messageIdToString } from './utils/index.ts'
+import { msgIdFnStrictNoSign, msgIdFnStrictSign } from './utils/msgIdFn.ts'
+import { multiaddrToIPStr } from './utils/multiaddr.ts'
+import { getPublishConfigFromPeerId } from './utils/publishConfig.ts'
+import { removeFirstNItemsFromSet, removeItemsFromSet } from './utils/set.ts'
+import { SimpleTimeCache } from './utils/time-cache.ts'
 import type { GossipSubComponents, GossipSubEvents, GossipsubMessage, GossipsubOpts, MeshPeer, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.ts'
-import type { DecodeRPCLimits } from './message/decodeRpc.js'
-import type { MessageCacheRecord } from './message-cache.js'
-import type { Metrics, ToSendGroupCount } from './metrics.js'
-import type { PeerScoreParams, PeerScoreThresholds, PeerScoreStatsDump } from './score/index.js'
-import type { MsgIdFn, PublishConfig, TopicStr, MsgIdStr, PeerIdStr, RejectReasonObj, FastMsgIdFn, DataTransform, MsgIdToStrFn, MessageId, PublishOpts } from './types.js'
+import type { DecodeRPCLimits } from './message/decodeRpc.ts'
+import type { MessageCacheRecord } from './message-cache.ts'
+import type { Metrics, ToSendGroupCount } from './metrics.ts'
+import type { PeerScoreParams, PeerScoreThresholds, PeerScoreStatsDump } from './score/index.ts'
+import type { MsgIdFn, PublishConfig, TopicStr, MsgIdStr, PeerIdStr, RejectReasonObj, FastMsgIdFn, DataTransform, MsgIdToStrFn, MessageId, PublishOpts } from './types.ts'
 import type {
   Connection, Stream, PeerId, Peer,
   Logger,

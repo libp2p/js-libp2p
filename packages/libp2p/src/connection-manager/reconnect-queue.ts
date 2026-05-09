@@ -1,7 +1,7 @@
 import { KEEP_ALIVE } from '@libp2p/interface'
 import { PeerQueue } from '@libp2p/utils'
 import pRetry from 'p-retry'
-import { MAX_PARALLEL_RECONNECTS } from './constants.js'
+import { MAX_PARALLEL_RECONNECTS } from './constants.ts'
 import type { ComponentLogger, Libp2pEvents, Logger, Metrics, Peer, PeerId, PeerStore, Startable } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'

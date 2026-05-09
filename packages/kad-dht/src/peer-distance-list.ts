@@ -1,7 +1,7 @@
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
-import { convertPeerId } from './utils.js'
-import type { DisjointPath } from './index.js'
+import { convertPeerId } from './utils.ts'
+import type { DisjointPath } from './index.ts'
 import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
 
 interface PeerDistance {

@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "5.1.14",
+  "version": "5.1.17",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
@@ -49,23 +49,28 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./ciphers": {
       "types": "./dist/src/ciphers/index.d.ts",
-      "import": "./dist/src/ciphers/index.js"
+      "import": "./dist/src/ciphers/index.js",
+      "module-sync": "./dist/src/ciphers/index.js"
     },
     "./hmac": {
       "types": "./dist/src/hmac/index.d.ts",
-      "import": "./dist/src/hmac/index.js"
+      "import": "./dist/src/hmac/index.js",
+      "module-sync": "./dist/src/hmac/index.js"
     },
     "./keys": {
       "types": "./dist/src/keys/index.d.ts",
-      "import": "./dist/src/keys/index.js"
+      "import": "./dist/src/keys/index.js",
+      "module-sync": "./dist/src/keys/index.js"
     },
     "./webcrypto": {
       "types": "./dist/src/webcrypto/index.d.ts",
-      "import": "./dist/src/webcrypto/index.js"
+      "import": "./dist/src/webcrypto/index.js",
+      "module-sync": "./dist/src/webcrypto/index.js"
     }
   },
   "scripts": {
@@ -85,7 +90,7 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.1.1",
+    "@libp2p/interface": "^3.2.2",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
     "multiformats": "^13.4.0",

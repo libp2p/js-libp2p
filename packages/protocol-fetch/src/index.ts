@@ -42,7 +42,7 @@
  * ```
  */
 
-import { Fetch as FetchClass } from './fetch.js'
+import { Fetch as FetchClass } from './fetch.ts'
 import type { DialProtocolOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
@@ -74,6 +74,22 @@ export interface FetchComponents {
 }
 
 export interface Fetch {
+  /**
+   * The protocol this Fetch instance supports
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.register(libp2p.services.fetch.protocol, {
+   *   onConnect (peerId) {
+   *     // handle fetch peer connect
+   *   }
+   *   // ...etc
+   * })
+   * ```
+   */
+  readonly protocol: string
+
   /**
    * Sends a request to fetch the value associated with the given key from the given peer
    */
