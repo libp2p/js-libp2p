@@ -501,10 +501,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should return peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [
@@ -521,10 +518,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should not include peer id in multiaddrs in returned peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [
@@ -541,10 +535,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should serialize peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [

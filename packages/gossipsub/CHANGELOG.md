@@ -1,5 +1,26 @@
 # Changelog
 
+## [15.0.21](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.20...gossipsub-v15.0.21) (2026-05-04)
+
+
+### Bug Fixes
+
+* **gossipsub:** use monotonic seqnos ([#3487](https://github.com/libp2p/js-libp2p/issues/3487)) ([d1ab982](https://github.com/libp2p/js-libp2p/commit/d1ab98294b65f9d19506efa270bf80fedaaa145b))
+* **gossipsub:** use monotonic seqnos for spec compliance and kubo interop ([d1ab982](https://github.com/libp2p/js-libp2p/commit/d1ab98294b65f9d19506efa270bf80fedaaa145b))
+
+## [15.0.20](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.19...gossipsub-v15.0.20) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.18 to ^11.0.19
+    * @libp2p/peer-store bumped from ^12.0.17 to ^12.0.18
+
 ## [15.0.19](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.18...gossipsub-v15.0.19) (2026-04-16)
 
 
