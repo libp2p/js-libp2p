@@ -2,16 +2,17 @@ import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
-import { UnexpectedEOFError, isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
+import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
 import { CODE_IP6, CODE_IP6ZONE, CODE_P2P } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
 import {
+  MAX_IDENTIFY_MESSAGES,
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, isEofLike, mergeIdentifyMessages } from './utils.ts'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.ts'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger, NewStreamOptions } from '@libp2p/interface'
 
@@ -64,16 +65,15 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         maxDataLength: this.maxMessageSize
       }).pb(IdentifyMessage)
 
-      // Large responses can be subdivided.
-      // Read all messages until the stream closes.
-      const MAX_IDENTIFY_MESSAGES = 10
+      // Large responses can be subdivided per spec PR libp2p/specs#709.
+      // Read up to MAX_IDENTIFY_MESSAGES until the stream closes.
       const messages: IdentifyMessage[] = []
 
       for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
         try {
           messages.push(await pb.read(options))
         } catch (err) {
-          if (messages.length > 0 && err instanceof UnexpectedEOFError) {
+          if (messages.length > 0 && isEofLike(err, stream)) {
             break
           }
 
@@ -85,7 +85,15 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         throw new InvalidMessageError('No identify message received')
       }
 
-      await pb.unwrap().unwrap().close(options)
+      if (messages.length >= MAX_IDENTIFY_MESSAGES) {
+        log?.('reached MAX_IDENTIFY_MESSAGES (%d) without EOF, returning truncated identify', MAX_IDENTIFY_MESSAGES)
+      }
+
+      try {
+        await pb.unwrap().unwrap().close(options)
+      } catch (err) {
+        log?.trace('error closing identify stream after read - %e', err)
+      }
 
       return mergeIdentifyMessages(messages)
     } catch (err: any) {
