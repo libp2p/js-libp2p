@@ -1,4 +1,4 @@
-import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
+import { serviceCapabilities } from '@libp2p/interface'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { debounce, pbStream } from '@libp2p/utils'
 import { CODE_P2P } from '@multiformats/multiaddr'
@@ -161,10 +161,6 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
 
         throw err
       }
-    }
-
-    if (messages.length === 0) {
-      throw new InvalidMessageError('No identify message received')
     }
 
     if (messages.length >= MAX_IDENTIFY_MESSAGES) {

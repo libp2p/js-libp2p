@@ -81,10 +81,6 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
         }
       }
 
-      if (messages.length === 0) {
-        throw new InvalidMessageError('No identify message received')
-      }
-
       if (messages.length >= MAX_IDENTIFY_MESSAGES) {
         log?.('reached MAX_IDENTIFY_MESSAGES (%d) without EOF, returning truncated identify', MAX_IDENTIFY_MESSAGES)
       }
