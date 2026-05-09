@@ -2,6 +2,7 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { UnexpectedEOFError } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -218,6 +219,26 @@ function dedupBytes (bytes: Uint8Array[]): Uint8Array[] {
     }
   }
   return [...seen.values()]
+}
+
+/**
+ * Returns true if the error from a `pb.read()` call should be treated as
+ * "remote finished sending" — either a clean EOF (UnexpectedEOFError) or any
+ * other error encountered when the remote write side is no longer writable.
+ *
+ * Used to distinguish "peer finished" from "real error mid-stream". When the
+ * caller already has at least one successful message, an EOF-like signal
+ * means the multi-message read loop should break and merge what it has;
+ * otherwise the error propagates.
+ */
+export function isEofLike (err: unknown, stream: Stream): boolean {
+  if (err instanceof UnexpectedEOFError) {
+    return true
+  }
+  if (stream.remoteWriteStatus !== 'writable') {
+    return true
+  }
+  return false
 }
 
 export interface AbstractIdentifyInit extends IdentifyInit {
