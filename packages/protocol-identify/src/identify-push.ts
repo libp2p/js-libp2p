@@ -8,13 +8,12 @@ import { setMaxListeners } from 'main-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
-  MAX_IDENTIFY_MESSAGES,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
   PUSH_DEBOUNCE_MS
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages, readIdentifyMessages } from './utils.ts'
 import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.ts'
 import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
@@ -145,34 +144,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       signal: AbortSignal.timeout(this.timeout)
     }
 
-    const pb = pbStream(stream, {
-      maxDataLength: this.maxMessageSize
-    }).pb(IdentifyMessage)
-
-    const messages: IdentifyMessage[] = []
-
-    for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
-      try {
-        messages.push(await pb.read(options))
-      } catch (err: any) {
-        if (messages.length === 0) {
-          throw err
-        }
-        log.trace('stopped reading identify push - %e', err)
-        break
-      }
-    }
-
-    if (messages.length >= MAX_IDENTIFY_MESSAGES) {
-      log('reached MAX_IDENTIFY_MESSAGES, returning truncated identify push')
-    }
-
-    try {
-      await stream.close(options)
-    } catch (err: any) {
-      log.trace('error closing identify-push stream after read - %e', err)
-      stream.abort(err)
-    }
+    const messages = await readIdentifyMessages(stream, this.maxMessageSize, options, log)
 
     await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, mergeIdentifyMessages(messages))
 

@@ -7,12 +7,11 @@ import { CODE_IP6, CODE_IP6ZONE, CODE_P2P } from '@multiformats/multiaddr'
 import { IP_OR_DOMAIN, TCP } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
 import {
-  MAX_IDENTIFY_MESSAGES,
   MULTICODEC_IDENTIFY_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages, readIdentifyMessages } from './utils.ts'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.ts'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger, NewStreamOptions } from '@libp2p/interface'
 
@@ -61,35 +60,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       })
       log = stream.log.newScope('identify')
 
-      const pb = pbStream(stream, {
-        maxDataLength: this.maxMessageSize
-      }).pb(IdentifyMessage)
-
-      // Read up to MAX_IDENTIFY_MESSAGES (per libp2p/specs#709).
-      const messages: IdentifyMessage[] = []
-
-      for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
-        try {
-          messages.push(await pb.read(options))
-        } catch (err: any) {
-          if (messages.length === 0) {
-            throw err
-          }
-          log?.trace('stopped reading identify - %e', err)
-          break
-        }
-      }
-
-      if (messages.length >= MAX_IDENTIFY_MESSAGES) {
-        log?.('reached MAX_IDENTIFY_MESSAGES, returning truncated identify')
-      }
-
-      try {
-        await stream.close(options)
-      } catch (err: any) {
-        log?.trace('error closing identify stream after read - %e', err)
-        stream.abort(err)
-      }
+      const messages = await readIdentifyMessages(stream, this.maxMessageSize, options, log)
 
       return mergeIdentifyMessages(messages)
     } catch (err: any) {
