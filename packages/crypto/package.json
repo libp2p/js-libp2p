@@ -111,8 +111,7 @@
     "./dist/src/keys/ecdh/index.js": "./dist/src/keys/ecdh/index.browser.js",
     "./dist/src/keys/ed25519/index.js": "./dist/src/keys/ed25519/index.browser.js",
     "./dist/src/keys/rsa/index.js": "./dist/src/keys/rsa/index.browser.js",
-    "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js",
-    "./dist/src/webcrypto/webcrypto.js": "./dist/src/webcrypto/webcrypto.browser.js"
+    "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js"
   },
   "sideEffects": false
 }
