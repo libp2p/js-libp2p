@@ -174,8 +174,8 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
 /**
  * Merge multiple received Identify messages into one. Repeated `listenAddrs`
- * are concatenated as-is — peerstore handles dedup downstream. `protocols` are
- * deduplicated via Set since they're string identifiers.
+ * are concatenated as-is — peerstore handles deduplication downstream.
+ * `protocols` are deduplicated via Set since they're string identifiers.
  */
 export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMessage {
   const merged: IdentifyMessage = { ...messages[0] }
@@ -208,9 +208,9 @@ export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMes
  * stream, then close. Used by both identify and identify-push receive paths.
  *
  * Any error after at least one successful read is treated as "stop reading"
- * (we keep what we got — peerstore handles dedup/merge downstream). Close
- * errors are swallowed and the stream is aborted instead — preserves the
- * read result while ensuring transport cleanup.
+ * (we keep what we got — peerstore handles deduplication/merge downstream).
+ * Close errors are swallowed and the stream is aborted instead — preserves
+ * the read result while ensuring transport cleanup.
  *
  * Multi-message identify is per the proposed spec update at
  * https://github.com/libp2p/specs/pull/709.
