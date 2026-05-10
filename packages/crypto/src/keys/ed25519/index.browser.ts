@@ -1,7 +1,7 @@
 import { ed25519 as ed } from '@noble/curves/ed25519.js'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
-import crypto from '../../webcrypto/index.js'
-import type { Uint8ArrayKeyPair } from '../interface.js'
+import crypto from '../../webcrypto/index.ts'
+import type { Uint8ArrayKeyPair } from '../interface.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const PUBLIC_KEY_BYTE_LENGTH = 32
@@ -73,7 +73,7 @@ async function hashAndSignWebCrypto (privateKey: Uint8Array, msg: Uint8Array | U
   }
 
   const key = await crypto.get().subtle.importKey('jwk', jwk, { name: 'Ed25519' }, true, ['sign'])
-  const sig = await crypto.get().subtle.sign({ name: 'Ed25519' }, key, msg instanceof Uint8Array ? msg : msg.subarray())
+  const sig = await crypto.get().subtle.sign({ name: 'Ed25519' }, key, (msg instanceof Uint8Array ? msg : msg.subarray()) as Uint8Array<ArrayBuffer>)
 
   return new Uint8Array(sig, 0, sig.byteLength)
 }
@@ -99,7 +99,7 @@ export async function hashAndSign (privateKey: Uint8Array, msg: Uint8Array | Uin
 async function hashAndVerifyWebCrypto (publicKey: Uint8Array, sig: Uint8Array, msg: Uint8Array | Uint8ArrayList): Promise<boolean> {
   if (publicKey.buffer instanceof ArrayBuffer) {
     const key = await crypto.get().subtle.importKey('raw', publicKey.buffer, { name: 'Ed25519' }, false, ['verify'])
-    const isValid = await crypto.get().subtle.verify({ name: 'Ed25519' }, key, sig, msg instanceof Uint8Array ? msg : msg.subarray())
+    const isValid = await crypto.get().subtle.verify({ name: 'Ed25519' }, key, sig as Uint8Array<ArrayBuffer>, (msg instanceof Uint8Array ? msg : msg.subarray()) as Uint8Array<ArrayBuffer>)
     return isValid
   }
 

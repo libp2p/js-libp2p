@@ -6,8 +6,8 @@ import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { GossipsubD } from '../../src/constants.js'
-import { TopicValidatorResult } from '../../src/index.js'
+import { GossipsubD } from '../../src/constants.ts'
+import { TopicValidatorResult } from '../../src/index.ts'
 import {
   sparseConnect,
   denseConnect,
@@ -16,13 +16,13 @@ import {
   createComponents,
   connectPubsubNodes
 
-} from '../utils/create-pubsub.js'
-import { awaitEvents, checkReceivedSubscription, checkReceivedSubscriptions } from '../utils/events.js'
-import { fastMsgIdFn } from '../utils/index.js'
-import type { Message } from '../../src/index.js'
-import type { RPC } from '../../src/message/rpc.js'
-import type { TopicScoreParams } from '../../src/score/peer-score-params.js'
-import type { GossipSubAndComponents } from '../utils/create-pubsub.js'
+} from '../utils/create-pubsub.ts'
+import { awaitEvents, checkReceivedSubscription, checkReceivedSubscriptions } from '../utils/events.ts'
+import { fastMsgIdFn } from '../utils/index.ts'
+import type { Message } from '../../src/index.ts'
+import type { RPC } from '../../src/message/rpc.ts'
+import type { TopicScoreParams } from '../../src/score/peer-score-params.ts'
+import type { GossipSubAndComponents } from '../utils/create-pubsub.ts'
 import type { Libp2pEvents } from '@libp2p/interface'
 
 /**

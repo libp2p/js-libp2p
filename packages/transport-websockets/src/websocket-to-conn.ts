@@ -59,7 +59,7 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
   sendData (data: Uint8ArrayList): SendResult {
     for (const buf of data) {
-      this.websocket.send(buf)
+      this.websocket.send(buf as Uint8Array<ArrayBuffer>)
     }
 
     const canSendMore = this.websocket.bufferedAmount < this.maxBufferedAmount

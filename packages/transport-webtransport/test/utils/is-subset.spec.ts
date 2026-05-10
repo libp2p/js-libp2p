@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { isSubset } from '../../src/utils/is-subset.js'
+import { isSubset } from '../../src/utils/is-subset.ts'
 
 describe('test helpers', () => {
   it('correctly checks subsets', () => {

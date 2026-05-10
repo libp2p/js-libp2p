@@ -6,22 +6,22 @@ import { pipe } from 'it-pipe'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import {
   ALPHA
-} from '../constants.js'
-import { QueryError } from '../errors.js'
-import { MessageType } from '../message/dht.js'
+} from '../constants.ts'
+import { QueryError } from '../errors.ts'
+import { MessageType } from '../message/dht.ts'
 import {
   valueEvent,
   queryErrorEvent
-} from '../query/events.js'
-import { bestRecord } from '../record/selectors.js'
-import { verifyRecord } from '../record/validators.js'
-import { createPutRecord, bufferToRecordKey } from '../utils.js'
-import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.js'
-import type { Message } from '../message/dht.js'
-import type { Network, SendMessageOptions } from '../network.js'
-import type { PeerRouting } from '../peer-routing/index.js'
-import type { QueryManager } from '../query/manager.js'
-import type { QueryFunc } from '../query/types.js'
+} from '../query/events.ts'
+import { bestRecord } from '../record/selectors.ts'
+import { verifyRecord } from '../record/validators.ts'
+import { createPutRecord, bufferToRecordKey } from '../utils.ts'
+import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.ts'
+import type { Message } from '../message/dht.ts'
+import type { Network, SendMessageOptions } from '../network.ts'
+import type { PeerRouting } from '../peer-routing/index.ts'
+import type { QueryManager } from '../query/manager.ts'
+import type { QueryFunc } from '../query/types.ts'
 import type { AbortOptions, Logger, RoutingOptions } from '@libp2p/interface'
 
 export interface ContentFetchingInit {

@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { normalizeString } from '../src/utils.js'
+import { normalizeString } from '../src/utils.ts'
 
 describe('utils', () => {
   describe('normalizeString', () => {

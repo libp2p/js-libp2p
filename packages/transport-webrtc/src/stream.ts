@@ -142,7 +142,7 @@ export class WebRTCStream extends AbstractStream {
     try {
       // send message without copying data
       for (const buf of data) {
-        this.channel.send(buf)
+        this.channel.send(buf as Uint8Array<ArrayBuffer>)
       }
     } catch (err: any) {
       // channel.send can throw synchronously if the polyfill's cached readyState is stale

@@ -1,7 +1,7 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { MissingSelectorError } from '../errors.js'
-import type { Selectors } from '../index.js'
+import { MissingSelectorError } from '../errors.ts'
+import type { Selectors } from '../index.ts'
 
 /**
  * Select the best record out of the given records

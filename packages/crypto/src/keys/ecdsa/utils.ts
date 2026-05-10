@@ -2,10 +2,10 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { decodeDer, encodeBitString, encodeInteger, encodeOctetString, encodeSequence } from '../rsa/der.js'
+import { decodeDer, encodeBitString, encodeInteger, encodeOctetString, encodeSequence } from '../rsa/der.ts'
 import { ECDSAPrivateKey as ECDSAPrivateKeyClass, ECDSAPublicKey as ECDSAPublicKeyClass } from './ecdsa.ts'
 import { generateECDSAKey } from './index.ts'
-import type { Curve } from '../ecdh/index.js'
+import type { Curve } from '../ecdh/index.ts'
 import type { ECDSAPublicKey, ECDSAPrivateKey } from '@libp2p/interface'
 
 // 1.2.840.10045.3.1.7 prime256v1 (ANSI X9.62 named elliptic curve)

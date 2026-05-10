@@ -1,7 +1,7 @@
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { tcp } from '../src/index.js'
+import { tcp } from '../src/index.ts'
 import type { Transport } from '@libp2p/interface'
 
 describe('filter addrs', () => {

@@ -1,4 +1,4 @@
-import type { JWKKeyPair } from '../interface.js'
+import type { JWKKeyPair } from '../interface.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -32,7 +32,7 @@ export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8Array
     hash: {
       name: 'SHA-256'
     }
-  }, privateKey, msg.subarray())
+  }, privateKey, msg.subarray() as Uint8Array<ArrayBuffer>)
   options?.signal?.throwIfAborted()
 
   return new Uint8Array(signature, 0, signature.byteLength)
@@ -50,7 +50,7 @@ export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint
     hash: {
       name: 'SHA-256'
     }
-  }, publicKey, sig, msg.subarray())
+  }, publicKey, sig as Uint8Array<ArrayBuffer>, msg.subarray() as Uint8Array<ArrayBuffer>)
   options?.signal?.throwIfAborted()
 
   return result

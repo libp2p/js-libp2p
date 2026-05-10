@@ -1,7 +1,7 @@
 import { itBench } from '@dapplion/benchmark'
 // @ts-expect-error no types
 import TimeCache from 'time-cache'
-import { SimpleTimeCache } from '../../src/utils/time-cache.js'
+import { SimpleTimeCache } from '../../src/utils/time-cache.ts'
 
 // TODO: errors with "Error: root suite not found"
 describe('npm TimeCache vs SimpleTimeCache', () => {

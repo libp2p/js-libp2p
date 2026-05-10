@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.6",
-    "aegir": "^47.0.22"
+    "aegir": "^48.0.4"
   },
   "browser": {
     "./dist/src/system-metrics.js": "./dist/src/system-metrics.browser.js"

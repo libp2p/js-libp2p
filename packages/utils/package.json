@@ -74,7 +74,7 @@
   "devDependencies": {
     "@libp2p/peer-id": "^6.0.8",
     "@types/netmask": "^2.0.5",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.4",
     "benchmark": "^2.1.4",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",

@@ -58,10 +58,10 @@
     "uint8arrays": "^5.1.0"
   },
   "devDependencies": {
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.4",
     "protons": "^8.1.1"
   },
   "peerDependencies": {
-    "aegir": "^47.0.22"
+    "aegir": "^48.0.4"
   }
 }

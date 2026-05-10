@@ -2,9 +2,9 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { ScorePenalty } from '../src/metrics.js'
-import { createPeerScoreParams, createTopicScoreParams, PeerScore } from '../src/score/index.js'
-import { computeAllPeersScoreWeights } from '../src/score/scoreMetrics.js'
+import { ScorePenalty } from '../src/metrics.ts'
+import { createPeerScoreParams, createTopicScoreParams, PeerScore } from '../src/score/index.ts'
+import { computeAllPeersScoreWeights } from '../src/score/scoreMetrics.ts'
 
 describe('score / scoreMetrics', () => {
   const logger = defaultLogger()

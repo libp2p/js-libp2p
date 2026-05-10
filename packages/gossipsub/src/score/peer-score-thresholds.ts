@@ -1,4 +1,4 @@
-import { InvalidPeerScoreThresholdsError } from '../errors.js'
+import { InvalidPeerScoreThresholdsError } from '../errors.ts'
 
 // This file defines PeerScoreThresholds interface
 // as well as a constructor, default constructor, and validation function

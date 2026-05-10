@@ -141,11 +141,11 @@ export async function exportToPem (privateKey: RSAPrivateKey, password: string):
   )
 
   const iv = randomBytes(16)
-  const cryptoKey = await crypto.subtle.importKey('raw', encryptionKey, 'AES-CBC', false, ['encrypt'])
+  const cryptoKey = await crypto.subtle.importKey('raw', encryptionKey as Uint8Array<ArrayBuffer>, 'AES-CBC', false, ['encrypt'])
   const encrypted = await crypto.subtle.encrypt({
     name: 'AES-CBC',
-    iv
-  }, cryptoKey, keyArr)
+    iv: iv as Uint8Array<ArrayBuffer>
+  }, cryptoKey, keyArr as Uint8Array<ArrayBuffer>)
 
   const pbkdf2Params = new asn1js.Sequence({
     value: [

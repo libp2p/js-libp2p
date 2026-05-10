@@ -140,7 +140,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
-          value: certhash.digest
+          value: certhash.digest as Uint8Array<ArrayBuffer>
         }))
       })
 

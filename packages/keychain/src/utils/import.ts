@@ -74,11 +74,11 @@ export async function importFromPem (pem: string, password: string): Promise<RSA
       }
     )
 
-    const cryptoKey = await crypto.subtle.importKey('raw', encryptionKey, 'AES-CBC', false, ['decrypt'])
+    const cryptoKey = await crypto.subtle.importKey('raw', encryptionKey as Uint8Array<ArrayBuffer>, 'AES-CBC', false, ['decrypt'])
     const decrypted = toUint8Array(await crypto.subtle.decrypt({
       name: 'AES-CBC',
-      iv
-    }, cryptoKey, cipherText))
+      iv: iv as Uint8Array<ArrayBuffer>
+    }, cryptoKey, cipherText as Uint8Array<ArrayBuffer>))
 
     const { result: decryptedResult } = asn1js.fromBER(decrypted)
     plaintext = findPEMData(decryptedResult)

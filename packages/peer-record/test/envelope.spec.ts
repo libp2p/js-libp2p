@@ -2,7 +2,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { RecordEnvelope } from '../src/envelope/index.js'
+import { RecordEnvelope } from '../src/envelope/index.ts'
 import type { PrivateKey, Record } from '@libp2p/interface'
 
 const domain = 'libp2p-testing'

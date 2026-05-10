@@ -24,7 +24,7 @@
     "@libp2p/websockets": "^10.1.11",
     "@libp2p/webtransport": "^6.0.22",
     "@multiformats/multiaddr": "^13.0.1",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.4",
     "libp2p": "^3.2.4",
     "p-event": "^7.0.0",
     "redis": "^4.7.1"

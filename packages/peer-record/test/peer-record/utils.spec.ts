@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { arrayEquals } from '../../src/peer-record/utils.js'
+import { arrayEquals } from '../../src/peer-record/utils.ts'
 
 describe('non primitive array equals', () => {
   it('returns true if two arrays of multiaddrs are equal', () => {

@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { base64url } from 'multiformats/bases/base64'
-import { parseMultiaddr } from '../../src/utils/parse-multiaddr.js'
+import { parseMultiaddr } from '../../src/utils/parse-multiaddr.ts'
 
 describe('parse multiaddr', () => {
   describe('valid addresses', () => {

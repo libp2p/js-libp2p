@@ -34,7 +34,7 @@ const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
 
 export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger): Promise<PeerId> {
   const now = Date.now()
-  const x509Cert = new x509.X509Certificate(rawCertificate)
+  const x509Cert = new x509.X509Certificate(rawCertificate as Uint8Array<ArrayBuffer>)
 
   if (x509Cert.notBefore.getTime() > now) {
     log?.error('the certificate was not valid yet')

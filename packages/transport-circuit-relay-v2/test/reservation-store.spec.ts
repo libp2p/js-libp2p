@@ -3,9 +3,9 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from '../src/constants.js'
-import { Status } from '../src/pb/index.js'
-import { ReservationStore } from '../src/server/reservation-store.js'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from '../src/constants.ts'
+import { Status } from '../src/pb/index.ts'
+import { ReservationStore } from '../src/server/reservation-store.ts'
 
 describe('circuit-relay server reservation store', function () {
   it('should add reservation', async function () {

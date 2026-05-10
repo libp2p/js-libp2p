@@ -55,7 +55,7 @@
   "devDependencies": {
     "@libp2p/peer-id": "^6.0.8",
     "@libp2p/utils": "^7.1.0",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.4",
     "delay": "^7.0.0",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"

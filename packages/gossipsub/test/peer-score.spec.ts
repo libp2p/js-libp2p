@@ -4,12 +4,12 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import sinon from 'sinon'
-import { ScorePenalty } from '../src/metrics.js'
-import { PeerScore, createPeerScoreParams, createTopicScoreParams } from '../src/score/index.js'
-import { RejectReason } from '../src/types.js'
+import { ScorePenalty } from '../src/metrics.ts'
+import { PeerScore, createPeerScoreParams, createTopicScoreParams } from '../src/score/index.ts'
+import { RejectReason } from '../src/types.ts'
 import { getMsgIdStr, makeTestMessage } from './utils/index.ts'
-import type { PeerScoreParams, TopicScoreParams } from '../src/score/peer-score-params.js'
-import type { PeerStats } from '../src/score/peer-stats.js'
+import type { PeerScoreParams, TopicScoreParams } from '../src/score/peer-score-params.ts'
+import type { PeerStats } from '../src/score/peer-stats.ts'
 
 /** Placeholder for some ScorePenalty value, only used for metrics */
 const scorePenaltyAny = ScorePenalty.BrokenPromise

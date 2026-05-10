@@ -6,10 +6,10 @@ import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constants.js'
+import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constants.ts'
 import GENERATED_PREFIXES from './generated-prefix-list.ts'
 import type { RoutingTable } from './index.ts'
-import type { PeerRouting } from '../peer-routing/index.js'
+import type { PeerRouting } from '../peer-routing/index.ts'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
 /**

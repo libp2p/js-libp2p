@@ -6,9 +6,9 @@ import {
   createComponentsArray,
   denseConnect
 
-} from '../utils/create-pubsub.js'
-import { awaitEvents, checkReceivedSubscriptions, checkReceivedSubscription } from '../utils/events.js'
-import type { GossipSubAndComponents } from '../utils/create-pubsub.js'
+} from '../utils/create-pubsub.ts'
+import { awaitEvents, checkReceivedSubscriptions, checkReceivedSubscription } from '../utils/events.ts'
+import type { GossipSubAndComponents } from '../utils/create-pubsub.ts'
 
 describe('heartbeat', function () {
   const topic = 'foobar'

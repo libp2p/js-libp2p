@@ -1,7 +1,7 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { StrictSign, StrictNoSign } from '../index.ts'
-import { PublishConfigType } from '../types.js'
-import type { PublishConfig } from '../types.js'
+import { PublishConfigType } from '../types.ts'
+import type { PublishConfig } from '../types.ts'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
 
 /**
