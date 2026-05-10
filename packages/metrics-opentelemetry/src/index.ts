@@ -590,10 +590,7 @@ function wrapGenerator (gen: Generator, span: Span, attributes: TraceAttributes,
       }
     },
     return: (value) => {
-      const res = iter.return(value)
-      span.setStatus({ code: SpanStatusCode.OK })
-      span.end()
-      return res
+      return iter.return(value)
     },
     throw: (err) => {
       return iter.throw(err)
@@ -602,7 +599,7 @@ function wrapGenerator (gen: Generator, span: Span, attributes: TraceAttributes,
       return wrapped
     },
     [Symbol.dispose]: () => {
-      wrapped.return(undefined)
+      iter[Symbol.dispose]?.()
     }
   }
 
@@ -636,10 +633,7 @@ function wrapAsyncGenerator (gen: AsyncGenerator, span: Span, attributes: TraceA
       }
     },
     return: async (value) => {
-      const res = await iter.return(value)
-      span.setStatus({ code: SpanStatusCode.OK })
-      span.end()
-      return res
+      return iter.return(value)
     },
     throw: async (err) => {
       return iter.throw(err)
@@ -648,7 +642,7 @@ function wrapAsyncGenerator (gen: AsyncGenerator, span: Span, attributes: TraceA
       return wrapped
     },
     [Symbol.asyncDispose]: async () => {
-      await wrapped.return(undefined)
+      await iter[Symbol.asyncDispose]?.()
     }
   }
 
