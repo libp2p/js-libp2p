@@ -11,7 +11,7 @@ import type { MultiaddrConnection } from '@libp2p/interface'
  * object that satisfies the interface used by WebTransportStreamMuxer.
  */
 function makeWt (opts: {
-  createBidirectionalStream?: () => Promise<WebTransportBidirectionalStream>
+  createBidirectionalStream?(): Promise<WebTransportBidirectionalStream>
   incomingBidirectionalStreams?: ReadableStream<WebTransportBidirectionalStream>
 }): any {
   return {

@@ -1,12 +1,12 @@
 import { AbstractMultiaddrConnection } from '@libp2p/utils'
+import type WebTransport from './webtransport.ts'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionInit, SendResult } from '@libp2p/utils'
-import type WebTransport from './webtransport.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface WebTransportSessionMultiaddrConnectionInit extends Omit<AbstractMultiaddrConnectionInit, 'name' | 'stream'> {
   webTransport: WebTransport
-  onSessionClose?: (reason: string) => void
+  onSessionClose?(reason: string): void
 }
 
 class WebTransportSessionMultiaddrConnection extends AbstractMultiaddrConnection {
