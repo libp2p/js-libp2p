@@ -17,6 +17,13 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.18](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.17...crypto-v5.1.18) (2026-05-09)
+
+
+### Bug Fixes
+
+* **crypto:** derive ed25519 public key with @noble/curves ([#3493](https://github.com/libp2p/js-libp2p/issues/3493)) ([bd9e02d](https://github.com/libp2p/js-libp2p/commit/bd9e02dadccfe5c35cdf522bb6deb807a2282088))
+
 ## [5.1.17](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.16...crypto-v5.1.17) (2026-04-16)
 
 

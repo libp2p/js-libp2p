@@ -47,6 +47,24 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [6.1.1](https://github.com/libp2p/js-libp2p/compare/keychain-v6.1.0...keychain-v6.1.1) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+
+## [6.1.0](https://github.com/libp2p/js-libp2p/compare/keychain-v6.0.14...keychain-v6.1.0) (2026-04-25)
+
+
+### Features
+
+* add isKeychain function ([#3473](https://github.com/libp2p/js-libp2p/issues/3473)) ([cbfda2c](https://github.com/libp2p/js-libp2p/commit/cbfda2cdcea14485fb78b29a94ec62acf9b0bd62))
+
 ## [6.0.14](https://github.com/libp2p/js-libp2p/compare/keychain-v6.0.13...keychain-v6.0.14) (2026-04-16)
 
 
