@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.7](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.6...integration-tests-v1.2.7) (2026-05-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/identify bumped from ^4.1.4 to ^4.1.5
+
 ## [1.2.6](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.5...integration-tests-v1.2.6) (2026-05-09)
 
 
