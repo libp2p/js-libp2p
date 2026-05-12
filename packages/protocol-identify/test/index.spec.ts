@@ -328,7 +328,7 @@ describe('identify', () => {
     expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
   })
 
-  it('should ignore empty listen multiaddrs', async () => {
+  it('should ignore empty and malformed listen multiaddrs', async () => {
     identify = new Identify(components)
 
     await start(identify)
@@ -340,6 +340,7 @@ describe('identify', () => {
       agentVersion: 'agent version',
       listenAddrs: [
         new Uint8Array(0),
+        Uint8Array.from([0xff, 0xff, 0xff]),
         multiaddr('/ip4/127.0.0.1/tcp/1234').bytes
       ],
       protocols: ['protocols'],
@@ -353,13 +354,16 @@ describe('identify', () => {
     })
     connection.newStream.withArgs('/ipfs/id/1.0.0').resolves(outgoingStream)
 
-    await identify.identify(connection)
+    const result = await identify.identify(connection)
 
     const peer = components.peerStore.patch.getCall(0).args[1]
     expect(peer.addresses).to.deep.equal([{
       isCertified: false,
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
     }])
+    expect(result.listenAddrs.map(ma => ma.toString())).to.deep.equal([
+      '/ip4/127.0.0.1/tcp/1234'
+    ])
   })
 
   it('should prefer addresses from signed peer record', async () => {

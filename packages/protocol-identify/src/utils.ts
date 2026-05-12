@@ -24,21 +24,25 @@ export const defaultValues = {
   concurrency: MAX_PUSH_CONCURRENCY
 }
 
+function isNonEmptyMultiaddr (addr: Multiaddr): boolean {
+  return addr.bytes.length > 0
+}
+
 /**
- * Takes the `addr` and converts it to a Multiaddr if possible
+ * Takes the `addr` and converts it to a Multiaddr if possible, returning
+ * `undefined` for null/empty/malformed input or zero-byte multiaddrs (e.g. `/`).
  */
 export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined): Multiaddr | undefined {
   if (addr != null && addr.length > 0) {
     try {
-      return multiaddr(addr)
+      const ma = multiaddr(addr)
+      if (isNonEmptyMultiaddr(ma)) {
+        return ma
+      }
     } catch {
 
     }
   }
-}
-
-function isNonEmptyMultiaddr (addr: Multiaddr): boolean {
-  return addr.bytes.length > 0
 }
 
 export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
@@ -50,11 +54,11 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
   const peer: PeerData = {}
 
-  if (message.listenAddrs.length > 0) {
-    const listenAddrs = message.listenAddrs
-      .map(buf => getCleanMultiaddr(buf))
-      .filter((addr): addr is Multiaddr => addr != null && isNonEmptyMultiaddr(addr))
+  const listenAddrs = message.listenAddrs
+    .map(getCleanMultiaddr)
+    .filter((addr): addr is Multiaddr => addr != null)
 
+  if (message.listenAddrs.length > 0) {
     peer.addresses = listenAddrs.map(multiaddr => ({
       isCertified: false,
       multiaddr
@@ -169,7 +173,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     protocolVersion: message.protocolVersion,
     agentVersion: message.agentVersion,
     publicKey: message.publicKey,
-    listenAddrs: message.listenAddrs.map(buf => multiaddr(buf)),
+    listenAddrs,
     observedAddr: message.observedAddr == null ? undefined : multiaddr(message.observedAddr),
     protocols: message.protocols,
     signedPeerRecord: output,
