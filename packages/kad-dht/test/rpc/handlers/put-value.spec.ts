@@ -109,7 +109,8 @@ describe('rpc - handlers - PutValue', () => {
       providers: []
     }
 
-    await handler.handle(sourcePeer.peerId, msg)
+    await expect(handler.handle(sourcePeer.peerId, msg)).to.eventually.be.rejected
+      .with.property('name', 'InvalidParametersError')
 
     const key = utils.bufferToRecordKey('/dht/record', craftedKey)
     expect(await datastore.has(key)).to.equal(false)
