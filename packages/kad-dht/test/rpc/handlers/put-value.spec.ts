@@ -60,14 +60,15 @@ describe('rpc - handlers - PutValue', () => {
   })
 
   it('stores the record in the datastore', async () => {
+    const recordKey = uint8ArrayFromString('/val/hello')
     const msg: Message = {
       type: T,
-      key: uint8ArrayFromString('/val/hello'),
+      key: recordKey,
       closer: [],
       providers: []
     }
     const record = new Libp2pRecord(
-      uint8ArrayFromString('hello'),
+      recordKey,
       uint8ArrayFromString('world'),
       new Date()
     )
@@ -77,12 +78,12 @@ describe('rpc - handlers - PutValue', () => {
     const response = await handler.handle(sourcePeer.peerId, msg)
     expect(response).to.deep.equal(msg)
 
-    const key = utils.bufferToRecordKey('/dht/record', uint8ArrayFromString('hello'))
+    const key = utils.bufferToRecordKey('/dht/record', recordKey)
     const res = await datastore.get(key)
 
     const rec = Libp2pRecord.deserialize(res)
 
-    expect(rec).to.have.property('key').eql(uint8ArrayFromString('hello'))
+    expect(rec).to.have.property('key').eql(recordKey)
 
     if (rec.timeReceived == null) {
       throw new Error('Libp2pRecord timeReceived not set')
@@ -91,5 +92,26 @@ describe('rpc - handlers - PutValue', () => {
     // make sure some time has passed
     await delay(10)
     expect(rec.timeReceived.getTime()).to.be.lessThan(Date.now())
+  })
+
+  it('does not store records whose key has no namespace', async () => {
+    const craftedKey = new Uint8Array([0x01, 0x02, 0x03])
+    const record = new Libp2pRecord(
+      craftedKey,
+      uint8ArrayFromString('world'),
+      new Date()
+    )
+    const msg: Message = {
+      type: T,
+      key: craftedKey,
+      record: record.serialize(),
+      closer: [],
+      providers: []
+    }
+
+    await handler.handle(sourcePeer.peerId, msg)
+
+    const key = utils.bufferToRecordKey('/dht/record', craftedKey)
+    expect(await datastore.has(key)).to.equal(false)
   })
 })
