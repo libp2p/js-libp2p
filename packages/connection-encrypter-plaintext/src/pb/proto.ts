@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, message, streamMessage } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -58,18 +58,64 @@ export namespace Exchange {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.id`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              yield * PublicKey.codec().stream(reader, reader.uint32(), `${prefix}.pubkey`, {
+                limits: opts.limits?.pubkey
+              })
+
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Exchange>): Uint8Array => {
+  export interface ExchangeIdFieldEvent {
+    field: '$.id'
+    value: Uint8Array
+  }
+
+  export interface ExchangePubkeyTypeFieldEvent {
+    field: '$.pubkey.Type'
+    value: KeyType
+  }
+
+  export interface ExchangePubkeyDataFieldEvent {
+    field: '$.pubkey.Data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<Exchange>): Uint8Array {
     return encodeMessage(obj, Exchange.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Exchange>): Exchange => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Exchange>): Exchange {
     return decodeMessage(buf, Exchange.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Exchange>): Generator<ExchangeIdFieldEvent | ExchangePubkeyTypeFieldEvent | ExchangePubkeyDataFieldEvent> {
+    return streamMessage(buf, Exchange.codec(), opts)
   }
 }
 
@@ -92,6 +138,7 @@ export namespace KeyType {
     return enumeration<KeyType>(__KeyTypeValues)
   }
 }
+
 export interface PublicKey {
   Type?: KeyType
   Data: Uint8Array
@@ -147,17 +194,58 @@ export namespace PublicKey {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.Type`,
+                value: KeyType.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.Data`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<PublicKey>): Uint8Array => {
+  export interface PublicKeyTypeFieldEvent {
+    field: '$.Type'
+    value: KeyType
+  }
+
+  export interface PublicKeyDataFieldEvent {
+    field: '$.Data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<PublicKey>): Uint8Array {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey {
     return decodeMessage(buf, PublicKey.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): Generator<PublicKeyTypeFieldEvent | PublicKeyDataFieldEvent> {
+    return streamMessage(buf, PublicKey.codec(), opts)
   }
 }

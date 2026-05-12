@@ -4,7 +4,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { MessageCache } from '../src/message-cache.js'
 import { messageIdToString } from '../src/utils/messageIdToString.js'
-import { getMsgId } from './utils/index.js'
+import { getMsgId } from './utils/index.ts'
 import type { RPC } from '../src/message/rpc.js'
 import type { MessageId } from '../src/types.js'
 

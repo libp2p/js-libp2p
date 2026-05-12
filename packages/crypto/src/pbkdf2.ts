@@ -7,7 +7,7 @@ import { base64 } from 'multiformats/bases/base64'
 /**
  * Maps an IPFS hash name to its @noble/hashes equivalent.
  *
- * See https://github.com/multiformats/multihash/blob/master/hashtable.csv
+ * See https://github.com/multiformats/multicodec/blob/master/table.csv
  *
  * @private
  */

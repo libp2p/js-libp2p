@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, message, streamMessage } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -70,17 +70,70 @@ export namespace Record {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.key`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.value`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 5: {
+              yield {
+                field: `${prefix}.timeReceived`,
+                value: reader.string()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Record>): Uint8Array => {
+  export interface RecordKeyFieldEvent {
+    field: '$.key'
+    value: Uint8Array
+  }
+
+  export interface RecordValueFieldEvent {
+    field: '$.value'
+    value: Uint8Array
+  }
+
+  export interface RecordTimeReceivedFieldEvent {
+    field: '$.timeReceived'
+    value: string
+  }
+
+  export function encode (obj: Partial<Record>): Uint8Array {
     return encodeMessage(obj, Record.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Record => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Record {
     return decodeMessage(buf, Record.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Generator<RecordKeyFieldEvent | RecordValueFieldEvent | RecordTimeReceivedFieldEvent> {
+    return streamMessage(buf, Record.codec(), opts)
   }
 }

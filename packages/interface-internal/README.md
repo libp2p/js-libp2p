@@ -38,7 +38,7 @@ $ npm i @libp2p/interface-internal
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_interface_internal.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_interface-internal.html>
 
 # License
 

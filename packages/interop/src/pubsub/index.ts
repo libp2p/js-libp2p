@@ -1,6 +1,6 @@
-import { floodsubTests } from './floodsub.js'
-import { gossipsubTests } from './gossipsub.js'
-import { hybridTests } from './hybrid.js'
+import { floodsubTests } from './floodsub.ts'
+import { gossipsubTests } from './gossipsub.ts'
+import { hybridTests } from './hybrid.ts'
 import type { DaemonFactory } from '../index.js'
 
 export async function pubsubTests (factory: DaemonFactory): Promise<void> {

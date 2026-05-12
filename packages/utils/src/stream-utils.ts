@@ -5,7 +5,7 @@ import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { UnexpectedEOFError } from './errors.js'
+import { UnexpectedEOFError } from './errors.ts'
 import type { MessageStream, MultiaddrConnection, Stream, AbortOptions } from '@libp2p/interface'
 import type { Duplex, Source, Transform, Sink } from 'it-stream-types'
 

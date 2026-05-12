@@ -1,5 +1,5 @@
 import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
-import type { TCPDialEvents } from './index.js'
+import type { TCPDialEvents } from './index.ts'
 import type { Connection, Transport, Listener } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

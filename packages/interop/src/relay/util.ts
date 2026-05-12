@@ -1,5 +1,5 @@
 import { pbStream, echo } from '@libp2p/utils'
-import { HopMessage } from './pb/index.js'
+import { HopMessage } from './pb/index.ts'
 import type { Daemon } from '../index.js'
 import type { PeerId, Stream } from '@libp2p/interface'
 

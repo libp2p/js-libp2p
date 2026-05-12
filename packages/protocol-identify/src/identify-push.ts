@@ -11,10 +11,10 @@ import {
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
   PUSH_DEBOUNCE_MS
-} from './consts.js'
-import { Identify as IdentifyMessage } from './pb/message.js'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.js'
-import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.js'
+} from './consts.ts'
+import { Identify as IdentifyMessage } from './pb/message.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.ts'
+import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.ts'
 import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 

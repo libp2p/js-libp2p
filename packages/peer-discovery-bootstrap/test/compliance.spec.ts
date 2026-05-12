@@ -2,7 +2,7 @@ import tests from '@libp2p/interface-compliance-tests/peer-discovery'
 import { defaultLogger } from '@libp2p/logger'
 import { stubInterface } from 'sinon-ts'
 import { bootstrap } from '../src/index.js'
-import peerList from './fixtures/default-peers.js'
+import peerList from './fixtures/default-peers.ts'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 

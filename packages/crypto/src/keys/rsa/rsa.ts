@@ -1,7 +1,7 @@
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { hashAndSign, utils, hashAndVerify } from './index.js'
+import { hashAndSign, utils, hashAndVerify } from './index.ts'
 import type { RSAPublicKey as RSAPublicKeyInterface, RSAPrivateKey as RSAPrivateKeyInterface, AbortOptions } from '@libp2p/interface'
 import type { Digest } from 'multiformats/hashes/digest'
 import type { Uint8ArrayList } from 'uint8arraylist'

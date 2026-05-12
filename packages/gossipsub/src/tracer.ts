@@ -1,6 +1,6 @@
-import { RejectReason } from './types.js'
-import type { Metrics } from './metrics.js'
-import type { MsgIdStr, MsgIdToStrFn, PeerIdStr } from './types.js'
+import { RejectReason } from './types.ts'
+import type { Metrics } from './metrics.ts'
+import type { MsgIdStr, MsgIdToStrFn, PeerIdStr } from './types.ts'
 
 /**
  * IWantTracer is an internal tracer that tracks IWANT requests in order to penalize

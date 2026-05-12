@@ -9,8 +9,8 @@ import { stubInterface } from 'sinon-ts'
 import { DefaultConnectionManager } from '../../src/connection-manager/index.js'
 import { createLibp2p } from '../../src/index.js'
 import { getComponent } from '../fixtures/get-component.js'
-import { createDefaultConnectionManagerComponents } from './utils.js'
-import type { StubbedDefaultConnectionManagerComponents } from './utils.js'
+import { createDefaultConnectionManagerComponents } from './utils.ts'
+import type { StubbedDefaultConnectionManagerComponents } from './utils.ts'
 import type { Libp2p, Connection, MultiaddrConnection } from '@libp2p/interface'
 
 const defaultOptions = {

@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+ * The `circuitRelayTransport` allows libp2p to dial and listen on [Circuit Relay](https://libp2p.io/docs/circuit-relay/)
  * addresses.
  *
  * @example Use as a transport
@@ -19,7 +19,7 @@
  * })
  * ```
  *
- * The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/)
+ * The `circuitRelayServer` function allows libp2p to function as a [Circuit Relay](https://libp2p.io/docs/circuit-relay/)
  * server.  This will not work in browsers.
  *
  * @example Use as a server
@@ -40,9 +40,9 @@
  */
 
 import { TypedEventEmitter } from 'main-event'
-import { CircuitRelayServer } from './server/index.js'
+import { CircuitRelayServer } from './server/index.ts'
 import { CircuitRelayTransport } from './transport/index.ts'
-import type { Limit } from './pb/index.js'
+import type { Limit } from './pb/index.ts'
 import type { ComponentLogger, ConnectionGater, Libp2pEvents, Metrics, PeerId, PeerStore, PrivateKey, TopologyFilter, Transport, TypedEventTarget, Upgrader } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { PeerMap } from '@libp2p/peer-collections'
@@ -87,7 +87,7 @@ export interface CircuitRelayService extends TypedEventEmitter<CircuitRelayServi
 export {
   RELAY_V2_HOP_CODEC,
   RELAY_V2_STOP_CODEC
-} from './constants.js'
+} from './constants.ts'
 
 export interface ServerReservationStoreInit {
   /**

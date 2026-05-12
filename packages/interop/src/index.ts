@@ -42,11 +42,11 @@
  * For an example, see the js-libp2p interop test runner.
  */
 
-import { connectTests } from './connect/index.js'
-import { dhtTests } from './dht/index.js'
-import { pubsubTests } from './pubsub/index.js'
-import { relayTests } from './relay/index.js'
-import { streamTests } from './streams/index.js'
+import { connectTests } from './connect/index.ts'
+import { dhtTests } from './dht/index.ts'
+import { pubsubTests } from './pubsub/index.ts'
+import { relayTests } from './relay/index.ts'
+import { streamTests } from './streams/index.ts'
 import type { DaemonClient } from '@libp2p/daemon-client'
 
 export interface Daemon {

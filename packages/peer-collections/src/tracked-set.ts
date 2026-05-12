@@ -1,4 +1,4 @@
-import { PeerSet } from './set.js'
+import { PeerSet } from './set.ts'
 import type { Metric, Metrics, PeerId } from '@libp2p/interface'
 
 export interface TrackedPeerSetInit {

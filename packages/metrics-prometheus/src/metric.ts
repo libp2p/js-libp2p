@@ -1,6 +1,6 @@
 import { Gauge } from 'prom-client'
-import { normalizeString } from './utils.js'
-import type { PrometheusCalculatedMetricOptions } from './index.js'
+import { normalizeString } from './utils.ts'
+import type { PrometheusCalculatedMetricOptions } from './index.ts'
 import type { Metric, StopTimer } from '@libp2p/interface'
 import type { CollectFunction } from 'prom-client'
 

@@ -1,7 +1,7 @@
 import type { AbortOptions } from './index.ts'
-import type { PublicKey } from './keys.js'
-import type { PeerId } from './peer-id.js'
-import type { PeerInfo } from './peer-info.js'
+import type { PublicKey } from './keys.ts'
+import type { PeerId } from './peer-id.ts'
+import type { PeerInfo } from './peer-info.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
@@ -243,7 +243,7 @@ export interface PeerStore {
    * The returned object can be passed to `JSON.stringify` without any
    * additional processing.
    *
-   * @see https://docs.libp2p.io/concepts/fundamentals/peers/#peer-info
+   * @see https://libp2p.io/docs/peers/#peer-info
    *
    * @example
    *

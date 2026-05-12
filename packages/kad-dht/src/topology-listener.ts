@@ -1,5 +1,5 @@
 import { TypedEventEmitter } from 'main-event'
-import type { KadDHTComponents } from './index.js'
+import type { KadDHTComponents } from './index.ts'
 import type { Logger, PeerId, Startable } from '@libp2p/interface'
 
 export interface TopologyListenerInit {

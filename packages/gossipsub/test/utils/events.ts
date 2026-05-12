@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import pWaitFor from 'p-wait-for'
-import type { GossipSubAndComponents } from './create-pubsub.js'
+import type { GossipSubAndComponents } from './create-pubsub.ts'
 import type { GossipSubEvents, SubscriptionChangeData } from '../../src/index.js'
 import type { TypedEventTarget } from '@libp2p/interface'
 
