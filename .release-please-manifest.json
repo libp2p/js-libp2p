@@ -33,7 +33,7 @@
   "packages/protocol-dcutr": "3.0.19",
   "packages/protocol-echo": "3.1.4",
   "packages/protocol-fetch": "4.1.4",
-  "packages/protocol-identify": "4.1.4",
+  "packages/protocol-identify": "4.1.5",
   "packages/protocol-perf": "5.1.4",
   "packages/protocol-ping": "3.1.4",
   "packages/record": "4.0.12",
@@ -46,6 +46,6 @@
   "packages/transport-webtransport": "6.0.23",
   "packages/upnp-nat": "4.0.19",
   "packages/utils": "7.2.0",
-  "packages/integration-tests": "1.2.6",
-  "interop": "1.0.23"
+  "packages/integration-tests": "1.2.7",
+  "interop": "1.0.24"
 }

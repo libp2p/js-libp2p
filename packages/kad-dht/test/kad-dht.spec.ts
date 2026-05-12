@@ -283,26 +283,6 @@ describe('KadDHT', () => {
       expect(res).to.have.property('value').that.equalBytes(value)
     })
 
-    it('put - get using key with no prefix (no selector available)', async function () {
-      this.timeout(10 * 1000)
-
-      const key = uint8ArrayFromString('hello')
-      const value = uint8ArrayFromString('world')
-
-      const [dhtA, dhtB] = await Promise.all([
-        testDHT.spawn(),
-        testDHT.spawn()
-      ])
-
-      await testDHT.connect(dhtA, dhtB)
-
-      // DHT operations
-      await drain(dhtA.dht.put(key, value))
-
-      const res = await last(dhtB.dht.get(key))
-      expect(res).to.have.property('value').that.equalBytes(value)
-    })
-
     it('put - get using key from provided validator and selector', async function () {
       this.timeout(10 * 1000)
 
