@@ -92,4 +92,26 @@ describe('rpc - handlers - PutValue', () => {
     await delay(10)
     expect(rec.timeReceived.getTime()).to.be.lessThan(Date.now())
   })
+
+  it('errors and does not store when validation fails', async () => {
+    const msg: Message = {
+      type: T,
+      key: uint8ArrayFromString('/val/hello'),
+      closer: [],
+      providers: []
+    }
+    const record = new Libp2pRecord(
+      uint8ArrayFromString('/val/hello'),
+      uint8ArrayFromString('world'),
+      new Date()
+    )
+    msg.record = record.serialize()
+    validators.val = async () => { throw new Error('invalid record') }
+
+    await expect(handler.handle(sourcePeer.peerId, msg)).to.eventually.be.rejected
+      .with.property('message', 'invalid record')
+
+    const dsKey = utils.bufferToRecordKey('/dht/record', uint8ArrayFromString('/val/hello'))
+    expect(await datastore.has(dsKey)).to.be.false()
+  })
 })
