@@ -36,6 +36,28 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.2.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.1.0...utils-v7.2.0) (2026-05-09)
+
+
+### Features
+
+* **utils:** add multiaddr sort comparators ([#3488](https://github.com/libp2p/js-libp2p/issues/3488)) ([7a35523](https://github.com/libp2p/js-libp2p/commit/7a355238dc10eb5c23a439bab251bbc90473c965))
+
+
+### Bug Fixes
+
+* **utils:** guard onProgress cycles in Job dispatch ([#3485](https://github.com/libp2p/js-libp2p/issues/3485)) ([40a6220](https://github.com/libp2p/js-libp2p/commit/40a622093e4cea9863692ce9bd854227dd183eb8)), closes [#3484](https://github.com/libp2p/js-libp2p/issues/3484)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+
 ## [7.1.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.17...utils-v7.1.0) (2026-04-25)
 
 

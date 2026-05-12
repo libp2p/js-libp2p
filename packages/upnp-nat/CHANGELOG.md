@@ -64,6 +64,20 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [4.0.19](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v4.0.18...upnp-nat-v4.0.19) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.3 to ^3.1.4
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+
 ## [4.0.18](https://github.com/libp2p/js-libp2p/compare/upnp-nat-v4.0.17...upnp-nat-v4.0.18) (2026-04-25)
 
 
