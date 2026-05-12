@@ -1,7 +1,7 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
-import { webtransportBiDiStreamToStream } from './stream.js'
+import { webtransportBiDiStreamToStream } from './stream.ts'
 import type { WebTransportStream } from './stream.ts'
-import type WebTransport from './webtransport.js'
+import type WebTransport from './webtransport.ts'
 import type { CreateStreamOptions, MultiaddrConnection, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 const PROTOCOL = '/webtransport'
@@ -43,12 +43,26 @@ class WebTransportStreamMuxer extends AbstractStreamMuxer<WebTransportStream> {
         }
       })
       .catch(err => {
-        this.log.error('could not create a new stream - %e', err)
+        this.log.error('incoming stream reader failed - %e', err)
+        this.abort(err)
+        this.maConn.abort(err)
       })
   }
 
   async onCreateStream (options: CreateStreamOptions): Promise<WebTransportStream> {
-    const wtStream = await this.webTransport.createBidirectionalStream()
+    let wtStream: WebTransportBidirectionalStream
+
+    try {
+      wtStream = await this.webTransport.createBidirectionalStream()
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      // The WebTransport session is dead (e.g. after laptop sleep/resume) -
+      // abort all open streams and trigger the full connection-manager cleanup chain
+      this.abort(error)
+      this.maConn.abort(error)
+      throw error
+    }
+
     options?.signal?.throwIfAborted()
 
     return webtransportBiDiStreamToStream(

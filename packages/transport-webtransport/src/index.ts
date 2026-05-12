@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
+ * A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on [WebTransport](https://www.w3.org/TR/webtransport/).
  *
  * > ⚠️ **Note**
  * >
@@ -31,13 +31,13 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
-import createListener from './listener.js'
-import { webtransportMuxer } from './muxer.js'
+import createListener from './listener.ts'
+import { webtransportMuxer } from './muxer.ts'
 import { toMultiaddrConnection } from './session-to-conn.ts'
-import { isSubset } from './utils/is-subset.js'
-import { parseMultiaddr } from './utils/parse-multiaddr.js'
+import { isSubset } from './utils/is-subset.ts'
+import { parseMultiaddr } from './utils/parse-multiaddr.ts'
 import { WebTransportMessageStream } from './utils/webtransport-message-stream.ts'
-import WebTransport from './webtransport.js'
+import WebTransport from './webtransport.ts'
 import type { Upgrader, Transport, CreateListenerOptions, DialTransportOptions, Listener, ComponentLogger, Logger, Connection, MultiaddrConnection, CounterGroup, Metrics, PeerId, OutboundConnectionUpgradeEvents, PrivateKey } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
@@ -51,10 +51,6 @@ export interface WebTransportCertificate {
   pem: string
   hash: MultihashDigest<number>
   secret: string
-}
-
-interface WebTransportSessionCleanup {
-  (metric: string): void
 }
 
 export interface WebTransportInit {
@@ -129,48 +125,27 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     const { url, certhashes, remotePeer } = parseMultiaddr(ma)
     let abortListener: (() => void) | undefined
     let maConn: MultiaddrConnection | undefined
-    let cleanUpWTSession: WebTransportSessionCleanup = () => {}
-    let closed = false
+    let wt: InstanceType<typeof WebTransport> | undefined
     let ready = false
     let authenticated = false
 
     try {
       this.metrics?.dialerEvents.increment({ pending: true })
 
-      const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
+      wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
           value: certhash.digest
         }))
       })
 
-      cleanUpWTSession = (metric: string) => {
-        if (closed) {
-          // already closed session
-          return
-        }
-
-        try {
-          this.metrics?.dialerEvents.increment({ [metric]: true })
-          wt.close()
-        } catch (err) {
-          this.log.error('error closing wt session - %e', err)
-        } finally {
-          // This is how we specify the connection is closed and shouldn't be used.
-          if (maConn != null) {
-            maConn.timeline.close = Date.now()
-          }
-
-          closed = true
-        }
-      }
-
       // if the dial is aborted before we are ready, close the WebTransport session
       abortListener = () => {
-        if (ready) {
-          cleanUpWTSession('noise_timeout')
+        this.metrics?.dialerEvents.increment({ [ready ? 'noise_timeout' : 'ready_timeout']: true })
+        if (maConn != null) {
+          maConn.abort(new Error('dial aborted'))
         } else {
-          cleanUpWTSession('ready_timeout')
+          try { wt?.close() } catch (err) { this.log.error('error aborting wt session - %e', err) }
         }
       }
       options.signal.addEventListener('abort', abortListener, {
@@ -187,22 +162,16 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
       ready = true
       this.metrics?.dialerEvents.increment({ ready: true })
-
-      // this promise resolves/throws when the session is closed
-      wt.closed.catch((err: Error) => {
-        this.log.error('error on remote wt session close - %e', err)
-      })
-        .finally(() => {
-          cleanUpWTSession('remote_close')
-        })
-
       this.metrics?.dialerEvents.increment({ open: true })
 
+      // maConn takes ownership of the session: wires wt.closed lifecycle and
+      // calls wt.close() directly from sendClose/sendReset
       maConn = toMultiaddrConnection({
         remoteAddr: ma,
-        cleanUpWTSession,
+        webTransport: wt,
         direction: 'outbound',
-        log: this.components.logger.forComponent('libp2p:webtransport:connection')
+        log: this.components.logger.forComponent('libp2p:webtransport:connection'),
+        onSessionClose: (reason) => { this.metrics?.dialerEvents.increment({ [reason]: true }) }
       })
 
       authenticated = await this.authenticateWebTransport({
@@ -227,12 +196,20 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     } catch (err: any) {
       this.log.error('caught wt session err - %e', err)
 
-      if (authenticated) {
-        cleanUpWTSession('upgrade_error')
-      } else if (ready) {
-        cleanUpWTSession('noise_error')
+      if (!options.signal.aborted) {
+        if (authenticated) {
+          this.metrics?.dialerEvents.increment({ upgrade_error: true })
+        } else if (ready) {
+          this.metrics?.dialerEvents.increment({ noise_error: true })
+        } else {
+          this.metrics?.dialerEvents.increment({ ready_error: true })
+        }
+      }
+
+      if (maConn != null) {
+        maConn.abort(err)
       } else {
-        cleanUpWTSession('ready_error')
+        try { wt?.close() } catch (closeErr) { this.log.error('error closing wt session - %e', closeErr) }
       }
 
       throw err
