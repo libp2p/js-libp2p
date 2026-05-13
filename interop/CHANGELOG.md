@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.25](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.24...transport-interop-libp2p-main-v1.0.25) (2026-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/webtransport bumped from ^6.0.23 to ^6.0.24
+
+## [1.0.24](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.23...transport-interop-libp2p-main-v1.0.24) (2026-05-12)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/identify bumped from ^4.1.4 to ^4.1.5
+
 ## [1.0.23](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.22...transport-interop-libp2p-main-v1.0.23) (2026-05-09)
 
 
