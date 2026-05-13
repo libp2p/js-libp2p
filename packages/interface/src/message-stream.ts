@@ -35,6 +35,12 @@ export interface MessageStreamTimeline {
    * writing by both ends of the stream
    */
   close?: number
+
+  /**
+   * A timestamp of when data was most recently received from the remote end
+   * of the message stream. Updated every time bytes arrive via `onData`.
+   */
+  lastReadAt?: number
 }
 
 export interface MessageStreamEvents {
