@@ -106,6 +106,13 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.2.6](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.5...kad-dht-v16.2.6) (2026-05-13)
+
+
+### Bug Fixes
+
+* **kad-dht:** only echo PUT_VALUE response on success ([#3502](https://github.com/libp2p/js-libp2p/issues/3502)) ([5692f3f](https://github.com/libp2p/js-libp2p/commit/5692f3f168049cc658ada36e8251b445683f5806))
+
 ## [16.2.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.4...kad-dht-v16.2.5) (2026-05-09)
 
 
