@@ -1,5 +1,5 @@
 import { serviceCapabilities } from '@libp2p/interface'
-import { PROTOCOL } from './index.js'
+import { PROTOCOL } from './index.ts'
 import type { MultiaddrConnection, ConnectionEncrypter, SecuredConnection, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
 
 export class TLS implements ConnectionEncrypter {

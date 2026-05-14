@@ -4,10 +4,9 @@ import { WebRTCTransportError } from '../../error.js'
 import { DataChannelMuxerFactory } from '../../muxer.js'
 import { toMultiaddrConnection } from '../../rtcpeerconnection-to-conn.ts'
 import { createStream } from '../../stream.js'
-import { isFirefox } from '../../util.js'
-import { generateNoisePrologue } from './generate-noise-prologue.js'
-import * as sdp from './sdp.js'
-import type { DirectRTCPeerConnection } from './get-rtcpeerconnection.js'
+import { generateNoisePrologue } from './generate-noise-prologue.ts'
+import * as sdp from './sdp.ts'
+import type { DirectRTCPeerConnection } from './get-rtcpeerconnection.ts'
 import type { DataChannelOptions } from '../../index.js'
 import type { ComponentLogger, Connection, CounterGroup, Logger, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -33,8 +32,6 @@ export interface ClientOptions extends ConnectOptions {
 export interface ServerOptions extends ConnectOptions {
   role: 'server'
 }
-
-const CONNECTION_STATE_CHANGE_EVENT = isFirefox ? 'iceconnectionstatechange' : 'connectionstatechange'
 
 function isServer (options: ClientOptions | ServerOptions, peerConnection: any): peerConnection is DirectRTCPeerConnection {
   return options.role === 'server'
@@ -135,7 +132,7 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       log: options.logger.forComponent('libp2p:webrtc-direct:connection')
     })
 
-    peerConnection.addEventListener(CONNECTION_STATE_CHANGE_EVENT, () => {
+    peerConnection.addEventListener('connectionstatechange', () => {
       switch (peerConnection.connectionState) {
         case 'failed':
         case 'disconnected':

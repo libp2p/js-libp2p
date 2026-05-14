@@ -7,7 +7,7 @@ import { sha512 } from '@noble/hashes/sha2.js'
 import * as asn1js from 'asn1js'
 import { base64 } from 'multiformats/bases/base64'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { ITERATIONS, KEY_SIZE } from './constants.js'
+import { ITERATIONS, KEY_SIZE } from './constants.ts'
 import type { PrivateKey, RSAPrivateKey } from '@libp2p/interface'
 
 /**

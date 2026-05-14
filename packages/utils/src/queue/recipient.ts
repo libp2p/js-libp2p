@@ -1,13 +1,17 @@
 import { AbortError } from '@libp2p/interface'
 import pDefer from 'p-defer'
+import type { AbortOptions } from '@libp2p/interface'
 import type { DeferredPromise } from 'p-defer'
+import type { ProgressOptions, ProgressEventListener } from 'progress-events'
 
-export class JobRecipient<JobReturnType> {
+export class JobRecipient<JobReturnType, JobOptions extends AbortOptions & ProgressOptions = any> {
   public deferred: DeferredPromise<JobReturnType>
   public signal?: AbortSignal
+  public onProgress?: ProgressEventListener
 
-  constructor (signal?: AbortSignal) {
-    this.signal = signal
+  constructor (options?: Partial<Pick<JobOptions, 'signal' | 'onProgress'>>) {
+    this.signal = options?.signal
+    this.onProgress = options?.onProgress
     this.deferred = pDefer()
 
     this.onAbort = this.onAbort.bind(this)

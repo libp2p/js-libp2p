@@ -1,4 +1,4 @@
-import { PeerList } from './list.js'
+import { PeerList } from './list.ts'
 import type { Metric, Metrics, PeerId } from '@libp2p/interface'
 
 export interface TrackedPeerListInit {

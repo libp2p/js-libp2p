@@ -1,4 +1,4 @@
-import type { PublicKey } from './keys.js'
+import type { PublicKey } from './keys.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**

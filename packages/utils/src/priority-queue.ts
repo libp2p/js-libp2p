@@ -1,5 +1,5 @@
-import { Queue } from './queue/index.js'
-import type { QueueInit } from './queue/index.js'
+import { Queue } from './queue/index.ts'
+import type { QueueInit } from './queue/index.ts'
 import type { AbortOptions } from '@libp2p/interface'
 
 export interface PriorityQueueJobOptions extends AbortOptions {

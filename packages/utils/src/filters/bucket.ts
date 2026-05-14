@@ -1,5 +1,5 @@
-import { Fingerprint } from './fingerprint.js'
-import { getRandomInt } from './utils.js'
+import { Fingerprint } from './fingerprint.ts'
+import { getRandomInt } from './utils.ts'
 
 export class Bucket {
   private readonly contents: Array<Fingerprint | null>

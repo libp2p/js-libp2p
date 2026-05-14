@@ -16,9 +16,9 @@ import {
 } from '../src/query/events.js'
 import { QueryManager } from '../src/query/manager.js'
 import { convertBuffer } from '../src/utils.js'
-import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
-import { sortClosestPeers } from './utils/sort-closest-peers.js'
-import type { PeerAndKey } from './utils/create-peer-id.js'
+import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
+import { sortClosestPeers } from './utils/sort-closest-peers.ts'
+import type { PeerAndKey } from './utils/create-peer-id.ts'
 import type { QueryEvent } from '../src/index.js'
 import type { QueryManagerInit } from '../src/query/manager.js'
 import type { QueryContext, QueryFunc } from '../src/query/types.js'
@@ -152,6 +152,7 @@ describe('QueryManager', () => {
 
   beforeEach(async () => {
     routingTable.closestPeers.returns(peers.slice(0, K).map(p => p.peerId))
+    routingTable.queueRoutingTableUpdate.resetHistory()
   })
 
   it('does not run queries before start', async () => {
@@ -995,6 +996,37 @@ describe('QueryManager', () => {
 
     // should not have visited the next peer on the slow path
     expect(topology[peers[4].peerId.toString()]).to.not.have.property('context', true)
+
+    await manager.stop()
+  })
+
+  it('should queue routing table updates from peer response events', async () => {
+    const manager = new QueryManager({
+      peerId: ourPeerId,
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
+    }, {
+      ...defaultInit()
+    })
+
+    routingTable.closestPeers.returns([peers[0].peerId])
+    await manager.start()
+
+    const queryFunc: QueryFunc = async function * ({ peer, path }) {
+      yield peerResponseEvent({
+        from: peer.id,
+        messageType: MessageType.GET_VALUE,
+        path
+      })
+    }
+
+    await all(manager.run(key, queryFunc))
+
+    expect(routingTable.queueRoutingTableUpdate.calledOnce).to.be.true()
+    expect(routingTable.queueRoutingTableUpdate.firstCall.args[0].toString()).to.equal(peers[0].peerId.toString())
+    expect(routingTable.queueRoutingTableUpdate.firstCall.args).to.have.lengthOf(1)
 
     await manager.stop()
   })

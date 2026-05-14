@@ -1,6 +1,6 @@
 import { PeerMap } from '@libp2p/peer-collections'
 import * as varint from 'uint8-varint'
-import { parseProviderKey, readProviderTime, toProviderKey } from './utils.js'
+import { parseProviderKey, readProviderTime, toProviderKey } from './utils.ts'
 import type { AbortOptions, ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 import type { CID } from 'multiformats'

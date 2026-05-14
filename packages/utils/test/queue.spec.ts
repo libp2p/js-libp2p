@@ -2,9 +2,11 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import pDefer from 'p-defer'
+import { CustomProgressEvent } from 'progress-events'
 import { Queue } from '../src/queue/index.js'
-import { TestSignal } from './fixtures/test-signal.js'
+import { TestSignal } from './fixtures/test-signal.ts'
 import type { AbortOptions } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
 
 const fixture = Symbol('fixture')
 
@@ -863,5 +865,298 @@ describe('queue', () => {
 
     await expect(p).to.eventually.equal('hello')
     await expect(queue.add(job)).to.eventually.equal('hello')
+  })
+
+  it('should forward progress events to multiple consumers', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+    const queue = new Queue<string, ProgressJobOptions>({
+      concurrency: 1,
+      maxSize: 1
+    })
+    queue.pause()
+
+    const job = async (options: ProgressJobOptions): Promise<string> => {
+      options.onProgress?.(new CustomProgressEvent('before'))
+      await delay(100)
+      options.onProgress?.(new CustomProgressEvent('after'))
+      return 'hello'
+    }
+
+    const events: any[] = []
+
+    const p1 = queue.add(job, {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    const p2 = queue.queue[0].join({
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    queue.resume()
+
+    await Promise.all([
+      p1,
+      p2
+    ])
+
+    expect(events).to.have.lengthOf(4)
+  })
+
+  it('should consume synchronous progress events', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+    const queue = new Queue<string, ProgressJobOptions>({
+      concurrency: 1,
+      maxSize: 1
+    })
+
+    const events: any[] = []
+
+    const job = async (options: ProgressJobOptions): Promise<string> => {
+      options.onProgress?.(new CustomProgressEvent('before'))
+      await delay(100)
+      options.onProgress?.(new CustomProgressEvent('after'))
+      return 'hello'
+    }
+
+    await queue.add(job, {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    expect(events).to.have.lengthOf(2)
+  })
+
+  it('should not recurse infinitely when two jobs progress-feed each other', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queueA = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueB = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let aSynthOP: ((evt: any) => void) | undefined
+    let bSynthOP: ((evt: any) => void) | undefined
+
+    const aReady = pDefer<void>()
+    const bReady = pDefer<void>()
+    const aHold = pDefer<void>()
+    const bHold = pDefer<void>()
+
+    const eventsA: any[] = []
+    const eventsB: any[] = []
+
+    const pA = queueA.add(async (options) => {
+      aSynthOP = options.onProgress
+      aReady.resolve()
+      await aHold.promise
+      return 'a'
+    }, {
+      onProgress: (evt) => {
+        eventsA.push(evt)
+        bSynthOP?.(evt)
+      }
+    })
+
+    const pB = queueB.add(async (options) => {
+      bSynthOP = options.onProgress
+      bReady.resolve()
+      await bHold.promise
+      return 'b'
+    }, {
+      onProgress: (evt) => {
+        eventsB.push(evt)
+        aSynthOP?.(evt)
+      }
+    })
+
+    await Promise.all([aReady.promise, bReady.promise])
+
+    expect(() => {
+      aSynthOP?.(new CustomProgressEvent('kick'))
+    }).to.not.throw()
+
+    expect(eventsA).to.have.lengthOf(1)
+    expect(eventsB).to.have.lengthOf(1)
+
+    aHold.resolve()
+    bHold.resolve()
+
+    await Promise.all([pA, pB])
+  })
+
+  it('should not recurse infinitely on a 3-job triangle (A -> B -> C -> A)', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queueA = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueB = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueC = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let aSynthOP: ((evt: any) => void) | undefined
+    let bSynthOP: ((evt: any) => void) | undefined
+    let cSynthOP: ((evt: any) => void) | undefined
+
+    const aReady = pDefer<void>()
+    const bReady = pDefer<void>()
+    const cReady = pDefer<void>()
+    const hold = pDefer<void>()
+
+    const eventsA: any[] = []
+    const eventsB: any[] = []
+    const eventsC: any[] = []
+
+    const pA = queueA.add(async (options) => {
+      aSynthOP = options.onProgress
+      aReady.resolve()
+      await hold.promise
+      return 'a'
+    }, {
+      onProgress: (evt) => {
+        eventsA.push(evt)
+        bSynthOP?.(evt)
+      }
+    })
+
+    const pB = queueB.add(async (options) => {
+      bSynthOP = options.onProgress
+      bReady.resolve()
+      await hold.promise
+      return 'b'
+    }, {
+      onProgress: (evt) => {
+        eventsB.push(evt)
+        cSynthOP?.(evt)
+      }
+    })
+
+    const pC = queueC.add(async (options) => {
+      cSynthOP = options.onProgress
+      cReady.resolve()
+      await hold.promise
+      return 'c'
+    }, {
+      onProgress: (evt) => {
+        eventsC.push(evt)
+        aSynthOP?.(evt)
+      }
+    })
+
+    await Promise.all([aReady.promise, bReady.promise, cReady.promise])
+
+    expect(() => {
+      aSynthOP?.(new CustomProgressEvent('kick'))
+    }).to.not.throw()
+
+    expect(eventsA).to.have.lengthOf(1)
+    expect(eventsB).to.have.lengthOf(1)
+    expect(eventsC).to.have.lengthOf(1)
+
+    hold.resolve()
+    await Promise.all([pA, pB, pC])
+  })
+
+  it('should keep dispatching after a previous cycle completes', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queueA = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueB = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let aSynthOP: ((evt: any) => void) | undefined
+    let bSynthOP: ((evt: any) => void) | undefined
+
+    const aReady = pDefer<void>()
+    const bReady = pDefer<void>()
+    const hold = pDefer<void>()
+
+    const eventsA: any[] = []
+    const eventsB: any[] = []
+
+    const pA = queueA.add(async (options) => {
+      aSynthOP = options.onProgress
+      aReady.resolve()
+      await hold.promise
+      return 'a'
+    }, {
+      onProgress: (evt) => {
+        eventsA.push(evt)
+        bSynthOP?.(evt)
+      }
+    })
+
+    const pB = queueB.add(async (options) => {
+      bSynthOP = options.onProgress
+      bReady.resolve()
+      await hold.promise
+      return 'b'
+    }, {
+      onProgress: (evt) => {
+        eventsB.push(evt)
+        aSynthOP?.(evt)
+      }
+    })
+
+    await Promise.all([aReady.promise, bReady.promise])
+
+    aSynthOP?.(new CustomProgressEvent('first'))
+    aSynthOP?.(new CustomProgressEvent('second'))
+
+    expect(eventsA.map(e => e.type)).to.deep.equal(['first', 'second'])
+    expect(eventsB.map(e => e.type)).to.deep.equal(['first', 'second'])
+
+    hold.resolve()
+    await Promise.all([pA, pB])
+  })
+
+  it('resets the dispatch flag even if a recipient throws', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queue = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let synthOP: ((evt: any) => void) | undefined
+
+    const ready = pDefer<void>()
+    const hold = pDefer<void>()
+
+    const seen: any[] = []
+    let throwOnce = true
+
+    const p = queue.add(async (options) => {
+      synthOP = options.onProgress
+      ready.resolve()
+      await hold.promise
+      return 'done'
+    }, {
+      onProgress: (evt) => {
+        seen.push(evt)
+        if (throwOnce) {
+          throwOnce = false
+          throw new Error('boom')
+        }
+      }
+    })
+
+    await ready.promise
+
+    expect(() => synthOP?.(new CustomProgressEvent('first'))).to.throw('boom')
+    expect(() => synthOP?.(new CustomProgressEvent('second'))).to.not.throw()
+
+    expect(seen.map(e => e.type)).to.deep.equal(['first', 'second'])
+
+    hold.resolve()
+    await p
   })
 })

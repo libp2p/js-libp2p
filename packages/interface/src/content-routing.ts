@@ -1,5 +1,5 @@
-import type { RoutingOptions } from './index.js'
-import type { PeerInfo } from './peer-info.js'
+import type { RoutingOptions } from './index.ts'
+import type { PeerInfo } from './peer-info.ts'
 import type { CID } from 'multiformats/cid'
 
 export interface Provider extends PeerInfo {

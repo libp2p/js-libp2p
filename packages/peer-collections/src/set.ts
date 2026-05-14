@@ -1,4 +1,4 @@
-import { mapIterable, peerIdFromString } from './util.js'
+import { mapIterable, peerIdFromString } from './util.ts'
 import type { PeerId } from '@libp2p/interface'
 
 /**

@@ -1,6 +1,6 @@
-import { contentFetchingTests } from './content-fetching.js'
-import { contentRoutingTests } from './content-routing.js'
-import { peerRoutingTests } from './peer-routing.js'
+import { contentFetchingTests } from './content-fetching.ts'
+import { contentRoutingTests } from './content-routing.ts'
+import { peerRoutingTests } from './peer-routing.ts'
 import type { DaemonFactory } from '../index.js'
 
 export async function dhtTests (factory: DaemonFactory): Promise<void> {

@@ -4,10 +4,10 @@ import {
 
   RejectReason
 
-} from './types.js'
-import type { RPC } from './message/rpc.js'
-import type { PeerScoreThresholds } from './score/peer-score-thresholds.js'
-import type { PeerIdStr, RejectReasonObj, TopicStr, ValidateError } from './types.js'
+} from './types.ts'
+import type { RPC } from './message/rpc.ts'
+import type { PeerScoreThresholds } from './score/peer-score-thresholds.ts'
+import type { PeerIdStr, RejectReasonObj, TopicStr, ValidateError } from './types.ts'
 
 /** Topic label as provided in `topicStrToLabel` */
 export type TopicLabel = string

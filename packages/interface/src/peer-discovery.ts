@@ -1,4 +1,4 @@
-import type { PeerInfo } from './peer-info.js'
+import type { PeerInfo } from './peer-info.ts'
 import type { TypedEventTarget } from 'main-event'
 
 /**

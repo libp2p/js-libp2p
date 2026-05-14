@@ -3,6 +3,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { echoStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
+import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { ConnectionMonitor } from '../../src/connection-monitor.js'
@@ -148,6 +149,25 @@ describe('connection monitor', () => {
     await delay(500)
 
     expect(connection.abort).to.have.property('called', true)
+  })
+
+  it('should abort the probe stream when the ping exchange fails', async () => {
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 10
+    })
+
+    const stream = stubInterface<Stream>()
+    stream.send.throws(new Error('write failed'))
+
+    const connection = stubInterface<Connection>()
+    connection.newStream.withArgs('/ipfs/ping/1.0.0').resolves(stream)
+    components.connectionManager.getConnections.returns([connection])
+
+    await start(monitor)
+
+    await pWaitFor(() => stream.abort.called)
+
+    expect(stream.abort.firstCall.args[0]).to.have.property('message', 'write failed')
   })
 
   it('should not abort a connection that fails when abortConnectionOnPingFailure is false', async () => {

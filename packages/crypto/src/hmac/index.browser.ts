@@ -1,5 +1,5 @@
 import webcrypto from '../webcrypto/index.js'
-import lengths from './lengths.js'
+import lengths from './lengths.ts'
 
 const hashTypes = {
   SHA1: 'SHA-1',
