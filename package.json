@@ -49,6 +49,7 @@
   ],
   "overrides": {
     "playwright-core": "1.60.0",
+    "playwright": "1.60.0",
     "@multiformats/multiaddr": "13.0.1"
   }
 }
