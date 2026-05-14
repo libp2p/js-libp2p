@@ -453,7 +453,6 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       return true
     }
 
-    // bail if the stream is no longer writable
     if (this.writeStatus !== 'writable' && this.writeStatus !== 'closing') {
       this.log.trace('not processing send queue as stream is %s', this.writeStatus)
       return false
