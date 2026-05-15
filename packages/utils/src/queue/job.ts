@@ -27,6 +27,7 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
   public status: JobStatus
   public readonly timeline: JobTimeline
   private readonly controller: AbortController
+  private dispatchingProgress: boolean
 
   constructor (fn: (options: JobOptions) => Promise<JobReturnType>, options: any) {
     this.id = randomId()
@@ -40,6 +41,8 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
 
     this.controller = new AbortController()
     setMaxListeners(Infinity, this.controller.signal)
+
+    this.dispatchingProgress = false
 
     this.onAbort = this.onAbort.bind(this)
   }
@@ -80,9 +83,21 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
         ...(this.options ?? {}),
         signal: this.controller.signal,
         onProgress: (evt: any): void => {
-          this.recipients.forEach(recipient => {
-            recipient.onProgress?.(evt)
-          })
+          // Recipients can transitively re-enter this dispatcher; without
+          // this guard a single event recurses until the stack overflows.
+          if (this.dispatchingProgress) {
+            return
+          }
+
+          this.dispatchingProgress = true
+
+          try {
+            this.recipients.forEach(recipient => {
+              recipient.onProgress?.(evt)
+            })
+          } finally {
+            this.dispatchingProgress = false
+          }
         }
       }), this.controller.signal)
 

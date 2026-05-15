@@ -4,6 +4,60 @@
 
 * bump aegir from 46.0.5 to 47.0.21 ([#343](https://github.com/libp2p/js-libp2p-daemon/issues/343)) ([704c22f](https://github.com/libp2p/js-libp2p-daemon/commit/704c22f102362c6036642a73979d262e1214baa5))
 
+## [9.0.24](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.23...daemon-server-v9.0.24) (2026-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/kad-dht bumped from ^16.2.5 to ^16.2.6
+
+## [9.0.23](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.22...daemon-server-v9.0.23) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/gossipsub bumped from ^15.0.21 to ^15.0.22
+    * @libp2p/kad-dht bumped from ^16.2.4 to ^16.2.5
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/tcp bumped from ^11.0.18 to ^11.0.19
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
+## [9.0.22](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.21...daemon-server-v9.0.22) (2026-05-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^15.0.20 to ^15.0.21
+
+## [9.0.21](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.20...daemon-server-v9.0.21) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^15.0.19 to ^15.0.20
+    * @libp2p/kad-dht bumped from ^16.2.3 to ^16.2.4
+    * @libp2p/tcp bumped from ^11.0.17 to ^11.0.18
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
+## [9.0.20](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.19...daemon-server-v9.0.20) (2026-04-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/kad-dht bumped from ^16.2.2 to ^16.2.3
+
 ## [9.0.19](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.18...daemon-server-v9.0.19) (2026-04-16)
 
 

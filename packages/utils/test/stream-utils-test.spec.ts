@@ -412,4 +412,64 @@ describe('stream-pair', () => {
     await expect(outgoing.onDrain()).to.eventually.be.rejected
       .with.property('name', 'StreamResetError')
   })
+
+  it('should not throw uncaught error on drain event when stream is closed', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    outgoing.writeStatus = 'closed'
+
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
+  it('should catch StreamStateError from sendData during closing', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+    const outgoingStream = outgoing as typeof outgoing & {
+      sendData(data: Uint8ArrayList): { sentBytes: number, canSendMore: boolean }
+    }
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    const err = new Error('Cannot write to a stream that is closing')
+    err.name = 'StreamStateError'
+    Sinon.stub(outgoingStream, 'sendData').throws(err)
+
+    outgoing.writeStatus = 'closing'
+
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
+  it('should propagate StreamStateError from send() when sendData throws', async () => {
+    const [outgoing] = await streamPair()
+    const outgoingStream = outgoing as typeof outgoing & {
+      sendData(data: Uint8ArrayList): { sentBytes: number, canSendMore: boolean }
+    }
+
+    const err = new Error('Cannot write to a stream that is closing')
+    err.name = 'StreamStateError'
+    Sinon.stub(outgoingStream, 'sendData').throws(err)
+
+    expect(() => {
+      outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    }).to.throw().with.property('name', 'StreamStateError')
+
+    outgoing.abort(new Error('cleanup'))
+  })
 })

@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { ed25519 as ed } from '@noble/curves/ed25519.js'
 import { concat as uint8arrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
@@ -16,24 +17,7 @@ export { PUBLIC_KEY_BYTE_LENGTH as publicKeyLength }
 export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 
 function derivePublicKey (privateKey: Uint8Array): Uint8Array {
-  const keyObject = crypto.createPrivateKey({
-    format: 'jwk',
-    key: {
-      crv: 'Ed25519',
-      x: '',
-      d: uint8arrayToString(privateKey, 'base64url'),
-      kty: 'OKP'
-    }
-  })
-  const jwk = keyObject.export({
-    format: 'jwk'
-  })
-
-  if (jwk.x == null || jwk.x === '') {
-    throw new Error('Could not export JWK public key')
-  }
-
-  return uint8arrayFromString(jwk.x, 'base64url')
+  return ed.getPublicKey(privateKey)
 }
 
 export function generateKey (): Uint8ArrayKeyPair {
