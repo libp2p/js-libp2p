@@ -219,28 +219,22 @@ describe('byte-stream', () => {
   })
 
   it('should preserve byte order on unwrap when the underlying stream has buffered data', async () => {
-    // Same reorder also occurs without pause() if external code calls
-    // stream.push() and then unwrap() synchronously, since push schedules
-    // dispatch via setTimeout - the buffer is non-empty in between.
+    // Same reorder happens if external code calls stream.push() then unwrap()
+    // synchronously - push defers dispatch via setTimeout.
     const [outgoing, incoming] = await streamPair()
 
     const incomingBytes = byteStream(incoming)
 
-    // first chunk gets captured by the byteStream message listener
     outgoing.send(Uint8Array.from([0, 1, 2, 3]))
     await delay(10)
 
-    // pause the stream so subsequent data lands in incoming.readBuffer
-    // rather than being dispatched to the byteStream listener
+    // pause so subsequent data sits in stream.readBuffer instead of reaching
+    // the byteStream listener
     incoming.pause()
 
-    // second chunk accumulates in incoming.readBuffer because dispatch is
-    // suppressed while paused
     outgoing.send(Uint8Array.from([4, 5, 6, 7]))
     await delay(10)
 
-    // unwrap must re-emit the byteStream's leftover bytes ahead of anything
-    // already queued on the underlying stream
     const unwrapped = incomingBytes.unwrap()
     unwrapped.resume()
 
