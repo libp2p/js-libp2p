@@ -10,8 +10,8 @@ import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
-import { OperationFailedError } from './index.js'
-import type { DaemonClient } from './index.js'
+import { OperationFailedError } from './index.ts'
+import type { DaemonClient } from './index.ts'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 
 const log = logger('libp2p:daemon-client:dht')

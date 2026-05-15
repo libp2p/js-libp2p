@@ -59,11 +59,11 @@
 import { randomBytes } from '@libp2p/crypto'
 import { InvalidParametersError } from '@libp2p/interface'
 import { byteStream } from '@libp2p/utils'
-import { BoxMessageStream, decodeV1PSK } from './crypto.js'
-import { NONCE_LENGTH } from './key-generator.js'
+import { BoxMessageStream, decodeV1PSK } from './crypto.ts'
+import { NONCE_LENGTH } from './key-generator.ts'
 import type { ComponentLogger, ConnectionProtector, MultiaddrConnection, AbortOptions } from '@libp2p/interface'
 
-export { generateKey } from './key-generator.js'
+export { generateKey } from './key-generator.ts'
 
 export interface ProtectorInit {
   /**

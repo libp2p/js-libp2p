@@ -49,7 +49,7 @@ await client.close()
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p-daemon/modules/_libp2p_daemon_client.html>
+- <https://libp2p.github.io/js-libp2p-daemon/modules/_libp2p_daemon-client.html>
 
 # License
 

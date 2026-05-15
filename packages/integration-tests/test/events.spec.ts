@@ -4,7 +4,7 @@ import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { pEvent } from 'p-event'
-import { createPeers } from './fixtures/create-peers.js'
+import { createPeers } from './fixtures/create-peers.ts'
 import type { Echo } from '@libp2p/echo'
 import type { Libp2p } from 'libp2p'
 

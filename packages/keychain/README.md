@@ -45,7 +45,7 @@ The key management and naming service API all return a `KeyInfo` object.  The `i
 
 The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multihash) of its public key.
 
-The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/958761163edfc7b1a6231041b199737d72fd6424/packages/crypto/src/keys/keys.proto) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
+The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
 
 ## Private key storage
 
@@ -55,7 +55,7 @@ The default options for generating the derived encryption key are in the `dek` o
 
 ```TypeScript
 const defaultOptions = {
-  // See https://cryptosense.com/parameter-choice-for-pbkdf2/
+  // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
   dek: {
     keyLength: 512 / 8,
     iterationCount: 1000,

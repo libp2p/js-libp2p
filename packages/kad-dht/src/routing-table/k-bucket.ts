@@ -5,7 +5,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { PeerDistanceList } from '../peer-distance-list.js'
 import { convertPeerId } from '../utils.js'
-import { KBUCKET_SIZE, LAST_PING_THRESHOLD, PING_OLD_CONTACT_COUNT, PREFIX_LENGTH } from './index.js'
+import { KBUCKET_SIZE, LAST_PING_THRESHOLD, PING_OLD_CONTACT_COUNT, PREFIX_LENGTH } from './index.ts'
 import type { PeerId, AbortOptions, Metrics } from '@libp2p/interface'
 
 export interface PingFunction {

@@ -11,10 +11,10 @@ import {
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_NAME,
   MULTICODEC_IDENTIFY_PUSH_PROTOCOL_VERSION,
   PUSH_DEBOUNCE_MS
-} from './consts.js'
-import { Identify as IdentifyMessage } from './pb/message.js'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues } from './utils.js'
-import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.js'
+} from './consts.ts'
+import { Identify as IdentifyMessage } from './pb/message.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, mergeIdentifyMessages, readIdentifyMessages } from './utils.ts'
+import type { IdentifyPush as IdentifyPushInterface, IdentifyPushComponents, IdentifyPushInit } from './index.ts'
 import type { Stream, Startable, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
@@ -144,14 +144,9 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
       signal: AbortSignal.timeout(this.timeout)
     }
 
-    const pb = pbStream(stream, {
-      maxDataLength: this.maxMessageSize
-    }).pb(IdentifyMessage)
+    const messages = await readIdentifyMessages(stream, this.maxMessageSize, options, log)
 
-    const message = await pb.read(options)
-    await stream.close(options)
-
-    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, message)
+    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, mergeIdentifyMessages(messages))
 
     log.trace('handled push from %p', connection.remotePeer)
   }

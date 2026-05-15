@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, message, streamMessage } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -48,18 +48,47 @@ export namespace FetchRequest {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.identifier`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<FetchRequest>): Uint8Array => {
+  export interface FetchRequestIdentifierFieldEvent {
+    field: '$.identifier'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<FetchRequest>): Uint8Array {
     return encodeMessage(obj, FetchRequest.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchRequest>): FetchRequest => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchRequest>): FetchRequest {
     return decodeMessage(buf, FetchRequest.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchRequest>): Generator<FetchRequestIdentifierFieldEvent> {
+    return streamMessage(buf, FetchRequest.codec(), opts)
   }
 }
 
@@ -137,17 +166,58 @@ export namespace FetchResponse {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.status`,
+                value: FetchResponse.StatusCode.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.data`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<FetchResponse>): Uint8Array => {
+  export interface FetchResponseStatusFieldEvent {
+    field: '$.status'
+    value: FetchResponse.StatusCode
+  }
+
+  export interface FetchResponseDataFieldEvent {
+    field: '$.data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<FetchResponse>): Uint8Array {
     return encodeMessage(obj, FetchResponse.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchResponse>): FetchResponse => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchResponse>): FetchResponse {
     return decodeMessage(buf, FetchResponse.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<FetchResponse>): Generator<FetchResponseStatusFieldEvent | FetchResponseDataFieldEvent> {
+    return streamMessage(buf, FetchResponse.codec(), opts)
   }
 }

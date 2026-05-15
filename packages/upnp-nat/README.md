@@ -105,7 +105,7 @@ $ npm i @libp2p/upnp-nat
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_upnp_nat.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_upnp-nat.html>
 
 # License
 

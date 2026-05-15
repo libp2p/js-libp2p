@@ -1,5 +1,113 @@
 # Changelog
 
+## [14.0.24](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.23...interop-v14.0.24) (2026-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.23 to ^10.0.24
+
+## [14.0.23](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.22...interop-v14.0.23) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.22 to ^10.0.23
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
+## [14.0.22](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.21...interop-v14.0.22) (2026-05-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.21 to ^10.0.22
+
+## [14.0.21](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.20...interop-v14.0.21) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.20 to ^10.0.21
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
+## [14.0.20](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.19...interop-v14.0.20) (2026-04-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.19 to ^10.0.20
+
+## [14.0.19](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.18...interop-v14.0.19) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.18 to ^10.0.19
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/utils bumped from ^7.0.16 to ^7.0.17
+
+## [14.0.18](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.17...interop-v14.0.18) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* update p-retry to 8.x.x ([#3442](https://github.com/libp2p/js-libp2p/issues/3442)) ([aaf3fbb](https://github.com/libp2p/js-libp2p/commit/aaf3fbbe224bb7c62dfb9a2ffc8751794a93daec))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.17 to ^10.0.18
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/utils bumped from ^7.0.15 to ^7.0.16
+
+## [14.0.17](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.16...interop-v14.0.17) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.16 to ^10.0.17
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+
+## [14.0.16](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.15...interop-v14.0.16) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* update protons to 8.x.x and protons-runtime to 6.x.x ([#3421](https://github.com/libp2p/js-libp2p/issues/3421)) ([1c3b617](https://github.com/libp2p/js-libp2p/commit/1c3b6177735c97ede56783560738eb54b4038e1a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.15 to ^10.0.16
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+
 ## [14.0.15](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.14...interop-v14.0.15) (2026-03-12)
 
 

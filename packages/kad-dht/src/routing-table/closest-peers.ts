@@ -2,7 +2,7 @@ import { PeerSet } from '@libp2p/peer-collections'
 import { KEEP_ALIVE_TAG } from '../constants.js'
 import { PeerDistanceList } from '../peer-distance-list.js'
 import { convertPeerId } from '../utils.js'
-import type { RoutingTable } from './index.js'
+import type { RoutingTable } from './index.ts'
 import type { ComponentLogger, Logger, Metrics, PeerId, PeerStore, Startable } from '@libp2p/interface'
 
 export const PEER_SET_SIZE = 20

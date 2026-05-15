@@ -6,8 +6,8 @@ import each from 'it-foreach'
 import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { MessageTypes } from '../src/message-types.js'
-import { decode } from './fixtures/decode.js'
-import { encode } from './fixtures/encode.js'
+import { decode } from './fixtures/decode.ts'
+import { encode } from './fixtures/encode.ts'
 import type { Message } from '../src/message-types.js'
 
 describe('restrict size', () => {

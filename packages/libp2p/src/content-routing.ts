@@ -2,7 +2,7 @@ import { NotStartedError } from '@libp2p/interface'
 import { PeerSet } from '@libp2p/peer-collections'
 import merge from 'it-merge'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { NoContentRoutersError } from './errors.js'
+import { NoContentRoutersError } from './errors.ts'
 import type { AbortOptions, ComponentLogger, ContentRouting, Metrics, PeerRouting, PeerStore, Provider, RoutingOptions, Startable } from '@libp2p/interface'
 import type { CID } from 'multiformats/cid'
 

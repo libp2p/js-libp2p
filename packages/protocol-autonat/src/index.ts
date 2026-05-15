@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * The AutoNAT service implements the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/)
+ * The AutoNAT service implements the [AutoNAT protocol](https://libp2p.io/docs/autonat/)
  * to confirm whether addresses the node is listening on are dialable by remote
  * peers.
  *
@@ -26,7 +26,7 @@
  * ```
  */
 
-import { AutoNATService } from './autonat.js'
+import { AutoNATService } from './autonat.ts'
 import type { ComponentLogger, Libp2pEvents, Metrics, PeerId, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'

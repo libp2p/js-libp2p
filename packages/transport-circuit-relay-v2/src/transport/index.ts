@@ -10,12 +10,12 @@ import { CustomProgressEvent } from 'progress-events'
 import { DEFAULT_DISCOVERY_FILTER_ERROR_RATE, DEFAULT_DISCOVERY_FILTER_SIZE, MAX_CONNECTIONS, RELAY_V2_HOP_CODEC, RELAY_V2_STOP_CODEC } from '../constants.js'
 import { StopMessage, HopMessage, Status } from '../pb/index.js'
 import { CircuitListen, CircuitSearch, LimitTracker } from '../utils.js'
-import { RelayDiscovery } from './discovery.js'
-import { createListener } from './listener.js'
-import { ReservationStore } from './reservation-store.js'
-import { streamToMaConnection } from './stream-to-conn.js'
+import { RelayDiscovery } from './discovery.ts'
+import { createListener } from './listener.ts'
+import { ReservationStore } from './reservation-store.ts'
+import { streamToMaConnection } from './stream-to-conn.ts'
 import type { CircuitRelayTransportComponents, CircuitRelayTransportInit } from '../index.ts'
-import type { Transport, CreateListenerOptions, Listener, Logger, Connection, Stream, OutboundConnectionUpgradeEvents, DialTransportOptions, OpenConnectionProgressEvents } from '@libp2p/interface'
+import type { Transport, CreateListenerOptions, Listener, Logger, Connection, Stream, DialTransportOptions, OpenConnectionProgressEvents, NewStreamProgressEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { ProgressEvent } from 'progress-events'
 
@@ -40,8 +40,8 @@ const defaults = {
 }
 
 export type CircuitRelayDialEvents =
-  OutboundConnectionUpgradeEvents |
   OpenConnectionProgressEvents |
+  NewStreamProgressEvents |
   ProgressEvent<'circuit-relay:open-connection'> |
   ProgressEvent<'circuit-relay:reuse-connection'> |
   ProgressEvent<'circuit-relay:open-hop-stream'> |

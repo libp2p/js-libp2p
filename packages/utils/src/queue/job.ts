@@ -1,9 +1,10 @@
 import { AbortError } from '@libp2p/interface'
 import { setMaxListeners } from 'main-event'
 import { raceSignal } from 'race-signal'
-import { JobRecipient } from './recipient.js'
-import type { JobStatus } from './index.js'
+import { JobRecipient } from './recipient.ts'
+import type { JobStatus } from './index.ts'
 import type { AbortOptions } from '@libp2p/interface'
+import type { ProgressOptions } from 'progress-events'
 
 /**
  * Returns a random string
@@ -18,7 +19,7 @@ export interface JobTimeline {
   finished?: number
 }
 
-export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType = unknown> {
+export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptions, JobReturnType = unknown> {
   public id: string
   public fn: (options: JobOptions) => Promise<JobReturnType>
   public options: JobOptions
@@ -26,6 +27,7 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
   public status: JobStatus
   public readonly timeline: JobTimeline
   private readonly controller: AbortController
+  private dispatchingProgress: boolean
 
   constructor (fn: (options: JobOptions) => Promise<JobReturnType>, options: any) {
     this.id = randomId()
@@ -39,6 +41,8 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
 
     this.controller = new AbortController()
     setMaxListeners(Infinity, this.controller.signal)
+
+    this.dispatchingProgress = false
 
     this.onAbort = this.onAbort.bind(this)
   }
@@ -59,11 +63,11 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
     }
   }
 
-  async join (options: AbortOptions = {}): Promise<JobReturnType> {
-    const recipient = new JobRecipient<JobReturnType>(options.signal)
+  async join (options?: Partial<Pick<JobOptions, 'signal' | 'onProgress'>>): Promise<JobReturnType> {
+    const recipient = new JobRecipient<JobReturnType>(options)
     this.recipients.push(recipient)
 
-    options.signal?.addEventListener('abort', this.onAbort)
+    options?.signal?.addEventListener('abort', this.onAbort)
 
     return recipient.deferred.promise
   }
@@ -77,7 +81,24 @@ export class Job <JobOptions extends AbortOptions = AbortOptions, JobReturnType 
 
       const result = await raceSignal(this.fn({
         ...(this.options ?? {}),
-        signal: this.controller.signal
+        signal: this.controller.signal,
+        onProgress: (evt: any): void => {
+          // Recipients can transitively re-enter this dispatcher; without
+          // this guard a single event recurses until the stack overflows.
+          if (this.dispatchingProgress) {
+            return
+          }
+
+          this.dispatchingProgress = true
+
+          try {
+            this.recipients.forEach(recipient => {
+              recipient.onProgress?.(evt)
+            })
+          } finally {
+            this.dispatchingProgress = false
+          }
+        }
       }), this.controller.signal)
 
       this.recipients.forEach(recipient => {

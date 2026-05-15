@@ -4,7 +4,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { TestDHT } from './utils/test-dht.js'
+import { TestDHT } from './utils/test-dht.ts'
 
 const testCases: Array<[string, string, string]> = [
   ['should enable server mode when public IP4 addresses are found', '/ip4/139.178.91.71/udp/4001/quic', 'server'],

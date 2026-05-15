@@ -1,5 +1,26 @@
 # Changelog
 
+## [4.0.12](https://github.com/libp2p/js-libp2p/compare/record-v4.0.11...record-v4.0.12) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+## [4.0.11](https://github.com/libp2p/js-libp2p/compare/record-v4.0.10...record-v4.0.11) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+## [4.0.10](https://github.com/libp2p/js-libp2p/compare/record-v4.0.9...record-v4.0.10) (2026-03-27)
+
+
+### Dependencies
+
+* update protons to 8.x.x and protons-runtime to 6.x.x ([#3421](https://github.com/libp2p/js-libp2p/issues/3421)) ([1c3b617](https://github.com/libp2p/js-libp2p/commit/1c3b6177735c97ede56783560738eb54b4038e1a))
+
 ## [4.0.9](https://github.com/libp2p/js-libp2p/compare/record-v4.0.8...record-v4.0.9) (2026-01-16)
 
 

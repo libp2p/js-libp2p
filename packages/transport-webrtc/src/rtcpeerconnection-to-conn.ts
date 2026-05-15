@@ -20,7 +20,7 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
     this.peerConnection.onconnectionstatechange = () => {
       this.log.trace('peer connection state change %s initial state %s', this.peerConnection.connectionState, initialState)
 
-      if (this.peerConnection.connectionState === 'disconnected' || this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
+      if (this.peerConnection.connectionState === 'failed' || this.peerConnection.connectionState === 'closed') {
         // nothing else to do but close the connection
         this.onTransportClosed()
 

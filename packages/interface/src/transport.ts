@@ -1,4 +1,4 @@
-import type { AbortOptions, ClearableSignal, ConnectionEncrypter, MultiaddrConnection, Connection, ConnectionLimits, StreamMuxerFactory, PeerId } from './index.js'
+import type { AbortOptions, ClearableSignal, ConnectionEncrypter, MultiaddrConnection, Connection, ConnectionLimits, StreamMuxerFactory, PeerId } from './index.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 import type { ProgressOptions, ProgressEvent } from 'progress-events'

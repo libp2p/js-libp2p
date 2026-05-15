@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, message, streamMessage } from 'protons-runtime'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -21,6 +21,7 @@ export namespace KeyType {
     return enumeration<KeyType>(__KeyTypeValues)
   }
 }
+
 export interface PublicKey {
   type?: KeyType
   data?: Uint8Array
@@ -74,17 +75,58 @@ export namespace PublicKey {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.type`,
+                value: KeyType.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.data`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<PublicKey>): Uint8Array => {
+  export interface PublicKeyTypeFieldEvent {
+    field: '$.type'
+    value: KeyType
+  }
+
+  export interface PublicKeyDataFieldEvent {
+    field: '$.data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<PublicKey>): Uint8Array {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey {
     return decodeMessage(buf, PublicKey.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): Generator<PublicKeyTypeFieldEvent | PublicKeyDataFieldEvent> {
+    return streamMessage(buf, PublicKey.codec(), opts)
   }
 }

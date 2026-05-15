@@ -3,21 +3,24 @@ import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { encode } from 'it-length-prefixed'
 import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { concat } from 'uint8arrays'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { GossipsubDhi } from '../src/constants.js'
 import { GossipSub as GossipSubClass } from '../src/gossipsub.js'
-import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.js'
-import type { GossipSubAndComponents } from './utils/create-pubsub.js'
+import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.ts'
+import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { SinonStubbedInstance } from 'sinon'
 
 describe('gossip', () => {
   let nodes: GossipSubAndComponents[]
+  const maxInboundDataLength = 4096
 
   // Create pubsub nodes
   beforeEach(async () => {
@@ -28,7 +31,7 @@ describe('gossip', () => {
         scoreParams: {
           IPColocationFactorThreshold: GossipsubDhi + 3
         },
-        maxInboundDataLength: 4000000,
+        maxInboundDataLength,
         allowPublishToZeroTopicPeers: false,
         idontwantMaxMessages: 10
       }
@@ -86,13 +89,10 @@ describe('gossip', () => {
   })
 
   it('should send idontwant to peers in topic', async function () {
-    // This test checks that idontwants and idontwantsCounts are correctly incrmemented
-    // - idontwantCounts should track the number of idontwant messages received from a peer for a single heartbeat
-    //   - it should increment on receive of idontwant msgs (up to limit)
-    //   - it should be emptied after heartbeat
-    // - idontwants should track the idontwant messages received from a peer along with the heartbeatId when received
-    //   - it should increment on receive of idontwant msgs (up to limit)
-    //   - it should be emptied after mcacheLength heartbeats
+    // This integration test checks IDONTWANT lifecycle behavior under network traffic:
+    // - publishing messages in a connected topic causes peers to track IDONTWANT state
+    // - retained idontwants stay bounded while entries are tracked across heartbeats
+    // - idontwantCounts are cleared at the next heartbeat
     this.timeout(10e4)
     const nodeA = nodes[0]
     const otherNodes = nodes.slice(1)
@@ -121,47 +121,21 @@ describe('gossip', () => {
       ])
       await nodeA.pubsub.publish(topic, msg)
     }
-    // track the heartbeat when each node received the last message
+    // wait for one heartbeat so IDONTWANT handling has happened on all peers
+    await Promise.all(otherNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
 
-    const ticks = otherNodes.map((n) => n.pubsub['heartbeatTicks'])
-
-    // there's no event currently implemented to await, so just wait a bit - flaky :(
-    // TODO figure out something more robust
-    await new Promise((resolve) => setTimeout(resolve, 200))
-
-    // other nodes should have received idontwant messages
-    // check that idontwants <= GossipsubIdontwantMaxMessages
+    // other nodes should have tracked idontwant messages
+    // check retained idontwants are bounded over mcacheLength heartbeats
     for (let i = 0; i < otherNodes.length; i++) {
       const node = otherNodes[i]
 
-      const currentTick = node.pubsub['heartbeatTicks']
-
-      const idontwantCounts = node.pubsub['idontwantCounts']
-      let minCount = Infinity
-      let maxCount = 0
-      for (const count of idontwantCounts.values()) {
-        minCount = Math.min(minCount, count)
-        maxCount = Math.max(maxCount, count)
-      }
-      // expect(minCount).to.be.greaterThan(0)
-      expect(maxCount).to.be.lessThanOrEqual(idontwantMaxMessages)
-
       const idontwants = node.pubsub['idontwants']
-      let minIdontwants = Infinity
       let maxIdontwants = 0
       for (const idontwant of idontwants.values()) {
-        minIdontwants = Math.min(minIdontwants, idontwant.size)
         maxIdontwants = Math.max(maxIdontwants, idontwant.size)
       }
-      // expect(minIdontwants).to.be.greaterThan(0)
-      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages)
 
-      // sanity check that the idontwantCount matches idontwants.size
-      // only the case if there hasn't been a heartbeat
-      if (currentTick === ticks[i]) {
-        expect(minCount).to.be.equal(minIdontwants)
-        expect(maxCount).to.be.equal(maxIdontwants)
-      }
+      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages * node.pubsub.opts.mcacheLength)
     }
 
     await Promise.all(otherNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
@@ -169,22 +143,77 @@ describe('gossip', () => {
     // after a heartbeat
     // idontwants are still tracked
     // but idontwantCounts have been cleared
-    for (const node of nodes) {
+    for (const node of otherNodes) {
       const idontwantCounts = node.pubsub['idontwantCounts']
-      for (const count of idontwantCounts.values()) {
-        expect(count).to.be.equal(0)
-      }
+      expect(idontwantCounts.size).to.equal(0)
 
       const idontwants = node.pubsub['idontwants']
-      let minIdontwants = Infinity
       let maxIdontwants = 0
       for (const idontwant of idontwants.values()) {
-        minIdontwants = Math.min(minIdontwants, idontwant.size)
         maxIdontwants = Math.max(maxIdontwants, idontwant.size)
       }
-      // expect(minIdontwants).to.be.greaterThan(0)
-      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages)
+      expect(maxIdontwants).to.be.lessThanOrEqual(idontwantMaxMessages * node.pubsub.opts.mcacheLength)
     }
+  })
+
+  it('should cap idontwant tracking per peer per heartbeat', async function () {
+    // `should send idontwant to peers in topic` exercises this path indirectly, this
+    // test verifies the cap deterministically with controlled input and exact assertions.
+    // This test directly exercises handleIdontwant to verify per-heartbeat cap semantics:
+    // - idontwantCounts and idontwants stop growing at idontwantMaxMessages
+    // - counts reset on heartbeat and start again next heartbeat
+    const nodeA = nodes[0]
+    const pubsub = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      idontwantCounts: Map<string, number>
+      idontwants: Map<string, Map<string, number>>
+    }
+    const peerId = 'peer-a'
+    const idontwantMaxMessages = nodeA.pubsub.opts.idontwantMaxMessages
+
+    pubsub.handleIdontwant(peerId, [{
+      messageIDs: Array.from({ length: idontwantMaxMessages * 2 }, (_, i) => uint8ArrayFromString(`msg-${i}`))
+    }])
+
+    expect(pubsub.idontwantCounts.get(peerId)).to.equal(idontwantMaxMessages)
+    expect(pubsub.idontwants.get(peerId)?.size).to.equal(idontwantMaxMessages)
+
+    pubsub.handleIdontwant(peerId, [{ messageIDs: [uint8ArrayFromString('overflow')] }])
+
+    expect(pubsub.idontwantCounts.get(peerId)).to.equal(idontwantMaxMessages)
+    expect(pubsub.idontwants.get(peerId)?.size).to.equal(idontwantMaxMessages)
+
+    await nodeA.pubsub.heartbeat()
+
+    expect(pubsub.idontwantCounts.get(peerId)).to.equal(undefined)
+
+    pubsub.handleIdontwant(peerId, [{ messageIDs: [uint8ArrayFromString('next-heartbeat')] }])
+
+    expect(pubsub.idontwantCounts.get(peerId)).to.equal(1)
+  })
+
+  it('should prune tracked idontwants after mcacheLength heartbeats', async function () {
+    const nodeA = nodes[0]
+    const pubsub = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      idontwants: Map<string, Map<string, number>>
+    }
+    const peerId = 'peer-b'
+    const mcacheLength = nodeA.pubsub.opts.mcacheLength
+
+    pubsub.handleIdontwant(peerId, [{ messageIDs: [uint8ArrayFromString('msg-to-prune')] }])
+    expect(pubsub.idontwants.get(peerId)?.size).to.equal(1)
+
+    for (let i = 0; i < mcacheLength - 1; i++) {
+      await nodeA.pubsub.heartbeat()
+    }
+
+    if (mcacheLength > 1) {
+      expect(pubsub.idontwants.get(peerId)?.size).to.equal(1)
+    }
+
+    await nodeA.pubsub.heartbeat()
+    expect(pubsub.idontwants.get(peerId)?.size).to.equal(0)
   })
 
   it('Should allow publishing to zero peers if flag is passed', async function () {
@@ -344,7 +373,7 @@ describe('gossip', () => {
     expect(subscribers).to.include(nodeC.components.peerId.toString())
   })
 
-  it.skip('should reject incoming messages bigger than maxInboundDataLength limit', async function () {
+  it('should reject oversized publish rpc during send due to maxInboundDataLength', async function () {
     this.timeout(10e4)
     const nodeA = nodes[0]
     const nodeB = nodes[1]
@@ -365,19 +394,107 @@ describe('gossip', () => {
     await Promise.all(twoNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
 
     // set spy. NOTE: Forcing private property to be public
+    const nodeALogErrorSpy = sinon.spy((nodeA.pubsub as any).log, 'error')
+
     const nodeBSpy = nodeB.pubsub as Partial<GossipSubClass> as SinonStubbedInstance<{
       handlePeerReadStreamError: GossipSubClass['handlePeerReadStreamError']
     }>
     sinon.spy(nodeBSpy, 'handlePeerReadStreamError')
 
-    // This should lead to handlePeerReadStreamError at nodeB
-    await nodeA.pubsub.publish(topic, new Uint8Array(5000000))
-    await pEvent(nodeA.pubsub, 'gossipsub:heartbeat')
-    const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
-    expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+    const onUnhandledRejection = (event: any): void => {
+      if (event?.reason?.name === 'InvalidDataLengthError') {
+        event.preventDefault?.()
+      }
+    }
+    const hasGlobalUnhandledRejectionEvents =
+      typeof (globalThis as any).addEventListener === 'function' &&
+      typeof (globalThis as any).removeEventListener === 'function'
 
-    // unset spy
-    nodeBSpy.handlePeerReadStreamError.restore()
+    if (hasGlobalUnhandledRejectionEvents) {
+      (globalThis as any).addEventListener('unhandledrejection', onUnhandledRejection)
+    }
+
+    await pWaitFor(() => {
+      const nodeAMesh = nodeA.pubsub.mesh.get(topic)
+      const nodeBMesh = nodeB.pubsub.mesh.get(topic)
+
+      if (nodeAMesh == null || nodeBMesh == null) {
+        return false
+      }
+
+      return nodeAMesh.has(nodeB.components.peerId.toString()) && nodeBMesh.has(nodeA.components.peerId.toString())
+    }, { timeout: 5000 })
+
+    const messagePromise = pEvent(nodeB.pubsub, 'message', { timeout: 2000 })
+      .then(() => true)
+      .catch(() => false)
+
+    try {
+      // This should not be delivered to nodeB
+      await nodeA.pubsub.publish(topic, new Uint8Array(maxInboundDataLength + 1))
+      await pEvent(nodeA.pubsub, 'gossipsub:heartbeat')
+
+      const sawReadStreamError = await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
+        .then(() => true)
+        .catch(() => false)
+
+      const sawWriteStreamError = nodeALogErrorSpy.getCalls().some((call) => {
+        return call.args.some((arg) => arg?.name === 'InvalidDataLengthError')
+      })
+
+      expect(sawReadStreamError || sawWriteStreamError).to.equal(true)
+
+      if (sawReadStreamError) {
+        const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
+        expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+      }
+
+      const messageReceived = await messagePromise
+      expect(messageReceived).to.equal(false)
+    } finally {
+      if (hasGlobalUnhandledRejectionEvents) {
+        (globalThis as any).removeEventListener('unhandledrejection', onUnhandledRejection)
+      }
+      nodeALogErrorSpy.restore()
+      nodeBSpy.handlePeerReadStreamError.restore()
+    }
+  })
+
+  it('should reject oversized inbound rpc due to maxInboundDataLength', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+
+    const twoNodes = [nodeA, nodeB]
+
+    // every node connected to every other
+    await connectAllPubSubNodes(twoNodes)
+
+    // await mesh rebalancing
+    await Promise.all(twoNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const nodeBSpy = nodeB.pubsub as Partial<GossipSubClass> as SinonStubbedInstance<{
+      handlePeerReadStreamError: GossipSubClass['handlePeerReadStreamError']
+    }>
+    sinon.spy(nodeBSpy, 'handlePeerReadStreamError')
+
+    try {
+      const connection = nodeA.components.connectionManager.getConnections(nodeB.components.peerId)[0]
+
+      if (connection == null) {
+        throw new Error('Connection not found')
+      }
+
+      const stream = await connection.newStream((nodeA.pubsub as any).protocols)
+      stream.send(encode.single(new Uint8Array(maxInboundDataLength + 1), { maxDataLength: maxInboundDataLength + 1 }))
+
+      await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
+
+      const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
+      expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+    } finally {
+      nodeBSpy.handlePeerReadStreamError.restore()
+    }
   })
 
   it('should send piggyback control into other sent messages', async function () {

@@ -18,6 +18,7 @@ Welcome to libp2p! This guide will walk you through setting up a fully functiona
     - [Browser](#browser)
   - [React Native](#react-native)
   - [What is next](#what-is-next)
+    - [Additional Resources](#additional-resources)
 
 ## Install
 
@@ -54,7 +55,7 @@ For more info on enabling ES modules in Node, see [this guide](https://nodejs.or
 
 ### Basic setup
 
-Now that we have libp2p installed, let's configure the minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. However, we recommend that a basic setup should also have a [**Stream Multiplexer**](streamMuxer) configured, which we will explain shortly. Let's start by setting up a Transport.
+Now that we have libp2p installed, let's configure the minimum needed to get your node running. The only modules libp2p requires are a [**Transport**][transport] and [**Crypto**][crypto] module. However, we recommend that a basic setup should also have a [**Stream Multiplexer**][streamMuxer] configured, which we will explain shortly. Let's start by setting up a Transport.
 
 #### Transports
 
@@ -114,7 +115,7 @@ const node = await createLibp2p({
 <details><summary>Read More</summary>
 If you want to know more about libp2p connection encryption, you should read the following content:
 
-- https://docs.libp2p.io/concepts/secure-comms
+- https://libp2p.io/docs/secure-channels-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
@@ -153,7 +154,7 @@ If you want to know more about libp2p stream multiplexing, you should read the f
 
 #### Running Libp2p
 
-Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**](streamMuxer) module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#start) and [`libp2p.stop()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#stop) methods.
+Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**][streamMuxer] module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#start) and [`libp2p.stop()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#stop) methods.
 
 ```ts
 import { createLibp2p } from 'libp2p'
@@ -329,7 +330,13 @@ Libp2p can be used in React Native applications. However, there are some limitat
 
 There are a lot of other concepts within `libp2p`, that are not covered in this guide. For additional configuration options we recommend checking out the [Configuration Readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md) and the [examples repo](https://github.com/libp2p/js-libp2p-examples). If you have any problems getting started, or if anything isn't clear, please let us know by submitting an issue!
 
+### Additional Resources
 
-[transport]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/transport
-[crypto]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/crypto
-[streamMuxer]: https://github.com/libp2p/js-libp2p/tree/main/packages/interface/src/stream-muxer
+- [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p) — Interactive tutorial covering libp2p fundamentals
+- [libp2p Concepts](https://docs.libp2p.io/concepts/introduction/overview/) — Overview of core concepts and architecture
+- [libp2p Connectivity](https://connectivity.libp2p.io/) — Interoperability matrix across libp2p implementations
+- [Universal Connectivity](https://github.com/libp2p/universal-connectivity) — Demo application showcasing cross-implementation connectivity
+
+[transport]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/transport.ts
+[crypto]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/keys.ts
+[streamMuxer]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/stream-muxer.ts
