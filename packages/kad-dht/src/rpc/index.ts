@@ -1,4 +1,4 @@
-import { TimeoutError } from '@libp2p/interface'
+import { InvalidMessageError, TimeoutError } from '@libp2p/interface'
 import { pbStream } from '@libp2p/utils'
 import { Message, MessageType } from '../message/dht.js'
 import { AddProviderHandler } from './handlers/add-provider.ts'
@@ -76,7 +76,7 @@ export class RPC {
 
     if (handler == null) {
       this.log.error(`no handler found for message type: ${msg.type}`)
-      return
+      throw new InvalidMessageError(`No handler found for message type: ${msg.type}`)
     }
 
     try {
@@ -85,10 +85,12 @@ export class RPC {
       })
 
       return await handler.handle(peerId, msg)
-    } catch {
+    } catch (err) {
       this.metrics.errors?.increment({
         [msg.type]: true
       })
+
+      throw err
     }
   }
 
@@ -134,11 +136,13 @@ export class RPC {
             signal
           })
         }
-      } catch (err) {
+      } catch (err: any) {
         errored = true
         stopErrorTimer?.()
 
-        throw err
+        stream.abort(err)
+
+        return
       } finally {
         if (!errored) {
           stopSuccessTimer?.()
