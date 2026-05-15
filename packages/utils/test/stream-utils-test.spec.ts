@@ -217,6 +217,36 @@ describe('byte-stream', () => {
 
     expect(readIncoming).to.deep.equal(writtenOutgoing)
   })
+
+  it('should preserve byte order on unwrap when the underlying stream has buffered data', async () => {
+    // Same reorder happens if external code calls stream.push() then unwrap()
+    // synchronously - push defers dispatch via setTimeout.
+    const [outgoing, incoming] = await streamPair()
+
+    const incomingBytes = byteStream(incoming)
+
+    outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    await delay(10)
+
+    // pause so subsequent data sits in stream.readBuffer instead of reaching
+    // the byteStream listener
+    incoming.pause()
+
+    outgoing.send(Uint8Array.from([4, 5, 6, 7]))
+    await delay(10)
+
+    const unwrapped = incomingBytes.unwrap()
+    unwrapped.resume()
+
+    const [read] = await Promise.all([
+      all(unwrapped),
+      outgoing.close()
+    ])
+
+    expect(new Uint8ArrayList(...read).subarray()).to.equalBytes(
+      Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7])
+    )
+  })
 })
 
 describe('stream-pair', () => {
