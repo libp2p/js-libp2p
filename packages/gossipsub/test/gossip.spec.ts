@@ -20,6 +20,7 @@ import type { SinonStubbedInstance } from 'sinon'
 
 describe('gossip', () => {
   let nodes: GossipSubAndComponents[]
+  const maxInboundDataLength = 4096
 
   // Create pubsub nodes
   beforeEach(async () => {
@@ -30,7 +31,7 @@ describe('gossip', () => {
         scoreParams: {
           IPColocationFactorThreshold: GossipsubDhi + 3
         },
-        maxInboundDataLength: 4000000,
+        maxInboundDataLength,
         allowPublishToZeroTopicPeers: false,
         idontwantMaxMessages: 10
       }
@@ -350,7 +351,7 @@ describe('gossip', () => {
 
     try {
       // This should not be delivered to nodeB
-      await nodeA.pubsub.publish(topic, new Uint8Array(5000000))
+      await nodeA.pubsub.publish(topic, new Uint8Array(maxInboundDataLength + 1))
       await pEvent(nodeA.pubsub, 'gossipsub:heartbeat')
 
       const sawReadStreamError = await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
@@ -405,7 +406,7 @@ describe('gossip', () => {
       }
 
       const stream = await connection.newStream((nodeA.pubsub as any).protocols)
-      stream.send(encode.single(new Uint8Array(5000000), { maxDataLength: 6000000 }))
+      stream.send(encode.single(new Uint8Array(maxInboundDataLength + 1), { maxDataLength: maxInboundDataLength + 1 }))
 
       await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
 
