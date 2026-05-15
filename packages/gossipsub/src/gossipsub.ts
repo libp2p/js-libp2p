@@ -574,6 +574,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     this.peers.clear()
     this.subscriptions.clear()
+    this.topics.clear()
 
     // Gossipsub
 
