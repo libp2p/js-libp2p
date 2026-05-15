@@ -100,7 +100,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
         this.writableNeedsDrain = false
 
         queueMicrotask(() => {
-          this.processSendQueue()
+          try {
+            this.processSendQueue()
+          } catch (err) {
+            this.log.error('processSendQueue threw - %e', err)
+          }
         })
       }
 
@@ -449,6 +453,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       return true
     }
 
+    if (this.writeStatus !== 'writable' && this.writeStatus !== 'closing') {
+      this.log.trace('not processing send queue as stream is %s', this.writeStatus)
+      return false
+    }
+
     this.sendingData = true
 
     this.log.trace('processing send queue with %d queued bytes', this.writeBuffer.byteLength)
@@ -480,6 +489,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
         // sending data can cause buffers to fill up, events to be emitted and
         // this method to be invoked again
         const sendResult = this.sendData(toSend)
+
         canSendMore = sendResult.canSendMore
         sentBytes += sendResult.sentBytes
 

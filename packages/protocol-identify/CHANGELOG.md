@@ -76,6 +76,38 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.1.5](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.4...identify-v4.1.5) (2026-05-12)
+
+
+### Bug Fixes
+
+* **identify:** handle multiple envelopes from go ([#3423](https://github.com/libp2p/js-libp2p/issues/3423)) ([2572c86](https://github.com/libp2p/js-libp2p/commit/2572c864c245d4b9cf27f88306504900d3c21d4b))
+
+## [4.1.4](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.3...identify-v4.1.4) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/interface-internal bumped from ^3.1.3 to ^3.1.4
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/peer-record bumped from ^9.0.9 to ^9.0.10
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+
+## [4.1.3](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.2...identify-v4.1.3) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
 ## [4.1.2](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.1...identify-v4.1.2) (2026-04-16)
 
 

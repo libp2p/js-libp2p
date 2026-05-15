@@ -2,12 +2,13 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
+import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_PUSH_CONCURRENCY } from './consts.ts'
+import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_IDENTIFY_MESSAGES, MAX_PUSH_CONCURRENCY } from './consts.ts'
+import { Identify as IdentifyMessage } from './pb/message.ts'
 import type { IdentifyComponents, IdentifyInit } from './index.ts'
-import type { Identify as IdentifyMessage } from './pb/message.ts'
-import type { Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
+import type { AbortOptions, Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
 
@@ -169,6 +170,82 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   events.safeDispatchEvent('peer:identify', { detail: result })
 
   return result
+}
+
+/**
+ * Merge multiple received Identify messages into one. Repeated `listenAddrs`
+ * are concatenated as-is — peerstore handles deduplication downstream.
+ * `protocols` are deduplicated via Set since they're string identifiers.
+ */
+export function mergeIdentifyMessages (messages: IdentifyMessage[]): IdentifyMessage {
+  const merged: IdentifyMessage = { ...messages[0] }
+
+  for (const msg of messages.slice(1)) {
+    if (msg.protocolVersion != null) {
+      merged.protocolVersion = msg.protocolVersion
+    }
+    if (msg.agentVersion != null) {
+      merged.agentVersion = msg.agentVersion
+    }
+    if (msg.publicKey != null) {
+      merged.publicKey = msg.publicKey
+    }
+    if (msg.observedAddr != null) {
+      merged.observedAddr = msg.observedAddr
+    }
+    if (msg.signedPeerRecord != null) {
+      merged.signedPeerRecord = msg.signedPeerRecord
+    }
+    merged.listenAddrs = [...merged.listenAddrs, ...msg.listenAddrs]
+    merged.protocols = [...new Set([...merged.protocols, ...msg.protocols])]
+  }
+
+  return merged
+}
+
+/**
+ * Read up to MAX_IDENTIFY_MESSAGES LP-framed Identify messages from the
+ * stream, then close. Used by both identify and identify-push receive paths.
+ *
+ * Any error after at least one successful read is treated as "stop reading"
+ * (we keep what we got — peerstore handles deduplication/merge downstream).
+ * Close errors are swallowed and the stream is aborted instead — preserves
+ * the read result while ensuring transport cleanup.
+ *
+ * Multi-message identify is per the proposed spec update at
+ * https://github.com/libp2p/specs/pull/709.
+ */
+export async function readIdentifyMessages (stream: Stream, maxMessageSize: number, options: AbortOptions, log: Logger): Promise<IdentifyMessage[]> {
+  const pb = pbStream(stream, {
+    maxDataLength: maxMessageSize
+  }).pb(IdentifyMessage)
+
+  const messages: IdentifyMessage[] = []
+
+  for (let i = 0; i < MAX_IDENTIFY_MESSAGES; i++) {
+    try {
+      messages.push(await pb.read(options))
+    } catch (err: any) {
+      if (messages.length === 0) {
+        throw err
+      }
+      log.trace('stopped reading identify - %e', err)
+      break
+    }
+  }
+
+  if (messages.length >= MAX_IDENTIFY_MESSAGES) {
+    log('reached MAX_IDENTIFY_MESSAGES, returning truncated identify')
+  }
+
+  try {
+    await stream.close(options)
+  } catch (err: any) {
+    log.trace('error closing identify stream after read - %e', err)
+    stream.abort(err)
+  }
+
+  return messages
 }
 
 export interface AbstractIdentifyInit extends IdentifyInit {
