@@ -75,7 +75,6 @@ export class RPC {
     const handler = this.handlers[msg.type]
 
     if (handler == null) {
-      this.log.error(`no handler found for message type: ${msg.type}`)
       throw new InvalidMessageError(`No handler found for message type: ${msg.type}`)
     }
 
@@ -140,6 +139,7 @@ export class RPC {
         errored = true
         stopErrorTimer?.()
 
+        this.log.error('error handling incoming message - %e', err)
         stream.abort(err)
 
         return
