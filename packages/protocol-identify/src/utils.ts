@@ -25,8 +25,8 @@ export const defaultValues = {
   concurrency: MAX_PUSH_CONCURRENCY
 }
 
-function isNonEmptyMultiaddr (addr: Multiaddr): boolean {
-  return addr.bytes.length > 0
+function isEmptyMultiaddr (addr: Multiaddr): boolean {
+  return addr.bytes.length === 0
 }
 
 /**
@@ -37,7 +37,7 @@ export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined)
   if (addr != null && addr.length > 0) {
     try {
       const ma = multiaddr(addr)
-      if (isNonEmptyMultiaddr(ma)) {
+      if (!isEmptyMultiaddr(ma)) {
         return ma
       }
     } catch {
@@ -133,7 +133,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     // store the signed record for next time
     peer.peerRecordEnvelope = peerRecordEnvelope
 
-    const peerRecordMultiaddrs = peerRecord.multiaddrs.filter(isNonEmptyMultiaddr)
+    const peerRecordMultiaddrs = peerRecord.multiaddrs.filter(addr => !isEmptyMultiaddr(addr))
 
     // override the stored addresses with the signed multiaddrs
     peer.addresses = peerRecordMultiaddrs.map(multiaddr => ({
