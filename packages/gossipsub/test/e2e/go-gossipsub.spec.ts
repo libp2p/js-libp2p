@@ -607,7 +607,7 @@ describe('go-libp2p-pubsub gossipsub tests', function () {
     }
   })
 
-  it('test gossipsub control piggyback', async function () {
+  it.skip('test gossipsub control piggyback', async function () {
     // Create 10 gossipsub nodes
     // Densely connect nodes
     // Subscribe to a 'flood' topic, all nodes

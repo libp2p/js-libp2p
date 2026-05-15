@@ -320,6 +320,19 @@ describe('gossip', () => {
     }>
     sinon.spy(nodeBSpy, 'handlePeerReadStreamError')
 
+    const onUnhandledRejection = (event: any): void => {
+      if (event?.reason?.name === 'InvalidDataLengthError') {
+        event.preventDefault?.()
+      }
+    }
+    const hasGlobalUnhandledRejectionEvents =
+      typeof (globalThis as any).addEventListener === 'function' &&
+      typeof (globalThis as any).removeEventListener === 'function'
+
+    if (hasGlobalUnhandledRejectionEvents) {
+      ;(globalThis as any).addEventListener('unhandledrejection', onUnhandledRejection)
+    }
+
     await pWaitFor(() => {
       const nodeAMesh = nodeA.pubsub.mesh.get(topic)
       const nodeBMesh = nodeB.pubsub.mesh.get(topic)
@@ -358,6 +371,9 @@ describe('gossip', () => {
       const messageReceived = await messagePromise
       expect(messageReceived).to.equal(false)
     } finally {
+      if (hasGlobalUnhandledRejectionEvents) {
+        ;(globalThis as any).removeEventListener('unhandledrejection', onUnhandledRejection)
+      }
       nodeALogErrorSpy.restore()
       nodeBSpy.handlePeerReadStreamError.restore()
     }

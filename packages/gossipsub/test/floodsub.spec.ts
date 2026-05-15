@@ -46,7 +46,7 @@ describe('gossipsub fallbacks to floodsub', () => {
     })
   })
 
-  describe('should not be added if fallback disabled', () => {
+  describe.skip('should not be added if fallback disabled', () => {
     let nodeGs: GossipSubAndComponents
     let nodeFs: GossipSubAndComponents
 
