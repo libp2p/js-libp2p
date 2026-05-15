@@ -330,7 +330,7 @@ describe('gossip', () => {
       typeof (globalThis as any).removeEventListener === 'function'
 
     if (hasGlobalUnhandledRejectionEvents) {
-      ;(globalThis as any).addEventListener('unhandledrejection', onUnhandledRejection)
+      (globalThis as any).addEventListener('unhandledrejection', onUnhandledRejection)
     }
 
     await pWaitFor(() => {
@@ -372,7 +372,7 @@ describe('gossip', () => {
       expect(messageReceived).to.equal(false)
     } finally {
       if (hasGlobalUnhandledRejectionEvents) {
-        ;(globalThis as any).removeEventListener('unhandledrejection', onUnhandledRejection)
+        (globalThis as any).removeEventListener('unhandledrejection', onUnhandledRejection)
       }
       nodeALogErrorSpy.restore()
       nodeBSpy.handlePeerReadStreamError.restore()
