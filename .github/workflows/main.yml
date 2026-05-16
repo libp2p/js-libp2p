@@ -18,6 +18,7 @@ jobs:
           node-version: lts/*
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run --if-present build
 
   check:
     needs: build
@@ -30,6 +31,7 @@ jobs:
           node-version: lts/*
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run --if-present build
       - run: pnpm run --if-present lint
       - run: pnpm run --if-present dep-check
       - run: pnpm run --if-present docs:no-publish
