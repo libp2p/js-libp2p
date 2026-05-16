@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
-import { itBench } from '@dapplion/benchmark'
+// @ts-expect-error no types
+import Benchmark from 'benchmark'
 import { RPC } from '../../src/message/rpc.js'
 
 describe('protobuf', function () {
@@ -30,24 +31,45 @@ describe('protobuf', function () {
 
     const runsFactor = 1000
 
-    itBench({
-      id: `decode ${name} message ${length} bytes`,
-      fn: () => {
+    it(`decode ${name} message ${length} bytes`, async () => {
+      await runBenchmark(`decode ${name} message ${length} bytes`, () => {
         for (let i = 0; i < runsFactor; i++) {
           RPC.decode(bytes)
         }
-      },
-      runsFactor
+      }, runsFactor)
     })
 
-    itBench({
-      id: `encode ${name} message ${length} bytes`,
-      fn: () => {
+    it(`encode ${name} message ${length} bytes`, async () => {
+      await runBenchmark(`encode ${name} message ${length} bytes`, () => {
         for (let i = 0; i < runsFactor; i++) {
           RPC.encode(rpc)
         }
-      },
-      runsFactor
+      }, runsFactor)
     })
   }
 })
+
+async function runBenchmark (name: string, fn: () => void | Promise<void>, runsFactor = 1): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    new Benchmark(name, {
+      defer: true,
+      initCount: 1,
+      maxTime: 1,
+      minSamples: 1,
+      minTime: 0.1,
+      fn (deferred: { resolve(): void }) {
+        Promise.resolve()
+          .then(fn)
+          .then(() => { deferred.resolve() })
+          .catch(reject)
+      }
+    })
+      .on('complete', function (this: { hz: number, count: number }) {
+        const hz = this.hz * runsFactor
+        process.stdout.write(`    ${name}: ${hz.toFixed(4)} ops/s ${(1000 / hz).toFixed(6)} ms/op ${this.count} runs\n`)
+        resolve()
+      })
+      .on('error', reject)
+      .run({ async: true })
+  })
+}
