@@ -25,13 +25,21 @@ export const defaultValues = {
   concurrency: MAX_PUSH_CONCURRENCY
 }
 
+function isEmptyMultiaddr (addr: Multiaddr): boolean {
+  return addr.bytes.length === 0
+}
+
 /**
- * Takes the `addr` and converts it to a Multiaddr if possible
+ * Takes the `addr` and converts it to a Multiaddr if possible, returning
+ * `undefined` for null/empty/malformed input or zero-byte multiaddrs (e.g. `/`).
  */
 export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined): Multiaddr | undefined {
   if (addr != null && addr.length > 0) {
     try {
-      return multiaddr(addr)
+      const ma = multiaddr(addr)
+      if (!isEmptyMultiaddr(ma)) {
+        return ma
+      }
     } catch {
 
     }
@@ -47,10 +55,14 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
   const peer: PeerData = {}
 
+  const listenAddrs = message.listenAddrs
+    .map(getCleanMultiaddr)
+    .filter((addr): addr is Multiaddr => addr != null)
+
   if (message.listenAddrs.length > 0) {
-    peer.addresses = message.listenAddrs.map(buf => ({
+    peer.addresses = listenAddrs.map(multiaddr => ({
       isCertified: false,
-      multiaddr: multiaddr(buf)
+      multiaddr
     }))
   }
 
@@ -121,15 +133,17 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     // store the signed record for next time
     peer.peerRecordEnvelope = peerRecordEnvelope
 
+    const peerRecordMultiaddrs = peerRecord.multiaddrs.filter(addr => !isEmptyMultiaddr(addr))
+
     // override the stored addresses with the signed multiaddrs
-    peer.addresses = peerRecord.multiaddrs.map(multiaddr => ({
+    peer.addresses = peerRecordMultiaddrs.map(multiaddr => ({
       isCertified: true,
       multiaddr
     }))
 
     output = {
       seq: peerRecord.seqNumber,
-      addresses: peerRecord.multiaddrs
+      addresses: peerRecordMultiaddrs
     }
   } else {
     log('%p did not send a signed peer record', connection.remotePeer)
@@ -160,7 +174,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     protocolVersion: message.protocolVersion,
     agentVersion: message.agentVersion,
     publicKey: message.publicKey,
-    listenAddrs: message.listenAddrs.map(buf => multiaddr(buf)),
+    listenAddrs,
     observedAddr: message.observedAddr == null ? undefined : multiaddr(message.observedAddr),
     protocols: message.protocols,
     signedPeerRecord: output,
