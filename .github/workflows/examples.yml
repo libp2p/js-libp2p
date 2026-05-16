@@ -136,5 +136,5 @@ jobs:
           node-version: lts/*
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install-deps
+      - run: pnpm exec playwright-core install-deps
       - run: pnpm exec xvfb-maybe aegir test-dependant ${{ matrix.example.repo }} --deps ${{ join(matrix.example.deps, ',') }}
