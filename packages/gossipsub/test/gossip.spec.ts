@@ -3,7 +3,9 @@ import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { encode } from 'it-length-prefixed'
 import { pEvent } from 'p-event'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { concat } from 'uint8arrays'
@@ -18,6 +20,7 @@ import type { SinonStubbedInstance } from 'sinon'
 
 describe('gossip', () => {
   let nodes: GossipSubAndComponents[]
+  const maxInboundDataLength = 4096
 
   // Create pubsub nodes
   beforeEach(async () => {
@@ -28,7 +31,7 @@ describe('gossip', () => {
         scoreParams: {
           IPColocationFactorThreshold: GossipsubDhi + 3
         },
-        maxInboundDataLength: 4000000,
+        maxInboundDataLength,
         allowPublishToZeroTopicPeers: false,
         idontwantMaxMessages: 10
       }
@@ -290,7 +293,87 @@ describe('gossip', () => {
     expect(peerInfoB?.tags.get(topic)).to.be.undefined()
   })
 
-  it.skip('should reject incoming messages bigger than maxInboundDataLength limit', async function () {
+  it('should delete empty topic entries after remote unsubscribe', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const topic = 'empty-topic-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB])
+
+    nodeA.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+
+    nodeA.pubsub.unsubscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect(nodeB.pubsub.getSubscribers(topic)).to.be.empty()
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.false()
+  })
+
+  it('should delete empty topic entries after peer disconnect', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const topic = 'disconnect-topic-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB])
+
+    nodeA.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+
+    ;(nodeB.pubsub as any).onPeerDisconnected(nodeA.components.peerId)
+
+    expect(nodeB.pubsub.getSubscribers(topic)).to.be.empty()
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.false()
+  })
+
+  it('should not create empty topic entries from unsubscribe-only updates', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const topic = 'unsubscribe-only-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB])
+
+    ;(nodeB.pubsub as any).handleReceivedSubscription(nodeA.components.peerId, topic, false)
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.false()
+    expect(nodeB.pubsub.getSubscribers(topic)).to.be.empty()
+  })
+
+  it('should keep topic entries while other peers remain subscribed', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+    const nodeC = nodes[2]
+    const topic = 'multi-peer-topic-cleanup'
+
+    await connectAllPubSubNodes([nodeA, nodeB, nodeC])
+
+    nodeA.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    nodeC.pubsub.subscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+    expect(nodeB.pubsub.getSubscribers(topic)).to.have.lengthOf(2)
+
+    nodeA.pubsub.unsubscribe(topic)
+    await pEvent(nodeB.pubsub, 'subscription-change')
+
+    expect((nodeB.pubsub as any).topics.has(topic)).to.be.true()
+    const subscribers = nodeB.pubsub.getSubscribers(topic).map((p) => p.toString())
+    expect(subscribers).to.have.lengthOf(1)
+    expect(subscribers).to.include(nodeC.components.peerId.toString())
+  })
+
+  it('should reject oversized publish rpc during send due to maxInboundDataLength', async function () {
     this.timeout(10e4)
     const nodeA = nodes[0]
     const nodeB = nodes[1]
@@ -311,19 +394,107 @@ describe('gossip', () => {
     await Promise.all(twoNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
 
     // set spy. NOTE: Forcing private property to be public
+    const nodeALogErrorSpy = sinon.spy((nodeA.pubsub as any).log, 'error')
+
     const nodeBSpy = nodeB.pubsub as Partial<GossipSubClass> as SinonStubbedInstance<{
       handlePeerReadStreamError: GossipSubClass['handlePeerReadStreamError']
     }>
     sinon.spy(nodeBSpy, 'handlePeerReadStreamError')
 
-    // This should lead to handlePeerReadStreamError at nodeB
-    await nodeA.pubsub.publish(topic, new Uint8Array(5000000))
-    await pEvent(nodeA.pubsub, 'gossipsub:heartbeat')
-    const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
-    expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+    const onUnhandledRejection = (event: any): void => {
+      if (event?.reason?.name === 'InvalidDataLengthError') {
+        event.preventDefault?.()
+      }
+    }
+    const hasGlobalUnhandledRejectionEvents =
+      typeof (globalThis as any).addEventListener === 'function' &&
+      typeof (globalThis as any).removeEventListener === 'function'
 
-    // unset spy
-    nodeBSpy.handlePeerReadStreamError.restore()
+    if (hasGlobalUnhandledRejectionEvents) {
+      (globalThis as any).addEventListener('unhandledrejection', onUnhandledRejection)
+    }
+
+    await pWaitFor(() => {
+      const nodeAMesh = nodeA.pubsub.mesh.get(topic)
+      const nodeBMesh = nodeB.pubsub.mesh.get(topic)
+
+      if (nodeAMesh == null || nodeBMesh == null) {
+        return false
+      }
+
+      return nodeAMesh.has(nodeB.components.peerId.toString()) && nodeBMesh.has(nodeA.components.peerId.toString())
+    }, { timeout: 5000 })
+
+    const messagePromise = pEvent(nodeB.pubsub, 'message', { timeout: 2000 })
+      .then(() => true)
+      .catch(() => false)
+
+    try {
+      // This should not be delivered to nodeB
+      await nodeA.pubsub.publish(topic, new Uint8Array(maxInboundDataLength + 1))
+      await pEvent(nodeA.pubsub, 'gossipsub:heartbeat')
+
+      const sawReadStreamError = await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
+        .then(() => true)
+        .catch(() => false)
+
+      const sawWriteStreamError = nodeALogErrorSpy.getCalls().some((call) => {
+        return call.args.some((arg) => arg?.name === 'InvalidDataLengthError')
+      })
+
+      expect(sawReadStreamError || sawWriteStreamError).to.equal(true)
+
+      if (sawReadStreamError) {
+        const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
+        expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+      }
+
+      const messageReceived = await messagePromise
+      expect(messageReceived).to.equal(false)
+    } finally {
+      if (hasGlobalUnhandledRejectionEvents) {
+        (globalThis as any).removeEventListener('unhandledrejection', onUnhandledRejection)
+      }
+      nodeALogErrorSpy.restore()
+      nodeBSpy.handlePeerReadStreamError.restore()
+    }
+  })
+
+  it('should reject oversized inbound rpc due to maxInboundDataLength', async function () {
+    this.timeout(10e4)
+    const nodeA = nodes[0]
+    const nodeB = nodes[1]
+
+    const twoNodes = [nodeA, nodeB]
+
+    // every node connected to every other
+    await connectAllPubSubNodes(twoNodes)
+
+    // await mesh rebalancing
+    await Promise.all(twoNodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const nodeBSpy = nodeB.pubsub as Partial<GossipSubClass> as SinonStubbedInstance<{
+      handlePeerReadStreamError: GossipSubClass['handlePeerReadStreamError']
+    }>
+    sinon.spy(nodeBSpy, 'handlePeerReadStreamError')
+
+    try {
+      const connection = nodeA.components.connectionManager.getConnections(nodeB.components.peerId)[0]
+
+      if (connection == null) {
+        throw new Error('Connection not found')
+      }
+
+      const stream = await connection.newStream((nodeA.pubsub as any).protocols)
+      stream.send(encode.single(new Uint8Array(maxInboundDataLength + 1), { maxDataLength: maxInboundDataLength + 1 }))
+
+      await pWaitFor(() => nodeBSpy.handlePeerReadStreamError.called, { timeout: 5000 })
+
+      const expectedError = nodeBSpy.handlePeerReadStreamError.getCalls()[0]?.args[0]
+      expect(expectedError).to.have.property('name', 'InvalidDataLengthError')
+    } finally {
+      nodeBSpy.handlePeerReadStreamError.restore()
+    }
   })
 
   it('should send piggyback control into other sent messages', async function () {

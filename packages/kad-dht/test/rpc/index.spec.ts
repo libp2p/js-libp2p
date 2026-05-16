@@ -109,4 +109,27 @@ describe('rpc', () => {
 
     await defer.promise
   })
+
+  it('resets the stream when a handler throws', async function () {
+    this.timeout(5000)
+
+    const [outboundStream, incomingStream] = await streamPair()
+
+    // a PUT_VALUE message with no record makes PutValueHandler.handle throw
+    const msg: Partial<Message> = {
+      type: MessageType.PUT_VALUE,
+      key: uint8ArrayFromString('hello')
+    }
+
+    queueMicrotask(() => {
+      outboundStream.send(lp.encode.single(Message.encode(msg)))
+    })
+
+    await rpc.onIncomingStream(
+      incomingStream,
+      stubInterface<Connection>()
+    )
+
+    expect(incomingStream.status).to.equal('aborted')
+  })
 })
