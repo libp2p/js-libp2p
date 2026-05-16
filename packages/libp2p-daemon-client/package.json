@@ -38,7 +38,7 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "build": "aegir build",
-    "pretest": "npm run build",
+    "pretest": "pnpm run build",
     "test": "aegir test -t node",
     "test:node": "aegir test -t node"
   },

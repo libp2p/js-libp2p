@@ -70,7 +70,7 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "doc-check": "aegir doc-check",
-    "prepublishOnly": "node scripts/update-version.js && npm run build",
+    "prepublishOnly": "node scripts/update-version.js && pnpm run build",
     "build": "aegir build",
     "test": "aegir test",
     "test:node": "aegir test -t node --cov",

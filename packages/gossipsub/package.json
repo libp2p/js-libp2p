@@ -117,9 +117,6 @@
     "sinon-ts": "^2.0.0",
     "time-cache": "^0.3.0"
   },
-  "engines": {
-    "npm": ">=8.7.0"
-  },
   "eslintConfig": {
     "extends": "ipfs",
     "ignorePatterns": [
