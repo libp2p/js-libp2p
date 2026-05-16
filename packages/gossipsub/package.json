@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/gossipsub",
-  "version": "15.0.22",
+  "version": "15.0.23",
   "description": "A typescript implementation of gossipsub",
   "files": [
     "src",
@@ -81,9 +81,9 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.18",
     "@libp2p/interface": "^3.2.2",
-    "@libp2p/interface-internal": "^3.1.4",
+    "@libp2p/interface-internal": "^3.1.5",
     "@libp2p/peer-id": "^6.0.9",
-    "@libp2p/utils": "^7.2.0",
+    "@libp2p/utils": "^7.2.1",
     "@multiformats/multiaddr": "^13.0.1",
     "denque": "^2.1.0",
     "it-length-prefixed": "^10.0.1",
@@ -97,9 +97,9 @@
   "devDependencies": {
     "@chainsafe/as-sha256": "^1.2.0",
     "@dapplion/benchmark": "^1.0.0",
-    "@libp2p/floodsub": "^11.0.20",
+    "@libp2p/floodsub": "^11.0.21",
     "@libp2p/logger": "^6.2.7",
-    "@libp2p/peer-store": "^12.0.19",
+    "@libp2p/peer-store": "^12.0.20",
     "@types/node": "^22.18.1",
     "@types/sinon": "^21.0.1",
     "abortable-iterator": "^5.1.0",

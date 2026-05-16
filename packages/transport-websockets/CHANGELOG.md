@@ -70,6 +70,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [10.1.13](https://github.com/libp2p/js-libp2p/compare/websockets-v10.1.12...websockets-v10.1.13) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
 ## [10.1.12](https://github.com/libp2p/js-libp2p/compare/websockets-v10.1.11...websockets-v10.1.12) (2026-05-09)
 
 
