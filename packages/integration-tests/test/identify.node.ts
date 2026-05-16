@@ -2,6 +2,7 @@ import { identify, identifyPush } from '@libp2p/identify'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
+import { name, version } from 'libp2p/version'
 import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
@@ -13,7 +14,6 @@ import type { Libp2p } from '@libp2p/interface'
 
 const LOCAL_PORT = 47321
 const REMOTE_PORT = 47322
-const AGENT_VERSION = 'libp2p/0.0.0'
 
 // Stub environment version for testing dynamic AGENT_VERSION
 sinon.stub(process, 'version').value('vTEST')
@@ -215,7 +215,7 @@ describe('identify', () => {
     const peer = await libp2p.peerStore.get(libp2p.peerId)
     const storedAgentVersion = peer.metadata.get('AgentVersion')
 
-    expect(uint8ArrayToString(storedAgentVersion ?? new Uint8Array())).to.include(`${AGENT_VERSION} node/`)
+    expect(uint8ArrayToString(storedAgentVersion ?? new Uint8Array())).to.include(`${name}/${version} node/`)
   })
 
   it('should store host data and protocol version into peer store', async () => {
