@@ -5,7 +5,7 @@ import {
 } from '@libp2p/daemon-protocol'
 import { logger } from '@libp2p/logger'
 import drain from 'it-drain'
-import { ErrorResponse, OkResponse } from './responses.js'
+import { ErrorResponse, OkResponse } from './responses.ts'
 import type { PeerId } from '@libp2p/interface'
 import type { KadDHT } from '@libp2p/kad-dht'
 import type { CID } from 'multiformats/cid'

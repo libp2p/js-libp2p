@@ -28,8 +28,8 @@
 
 import {
   Record
-} from './record.js'
-import * as utils from './utils.js'
+} from './record.ts'
+import * as utils from './utils.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Libp2pRecord {

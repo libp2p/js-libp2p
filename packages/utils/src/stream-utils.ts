@@ -5,7 +5,7 @@ import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { UnexpectedEOFError } from './errors.js'
+import { UnexpectedEOFError } from './errors.ts'
 import type { MessageStream, MultiaddrConnection, Stream, AbortOptions } from '@libp2p/interface'
 import type { Duplex, Source, Transform, Sink } from 'it-stream-types'
 
@@ -239,7 +239,7 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
       // emit any unread data
       if (readBuffer.byteLength > 0) {
         stream.log('stream unwrapped with %d unread bytes', readBuffer.byteLength)
-        stream.push(readBuffer)
+        stream.unshift(readBuffer)
       }
 
       return stream

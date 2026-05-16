@@ -2,7 +2,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import client from 'prom-client'
 import { prometheusMetrics } from '../src/index.js'
-import { randomMetricName } from './fixtures/random-metric-name.js'
+import { randomMetricName } from './fixtures/random-metric-name.ts'
 
 describe('counter groups', () => {
   it('should increment a counter group', async () => {

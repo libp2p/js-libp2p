@@ -10,7 +10,7 @@ import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { DialDeniedError, NoValidAddressesError } from '../errors.js'
 import { getPeerAddress } from '../get-peer.js'
-import { defaultAddressSorter } from './address-sorter.js'
+import { defaultAddressSorter } from './address-sorter.ts'
 import {
   ADDRESS_DIAL_TIMEOUT,
   DIAL_TIMEOUT,
@@ -19,10 +19,10 @@ import {
   LAST_DIAL_FAILURE_KEY,
   MAX_DIAL_QUEUE_LENGTH,
   LAST_DIAL_SUCCESS_KEY
-} from './constants.js'
-import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.js'
+} from './constants.ts'
+import { DEFAULT_DIAL_PRIORITY } from './index.ts'
+import { resolveMultiaddr, dnsaddrResolver } from './resolvers/index.ts'
 import { findExistingConnection } from './utils.ts'
-import { DEFAULT_DIAL_PRIORITY } from './index.js'
 import type { AddressSorter, ComponentLogger, Logger, Connection, ConnectionGater, Metrics, PeerId, Address, PeerStore, PeerRouting, IsDialableOptions, OpenConnectionProgressEvents, MultiaddrResolver, DialTarget } from '@libp2p/interface'
 import type { OpenConnectionOptions, TransportManager } from '@libp2p/interface-internal'
 import type { PriorityQueueJobOptions } from '@libp2p/utils'
@@ -488,7 +488,7 @@ export class DialQueue {
 
     // make sure we actually have some addresses to dial
     if (dedupedMultiaddrs.length === 0) {
-      throw new NoValidAddressesError('The dial request has no valid addresses')
+      throw new NoValidAddressesError(`The dial request has no valid addresses for peer: ${peerId?.toString() ?? 'unknown peer'}`)
     }
 
     const gatedAddrs: Address[] = []
@@ -505,7 +505,7 @@ export class DialQueue {
 
     // make sure we actually have some addresses to dial
     if (sortedGatedAddrs.length === 0) {
-      throw new DialDeniedError('The connection gater denied all addresses in the dial request')
+      throw new DialDeniedError(`The connection gater denied all addresses in the dial request for peer: ${peerId?.toString() ?? 'unknown peer'}`)
     }
 
     this.log.trace('addresses for %p before filtering', peerId ?? 'unknown peer', resolvedAddresses.map(({ multiaddr }) => multiaddr.toString()))

@@ -127,7 +127,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  *     - Multiple parallel dials. We already have the issue where new addresses aren't added to existing dials.
  */
 
-export { RecordEnvelope } from './envelope/index.js'
-export type { RecordEnvelopeInit } from './envelope/index.js'
-export { PeerRecord } from './peer-record/index.js'
-export type { PeerRecordInit } from './peer-record/index.js'
+export { RecordEnvelope } from './envelope/index.ts'
+export type { RecordEnvelopeInit } from './envelope/index.ts'
+export { PeerRecord } from './peer-record/index.ts'
+export type { PeerRecordInit } from './peer-record/index.ts'

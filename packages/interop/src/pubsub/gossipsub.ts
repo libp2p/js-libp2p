@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import first from 'it-first'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { waitForSubscribed } from './utils.js'
+import { waitForSubscribed } from './utils.ts'
 import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.js'
 
 export function gossipsubTests (factory: DaemonFactory): void {
@@ -19,8 +19,7 @@ export function gossipsubTests (factory: DaemonFactory): void {
 }
 
 function runGossipsubTests (factory: DaemonFactory, optionsA: SpawnOptions, optionsB: SpawnOptions): void {
-  // TODO: disabled until gossipsub supports event target streams
-  describe.skip('pubsub.gossipsub', () => {
+  describe('pubsub.gossipsub', () => {
     let daemonA: Daemon
     let daemonB: Daemon
 

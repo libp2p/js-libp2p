@@ -20,7 +20,7 @@
  * ```
  */
 
-import { PROTOCOL_ID } from './constants.js'
+import { PROTOCOL_ID } from './constants.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { LengthPrefixedStreamOpts } from '@libp2p/utils'
 
@@ -37,5 +37,5 @@ export interface MultistreamSelectInit extends AbortOptions, Partial<LengthPrefi
   negotiateFully?: boolean
 }
 
-export { select } from './select.js'
-export { handle } from './handle.js'
+export { select } from './select.ts'
+export { handle } from './handle.ts'

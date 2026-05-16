@@ -654,6 +654,8 @@ describe('go-libp2p-pubsub gossipsub tests', function () {
       psubs.forEach((ps) => { ps.pubsub.subscribe(`${topic}${i}`) })
     }
 
+    await Promise.all(psubs.map(async (ps) => awaitEvents(ps.pubsub, 'gossipsub:heartbeat', 2)))
+
     // wait for the flood to stop
     await backgroundFlood
 

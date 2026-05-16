@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { GossipSub as GossipSubClass } from '../src/gossipsub.js'
-import { fastMsgIdFn } from './utils/msgId.js'
+import { fastMsgIdFn } from './utils/msgId.ts'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 

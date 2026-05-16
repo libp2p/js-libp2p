@@ -7,7 +7,7 @@ import map from 'it-map'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Message } from './fixtures/pb/message.js'
+import { Message } from './fixtures/pb/message.ts'
 import type { TestSetup } from '../index.js'
 import type { MultiaddrConnection, Stream, StreamCloseEvent, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 

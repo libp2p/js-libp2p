@@ -8,8 +8,8 @@
  * These interfaces and classes define the core internal behaviors of libp2p.
  */
 
-export * from './address-manager.js'
-export * from './connection-manager.js'
-export * from './random-walk.js'
-export * from './registrar.js'
-export * from './transport-manager.js'
+export * from './address-manager.ts'
+export * from './connection-manager.ts'
+export * from './random-walk.ts'
+export * from './registrar.ts'
+export * from './transport-manager.ts'

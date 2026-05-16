@@ -1,5 +1,5 @@
 import { getNetConfig, isNetworkAddress, isPrivate, trackedMap } from '@libp2p/utils'
-import type { AddressManagerComponents, AddressManagerInit } from './index.js'
+import type { AddressManagerComponents, AddressManagerInit } from './index.ts'
 import type { Logger } from '@libp2p/interface'
 import type { NodeAddress } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'

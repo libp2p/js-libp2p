@@ -32,7 +32,7 @@
  */
 
 import { serviceCapabilities } from '@libp2p/interface'
-import { MplexStreamMuxer } from './mplex.js'
+import { MplexStreamMuxer } from './mplex.ts'
 import type { MultiaddrConnection, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 export interface MplexInit {

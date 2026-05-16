@@ -42,7 +42,7 @@
  * ```
  */
 
-import { Fetch as FetchClass } from './fetch.js'
+import { Fetch as FetchClass } from './fetch.ts'
 import type { DialProtocolOptions, DialTarget } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 

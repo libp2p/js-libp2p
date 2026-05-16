@@ -51,7 +51,7 @@
  * ```
  */
 
-import { Perf as PerfClass } from './perf-service.js'
+import { Perf as PerfClass } from './perf-service.ts'
 import type { ComponentLogger, DialProtocolOptions } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'

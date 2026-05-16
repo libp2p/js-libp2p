@@ -1,4 +1,4 @@
-import type { RateLimiterResult } from './rate-limiter.js'
+import type { RateLimiterResult } from './rate-limiter.ts'
 
 /**
  * A rate limit was hit

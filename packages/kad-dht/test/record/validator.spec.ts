@@ -78,6 +78,22 @@ describe('validator', () => {
       await expect(validator.verifyRecord(validators, rec))
         .to.eventually.rejected.with.property('name', 'InvalidParametersError')
     })
+
+    it('rejects records whose key has no namespace', async () => {
+      const shortKeys = [
+        new Uint8Array([0x01, 0x02, 0x03]),
+        uint8ArrayFromString('foo'),
+        uint8ArrayFromString('/foo'),
+        uint8ArrayFromString('foo/bar'),
+        new Uint8Array()
+      ]
+
+      for (const k of shortKeys) {
+        const rec = new Libp2pRecord(k, uint8ArrayFromString('value'), new Date())
+        await expect(validator.verifyRecord({}, rec), `key ${Array.from(k).join(',')} should be rejected`)
+          .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
+      }
+    })
   })
 
   describe('validators', () => {

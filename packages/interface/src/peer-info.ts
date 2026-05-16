@@ -1,4 +1,4 @@
-import type { PeerId } from './peer-id.js'
+import type { PeerId } from './peer-id.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**

@@ -5,7 +5,6 @@ import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { detect } from 'detect-browser'
 import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
@@ -20,8 +19,6 @@ import type { Logger, Connection, Stream, ComponentLogger, Upgrader } from '@lib
 import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
-
-const browser = detect()
 
 interface Initiator {
   multiaddr: Multiaddr
@@ -80,7 +77,6 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
 }
 
 describe('webrtc basic', () => {
-  const isFirefox = ((browser != null) && browser.name === 'firefox')
   let initiator: Initiator
   let recipient: Recipient
   let initiatorPeerConnection: RTCPeerConnection
@@ -110,11 +106,6 @@ describe('webrtc basic', () => {
     ).to.eventually.be.fulfilled()
 
     await pRetry(async () => {
-      if (isFirefox) {
-        expect(initiatorPeerConnection.iceConnectionState).eq('connected')
-        expect(recipient.peerConnection.iceConnectionState).eq('connected')
-        return
-      }
       expect(initiatorPeerConnection.connectionState).eq('connected')
       expect(recipient.peerConnection.connectionState).eq('connected')
     })

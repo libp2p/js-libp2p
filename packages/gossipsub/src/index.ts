@@ -1,11 +1,11 @@
-import * as constants from './constants.js'
+import * as constants from './constants.ts'
 import { GossipSub as GossipSubClass } from './gossipsub.ts'
-import { MessageCache } from './message-cache.js'
-import type { GossipsubOptsSpec } from './config.js'
-import type { DecodeRPCLimits } from './message/decodeRpc.js'
-import type { MetricsRegister, TopicStrToLabel } from './metrics.js'
-import type { PeerScoreParams, PeerScoreThresholds } from './score/index.js'
-import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn } from './types.js'
+import { MessageCache } from './message-cache.ts'
+import type { GossipsubOptsSpec } from './config.ts'
+import type { DecodeRPCLimits } from './message/decodeRpc.ts'
+import type { MetricsRegister, TopicStrToLabel } from './metrics.ts'
+import type { PeerScoreParams, PeerScoreThresholds } from './score/index.ts'
+import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn } from './types.ts'
 import type {
   PeerId, PeerStore,
   ComponentLogger,
