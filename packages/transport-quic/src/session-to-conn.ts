@@ -25,19 +25,16 @@ class QUICSessionMultiaddrConnection extends AbstractMultiaddrConnection {
       this.abort(err)
     }
 */
-    // @ts-expect-error not in types
     this.session.onearlyrejected = (err) => {
       this.log.error('QUIC onearlyrejected - %e', err)
       this.onRemoteReset()
     }
 
-    // @ts-expect-error not in types
     this.session.ongoaway = (err) => {
       this.log.error('QUIC ongoaway - %e', err)
       this.onTransportClosed()
     }
 
-    // @ts-expect-error not in types
     session.opened.then(() => {
       this.log('QUIC session opened')
     }, (err: Error) => {

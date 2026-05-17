@@ -44,13 +44,13 @@
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "doc-check": "aegir doc-check",
-    "build": "aegir build",
-    "test": "aegir test -t node",
+    "build": "aegir build -- --experimental-quic",
+    "test": "aegir test -t node -- --experimental-quic",
     "test:chrome": "aegir test -t browser -f ./dist/test/browser.js --cov",
     "test:chrome-webworker": "aegir test -t webworker -f ./dist/test/browser.js",
     "test:firefox": "aegir test -t browser -f ./dist/test/browser.js -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -f ./dist/test/browser.js -- --browser firefox",
-    "test:node": "aegir test -t node --cov"
+    "test:node": "aegir test -t node --cov -- --experimental-quic"
   },
   "dependencies": {
     "@libp2p/interface": "^3.1.1",

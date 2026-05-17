@@ -36,6 +36,43 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.2.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.2.0...utils-v7.2.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* guard processSendQueue against non-writable stream status ([#3416](https://github.com/libp2p/js-libp2p/issues/3416)) ([8230eb5](https://github.com/libp2p/js-libp2p/commit/8230eb5b1d5bcc19f1542532b146158e1d0458af))
+* **utils:** use unshift in byteStream unwrap ([#3507](https://github.com/libp2p/js-libp2p/issues/3507)) ([9eb27be](https://github.com/libp2p/js-libp2p/commit/9eb27be790afc64c436422a9f7fa53cf0c95d9b6))
+
+## [7.2.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.1.0...utils-v7.2.0) (2026-05-09)
+
+
+### Features
+
+* **utils:** add multiaddr sort comparators ([#3488](https://github.com/libp2p/js-libp2p/issues/3488)) ([7a35523](https://github.com/libp2p/js-libp2p/commit/7a355238dc10eb5c23a439bab251bbc90473c965))
+
+
+### Bug Fixes
+
+* **utils:** guard onProgress cycles in Job dispatch ([#3485](https://github.com/libp2p/js-libp2p/issues/3485)) ([40a6220](https://github.com/libp2p/js-libp2p/commit/40a622093e4cea9863692ce9bd854227dd183eb8)), closes [#3484](https://github.com/libp2p/js-libp2p/issues/3484)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+
+## [7.1.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.17...utils-v7.1.0) (2026-04-25)
+
+
+### Features
+
+* **utils:** add tryGetNetConfig helper ([#3471](https://github.com/libp2p/js-libp2p/issues/3471)) ([d57fe74](https://github.com/libp2p/js-libp2p/commit/d57fe74c032627c4440a400592c2b1273e15ed40))
+
 ## [7.0.17](https://github.com/libp2p/js-libp2p/compare/utils-v7.0.16...utils-v7.0.17) (2026-04-16)
 
 

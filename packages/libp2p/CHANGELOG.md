@@ -110,6 +110,70 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.0...libp2p-v3.3.1) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/multistream-select bumped from ^7.0.19 to ^7.0.20
+    * @libp2p/peer-collections bumped from ^7.0.19 to ^7.0.20
+    * @libp2p/peer-store bumped from ^12.0.19 to ^12.0.20
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
+## [3.3.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.2.4...libp2p-v3.3.0) (2026-05-09)
+
+
+### Features
+
+* **utils:** add multiaddr sort comparators ([#3488](https://github.com/libp2p/js-libp2p/issues/3488)) ([7a35523](https://github.com/libp2p/js-libp2p/commit/7a355238dc10eb5c23a439bab251bbc90473c965))
+
+
+### Bug Fixes
+
+* **libp2p:** release probe stream slot on ConnectionMonitor ping error ([#3464](https://github.com/libp2p/js-libp2p/issues/3464)) ([15eeedb](https://github.com/libp2p/js-libp2p/commit/15eeedba13846e55e8fc3f9e4c49af18fa185ea4))
+
+
+### Refactors
+
+* **libp2p:** drop asMultiaddr, use composite sort ([#3492](https://github.com/libp2p/js-libp2p/issues/3492)) ([81e8dcc](https://github.com/libp2p/js-libp2p/commit/81e8dccbf2d6fd9258dd5b6ade5d9f3648596013))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/interface-internal bumped from ^3.1.3 to ^3.1.4
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+    * @libp2p/multistream-select bumped from ^7.0.18 to ^7.0.19
+    * @libp2p/peer-collections bumped from ^7.0.18 to ^7.0.19
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/peer-store bumped from ^12.0.18 to ^12.0.19
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
+## [3.2.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.2.3...libp2p-v3.2.4) (2026-05-04)
+
+
+### Bug Fixes
+
+* emit self:peer:update on observed address removal ([#3483](https://github.com/libp2p/js-libp2p/issues/3483)) ([3a5e46e](https://github.com/libp2p/js-libp2p/commit/3a5e46eaa2baa370d808e3e1bd6a0cea9f1ef7bc))
+
+## [3.2.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.2.2...libp2p-v3.2.3) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/multistream-select bumped from ^7.0.17 to ^7.0.18
+    * @libp2p/peer-collections bumped from ^7.0.17 to ^7.0.18
+    * @libp2p/peer-store bumped from ^12.0.17 to ^12.0.18
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
 ## [3.2.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.2.1...libp2p-v3.2.2) (2026-04-16)
 
 

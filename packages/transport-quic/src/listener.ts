@@ -166,7 +166,6 @@ export class QUICListener extends TypedEventEmitter<ListenerEvents> implements L
     } catch (err: any) {
       this.log('inbound connection failed to upgrade - %e', err)
       try {
-        // @ts-expect-error not in types
         await session.close({
           type: 'application',
           reason: err.message
@@ -209,7 +208,6 @@ export class QUICListener extends TypedEventEmitter<ListenerEvents> implements L
 
     try {
       this.endpoint = await net.listen(this.onSession.bind(this), {
-        // @ts-expect-error types are wrong
         sni: {
           '*': {
             certs: uint8ArrayFromString(pem.cert),
@@ -241,7 +239,7 @@ export class QUICListener extends TypedEventEmitter<ListenerEvents> implements L
       .then(() => {
         this.safeDispatchEvent('close')
       })
-      .catch(err => {
+      .catch((err: Error) => {
         this.metrics.errors?.increment({ [`${this.addr} close_error`]: true })
         this.safeDispatchEvent('error', { detail: err })
       })
@@ -255,7 +253,6 @@ export class QUICListener extends TypedEventEmitter<ListenerEvents> implements L
     // TODO: this leaves sessions open until they time out thought the docs say
     // they should be closed immediately
     this.endpoint?.destroy?.()
-      // @ts-expect-error endpoint.destroy returns a promise - https://github.com/jasnell/node/blob/bbd0da0ae8862a882144dbcb6efa115b1068223c/lib/internal/quic/quic.js#L3740
       .catch(() => {})
 
     // stop any in-progress connection upgrades

@@ -2,7 +2,7 @@ import { AbstractStream } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import type { AbortOptions, MessageStreamDirection, Logger, StreamOptions } from '@libp2p/interface'
 import type { AbstractStreamInit, SendResult } from '@libp2p/utils'
-import type { QuicStream } from 'node:quic'
+import type { ExperimentalQuicStreamWriter, QuicStream } from 'node:quic'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface QUICStreamInit extends AbstractStreamInit {
@@ -10,18 +10,15 @@ interface QUICStreamInit extends AbstractStreamInit {
 }
 
 export class QUICStream extends AbstractStream {
-  private readonly writer: WritableStreamDefaultWriter<Uint8Array>
+  private readonly writer: ExperimentalQuicStreamWriter
 
   constructor (init: QUICStreamInit) {
     super(init)
 
-    // @ts-expect-error this comes from https://github.com/nodejs/node/pull/62876
-    // and is missing from the types
     this.writer = init.stream.writer
 
     Promise.resolve()
       .then(async () => {
-        // @ts-expect-error not in types
         // eslint-disable-next-line @typescript-eslint/await-thenable
         for await (const bufs of init.stream) {
           bufs.forEach((buf: Uint8Array) => {
@@ -50,7 +47,6 @@ export class QUICStream extends AbstractStream {
       // TypeError: Provided key doesn't match [[ArrayBufferDetachKey]]
       const bytes = data.subarray(0, toWrite).slice()
       data.consume(toWrite)
-      // @ts-expect-error not in types
       this.writer.writeSync(bytes)
       sentBytes += toWrite
     }
@@ -68,7 +64,6 @@ export class QUICStream extends AbstractStream {
     const canSendMore = this.writer.desiredSize > 0
 
     if (!canSendMore) {
-      // @ts-expect-error not in types
       // wait for drain
       this.writer[Symbol.for('Stream.drainableProtocol')]?.()?.then(() => {
         this.safeDispatchEvent('drain')
@@ -84,13 +79,11 @@ export class QUICStream extends AbstractStream {
   }
 
   sendReset (err: Error): void {
-    // @ts-expect-error not in types
     this.writer.fail(err)
   }
 
   async sendCloseWrite (options?: AbortOptions): Promise<void> {
     this.log('sendCloseWrite closing writer')
-    // @ts-expect-error not in types
     await raceSignal(this.writer.end().catch(() => {}), options?.signal)
     this.log('sendCloseWrite closed writer')
   }
