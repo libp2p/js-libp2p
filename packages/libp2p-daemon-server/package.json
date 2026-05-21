@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/daemon-server",
-  "version": "9.0.25",
+  "version": "9.0.26",
   "description": "API server for libp2p-daemon instances",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p-daemon-server#readme",
@@ -47,7 +47,7 @@
     "@libp2p/daemon-protocol": "^8.0.7",
     "@libp2p/gossipsub": "^15.0.23",
     "@libp2p/interface": "^3.2.2",
-    "@libp2p/kad-dht": "^16.2.7",
+    "@libp2p/kad-dht": "^16.3.0",
     "@libp2p/logger": "^6.2.7",
     "@libp2p/peer-id": "^6.0.9",
     "@libp2p/tcp": "^11.0.20",
