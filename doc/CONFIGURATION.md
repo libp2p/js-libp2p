@@ -186,7 +186,7 @@ If you want to know more about libp2p DHT, you should read the following content
 
 Some available pubsub routers are:
 
-- [@chainsafe/libp2p-gossipsub](https://github.com/ChainSafe/js-libp2p-gossipsub)
+- [@libp2p/gossipsub](https://github.com/libp2p/js-libp2p/tree/main/packages/gossipsub)
 - [@libp2p/floodsub](https://github.com/libp2p/js-libp2p-floodsub) (Not for production use)
 
 If none of the available pubsub routers fulfills your needs, you can create a libp2p compatible one. A libp2p pubsub router just needs to be created on top of [@libp2p/pubsub](https://github.com/libp2p/js-libp2p-pubsub), which ensures `js-libp2p` API expectations.
