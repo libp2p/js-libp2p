@@ -114,6 +114,18 @@ describe('connection', () => {
     expect(connection.direction).to.exist()
   })
 
+  it('should share its timeline with the underlying maConn so reads are visible', () => {
+    const connection = createConnection(components, init)
+
+    // the connection-monitor gates aborts on conn.timeline.lastReadAt, which is
+    // only updated if the connection exposes the same timeline object that the
+    // maConn records reads on
+    expect(connection.timeline).to.equal(maConn.timeline)
+
+    maConn.timeline.lastReadAt = 12345
+    expect(connection.timeline.lastReadAt).to.equal(12345)
+  })
+
   it('should return an empty array of streams', () => {
     const connection = createConnection(components, init)
     const streams = connection.streams

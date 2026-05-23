@@ -153,6 +153,7 @@ describe('connection monitor', () => {
     await delay(500)
 
     expect(connection.abort).to.have.property('called', true)
+    expect(connection.abort.firstCall.args[0]).to.have.property('name', 'ConnectionStaleError')
   })
 
   it('should not abort a connection that fails but recently received data', async () => {
