@@ -158,10 +158,8 @@ export class ConnectionMonitor implements Startable {
           }
         })
           .catch(err => {
-            this.log.error('error during heartbeat - %e', err)
-
             if (!this.abortConnectionOnPingFailure) {
-              this.log('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
+              this.log('ping failed but not aborting due to abortConnectionOnPingFailure flag - %e', err)
               return
             }
 
@@ -169,10 +167,10 @@ export class ConnectionMonitor implements Startable {
             const idleMs = Date.now() - lastReadAt
 
             if (idleMs > this.connectionStaleTimeoutMs) {
-              this.log.error('aborting connection - no data received from peer for %dms (ping error: %e)', idleMs, err)
+              this.log.error('aborting connection - ping failed and no data received from peer for %dms - %e', idleMs, err)
               conn.abort(new ConnectionStaleError(`no data received from peer for ${idleMs}ms`))
             } else {
-              this.log('ping failed but peer was active %dms ago, not aborting', idleMs)
+              this.log('ping failed but peer sent data %dms ago, not aborting - %e', idleMs, err)
             }
           })
       })
