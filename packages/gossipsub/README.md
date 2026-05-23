@@ -1,6 +1,5 @@
 # js-libp2p-gossipsub
 
-[![](https://img.shields.io/badge/made%20by-ChainSafe-blue.svg?style=flat-square)](https://chainsafe.io/)
 ![ES Version](https://img.shields.io/badge/ES-2017-yellow)
 ![Node Version](https://img.shields.io/badge/node-10.x-green)
 
@@ -25,12 +24,12 @@ Gossipsub is an implementation of pubsub based on meshsub and floodsub. You can 
 
 ## Install
 
-`npm install @chainsafe/libp2p-gossipsub`
+`npm install @libp2p/gossipsub`
 
 ## Usage
 
 ```javascript
-import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import { gossipsub } from '@libp2p/gossipsub'
 
 
 const libp2p = await createLibp2p({
