@@ -248,7 +248,7 @@ import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mdns } from '@libp2p/mdns'
 import { kadDHT } from '@libp2p/kad-dht'
-import { gossipsub } from 'libp2p-gossipsub'
+import { gossipsub } from '@libp2p/gossipsub'
 import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
@@ -328,7 +328,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { gossipsub } from 'libp2p-gossipsub'
+import { gossipsub } from '@libp2p/gossipsub'
 import { SignaturePolicy } from '@libp2p/interface'
 import { identify } from '@libp2p/identify'
 

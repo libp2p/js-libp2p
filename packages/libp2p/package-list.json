@@ -50,7 +50,7 @@
     ["libp2p/js-libp2p/tree/main/packages/peer-record", "@libp2p/peer-record", "main", "main.yml"],
 
     "pubsub",
-    ["libp2p/js-libp2p/tree/main/packages/floodsub", "@libp2p/gossipsub", "main", "main.yml"],
+    ["libp2p/js-libp2p/tree/main/packages/gossipsub", "@libp2p/gossipsub", "main", "main.yml"],
     ["libp2p/js-libp2p/tree/main/packages/floodsub", "@libp2p/floodsub", "main", "main.yml"]
   ]
 }
