@@ -126,13 +126,13 @@ export class KadDHT extends TypedEventEmitter<PeerDiscoveryEvents> implements Ka
   public providers: Providers
   public network: Network
   public peerRouting: KADDHTPeerRouting
+  public readonly validators: Validators
+  public readonly selectors: Selectors
 
   public readonly components: KadDHTComponents
   private readonly log: Logger
   private running: boolean
   private clientMode: boolean
-  private readonly validators: Validators
-  private readonly selectors: Selectors
   private readonly queryManager: QueryManager
   private readonly contentFetching: ContentFetching
   private readonly contentRouting: KADDHTContentRouting

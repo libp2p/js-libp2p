@@ -230,7 +230,7 @@ export class ContentFetching {
     let i = 0
 
     try {
-      i = bestRecord(this.selectors, key, records)
+      i = await bestRecord(this.selectors, key, records)
     } catch (err: any) {
       // Assume the first record if no selector available
       if (err.name !== 'InvalidParametersError') {

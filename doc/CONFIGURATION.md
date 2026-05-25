@@ -186,7 +186,7 @@ If you want to know more about libp2p DHT, you should read the following content
 
 Some available pubsub routers are:
 
-- [@chainsafe/libp2p-gossipsub](https://github.com/ChainSafe/js-libp2p-gossipsub)
+- [@libp2p/gossipsub](https://github.com/libp2p/js-libp2p/tree/main/packages/gossipsub)
 - [@libp2p/floodsub](https://github.com/libp2p/js-libp2p-floodsub) (Not for production use)
 
 If none of the available pubsub routers fulfills your needs, you can create a libp2p compatible one. A libp2p pubsub router just needs to be created on top of [@libp2p/pubsub](https://github.com/libp2p/js-libp2p-pubsub), which ensures `js-libp2p` API expectations.
@@ -248,7 +248,7 @@ import { webSockets } from '@libp2p/websockets'
 import { noise } from '@chainsafe/libp2p-noise'
 import { mdns } from '@libp2p/mdns'
 import { kadDHT } from '@libp2p/kad-dht'
-import { gossipsub } from 'libp2p-gossipsub'
+import { gossipsub } from '@libp2p/gossipsub'
 import { yamux } from '@chainsafe/libp2p-yamux'
 
 const node = await createLibp2p({
@@ -328,7 +328,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { noise } from '@chainsafe/libp2p-noise'
-import { gossipsub } from 'libp2p-gossipsub'
+import { gossipsub } from '@libp2p/gossipsub'
 import { SignaturePolicy } from '@libp2p/interface'
 import { identify } from '@libp2p/identify'
 
