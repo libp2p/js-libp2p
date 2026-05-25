@@ -409,7 +409,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.allowedTopics = (opts.allowedTopics != null) ? new Set(opts.allowedTopics) : null
   }
 
-  readonly [Symbol.toStringTag] = '@chainsafe/libp2p-gossipsub'
+  readonly [Symbol.toStringTag] = '@libp2p/gossipsub'
 
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/pubsub'
