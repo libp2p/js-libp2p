@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/transport-interop-libp2p-main",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "type": "module",
   "private": true,
   "scripts": {
@@ -22,7 +22,7 @@
     "@libp2p/tls": "^3.1.2",
     "@libp2p/webrtc": "^6.0.23",
     "@libp2p/websockets": "^10.1.13",
-    "@libp2p/webtransport": "^6.0.25",
+    "@libp2p/webtransport": "^6.0.26",
     "@multiformats/multiaddr": "^13.0.1",
     "aegir": "^47.0.22",
     "libp2p": "^3.3.1",

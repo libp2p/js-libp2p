@@ -106,6 +106,13 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.3.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.7...kad-dht-v16.3.0) (2026-05-18)
+
+
+### Features
+
+* allow async selectors and adding validators/selectors ([#3506](https://github.com/libp2p/js-libp2p/issues/3506)) ([d59c165](https://github.com/libp2p/js-libp2p/commit/d59c165ac794e4895f54777201a666c1777b3195))
+
 ## [16.2.7](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.6...kad-dht-v16.2.7) (2026-05-16)
 
 
