@@ -87,4 +87,18 @@ describe('decodeRpcLimits applied to control messages', () => {
     const rpc = (node.pubsub as any).decodeRpc(bytes)
     expect(rpc.control?.ihave[0]?.messageIDs).to.have.length(5)
   })
+
+  it('rejects an IHAVE frame exceeding the default maxIhaveMessageIDs', async () => {
+    const dflt = await createComponents({ init: {} })
+    try {
+      const bytes = RPC.encode({
+        subscriptions: [],
+        messages: [],
+        control: { ihave: [{ topicID: TOPIC, messageIDs: ids(5001) }], iwant: [], graft: [], prune: [], idontwant: [] }
+      })
+      expect(() => (dflt.pubsub as any).decodeRpc(bytes)).to.throw(MaxLengthError)
+    } finally {
+      await stop(dflt.pubsub, ...Object.values(dflt.components))
+    }
+  })
 })
