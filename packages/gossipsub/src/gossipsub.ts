@@ -858,18 +858,16 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       limits: {
         subscriptions: this.decodeRpcLimits.maxSubscriptions,
         messages: this.decodeRpcLimits.maxMessages,
-        control$: {
-          ihave: this.decodeRpcLimits.maxIhaveMessageIDs,
-          iwant: this.decodeRpcLimits.maxIwantMessageIDs,
+        control: {
+          ihave: this.decodeRpcLimits.maxControlMessages,
+          ihave$: { messageIDs: this.decodeRpcLimits.maxIhaveMessageIDs },
+          iwant: this.decodeRpcLimits.maxControlMessages,
+          iwant$: { messageIDs: this.decodeRpcLimits.maxIwantMessageIDs },
           graft: this.decodeRpcLimits.maxControlMessages,
           prune: this.decodeRpcLimits.maxControlMessages,
-          prune$: {
-            peers: this.decodeRpcLimits.maxPeerInfos
-          },
+          prune$: { peers: this.decodeRpcLimits.maxPeerInfos },
           idontwant: this.decodeRpcLimits.maxControlMessages,
-          idontwant$: {
-            messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs
-          }
+          idontwant$: { messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs }
         }
       }
     })
