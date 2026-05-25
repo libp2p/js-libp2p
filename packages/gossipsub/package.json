@@ -52,7 +52,7 @@
     "release": "aegir release --no-types",
     "build": "aegir build",
     "generate": "protons ./src/message/rpc.proto",
-    "benchmark": "yarn build && yarn benchmark:files dist/test/benchmark/**/*.test.js",
+    "benchmark": "npm run build && npm run benchmark:files -- dist/test/benchmark/**/*.test.js",
     "benchmark:files": "NODE_OPTIONS='--max-old-space-size=4096' mocha --timeout 0",
     "test": "aegir test -f dist/test/*.spec.js",
     "test:node": "aegir test -t node -f dist/test/*.spec.js -f dist/test/unit/*.spec.js -f dist/test/e2e/*.spec.js",
