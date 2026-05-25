@@ -183,6 +183,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /** Number of messages we have asked from peer in the last heartbeat */
   private readonly iasked = new Map<PeerIdStr, number>()
 
+  /** Number of IWANT messages we have received from peer in the last heartbeat */
+  private readonly iwantCounts = new Map<PeerIdStr, number>()
+
   /** Prune backoff map */
   private readonly backoff = new Map<TopicStr, Map<PeerIdStr, number>>()
 
@@ -592,6 +595,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.control.clear()
     this.peerhave.clear()
     this.iasked.clear()
+    this.iwantCounts.clear()
     this.backoff.clear()
     this.outbound.clear()
     this.gossipTracer.clear()
@@ -881,6 +885,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       await pipe(stream, async (source) => {
         for await (const data of source) {
           try {
+            // TODO: Check max gossip message size, before decodeRpc()
             const rpcBytes = data.subarray()
             // Note: This function may throw, it must be wrapped in a try {} catch {} to prevent closing the stream.
             // TODO: What should we do if the entire RPC is invalid?
@@ -1320,23 +1325,32 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // string msgId => msgId
     const iwant = new Map<MsgIdStr, Uint8Array>()
 
-    ihave.forEach(({ topicID, messageIDs }) => {
+    // Cap the message ids we examine per call at GossipsubMaxIHaveLength
+    let processed = 0
+    // eslint-disable-next-line no-labels
+    out: for (const { topicID, messageIDs } of ihave) {
       if (topicID == null || (messageIDs == null) || !this.mesh.has(topicID)) {
-        return
+        continue
       }
 
       let idonthave = 0
 
-      messageIDs.forEach((msgId) => {
+      for (const msgId of messageIDs) {
+        if (processed >= constants.GossipsubMaxIHaveLength) {
+          // eslint-disable-next-line no-labels
+          break out
+        }
+        processed++
+
         const msgIdStr = this.msgIdToStrFn(msgId)
         if (!this.seenCache.has(msgIdStr)) {
           iwant.set(msgIdStr, msgId)
           idonthave++
         }
-      })
+      }
 
       this.metrics?.onIhaveRcv(topicID, messageIDs.length, idonthave)
-    })
+    }
 
     if (iwant.size === 0) {
       return []
@@ -1382,29 +1396,49 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return []
     }
 
+    // IWANT flood protection
+    const iwantCount = (this.iwantCounts.get(id) ?? 0) + 1
+    this.iwantCounts.set(id, iwantCount)
+    if (iwantCount > constants.GossipsubMaxIWantMessages) {
+      this.log('IWANT: peer %s has requested too many times within this heartbeat interval; ignoring', id)
+      return []
+    }
+
     const ihave = new Map<MsgIdStr, RPC.Message>()
     const iwantByTopic = new Map<TopicStr, number>()
     let iwantDonthave = 0
 
-    iwant.forEach(({ messageIDs }) => {
-      messageIDs?.forEach((msgId) => {
+    // Cap the message ids we examine per call at GossipsubMaxIHaveLength
+    let processed = 0
+    // eslint-disable-next-line no-labels
+    out: for (const { messageIDs } of iwant) {
+      if (messageIDs == null) {
+        continue
+      }
+      for (const msgId of messageIDs) {
+        if (processed >= constants.GossipsubMaxIHaveLength) {
+          // eslint-disable-next-line no-labels
+          break out
+        }
+        processed++
+
         const msgIdStr = this.msgIdToStrFn(msgId)
         const entry = this.mcache.getWithIWantCount(msgIdStr, id)
         if (entry == null) {
           iwantDonthave++
-          return
+          continue
         }
 
         iwantByTopic.set(entry.msg.topic, 1 + (iwantByTopic.get(entry.msg.topic) ?? 0))
 
         if (entry.count > constants.GossipsubGossipRetransmission) {
           this.log('IWANT: Peer %s has asked for message %s too many times: ignoring request', id, msgId)
-          return
+          continue
         }
 
         ihave.set(msgIdStr, entry.msg)
-      })
-    })
+      }
+    }
 
     this.metrics?.onIwantRcv(iwantByTopic, iwantDonthave)
 
@@ -2619,6 +2653,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.peerhave.clear()
     this.metrics?.cacheSize.set({ cache: 'iasked' }, this.iasked.size)
     this.iasked.clear()
+    this.iwantCounts.clear()
 
     // apply IWANT request penalties
     this.applyIwantPenalties()
