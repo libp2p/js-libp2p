@@ -851,6 +851,31 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   // MESSAGE METHODS
 
   /**
+   * Decode an inbound RPC, enforcing this.decodeRpcLimits.
+   */
+  private decodeRpc (rpcBytes: Uint8Array | Uint8ArrayList): RPC {
+    return RPC.decode(rpcBytes, {
+      limits: {
+        subscriptions: this.decodeRpcLimits.maxSubscriptions,
+        messages: this.decodeRpcLimits.maxMessages,
+        control$: {
+          ihave: this.decodeRpcLimits.maxIhaveMessageIDs,
+          iwant: this.decodeRpcLimits.maxIwantMessageIDs,
+          graft: this.decodeRpcLimits.maxControlMessages,
+          prune: this.decodeRpcLimits.maxControlMessages,
+          prune$: {
+            peers: this.decodeRpcLimits.maxPeerInfos
+          },
+          idontwant: this.decodeRpcLimits.maxControlMessages,
+          idontwant$: {
+            messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs
+          }
+        }
+      }
+    })
+  }
+
+  /**
    * Responsible for processing each RPC message received by other peers.
    */
   private async pipePeerReadStream (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>): Promise<void> {
@@ -858,29 +883,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       await pipe(stream, async (source) => {
         for await (const data of source) {
           try {
-            // TODO: Check max gossip message size, before decodeRpc()
             const rpcBytes = data.subarray()
             // Note: This function may throw, it must be wrapped in a try {} catch {} to prevent closing the stream.
             // TODO: What should we do if the entire RPC is invalid?
-            const rpc = RPC.decode(rpcBytes, {
-              limits: {
-                subscriptions: this.decodeRpcLimits.maxSubscriptions,
-                messages: this.decodeRpcLimits.maxMessages,
-                control$: {
-                  ihave: this.decodeRpcLimits.maxIhaveMessageIDs,
-                  iwant: this.decodeRpcLimits.maxIwantMessageIDs,
-                  graft: this.decodeRpcLimits.maxControlMessages,
-                  prune: this.decodeRpcLimits.maxControlMessages,
-                  prune$: {
-                    peers: this.decodeRpcLimits.maxPeerInfos
-                  },
-                  idontwant: this.decodeRpcLimits.maxControlMessages,
-                  idontwant$: {
-                    messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs
-                  }
-                }
-              }
-            })
+            const rpc = this.decodeRpc(rpcBytes)
 
             this.metrics?.onRpcRecv(rpc, rpcBytes.length)
 
