@@ -14,7 +14,6 @@ describe('heartbeat', function () {
   const numTopic = 70
   const numPeers = 50
   const numPeersPerTopic = 30
-  let numLoop = 0
 
   const getTopic = (i: number): string => {
     return topic + String(i)
@@ -111,23 +110,27 @@ describe('heartbeat', function () {
       )
     }
 
-    await runBenchmark('heartbeat', async () => {
-      numLoop++
-      const msg = `its not a flooooood ${numLoop}`
-      const promises = []
-      for (let topicIndex = 0; topicIndex < numTopic; topicIndex++) {
-        for (const peerIndex of getTopicPeerIndices(topicIndex)) {
-          promises.push(
-            psubs[peerIndex].pubsub.publish(
-              getTopic(topicIndex),
-              uint8ArrayFromString(psubs[peerIndex].components.peerId.toString() + msg)
-            )
+    // publish one round of messages so the measured heartbeat has gossip to emit
+    const msg = 'its not a flooooood'
+    const promises = []
+    for (let topicIndex = 0; topicIndex < numTopic; topicIndex++) {
+      for (const peerIndex of getTopicPeerIndices(topicIndex)) {
+        promises.push(
+          psubs[peerIndex].pubsub.publish(
+            getTopic(topicIndex),
+            uint8ArrayFromString(psubs[peerIndex].components.peerId.toString() + msg)
           )
-        }
+        )
       }
-      await Promise.all(promises)
+    }
+    await Promise.all(promises)
 
+    // measure heartbeat() in isolation — the publish round above is excluded from the timing
+    await runBenchmark('heartbeat', async () => {
       await psubs[0].pubsub.heartbeat()
     })
+
+    // stop the nodes so their heartbeat timers don't keep the process alive
+    await Promise.allSettled(psubs.map(async (ps) => ps.pubsub.stop()))
   })
 })
