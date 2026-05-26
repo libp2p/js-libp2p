@@ -1,7 +1,6 @@
 import { expect } from 'aegir/chai'
-// @ts-expect-error no types
-import Benchmark from 'benchmark'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { runBenchmark } from '../utils/benchmark.js'
 import {
   connectPubsubNodes,
   createComponentsArray,
@@ -132,27 +131,3 @@ describe('heartbeat', function () {
     })
   })
 })
-
-async function runBenchmark (name: string, fn: () => void | Promise<void>): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    new Benchmark(name, {
-      defer: true,
-      initCount: 1,
-      maxTime: 1,
-      minSamples: 1,
-      minTime: 0.1,
-      fn (deferred: { resolve(): void }) {
-        Promise.resolve()
-          .then(fn)
-          .then(() => { deferred.resolve() })
-          .catch(reject)
-      }
-    })
-      .on('complete', function (this: { hz: number, count: number }) {
-        process.stdout.write(`    ${name}: ${this.hz.toFixed(4)} ops/s ${(1000 / this.hz).toFixed(6)} ms/op ${this.count} runs\n`)
-        resolve()
-      })
-      .on('error', reject)
-      .run({ async: true })
-  })
-}

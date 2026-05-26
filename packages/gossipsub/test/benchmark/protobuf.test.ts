@@ -1,7 +1,6 @@
 import crypto from 'node:crypto'
-// @ts-expect-error no types
-import Benchmark from 'benchmark'
 import { RPC } from '../../src/message/rpc.js'
+import { runBenchmark } from '../utils/benchmark.js'
 
 describe('protobuf', function () {
   const testCases: Array<{ name: string, length: number }> = [
@@ -48,28 +47,3 @@ describe('protobuf', function () {
     })
   }
 })
-
-async function runBenchmark (name: string, fn: () => void | Promise<void>, runsFactor = 1): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    new Benchmark(name, {
-      defer: true,
-      initCount: 1,
-      maxTime: 1,
-      minSamples: 1,
-      minTime: 0.1,
-      fn (deferred: { resolve(): void }) {
-        Promise.resolve()
-          .then(fn)
-          .then(() => { deferred.resolve() })
-          .catch(reject)
-      }
-    })
-      .on('complete', function (this: { hz: number, count: number }) {
-        const hz = this.hz * runsFactor
-        process.stdout.write(`    ${name}: ${hz.toFixed(4)} ops/s ${(1000 / hz).toFixed(6)} ms/op ${this.count} runs\n`)
-        resolve()
-      })
-      .on('error', reject)
-      .run({ async: true })
-  })
-}
