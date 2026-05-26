@@ -1,4 +1,3 @@
-// @ts-expect-error no types
 import Benchmark from 'benchmark'
 
 export async function runBenchmark (name: string, fn: () => void | Promise<void>, runsFactor = 1): Promise<void> {
@@ -9,14 +8,14 @@ export async function runBenchmark (name: string, fn: () => void | Promise<void>
       maxTime: 1,
       minSamples: 1,
       minTime: 0.1,
-      fn (deferred: { resolve(): void }) {
+      fn (deferred: Benchmark.Deferred) {
         Promise.resolve()
           .then(fn)
           .then(() => { deferred.resolve() })
           .catch(reject)
       }
     })
-      .on('complete', function (this: { hz: number, count: number }) {
+      .on('complete', function (this: Benchmark) {
         const hz = this.hz * runsFactor
         process.stdout.write(`    ${name}: ${hz.toFixed(4)} ops/s ${(1000 / hz).toFixed(6)} ms/op ${this.count} runs\n`)
         resolve()
