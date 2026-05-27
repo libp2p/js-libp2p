@@ -1,5 +1,28 @@
 # Changelog
 
+## [16.0.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.23...gossipsub-v16.0.0) (2026-05-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **gossipsub:** apply decodeRpcLimits to control messages ([#3520](https://github.com/libp2p/js-libp2p/issues/3520))
+
+### Bug Fixes
+
+* **gossipsub:** apply decodeRpcLimits to control messages ([#3520](https://github.com/libp2p/js-libp2p/issues/3520)) ([773dd80](https://github.com/libp2p/js-libp2p/commit/773dd80ded24dbd6b19e675c89fd2f3b45f2d899))
+
+
+### Documentation
+
+* @libp2p/gossipsub ([#3516](https://github.com/libp2p/js-libp2p/issues/3516)) ([c6329a0](https://github.com/libp2p/js-libp2p/commit/c6329a0efdb33f63534468fd90e6bc274ae6fe15))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.21 to ^11.0.22
+
 ## [15.0.23](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.22...gossipsub-v15.0.23) (2026-05-16)
 
 

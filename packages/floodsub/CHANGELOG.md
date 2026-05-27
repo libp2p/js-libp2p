@@ -98,6 +98,13 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.22](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.21...floodsub-v11.0.22) (2026-05-27)
+
+
+### Documentation
+
+* @libp2p/gossipsub ([#3516](https://github.com/libp2p/js-libp2p/issues/3516)) ([c6329a0](https://github.com/libp2p/js-libp2p/commit/c6329a0efdb33f63534468fd90e6bc274ae6fe15))
+
 ## [11.0.21](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.20...floodsub-v11.0.21) (2026-05-16)
 
 
