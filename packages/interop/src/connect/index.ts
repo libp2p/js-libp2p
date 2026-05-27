@@ -3,7 +3,7 @@ import type { Daemon, DaemonFactory, NodeType, SpawnOptions, TransportType } fro
 
 export function connectTests (factory: DaemonFactory): void {
   const nodeTypes: NodeType[] = ['js', 'go']
-  const transportTypes: TransportType[] = ['tcp', 'webtransport', 'webrtc-direct']
+  const transportTypes: TransportType[] = ['quic', 'tcp', 'webtransport', 'webrtc-direct']
 
   for (const typeA of nodeTypes) {
     for (const typeB of nodeTypes) {

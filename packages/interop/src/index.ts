@@ -59,7 +59,7 @@ export type PeerIdType = 'rsa' | 'ed25519' | 'secp256k1'
 export type PubSubRouter = 'gossipsub' | 'floodsub'
 export type Muxer = 'mplex' | 'yamux'
 export type Encryption = 'noise' | 'tls' | 'plaintext'
-export type TransportType = 'tcp' | 'webtransport' | 'webrtc-direct'
+export type TransportType = 'quic' | 'tcp' | 'webtransport' | 'webrtc-direct'
 
 export interface SpawnOptions {
   type: NodeType
