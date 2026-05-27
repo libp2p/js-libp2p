@@ -110,6 +110,14 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.1...libp2p-v3.3.2) (2026-05-27)
+
+
+### Documentation
+
+* @libp2p/gossipsub ([#3516](https://github.com/libp2p/js-libp2p/issues/3516)) ([c6329a0](https://github.com/libp2p/js-libp2p/commit/c6329a0efdb33f63534468fd90e6bc274ae6fe15))
+* fix @libp2p/floodsub CI badge link ([#3518](https://github.com/libp2p/js-libp2p/issues/3518)) ([3574648](https://github.com/libp2p/js-libp2p/commit/3574648c3582bd1f4a4c2b734639a1c890d57384))
+
 ## [3.3.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.0...libp2p-v3.3.1) (2026-05-16)
 
 
