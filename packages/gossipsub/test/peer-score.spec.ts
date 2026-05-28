@@ -679,8 +679,7 @@ describe('PeerScore', () => {
   })
 })
 
-// TODO: https://github.com/ChainSafe/js-libp2p-gossipsub/issues/238
-describe.skip('PeerScore score cache', function () {
+describe('PeerScore score cache', function () {
   const peerA = '16Uiu2HAmMkH6ZLen2tbhiuNCTZLLvrZaDgufNdT5MPjtC9Hr9YNG'
   const logger = defaultLogger()
   let sandbox: sinon.SinonSandbox
@@ -722,33 +721,39 @@ describe.skip('PeerScore score cache', function () {
     expect(computeStoreStub.calledOnce).to.be.true()
   })
 
-  const testCases = [
-    { name: 'decayInterval timeout', fun: () => sandbox.clock.tick(params.decayInterval) },
-    { name: 'refreshScores', fun: () => { ps2.refreshScores() } },
-    { name: 'addPenalty', fun: () => { ps2.addPenalty(peerA, 10, scorePenaltyAny) } },
-    { name: 'graft', fun: () => { ps2.graft(peerA, 'a') } },
-    { name: 'prune', fun: () => { ps2.prune(peerA, 'a') } },
-    { name: 'markInvalidMessageDelivery', fun: () => { ps2.markInvalidMessageDelivery(peerA, 'a') } },
-    { name: 'markFirstMessageDelivery', fun: () => { ps2.markFirstMessageDelivery(peerA, 'a') } },
-    { name: 'markDuplicateMessageDelivery', fun: () => { ps2.markDuplicateMessageDelivery(peerA, 'a') } },
-    { name: 'removeIPs', fun: () => { ps2.removeIP(peerA, '127.0.0.1') } }
+  it('should invalidate the cache after decayInterval timeout', function () {
+    computeStoreStub.returns(10)
+    ps2.addPeer(peerA)
+    ps2.score(peerA)
+    expect(computeStoreStub.calledOnce).to.be.true()
+    ps2.score(peerA)
+    expect(computeStoreStub.calledOnce).to.be.true()
+    sandbox.clock.tick(params.decayInterval)
+    ps2.score(peerA)
+    expect(computeStoreStub.calledTwice).to.be.true()
+  })
+
+  const cachePreservingUpdates = [
+    { name: 'refreshScores', run: () => { ps2.refreshScores() } },
+    { name: 'addPenalty', run: () => { ps2.addPenalty(peerA, 10, scorePenaltyAny) } },
+    { name: 'graft', run: () => { ps2.graft(peerA, 'a') } },
+    { name: 'prune', run: () => { ps2.prune(peerA, 'a') } },
+    { name: 'markInvalidMessageDelivery', run: () => { ps2.markInvalidMessageDelivery(peerA, 'a') } },
+    { name: 'markFirstMessageDelivery', run: () => { ps2.markFirstMessageDelivery(peerA, 'a') } },
+    { name: 'markDuplicateMessageDelivery', run: () => { ps2.markDuplicateMessageDelivery(peerA, 'a') } },
+    { name: 'removeIP', run: () => { ps2.removeIP(peerA, '127.0.0.1') } }
   ]
 
-  for (const { name, fun } of testCases) {
+  for (const { name, run } of cachePreservingUpdates) {
     // eslint-disable-next-line no-loop-func
-    it(`should invalidate the cache after ${name}`, function () {
+    it(`should keep cached score after ${name} inside cache validity`, function () {
       computeStoreStub.returns(10)
       ps2.addPeer(peerA)
       ps2.score(peerA)
       expect(computeStoreStub.calledOnce).to.be.true()
-      // the score is cached
+      run()
       ps2.score(peerA)
       expect(computeStoreStub.calledOnce).to.be.true()
-      // invalidate the cache
-      fun()
-      // should not use the cache
-      ps2.score(peerA)
-      expect(computeStoreStub.calledTwice).to.be.true()
     })
   }
 })

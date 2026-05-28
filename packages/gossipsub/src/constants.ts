@@ -215,6 +215,11 @@ export const GossipsubMaxIHaveLength = 5000
 export const GossipsubMaxIHaveMessages = 10
 
 /**
+ * GossipsubMaxIWantMessages is the maximum number of IWANT messages to accept from a peer within a heartbeat.
+ */
+export const GossipsubMaxIWantMessages = 10
+
+/**
  * Time to wait for a message requested through IWANT following an IHAVE advertisement.
  * If the message is not received within this window, a broken promise is declared and
  * the router may apply bahavioural penalties.

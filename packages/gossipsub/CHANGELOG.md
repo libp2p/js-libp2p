@@ -1,5 +1,46 @@
 # Changelog
 
+## [16.0.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.23...gossipsub-v16.0.0) (2026-05-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **gossipsub:** apply decodeRpcLimits to control messages ([#3520](https://github.com/libp2p/js-libp2p/issues/3520))
+
+### Bug Fixes
+
+* **gossipsub:** apply decodeRpcLimits to control messages ([#3520](https://github.com/libp2p/js-libp2p/issues/3520)) ([773dd80](https://github.com/libp2p/js-libp2p/commit/773dd80ded24dbd6b19e675c89fd2f3b45f2d899))
+
+
+### Documentation
+
+* @libp2p/gossipsub ([#3516](https://github.com/libp2p/js-libp2p/issues/3516)) ([c6329a0](https://github.com/libp2p/js-libp2p/commit/c6329a0efdb33f63534468fd90e6bc274ae6fe15))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.21 to ^11.0.22
+
+## [15.0.23](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.22...gossipsub-v15.0.23) (2026-05-16)
+
+
+### Bug Fixes
+
+* **gossipsub:** prune empty topic entries from topics map, reset topic map on stop ([#3405](https://github.com/libp2p/js-libp2p/issues/3405)) ([2514c01](https://github.com/libp2p/js-libp2p/commit/2514c018ada60b9dbe11f1c9c83b6cc0208b9916))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/peer-store bumped from ^12.0.19 to ^12.0.20
+
 ## [15.0.22](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.21...gossipsub-v15.0.22) (2026-05-09)
 
 

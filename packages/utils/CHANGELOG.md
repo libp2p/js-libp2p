@@ -36,6 +36,14 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.2.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.2.0...utils-v7.2.1) (2026-05-16)
+
+
+### Bug Fixes
+
+* guard processSendQueue against non-writable stream status ([#3416](https://github.com/libp2p/js-libp2p/issues/3416)) ([8230eb5](https://github.com/libp2p/js-libp2p/commit/8230eb5b1d5bcc19f1542532b146158e1d0458af))
+* **utils:** use unshift in byteStream unwrap ([#3507](https://github.com/libp2p/js-libp2p/issues/3507)) ([9eb27be](https://github.com/libp2p/js-libp2p/commit/9eb27be790afc64c436422a9f7fa53cf0c95d9b6))
+
 ## [7.2.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.1.0...utils-v7.2.0) (2026-05-09)
 
 
