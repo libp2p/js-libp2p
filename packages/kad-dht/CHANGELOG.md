@@ -106,6 +106,39 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.3.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.7...kad-dht-v16.3.0) (2026-05-18)
+
+
+### Features
+
+* allow async selectors and adding validators/selectors ([#3506](https://github.com/libp2p/js-libp2p/issues/3506)) ([d59c165](https://github.com/libp2p/js-libp2p/commit/d59c165ac794e4895f54777201a666c1777b3195))
+
+## [16.2.7](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.6...kad-dht-v16.2.7) (2026-05-16)
+
+
+### Bug Fixes
+
+* **kad-dht:** reset stream on RPC handler error ([#3509](https://github.com/libp2p/js-libp2p/issues/3509)) ([8878139](https://github.com/libp2p/js-libp2p/commit/8878139d33aed4e55d82fed63f760a44ed29fd22))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/peer-collections bumped from ^7.0.19 to ^7.0.20
+    * @libp2p/ping bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+  * devDependencies
+    * @libp2p/peer-store bumped from ^12.0.19 to ^12.0.20
+
+## [16.2.6](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.5...kad-dht-v16.2.6) (2026-05-13)
+
+
+### Bug Fixes
+
+* **kad-dht:** only echo PUT_VALUE response on success ([#3502](https://github.com/libp2p/js-libp2p/issues/3502)) ([5692f3f](https://github.com/libp2p/js-libp2p/commit/5692f3f168049cc658ada36e8251b445683f5806))
+
 ## [16.2.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.4...kad-dht-v16.2.5) (2026-05-09)
 
 

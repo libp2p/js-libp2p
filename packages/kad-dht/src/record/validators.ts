@@ -17,8 +17,7 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
   const parts = keyString.split('/')
 
   if (parts.length < 3) {
-    // No validator available
-    return
+    throw new InvalidParametersError('Record key is missing a namespace')
   }
 
   const validator = validators[parts[1].toString()]

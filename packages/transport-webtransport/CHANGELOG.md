@@ -96,6 +96,47 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.27](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.26...webtransport-v6.0.27) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.26 to ^10.0.27
+    * libp2p bumped from ^3.3.1 to ^3.3.2
+
+## [6.0.26](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.25...webtransport-v6.0.26) (2026-05-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.25 to ^10.0.26
+
+## [6.0.25](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.24...webtransport-v6.0.25) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.24 to ^10.0.25
+    * @libp2p/ping bumped from ^3.1.4 to ^3.1.5
+    * libp2p bumped from ^3.3.0 to ^3.3.1
+
+## [6.0.24](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.23...webtransport-v6.0.24) (2026-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.23 to ^10.0.24
+
 ## [6.0.23](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.22...webtransport-v6.0.23) (2026-05-09)
 
 

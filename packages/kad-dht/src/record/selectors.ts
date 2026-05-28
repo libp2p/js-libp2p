@@ -6,7 +6,7 @@ import type { Selectors } from '../index.ts'
 /**
  * Select the best record out of the given records
  */
-export function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8Array[]): number {
+export async function bestRecord (selectors: Selectors, k: Uint8Array, records: Uint8Array[]): Promise<number> {
   if (records.length === 0) {
     throw new InvalidParametersError('No records given')
   }
