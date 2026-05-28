@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.28](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.27...transport-interop-libp2p-main-v1.0.28) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/mplex bumped from ^12.0.22 to ^12.0.23
+    * @libp2p/webtransport bumped from ^6.0.26 to ^6.0.27
+    * libp2p bumped from ^3.3.1 to ^3.3.2
+
 ## [1.0.27](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.26...transport-interop-libp2p-main-v1.0.27) (2026-05-18)
 
 
