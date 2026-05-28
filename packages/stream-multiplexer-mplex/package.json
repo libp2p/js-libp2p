@@ -46,7 +46,7 @@
     "dep-check": "aegir dep-check",
     "doc-check": "aegir doc-check",
     "build": "aegir build",
-    "benchmark": "node ./node_modules/.bin/benchmark benchmark/send-and-receive.js",
+    "benchmark": "benchmark benchmark/send-and-receive.js",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",

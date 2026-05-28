@@ -1,0 +1,19 @@
+packages:
+  - doc
+  - interop
+  - packages/*
+
+shamefullyHoist: true
+
+overrides:
+  playwright-core: 1.58.0
+  '@multiformats/multiaddr': 13.0.1
+
+allowBuilds:
+  aws-sdk: true
+  deno: true
+  esbuild: true
+  go-libp2p: true
+  node-datachannel: true
+  protobufjs: true
+  unrs-resolver: true

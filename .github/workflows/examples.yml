@@ -14,10 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@main
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run --if-present build
 
   test-examples:
     name: Test example ${{ matrix.example.name }}
@@ -128,9 +131,12 @@ jobs:
               - 'libp2p@$PWD/packages/libp2p'
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
-      - uses: ipfs/aegir/actions/cache-node-modules@main
-      - run: npx playwright install-deps
-      - run: npx xvfb-maybe aegir test-dependant ${{ matrix.example.repo }} --deps ${{ join(matrix.example.deps, ',') }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run --if-present build
+      - run: pnpm exec playwright-core install-deps
+      - run: pnpm exec xvfb-maybe aegir test-dependant ${{ matrix.example.repo }} --deps ${{ join(matrix.example.deps, ',') }}
