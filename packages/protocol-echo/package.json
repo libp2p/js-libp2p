@@ -52,7 +52,7 @@
     "uint8arraylist": "^2.4.8"
   },
   "devDependencies": {
-    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
     "aegir": "^48.0.11",
     "it-all": "^3.0.9",
     "sinon": "^21.0.0",

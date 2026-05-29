@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.2.2",
-    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
     "interface-datastore": "^9.0.1",
     "multiformats": "^14.0.0",
     "weald": "^1.1.0"

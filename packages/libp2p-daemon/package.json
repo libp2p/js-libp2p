@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@libp2p/daemon-server": "^9.0.27",
-    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
     "es-main": "^1.4.0",
     "yargs": "^18.0.0",
     "yargs-promise": "^1.1.0"

@@ -46,7 +46,7 @@
     "@libp2p/daemon-client": "^10.0.27",
     "@libp2p/interface": "^3.2.2",
     "@libp2p/utils": "^7.2.1",
-    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
     "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-first": "^3.0.9",

@@ -54,7 +54,7 @@
     "@libp2p/peer-collections": "^7.0.20",
     "@libp2p/peer-id": "^6.0.9",
     "@libp2p/peer-record": "^9.0.10",
-    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
     "interface-datastore": "^9.0.1",
     "it-all": "^3.0.9",
     "main-event": "^1.0.1",

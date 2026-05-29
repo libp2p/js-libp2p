@@ -71,8 +71,8 @@
   "dependencies": {
     "@libp2p/interface": "^3.2.2",
     "@libp2p/utils": "^7.2.1",
-    "@multiformats/multiaddr": "^13.0.1",
-    "@multiformats/multiaddr-matcher": "^3.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
+    "@multiformats/multiaddr-matcher": "^3.0.2",
     "@multiformats/multiaddr-to-uri": "^12.0.0",
     "main-event": "^1.0.1",
     "p-event": "^7.0.0",
