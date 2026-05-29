@@ -5,7 +5,7 @@ import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import * as mss from '../src/index.js'
+import * as mss from '../src/index.ts'
 
 describe('Dialer and Listener integration', () => {
   it('should handle and select', async () => {

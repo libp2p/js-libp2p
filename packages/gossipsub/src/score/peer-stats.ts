@@ -1,4 +1,4 @@
-import type { TopicStr } from '../types.js'
+import type { TopicStr } from '../types.ts'
 
 export interface PeerStats {
   /** true if the peer is currently connected */

@@ -56,12 +56,12 @@
     "@libp2p/daemon-server": "^9.0.27",
     "@libp2p/gossipsub": "^16.0.0",
     "@libp2p/kad-dht": "^16.3.0",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "it-all": "^3.0.9",
     "p-event": "^7.0.0",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   }
 }

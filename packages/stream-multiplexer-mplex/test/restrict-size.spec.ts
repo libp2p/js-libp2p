@@ -5,10 +5,10 @@ import drain from 'it-drain'
 import each from 'it-foreach'
 import { pipe } from 'it-pipe'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { MessageTypes } from '../src/message-types.js'
+import { MessageTypes } from '../src/message-types.ts'
 import { decode } from './fixtures/decode.ts'
 import { encode } from './fixtures/encode.ts'
-import type { Message } from '../src/message-types.js'
+import type { Message } from '../src/message-types.ts'
 
 describe('restrict size', () => {
   it('should throw when size is too big', async () => {

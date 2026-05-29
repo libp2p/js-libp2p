@@ -1,8 +1,8 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as selection from '../../src/record/selectors.js'
-import type { Selectors } from '../../src/index.js'
+import * as selection from '../../src/record/selectors.ts'
+import type { Selectors } from '../../src/index.ts'
 
 const records = [new Uint8Array(), uint8ArrayFromString('hello')]
 

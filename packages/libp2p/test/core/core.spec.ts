@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { createLibp2p, isLibp2p } from '../../src/index.js'
+import { createLibp2p, isLibp2p } from '../../src/index.ts'
 import type { Libp2p, Transport } from '@libp2p/interface'
 
 describe('core', () => {

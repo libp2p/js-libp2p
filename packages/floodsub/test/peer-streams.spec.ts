@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import * as lp from 'it-length-prefixed'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { RPC } from '../src/message/rpc.ts'
-import { PeerStreams } from '../src/peer-streams.js'
+import { PeerStreams } from '../src/peer-streams.ts'
 import type { PubSubRPC } from '../src/floodsub.ts'
 import type { PeerId } from '@libp2p/interface'
 

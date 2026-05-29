@@ -7,7 +7,7 @@ import all from 'it-all'
 import { createLibp2p } from 'libp2p'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { webTransport } from '../src/index.js'
+import { webTransport } from '../src/index.ts'
 import type { Ping } from '@libp2p/ping'
 import type { Libp2p } from 'libp2p'
 

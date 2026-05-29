@@ -5,6 +5,7 @@ import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { DEFAULT_FIN_ACK_TIMEOUT, MAX_BUFFERED_AMOUNT, MAX_MESSAGE_SIZE, PROTOBUF_OVERHEAD } from './constants.ts'
 import { Message } from './private-to-public/pb/message.ts'
 import type { DataChannelOptions } from './index.ts'
@@ -142,7 +143,7 @@ export class WebRTCStream extends AbstractStream {
     try {
       // send message without copying data
       for (const buf of data) {
-        this.channel.send(buf)
+        this.channel.send(withArrayBuffer(buf))
       }
     } catch (err: any) {
       // channel.send can throw synchronously if the polyfill's cached readyState is stale

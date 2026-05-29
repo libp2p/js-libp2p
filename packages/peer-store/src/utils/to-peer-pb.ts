@@ -3,9 +3,9 @@ import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.ts'
-import type { AddressFilter } from '../index.js'
-import type { Tag, Peer as PeerPB } from '../pb/peer.js'
-import type { ExistingPeer } from '../store.js'
+import type { AddressFilter } from '../index.ts'
+import type { Tag, Peer as PeerPB } from '../pb/peer.ts'
+import type { ExistingPeer } from '../store.ts'
 import type { PeerId, Address, PeerData, TagOptions, AbortOptions } from '@libp2p/interface'
 
 export interface ToPBPeerOptions extends AbortOptions {

@@ -55,13 +55,13 @@
     "main-event": "^1.0.1",
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.18",
     "@libp2p/logger": "^6.2.7",
     "@libp2p/peer-id": "^6.0.9",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-length-prefixed": "^10.0.1",

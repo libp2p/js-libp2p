@@ -1,6 +1,6 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
-import { GossipsubMaxIHaveLength, GossipsubMaxIWantMessages } from '../src/constants.js'
+import { GossipsubMaxIHaveLength, GossipsubMaxIWantMessages } from '../src/constants.ts'
 import { createComponents } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 

@@ -50,12 +50,12 @@
     "p-event": "^7.0.0",
     "race-signal": "^2.0.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/peer-id": "^6.0.9",
     "@libp2p/utils": "^7.2.1",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "delay": "^7.0.0",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"

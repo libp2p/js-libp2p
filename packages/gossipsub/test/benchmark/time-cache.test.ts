@@ -1,7 +1,7 @@
 // @ts-expect-error no types
 import TimeCache from 'time-cache'
-import { SimpleTimeCache } from '../../src/utils/time-cache.js'
-import { runBenchmark } from '../utils/benchmark.js'
+import { SimpleTimeCache } from '../../src/utils/time-cache.ts'
+import { runBenchmark } from '../utils/benchmark.ts'
 
 // TODO: errors with "Error: root suite not found"
 describe('npm TimeCache vs SimpleTimeCache', () => {

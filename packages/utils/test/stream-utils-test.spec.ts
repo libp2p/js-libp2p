@@ -7,7 +7,7 @@ import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { streamPair } from '../src/stream-pair.ts'
-import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.js'
+import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.ts'
 
 describe('messageStreamToDuplex', () => {
   it('should source all reads', async () => {

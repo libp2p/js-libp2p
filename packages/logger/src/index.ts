@@ -41,7 +41,7 @@ import type { PeerId, Logger, ComponentLogger } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Key } from 'interface-datastore'
 import type { CID } from 'multiformats/cid'
-import type { Options as LoggerOptions } from 'weald'
+import type { Debugger, Options as LoggerOptions } from 'weald'
 
 export type { LoggerOptions }
 
@@ -143,7 +143,7 @@ debug.formatters.e = (v?: Error): string => {
 
 export type { Logger, ComponentLogger }
 
-function createDisabledLogger (namespace: string): debug.Debugger {
+function createDisabledLogger (namespace: string): Debugger {
   const logger = (): void => {}
   logger.enabled = false
   logger.color = ''
@@ -152,6 +152,7 @@ function createDisabledLogger (namespace: string): debug.Debugger {
   logger.namespace = namespace
   logger.destroy = () => true
   logger.extend = () => logger
+  logger.useColors = () => false
 
   return logger
 }
@@ -246,7 +247,7 @@ export function defaultLogger (options?: LoggerOptions): ComponentLogger {
  */
 export function logger (name: string, options?: LoggerOptions): Logger {
   // trace logging is a no-op by default
-  let trace: debug.Debugger = createDisabledLogger(`${name}:trace`)
+  let trace: Debugger = createDisabledLogger(`${name}:trace`)
 
   // look at all the debug names and see if trace logging has explicitly been enabled
   if (debug.enabled(`${name}:trace`) && debug.names.map((r: any) => r.toString()).find((n: string) => n.includes(':trace')) != null) {

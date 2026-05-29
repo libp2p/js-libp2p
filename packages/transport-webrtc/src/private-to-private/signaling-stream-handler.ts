@@ -1,10 +1,10 @@
 import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
-import { SDPHandshakeFailedError } from '../error.js'
-import { RTCSessionDescription } from '../webrtc/index.js'
+import { SDPHandshakeFailedError } from '../error.ts'
+import { RTCSessionDescription } from '../webrtc/index.ts'
 import { Message } from './pb/message.ts'
 import { getRemotePeer, readCandidatesUntilConnected } from './util.ts'
-import type { RTCPeerConnection } from '../webrtc/index.js'
+import type { RTCPeerConnection } from '../webrtc/index.ts'
 import type { AbortOptions, Connection, Logger, PeerId, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

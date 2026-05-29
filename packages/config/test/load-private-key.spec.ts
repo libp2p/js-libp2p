@@ -3,7 +3,7 @@ import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core'
-import { loadOrCreateSelfKey } from '../src/index.js'
+import { loadOrCreateSelfKey } from '../src/index.ts'
 
 describe('load-private-key', () => {
   it('should load a private key', async () => {

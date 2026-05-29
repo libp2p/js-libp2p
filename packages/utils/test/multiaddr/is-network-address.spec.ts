@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { isNetworkAddress } from '../../src/multiaddr/is-network-address.js'
+import { isNetworkAddress } from '../../src/multiaddr/is-network-address.ts'
 
 describe('multiaddr isNetworkAddress', () => {
   it('identifies network multiaddrs', () => {

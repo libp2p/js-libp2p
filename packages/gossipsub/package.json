@@ -92,7 +92,7 @@
     "multiformats": "^13.0.1",
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.0.1"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@chainsafe/as-sha256": "^1.2.0",
@@ -103,7 +103,7 @@
     "@types/node": "^22.18.1",
     "@types/sinon": "^21.0.1",
     "abortable-iterator": "^5.1.0",
-    "aegir": "^47.0.21",
+    "aegir": "^48.0.11",
     "benchmark": "^2.1.4",
     "datastore-core": "^11.0.1",
     "delay": "^7.0.0",

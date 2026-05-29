@@ -1,7 +1,7 @@
 import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { PeerDistanceList } from '../src/peer-distance-list.js'
-import * as kadUtils from '../src/utils.js'
+import { PeerDistanceList } from '../src/peer-distance-list.ts'
+import * as kadUtils from '../src/utils.ts'
 
 describe('PeerDistanceList', () => {
   const p1 = { id: peerIdFromString('12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1'), multiaddrs: [] }

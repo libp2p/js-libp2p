@@ -1,7 +1,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { PeerFilter } from '../src/index.js'
+import { PeerFilter } from '../src/index.ts'
 
 describe('peer-filter', () => {
   it('should filter a peer', async () => {
