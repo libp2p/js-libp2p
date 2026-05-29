@@ -62,7 +62,7 @@
     "@libp2p/utils": "^7.2.1",
     "it-length-prefixed": "^10.0.1",
     "main-event": "^1.0.1",
-    "multiformats": "^13.4.1",
+    "multiformats": "^14.0.0",
     "p-queue": "^9.0.0",
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",

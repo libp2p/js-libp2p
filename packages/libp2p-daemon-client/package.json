@@ -50,7 +50,7 @@
     "@libp2p/tcp": "^11.0.20",
     "@libp2p/utils": "^7.2.1",
     "@multiformats/multiaddr": "^13.0.1",
-    "multiformats": "^13.4.0"
+    "multiformats": "^14.0.0"
   },
   "devDependencies": {
     "@libp2p/daemon-server": "^9.0.27",

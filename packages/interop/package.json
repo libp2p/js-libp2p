@@ -50,7 +50,7 @@
     "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-first": "^3.0.9",
-    "multiformats": "^13.4.0",
+    "multiformats": "^14.0.0",
     "p-retry": "^8.0.0",
     "p-wait-for": "^6.0.0",
     "protons-runtime": "^6.0.1",

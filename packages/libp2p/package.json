@@ -101,7 +101,7 @@
     "it-merge": "^3.0.12",
     "it-parallel": "^3.0.13",
     "main-event": "^1.0.1",
-    "multiformats": "^13.4.0",
+    "multiformats": "^14.0.0",
     "p-defer": "^4.0.1",
     "p-event": "^7.0.0",
     "p-retry": "^8.0.0",
