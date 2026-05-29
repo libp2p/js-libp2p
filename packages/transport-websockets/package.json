@@ -78,7 +78,7 @@
     "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0",
+    "uint8arrays": "^6.1.1",
     "ws": "^8.18.3"
   },
   "devDependencies": {

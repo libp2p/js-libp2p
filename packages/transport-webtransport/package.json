@@ -55,7 +55,7 @@
     "progress-events": "^1.0.1",
     "race-signal": "^2.0.0",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.18",

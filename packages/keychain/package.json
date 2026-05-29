@@ -60,7 +60,7 @@
     "interface-datastore": "^9.0.1",
     "multiformats": "^13.4.0",
     "sanitize-filename": "^1.6.3",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.7",

@@ -50,7 +50,7 @@
   "dependencies": {
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@types/lodash.random": "^3.2.9",
