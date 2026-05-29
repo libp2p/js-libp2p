@@ -55,6 +55,7 @@
     "@multiformats/multiaddr": "^13.0.1",
     "aegir": "^47.0.22",
     "it-all": "^3.0.9",
+    "p-wait-for": "^6.0.0",
     "sinon": "^21.0.0",
     "sinon-ts": "^2.0.0"
   },

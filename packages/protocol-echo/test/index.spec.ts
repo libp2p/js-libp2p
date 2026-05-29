@@ -3,6 +3,7 @@ import { streamPair, UnexpectedEOFError } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
@@ -79,34 +80,19 @@ describe('echo', () => {
     expect(output.subarray()).to.equalBytes(input)
   })
 
-  it('rejects with the underread error when the stream closes before the data is echoed back', async () => {
+  it('should handle the stream closing mid-echo', async () => {
     const [outgoingStream] = await streamPair()
     const stream = outgoingStream as AbstractStream
-
-    // stop queued bytes being flushed so the stream's writable end is still
-    // closing when the transport closes - this reproduces a connection dropping
-    // part-way through a transfer
     stream.sendData = () => ({ sentBytes: 0, canSendMore: false })
 
     const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
     components.connectionManager.openStream.withArgs(ma).resolves(stream)
 
-    const input = Uint8Array.from([0, 1, 2, 3])
-    const echoPromise = echo.echo(ma, input)
+    const echoPromise = echo.echo(ma, Uint8Array.from([0, 1, 2, 3]))
 
-    // wait for echo() to send the data and begin closing the stream
-    while (stream.writeStatus !== 'closing') {
-      await new Promise<void>(resolve => { setTimeout(resolve, 1) })
-    }
-
-    // attach the rejection handler before the transport closes
-    const assertion = expect(echoPromise).to.eventually.be.rejectedWith(UnexpectedEOFError)
-
-    // the transport closes before the data is echoed back - this must surface as
-    // an underread rather than throwing the transport-close error and leaving
-    // the result promise unhandled
+    await pWaitFor(() => stream.writeStatus === 'closing')
     stream.onTransportClosed()
 
-    await assertion
+    await expect(echoPromise).to.eventually.be.rejectedWith(UnexpectedEOFError)
   })
 })
