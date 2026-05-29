@@ -28,6 +28,9 @@ export const REPROVIDE_INTERVAL = hour
 // How long to reprovide for
 export const REPROVIDE_TIMEOUT = hour
 
+// How many CIDs to sort at once during reprovide (bounds memory use)
+export const REPROVIDE_SORT_BATCH_SIZE = 512
+
 export const READ_MESSAGE_TIMEOUT = 10 * second
 
 // How long to process newly connected peers for
