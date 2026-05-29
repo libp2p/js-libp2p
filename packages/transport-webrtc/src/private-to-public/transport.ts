@@ -9,6 +9,7 @@ import { base64url } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { DEFAULT_CERTIFICATE_DATASTORE_KEY, DEFAULT_CERTIFICATE_LIFESPAN, DEFAULT_CERTIFICATE_PRIVATE_KEY_NAME, DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD } from '../constants.ts'
 import { WebRTCDirectListener } from './listener.ts'
 import { WebRTCDirectTransport as WebRTCDirectBrowserTransport } from './transport.browser.ts'
@@ -244,7 +245,7 @@ export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implemen
 
   async loadCertificate (dsKey: Key, keyPair: CryptoKeyPair): Promise<X509Certificate> {
     const buf = await this.components.datastore.get(dsKey)
-    const cert = new X509Certificate(buf as Uint8Array<ArrayBuffer>)
+    const cert = new X509Certificate(withArrayBuffer(buf))
 
     // check expiry date
     const expiryTime = cert.notAfter.getTime() - (this.certInit.certificateRenewalThreshold ?? DEFAULT_CERTIFICATE_RENEWAL_THRESHOLD)
