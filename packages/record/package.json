@@ -56,7 +56,7 @@
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
     "@types/which": "^3.0.4",
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.11",
     "multiformats": "^13.4.0",
     "protons": "^8.1.1"
   },

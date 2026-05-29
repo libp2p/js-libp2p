@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.7",
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.11",
     "delay": "^7.0.0",
     "it-length-prefixed": "^10.0.1",
     "protons": "^8.1.1",

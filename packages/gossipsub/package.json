@@ -103,7 +103,7 @@
     "@types/node": "^22.18.1",
     "@types/sinon": "^21.0.1",
     "abortable-iterator": "^5.1.0",
-    "aegir": "^48.0.4",
+    "aegir": "^48.0.11",
     "benchmark": "^2.1.4",
     "datastore-core": "^11.0.1",
     "delay": "^7.0.0",
