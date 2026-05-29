@@ -1,7 +1,7 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { MaxLengthError } from 'protons-runtime'
-import { RPC } from '../src/message/rpc.js'
+import { RPC } from '../src/message/rpc.ts'
 import { createComponents } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 

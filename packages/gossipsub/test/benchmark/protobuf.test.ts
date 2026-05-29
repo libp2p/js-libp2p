@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
-import { RPC } from '../../src/message/rpc.js'
-import { runBenchmark } from '../utils/benchmark.js'
+import { RPC } from '../../src/message/rpc.ts'
+import { runBenchmark } from '../utils/benchmark.ts'
 
 describe('protobuf', function () {
   const testCases: Array<{ name: string, length: number }> = [

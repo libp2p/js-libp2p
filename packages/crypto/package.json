@@ -96,11 +96,11 @@
     "multiformats": "^13.4.0",
     "protons-runtime": "^6.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "asn1js": "^3.0.6",
     "benchmark": "^2.1.4",
     "protons": "^8.1.1"
@@ -111,8 +111,7 @@
     "./dist/src/keys/ecdh/index.js": "./dist/src/keys/ecdh/index.browser.js",
     "./dist/src/keys/ed25519/index.js": "./dist/src/keys/ed25519/index.browser.js",
     "./dist/src/keys/rsa/index.js": "./dist/src/keys/rsa/index.browser.js",
-    "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js",
-    "./dist/src/webcrypto/webcrypto.js": "./dist/src/webcrypto/webcrypto.browser.js"
+    "./dist/src/keys/secp256k1/index.js": "./dist/src/keys/secp256k1/index.browser.js"
   },
   "sideEffects": false
 }

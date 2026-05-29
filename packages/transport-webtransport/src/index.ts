@@ -31,6 +31,7 @@ import { noise } from '@chainsafe/libp2p-noise'
 import { InvalidCryptoExchangeError, InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { WebTransport as WebTransportMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import createListener from './listener.ts'
 import { webtransportMuxer } from './muxer.ts'
 import { toMultiaddrConnection } from './session-to-conn.ts'
@@ -140,7 +141,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
-          value: certhash.digest
+          value: withArrayBuffer(certhash.digest)
         }))
       })
 

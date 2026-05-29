@@ -1,7 +1,7 @@
 import { abortableSource } from 'abortable-iterator'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
-import { runBenchmark } from '../utils/benchmark.js'
+import { runBenchmark } from '../utils/benchmark.ts'
 
 describe('abortableSource cost', function () {
   const n = 10000

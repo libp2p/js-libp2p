@@ -10,8 +10,8 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { createLimitedRelay, getExpirationMilliseconds, LimitTracker, namespaceToCid } from '../src/utils.js'
-import type { Limit, RelayReservation } from '../src/index.js'
+import { createLimitedRelay, getExpirationMilliseconds, LimitTracker, namespaceToCid } from '../src/utils.ts'
+import type { Limit, RelayReservation } from '../src/index.ts'
 import type { Logger } from '@libp2p/interface'
 
 describe('circuit-relay utils', () => {

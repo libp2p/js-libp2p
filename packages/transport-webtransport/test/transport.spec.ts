@@ -4,8 +4,8 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { webTransport } from '../src/index.js'
-import type { WebTransportComponents } from '../src/index.js'
+import { webTransport } from '../src/index.ts'
+import type { WebTransportComponents } from '../src/index.ts'
 import type { Upgrader } from '@libp2p/interface'
 
 describe('WebTransport Transport', () => {

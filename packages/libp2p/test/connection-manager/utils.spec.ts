@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { findExistingConnection, safelyCloseConnectionIfUnused } from '../../src/connection-manager/utils.js'
+import { findExistingConnection, safelyCloseConnectionIfUnused } from '../../src/connection-manager/utils.ts'
 import type { Connection, Stream } from '@libp2p/interface'
 
 describe('findExistingConnection', () => {

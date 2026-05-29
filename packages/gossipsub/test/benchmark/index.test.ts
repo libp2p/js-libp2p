@@ -1,13 +1,13 @@
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { runBenchmark } from '../utils/benchmark.js'
+import { runBenchmark } from '../utils/benchmark.ts'
 import {
   connectPubsubNodes,
   createComponentsArray,
   denseConnect
 
-} from '../utils/create-pubsub.js'
-import { awaitEvents, checkReceivedSubscriptions, checkReceivedSubscription } from '../utils/events.js'
+} from '../utils/create-pubsub.ts'
+import { awaitEvents, checkReceivedSubscriptions, checkReceivedSubscription } from '../utils/events.ts'
 
 describe('heartbeat', function () {
   const topic = 'foobar'

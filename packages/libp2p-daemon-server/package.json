@@ -58,10 +58,10 @@
     "it-pushable": "^3.2.3",
     "multiformats": "^13.4.0",
     "p-event": "^7.0.0",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "sinon-ts": "^2.0.0"
   }
 }

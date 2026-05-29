@@ -77,12 +77,12 @@
     "reflect-metadata": "^0.2.2",
     "uint8-varint": "^2.0.4",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0"
+    "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.7",
     "@types/sinon": "^21.0.1",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "any-signal": "^4.1.1",
     "datastore-core": "^11.0.1",
     "delay": "^7.0.0",

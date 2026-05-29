@@ -4,9 +4,9 @@ import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as validator from '../../src/record/validators.js'
-import * as fixture from '../fixtures/record/go-key-records.js'
-import type { Validators } from '../../src/index.js'
+import * as validator from '../../src/record/validators.ts'
+import * as fixture from '../fixtures/record/go-key-records.ts'
+import type { Validators } from '../../src/index.ts'
 import type { RSAPrivateKey } from '@libp2p/interface'
 
 interface Cases {

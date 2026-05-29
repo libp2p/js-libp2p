@@ -7,7 +7,7 @@ import pRetry from 'p-retry'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { connectPubsubNodes, createComponents } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
-import type { SubscriptionChangeData, Message } from '../src/index.js'
+import type { SubscriptionChangeData, Message } from '../src/index.ts'
 
 describe('gossipsub fallbacks to floodsub', () => {
   describe('basics', () => {

@@ -78,13 +78,13 @@
     "p-event": "^7.0.0",
     "progress-events": "^1.0.1",
     "uint8arraylist": "^2.4.8",
-    "uint8arrays": "^5.1.0",
+    "uint8arrays": "^6.1.1",
     "ws": "^8.18.3"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.7",
     "@types/ws": "^8.18.1",
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "is-loopback-addr": "^2.0.2",
     "p-wait-for": "^6.0.0",
     "sinon": "^21.0.0",

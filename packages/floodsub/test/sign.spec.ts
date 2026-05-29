@@ -3,14 +3,14 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { RPC } from '../src/message/rpc.js'
+import { RPC } from '../src/message/rpc.ts'
 import {
   signMessage,
   SignPrefix,
   verifySignature
-} from '../src/sign.js'
-import { randomSeqno, toRpcMessage } from '../src/utils.js'
-import type { PubSubRPCMessage } from '../src/floodsub.js'
+} from '../src/sign.ts'
+import { randomSeqno, toRpcMessage } from '../src/utils.ts'
+import type { PubSubRPCMessage } from '../src/floodsub.ts'
 import type { Message } from '../src/index.ts'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
 
