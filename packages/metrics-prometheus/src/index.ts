@@ -70,15 +70,15 @@ import { statfs } from 'node:fs/promises'
 import { totalmem } from 'node:os'
 import { serviceCapabilities } from '@libp2p/interface'
 import { collectDefaultMetrics, register } from 'prom-client'
-import { PrometheusCounterGroup } from './counter-group.ts'
-import { PrometheusCounter } from './counter.ts'
-import { PrometheusHistogramGroup } from './histogram-group.ts'
-import { PrometheusHistogram } from './histogram.ts'
-import { PrometheusMetricGroup } from './metric-group.ts'
-import { PrometheusMetric } from './metric.ts'
-import { PrometheusSummaryGroup } from './summary-group.ts'
-import { PrometheusSummary } from './summary.ts'
-import type { ComponentLogger, Logger, MultiaddrConnection, Stream, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics, CalculatedHistogramOptions, CalculatedSummaryOptions, HistogramOptions, Histogram, HistogramGroup, SummaryOptions, Summary, SummaryGroup, MessageStream } from '@libp2p/interface'
+import { PrometheusCounterGroup } from './counter-group.js'
+import { PrometheusCounter } from './counter.js'
+import { PrometheusHistogramGroup } from './histogram-group.js'
+import { PrometheusHistogram } from './histogram.js'
+import { PrometheusMetricGroup } from './metric-group.js'
+import { PrometheusMetric } from './metric.js'
+import { PrometheusSummaryGroup } from './summary-group.js'
+import { PrometheusSummary } from './summary.js'
+import type { ComponentLogger, Logger, MultiaddrConnection, Stream, StreamCloseEvent, CalculatedMetricOptions, Counter, CounterGroup, Metric, MetricGroup, MetricOptions, Metrics, CalculatedHistogramOptions, CalculatedSummaryOptions, HistogramOptions, Histogram, HistogramGroup, SummaryOptions, Summary, SummaryGroup, MessageStream } from '@libp2p/interface'
 import type { DefaultMetricsCollectorConfiguration, Registry, RegistryContentType } from 'prom-client'
 
 // export helper functions for creating buckets
@@ -141,6 +141,9 @@ class PrometheusMetrics implements Metrics {
   private readonly log: Logger
   private transferStats: Map<string, number>
   private readonly registry?: Registry
+  private readonly streamsOpened: CounterGroup
+  private readonly streamsClosed: CounterGroup
+  private readonly streamsCloseErrors: CounterGroup
 
   constructor (components: PrometheusMetricsComponents, init?: Partial<PrometheusMetricsInit>) {
     this.log = components.logger.forComponent('libp2p:prometheus-metrics')
@@ -204,6 +207,20 @@ class PrometheusMetrics implements Metrics {
           used: (available / total) * 100
         }
       }
+    })
+
+    this.log('Collecting protocol stream open/close metrics')
+    this.streamsOpened = this.registerCounterGroup('libp2p_protocol_streams_opened_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams opened, by direction and protocol'
+    })
+    this.streamsClosed = this.registerCounterGroup('libp2p_protocol_streams_closed_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams closed, by direction and protocol'
+    })
+    this.streamsCloseErrors = this.registerCounterGroup('libp2p_protocol_streams_close_errors_total', {
+      label: 'protocol',
+      help: 'Total number of protocol streams that ended with an error (abort, reset, etc.), by direction and protocol'
     })
   }
 
@@ -274,6 +291,22 @@ class PrometheusMetrics implements Metrics {
     }
 
     this._track(stream, stream.protocol)
+
+    // Label format: "direction protocol"  e.g. "inbound /identify/1.0.0"
+    // Matches the format of the existing libp2p_protocol_streams_total gauge.
+    const label = `${stream.direction} ${stream.protocol}`
+
+    // Stream is now open — increment the opened counter immediately.
+    this.streamsOpened.increment({ [label]: 1 })
+
+    stream.addEventListener('close', (evt: Event) => {
+      const e = evt as StreamCloseEvent
+      if (e.error != null) {
+        this.streamsCloseErrors.increment({ [label]: 1 })
+      } else {
+        this.streamsClosed.increment({ [label]: 1 })
+      }
+    }, { once: true })
   }
 
   registerMetric (name: string, opts: PrometheusCalculatedMetricOptions): void
