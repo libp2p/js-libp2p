@@ -206,13 +206,19 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
         log: this.components.logger.forComponent('libp2p:webtransport:connection')
       })
 
-      authenticated = await this.authenticateWebTransport({
+      const securePeer = await this.authenticateWebTransport({
         wt,
         maConn,
         remotePeer,
         certhashes,
         ...options
       })
+
+      authenticated = true
+
+      if (remotePeer != null) {
+        authenticated = remotePeer.equals(securePeer)
+      }
 
       if (!authenticated) {
         throw new InvalidCryptoExchangeError('Failed to authenticate webtransport')
@@ -221,7 +227,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       return await options.upgrader.upgradeOutbound(maConn, {
         ...options,
         skipEncryption: true,
-        remotePeer,
+        remotePeer: securePeer,
         muxerFactory: webtransportMuxer(wt),
         skipProtection: true
       })
@@ -244,7 +250,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     }
   }
 
-  async authenticateWebTransport ({ wt, maConn, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<boolean> {
+  async authenticateWebTransport ({ wt, maConn, remotePeer, certhashes, onProgress, signal }: AuthenticateWebTransportOptions): Promise<PeerId> {
     onProgress?.(new CustomProgressEvent('webtransport:open-authentication-stream'))
     const stream = await wt.createBidirectionalStream()
     signal?.throwIfAborted()
@@ -257,7 +263,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     const n = noise()(this.components)
 
     onProgress?.(new CustomProgressEvent('webtransport:secure-outbound-connection'))
-    const { remoteExtensions } = await n.secureOutbound(messages, {
+    const { remoteExtensions, remotePeer: securePeer } = await n.secureOutbound(messages, {
       signal,
       remotePeer,
       skipStreamMuxerNegotiation: true
@@ -276,7 +282,7 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
       throw new InvalidParametersError("Our certhashes are not a subset of the remote's reported certhashes")
     }
 
-    return true
+    return securePeer
   }
 
   createListener (options: CreateListenerOptions): Listener {
