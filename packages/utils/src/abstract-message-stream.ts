@@ -488,7 +488,22 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
         // sending data can cause buffers to fill up, events to be emitted and
         // this method to be invoked again
-        const sendResult = this.sendData(toSend)
+        let sendResult: SendResult
+
+        try {
+          sendResult = this.sendData(toSend)
+        } catch (err: any) {
+          // sendData can throw synchronously, for example when the underlying
+          // transport finishes closing between the 'drain' event that scheduled
+          // this microtask and the microtask running. The bytes for this chunk
+          // were already consumed from the write buffer above, so without this
+          // they would be silently dropped and the stream would be left in a
+          // writable state that can never make progress. Restore the chunk and
+          // abort the stream so the failure is observable instead of swallowed.
+          this.writeBuffer.prepend(willSend)
+          this.abort(err)
+          throw err
+        }
 
         canSendMore = sendResult.canSendMore
         sentBytes += sendResult.sentBytes
