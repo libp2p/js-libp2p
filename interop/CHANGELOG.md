@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.29](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.28...transport-interop-libp2p-main-v1.0.29) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.5 to ^4.2.6
+    * @libp2p/identify bumped from ^4.1.6 to ^4.1.7
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/mplex bumped from ^12.0.23 to ^12.0.24
+    * @libp2p/ping bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/tcp bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/tls bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/webrtc bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/websockets bumped from ^10.1.13 to ^10.1.14
+    * @libp2p/webtransport bumped from ^6.0.27 to ^6.0.28
+    * libp2p bumped from ^3.3.2 to ^3.3.3
+
 ## [1.0.28](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.27...transport-interop-libp2p-main-v1.0.28) (2026-05-27)
 
 

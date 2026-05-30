@@ -1,5 +1,46 @@
 # Changelog
 
+## [1.2.12](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.11...integration-tests-v1.2.12) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/gossipsub bumped from ^16.0.0 to ^16.0.1
+    * @libp2p/bootstrap bumped from ^12.0.23 to ^12.0.24
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.5 to ^4.2.6
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/daemon-client bumped from ^10.0.27 to ^10.0.28
+    * @libp2p/daemon-server bumped from ^9.0.27 to ^9.0.28
+    * @libp2p/dcutr bumped from ^3.0.20 to ^3.0.21
+    * @libp2p/echo bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/fetch bumped from ^4.1.5 to ^4.1.6
+    * @libp2p/floodsub bumped from ^11.0.22 to ^11.0.23
+    * @libp2p/identify bumped from ^4.1.6 to ^4.1.7
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-compliance-tests bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/interop bumped from ^14.0.27 to ^14.0.28
+    * @libp2p/kad-dht bumped from ^16.3.0 to ^16.3.1
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/mdns bumped from ^12.0.23 to ^12.0.24
+    * @libp2p/memory bumped from ^2.0.20 to ^2.0.21
+    * @libp2p/mplex bumped from ^12.0.23 to ^12.0.24
+    * @libp2p/peer-collections bumped from ^7.0.20 to ^7.0.21
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/ping bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/plaintext bumped from ^3.0.20 to ^3.0.21
+    * @libp2p/tcp bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/tls bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+    * @libp2p/webrtc bumped from ^6.0.23 to ^6.0.24
+    * @libp2p/websockets bumped from ^10.1.13 to ^10.1.14
+    * @libp2p/webtransport bumped from ^6.0.27 to ^6.0.28
+    * libp2p bumped from ^3.3.2 to ^3.3.3
+
 ## [1.2.11](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.10...integration-tests-v1.2.11) (2026-05-27)
 
 
