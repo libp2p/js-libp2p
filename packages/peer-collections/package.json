@@ -51,7 +51,7 @@
     "@libp2p/interface": "^3.2.2",
     "@libp2p/peer-id": "^6.0.9",
     "@libp2p/utils": "^7.2.1",
-    "multiformats": "^13.4.0"
+    "multiformats": "^14.0.0"
   },
   "devDependencies": {
     "@libp2p/crypto": "^5.1.18",

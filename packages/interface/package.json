@@ -43,9 +43,9 @@
   },
   "dependencies": {
     "@multiformats/dns": "^1.0.6",
-    "@multiformats/multiaddr": "^13.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
     "main-event": "^1.0.1",
-    "multiformats": "^13.4.0",
+    "multiformats": "^14.0.0",
     "progress-events": "^1.1.0",
     "uint8arraylist": "^2.4.8"
   },
