@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tls",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "description": "A connection encrypter that uses TLS 1.3",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-tls#readme",
@@ -63,10 +63,10 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.18",
-    "@libp2p/interface": "^3.2.2",
-    "@libp2p/peer-id": "^6.0.9",
-    "@libp2p/utils": "^7.2.1",
+    "@libp2p/crypto": "^5.1.19",
+    "@libp2p/interface": "^3.2.3",
+    "@libp2p/peer-id": "^6.0.10",
+    "@libp2p/utils": "^7.2.2",
     "@peculiar/asn1-schema": "^2.4.0",
     "@peculiar/asn1-x509": "^2.4.0",
     "@peculiar/webcrypto": "^1.5.0",
@@ -79,7 +79,7 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.7",
+    "@libp2p/logger": "^6.2.8",
     "aegir": "^48.0.11",
     "protons": "^8.1.1",
     "sinon": "^21.0.0",

@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.0.13](https://github.com/libp2p/js-libp2p/compare/record-v4.0.12...record-v4.0.13) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+
 ## [4.0.12](https://github.com/libp2p/js-libp2p/compare/record-v4.0.11...record-v4.0.12) (2026-04-16)
 
 
