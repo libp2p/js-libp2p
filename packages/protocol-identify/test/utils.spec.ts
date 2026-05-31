@@ -3,8 +3,8 @@ import { streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import * as lp from 'it-length-prefixed'
-import { Identify as IdentifyMessage } from '../src/pb/message.js'
-import { mergeIdentifyMessages, readIdentifyMessages } from '../src/utils.js'
+import { Identify as IdentifyMessage } from '../src/pb/message.ts'
+import { mergeIdentifyMessages, readIdentifyMessages } from '../src/utils.ts'
 
 describe('mergeIdentifyMessages', () => {
   it('returns a single message unchanged', () => {

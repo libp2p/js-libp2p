@@ -2,8 +2,8 @@ import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { INVALID_PSK } from '../src/errors.js'
-import { preSharedKey, generateKey } from '../src/index.js'
+import { INVALID_PSK } from '../src/errors.ts'
+import { preSharedKey, generateKey } from '../src/index.ts'
 
 const swarmKeyBuffer = new Uint8Array(95)
 const wrongSwarmKeyBuffer = new Uint8Array(95)

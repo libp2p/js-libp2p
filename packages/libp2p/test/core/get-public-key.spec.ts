@@ -3,7 +3,7 @@ import { contentRoutingSymbol } from '@libp2p/interface'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { createLibp2p } from '../../src/index.js'
+import { createLibp2p } from '../../src/index.ts'
 import type { ContentRouting, ContentRoutingProvider, Libp2p } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 

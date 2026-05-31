@@ -2,8 +2,8 @@ import { generateKeyPair, privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { RecordEnvelope } from '../src/envelope/index.js'
-import { PeerRecord } from '../src/peer-record/index.js'
+import { RecordEnvelope } from '../src/envelope/index.ts'
+import { PeerRecord } from '../src/peer-record/index.ts'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
 
 describe('PeerRecord', () => {

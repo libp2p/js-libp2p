@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/config",
-  "version": "1.1.31",
+  "version": "1.1.32",
   "description": "Helper functions to make dealing with libp2p config easier",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/config#readme",
@@ -40,14 +40,14 @@
     "doc-check": "aegir doc-check"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.18",
-    "@libp2p/interface": "^3.2.2",
-    "@libp2p/keychain": "^6.1.1",
-    "@libp2p/logger": "^6.2.7",
+    "@libp2p/crypto": "^5.1.19",
+    "@libp2p/interface": "^3.2.3",
+    "@libp2p/keychain": "^6.1.2",
+    "@libp2p/logger": "^6.2.8",
     "interface-datastore": "^9.0.1"
   },
   "devDependencies": {
-    "aegir": "^47.0.22",
+    "aegir": "^48.0.11",
     "datastore-core": "^11.0.1"
   },
   "sideEffects": false

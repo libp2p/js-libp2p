@@ -1,9 +1,10 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import randomBytes from '../../random-bytes.js'
-import webcrypto from '../../webcrypto/index.js'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
+import randomBytes from '../../random-bytes.ts'
+import webcrypto from '../../webcrypto/index.ts'
 import * as utils from './utils.ts'
-import type { JWKKeyPair } from '../interface.js'
+import type { JWKKeyPair } from '../interface.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -49,7 +50,7 @@ export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8Array
   const sig = await webcrypto.get().subtle.sign(
     { name: 'RSASSA-PKCS1-v1_5' },
     privateKey,
-    msg instanceof Uint8Array ? msg : msg.subarray()
+    withArrayBuffer(msg instanceof Uint8Array ? msg : msg.subarray())
   )
   options?.signal?.throwIfAborted()
 
@@ -72,8 +73,8 @@ export async function hashAndVerify (key: JsonWebKey, sig: Uint8Array, msg: Uint
   const result = await webcrypto.get().subtle.verify(
     { name: 'RSASSA-PKCS1-v1_5' },
     publicKey,
-    sig,
-    msg instanceof Uint8Array ? msg : msg.subarray()
+    withArrayBuffer(sig),
+    withArrayBuffer(msg instanceof Uint8Array ? msg : msg.subarray())
   )
   options?.signal?.throwIfAborted()
 

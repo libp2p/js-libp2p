@@ -488,7 +488,17 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
         // sending data can cause buffers to fill up, events to be emitted and
         // this method to be invoked again
-        const sendResult = this.sendData(toSend)
+        let sendResult: SendResult
+
+        try {
+          sendResult = this.sendData(toSend)
+        } catch (err: any) {
+          // restore the consumed chunk so abort() emits 'idle' for the drained
+          // write buffer (normally emitted here on completion, but the send threw)
+          this.writeBuffer.prepend(willSend)
+          this.abort(err)
+          throw err
+        }
 
         canSendMore = sendResult.canSendMore
         sentBytes += sendResult.sentBytes

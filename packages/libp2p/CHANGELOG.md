@@ -110,6 +110,33 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.2...libp2p-v3.3.3) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/multistream-select bumped from ^7.0.20 to ^7.0.21
+    * @libp2p/peer-collections bumped from ^7.0.20 to ^7.0.21
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/peer-store bumped from ^12.0.20 to ^12.0.21
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+
+## [3.3.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.1...libp2p-v3.3.2) (2026-05-27)
+
+
+### Documentation
+
+* @libp2p/gossipsub ([#3516](https://github.com/libp2p/js-libp2p/issues/3516)) ([c6329a0](https://github.com/libp2p/js-libp2p/commit/c6329a0efdb33f63534468fd90e6bc274ae6fe15))
+* fix @libp2p/floodsub CI badge link ([#3518](https://github.com/libp2p/js-libp2p/issues/3518)) ([3574648](https://github.com/libp2p/js-libp2p/commit/3574648c3582bd1f4a4c2b734639a1c890d57384))
+
 ## [3.3.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.0...libp2p-v3.3.1) (2026-05-16)
 
 

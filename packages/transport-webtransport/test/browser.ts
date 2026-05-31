@@ -1,13 +1,13 @@
 import { noise } from '@chainsafe/libp2p-noise'
 import { stop } from '@libp2p/interface'
 import { ping } from '@libp2p/ping'
-import { multiaddr } from '@multiformats/multiaddr'
+import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { createLibp2p } from 'libp2p'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { webTransport } from '../src/index.js'
+import { webTransport } from '../src/index.ts'
 import type { Ping } from '@libp2p/ping'
 import type { Libp2p } from 'libp2p'
 
@@ -41,6 +41,24 @@ describe('libp2p-webtransport', () => {
 
     const maStr: string = process.env.GO_LIBP2P_ADDR
     const ma = multiaddr(maStr)
+
+    // Ping many times
+    for (let index = 0; index < 50; index++) {
+      const res = await node.services.ping.ping(ma)
+
+      expect(res).to.be.greaterThan(-1)
+    }
+  })
+
+  it('webtransport connects to go-libp2p without a peer id in the address', async () => {
+    if (process.env.GO_LIBP2P_ADDR == null) {
+      throw new Error('GO_LIBP2P_ADDR not found')
+    }
+
+    const maStr: string = process.env.GO_LIBP2P_ADDR
+    const ma = multiaddr(maStr).decapsulateCode(CODE_P2P)
+
+    expect(ma.toString()).to.not.include('/p2p/')
 
     // Ping many times
     for (let index = 0; index < 50; index++) {

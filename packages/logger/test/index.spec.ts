@@ -12,7 +12,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import debug from 'weald'
 import { format } from 'weald/format'
-import { disable, enable, logger, peerLogger } from '../src/index.js'
+import { disable, enable, logger, peerLogger } from '../src/index.ts'
 
 describe('logger', () => {
   afterEach(() => {

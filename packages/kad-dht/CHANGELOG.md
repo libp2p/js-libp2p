@@ -106,6 +106,34 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.3.1](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.0...kad-dht-v16.3.1) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/peer-collections bumped from ^7.0.20 to ^7.0.21
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/ping bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/record bumped from ^4.0.12 to ^4.0.13
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/peer-store bumped from ^12.0.20 to ^12.0.21
+
+## [16.3.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.7...kad-dht-v16.3.0) (2026-05-18)
+
+
+### Features
+
+* allow async selectors and adding validators/selectors ([#3506](https://github.com/libp2p/js-libp2p/issues/3506)) ([d59c165](https://github.com/libp2p/js-libp2p/commit/d59c165ac794e4895f54777201a666c1777b3195))
+
 ## [16.2.7](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.2.6...kad-dht-v16.2.7) (2026-05-16)
 
 

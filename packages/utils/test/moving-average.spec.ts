@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { MovingAverage } from '../src/moving-average.js'
+import { MovingAverage } from '../src/moving-average.ts'
 
 describe('moving-average', () => {
   it('moving average with one value gets that value', () => {

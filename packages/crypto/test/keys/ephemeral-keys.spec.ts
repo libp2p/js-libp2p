@@ -1,9 +1,9 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import { generateEphemeralKeyPair } from '../../src/keys/index.js'
-import fixtures from '../fixtures/go-elliptic-key.js'
-import type { Curve } from '../../src/keys/ecdh/index.js'
+import { generateEphemeralKeyPair } from '../../src/keys/index.ts'
+import fixtures from '../fixtures/go-elliptic-key.ts'
+import type { Curve } from '../../src/keys/ecdh/index.ts'
 
 const curves: Curve[] = ['P-256', 'P-384', 'P-521']
 const lengths: Record<string, number> = {

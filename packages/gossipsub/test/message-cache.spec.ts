@@ -2,11 +2,11 @@ import { randomBytes } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { MessageCache } from '../src/message-cache.js'
-import { messageIdToString } from '../src/utils/messageIdToString.js'
+import { MessageCache } from '../src/message-cache.ts'
+import { messageIdToString } from '../src/utils/messageIdToString.ts'
 import { getMsgId } from './utils/index.ts'
-import type { RPC } from '../src/message/rpc.js'
-import type { MessageId } from '../src/types.js'
+import type { RPC } from '../src/message/rpc.ts'
+import type { MessageId } from '../src/types.ts'
 
 function randomSeqno (): bigint {
   return BigInt(`0x${uint8ArrayToString(randomBytes(8), 'base16')}`)

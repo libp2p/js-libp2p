@@ -4,6 +4,46 @@
 
 * update all deps ([#348](https://github.com/libp2p/js-libp2p-daemon/issues/348)) ([44bf148](https://github.com/libp2p/js-libp2p-daemon/commit/44bf148f37b9f4091dc8ed26cf343e196607ebbc))
 
+## [10.0.28](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.27...daemon-client-v10.0.28) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-protocol bumped from ^8.0.7 to ^8.0.8
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/tcp bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+  * devDependencies
+    * @libp2p/daemon-server bumped from ^9.0.27 to ^9.0.28
+    * @libp2p/gossipsub bumped from ^16.0.0 to ^16.0.1
+    * @libp2p/kad-dht bumped from ^16.3.0 to ^16.3.1
+
+## [10.0.27](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.26...daemon-client-v10.0.27) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-server bumped from ^9.0.26 to ^9.0.27
+    * @libp2p/gossipsub bumped from ^15.0.23 to ^16.0.0
+
+## [10.0.26](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.25...daemon-client-v10.0.26) (2026-05-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-server bumped from ^9.0.25 to ^9.0.26
+    * @libp2p/kad-dht bumped from ^16.2.7 to ^16.3.0
+
 ## [10.0.25](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.24...daemon-client-v10.0.25) (2026-05-16)
 
 

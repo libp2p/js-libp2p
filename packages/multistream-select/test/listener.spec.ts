@@ -4,7 +4,7 @@ import randomBytes from 'iso-random-stream/src/random.js'
 import drain from 'it-drain'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as mss from '../src/index.js'
+import * as mss from '../src/index.ts'
 
 describe('Listener', () => {
   describe('listener.handle', () => {
