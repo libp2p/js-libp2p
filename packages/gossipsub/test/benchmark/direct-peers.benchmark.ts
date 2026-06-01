@@ -68,11 +68,11 @@ describe('direct peer management benchmarks', function () {
 
     const speedup = beforeMs / afterMs
 
-    process.stdout.write(`\n  ╔═══════════════════════════════════════════════════════╗\n`)
+    process.stdout.write('\n  ╔═══════════════════════════════════════════════════════╗\n')
     process.stdout.write(`  ║  BEFORE  stop + reconstruct + start : ${beforeMs.toFixed(1).padStart(8)} ms/op  ║\n`)
     process.stdout.write(`  ║  AFTER   addDirectPeer at runtime   : ${afterMs.toFixed(3).padStart(8)} ms/op  ║\n`)
     process.stdout.write(`  ║  Speedup : ${speedup.toFixed(0)}x faster                                ║\n`)
-    process.stdout.write(`  ╚═══════════════════════════════════════════════════════╝\n\n`)
+    process.stdout.write('  ╚═══════════════════════════════════════════════════════╝\n\n')
 
     await stop(node.pubsub, ...Object.entries(node.components))
   })
