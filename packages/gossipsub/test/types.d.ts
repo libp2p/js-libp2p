@@ -19,7 +19,7 @@ declare module 'benchmark' {
       maxTime?: number
       minSamples?: number
       minTime?: number
-      fn?: (deferred: Deferred) => void
+      fn?(deferred: Deferred): void
     }
   }
 
