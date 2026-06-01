@@ -1,14 +1,14 @@
-import { stop } from '@libp2p/interface'
 import { generateKeyPair } from '@libp2p/crypto/keys'
+import { stop } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
-import { runBenchmark } from '../utils/benchmark.ts'
-import { createComponents, createComponentsArray, connectPubsubNodes } from '../utils/create-pubsub.ts'
 import { GossipSub as GossipSubClass } from '../../src/gossipsub.ts'
 import { gossipsub } from '../../src/index.ts'
+import { runBenchmark } from '../utils/benchmark.ts'
+import { createComponents, createComponentsArray } from '../utils/create-pubsub.ts'
 import { awaitEvents } from '../utils/events.ts'
-import type { Multiaddr } from '@multiformats/multiaddr'
 import type { PeerId } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 const TEST_ADDR = multiaddr('/ip4/127.0.0.1/tcp/9000')
 
@@ -52,11 +52,11 @@ describe('direct peer management benchmarks', function () {
     const addrs: Multiaddr[] = [TEST_ADDR]
 
     // ── BEFORE: stop + reconstruct + start ─────────────────────
-    console.log('\n  [before] measuring stop + reconstruct + start cycle…')
+    process.stdout.write('  [before] measuring stop + reconstruct + start cycle…\n')
     const beforeMs = await measureLegacyRestartMs(5)
 
     // ── AFTER: addDirectPeer ────────────────────────────────────
-    console.log('  [after]  measuring addDirectPeer…')
+    process.stdout.write('  [after]  measuring addDirectPeer…\n')
     const node = await createComponents({})
     const peers = await makePeers(20)
 
@@ -68,11 +68,11 @@ describe('direct peer management benchmarks', function () {
 
     const speedup = beforeMs / afterMs
 
-    console.log('\n  ╔═══════════════════════════════════════════════════════╗')
-    console.log(`  ║  BEFORE  stop + reconstruct + start : ${beforeMs.toFixed(1).padStart(8)} ms/op  ║`)
-    console.log(`  ║  AFTER   addDirectPeer at runtime   : ${afterMs.toFixed(3).padStart(8)} ms/op  ║`)
-    console.log(`  ║  Speedup : ${speedup.toFixed(0)}x faster                                ║`)
-    console.log('  ╚═══════════════════════════════════════════════════════╝\n')
+    process.stdout.write(`\n  ╔═══════════════════════════════════════════════════════╗\n`)
+    process.stdout.write(`  ║  BEFORE  stop + reconstruct + start : ${beforeMs.toFixed(1).padStart(8)} ms/op  ║\n`)
+    process.stdout.write(`  ║  AFTER   addDirectPeer at runtime   : ${afterMs.toFixed(3).padStart(8)} ms/op  ║\n`)
+    process.stdout.write(`  ║  Speedup : ${speedup.toFixed(0)}x faster                                ║\n`)
+    process.stdout.write(`  ╚═══════════════════════════════════════════════════════╝\n\n`)
 
     await stop(node.pubsub, ...Object.entries(node.components))
   })
