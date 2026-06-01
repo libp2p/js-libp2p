@@ -3105,4 +3105,53 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
     }).catch((err) => { this.log.error('Error untagging peer %s with topic %s', peerId, topic, err) })
   }
+
+  // ======== Dynamic Direct Peer Management ========
+
+  async addDirectPeer (peerId: PeerId, addrs: Multiaddr[]): Promise<PeerIdStr | null> {
+    const peerIdStr = peerId.toString()
+
+    if (peerId.equals(this.components.peerId)) {
+      this.log('addDirectPeer: cannot add self as a direct peer')
+      return null
+    }
+
+    if (addrs.length === 0) {
+      this.log('addDirectPeer: cannot add direct peer %s without addresses', peerIdStr)
+      return null
+    }
+
+    try {
+      await this.components.peerStore.merge(peerId, { multiaddrs: addrs })
+    } catch (err) {
+      this.log.error('addDirectPeer: failed to store addresses for %s', peerIdStr, err)
+      return null
+    }
+
+    this.direct.add(peerIdStr)
+    this.log('addDirectPeer: added %s', peerIdStr)
+
+    if (this.status.code === GossipStatusCode.started) {
+      this.connect(peerIdStr).catch((err) => {
+        this.log.error('addDirectPeer: failed to connect to %s', peerIdStr, err)
+      })
+    }
+
+    return peerIdStr
+  }
+
+  removeDirectPeer (peerId: PeerId | string): boolean {
+    const peerIdStr = typeof peerId === 'string' ? peerId : peerId.toString()
+    const removed = this.direct.delete(peerIdStr)
+
+    if (removed) {
+      this.log('removeDirectPeer: removed %s', peerIdStr)
+    }
+
+    return removed
+  }
+
+  getDirectPeers (): PeerIdStr[] {
+    return Array.from(this.direct)
+  }
 }
