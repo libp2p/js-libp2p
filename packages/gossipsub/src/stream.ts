@@ -1,6 +1,6 @@
 import { pipe } from '@libp2p/utils'
 import { encode, decode } from 'it-length-prefixed'
-import type { AbortOptions, Stream } from '@libp2p/interface'
+import type { AbortOptions, MessageStreamStatus, Stream } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 interface OutboundStreamOpts {
@@ -28,6 +28,10 @@ export class OutboundStream {
 
   get protocol (): string {
     return this.rawStream.protocol
+  }
+
+  get status (): MessageStreamStatus {
+    return this.rawStream.status
   }
 
   push (data: Uint8Array): void {

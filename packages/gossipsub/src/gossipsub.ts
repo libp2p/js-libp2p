@@ -692,11 +692,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.metrics?.peersPerProtocol.inc({ protocol }, 1)
 
       rawStream.addEventListener('close', () => {
-        if (this.streamsOutbound.get(id) === stream) {
-          this.streamsOutbound.delete(id)
-          this.floodsubPeers.delete(id)
-          this.metrics?.peersPerProtocol.inc({ protocol }, -1)
-        }
+        this.removeOutboundStream(id, stream)
       }, { once: true })
 
       // Immediately send own subscriptions via the newly attached stream
@@ -707,6 +703,21 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     } catch (e) {
       this.log.error('createOutboundStream error', e)
     }
+  }
+
+  /**
+   * Remove an outbound stream from the registry when it closes, so a new one
+   * can be created. Guarded so it does not clobber a replacement stream or
+   * double-count metrics against `removePeer`.
+   */
+  private removeOutboundStream (id: PeerIdStr, stream: OutboundStream): void {
+    if (this.streamsOutbound.get(id) !== stream) {
+      return
+    }
+
+    this.streamsOutbound.delete(id)
+    this.floodsubPeers.delete(id)
+    this.metrics?.peersPerProtocol.inc({ protocol: stream.protocol }, -1)
   }
 
   private createInboundStream (peerId: PeerId, stream: Stream): void {
@@ -1713,6 +1724,34 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   }
 
   /**
+   * Ensure connected peers have an open outbound stream, re-creating any that
+   * closed while the connection is still open. Never dials - it only reuses
+   * existing open connections.
+   */
+  private reconcileOutboundStreams (): void {
+    for (const [id, peerId] of this.peers) {
+      if (this.streamsOutbound.get(id)?.status === 'open') {
+        continue
+      }
+
+      const connection = this.components.connectionManager
+        .getConnections(peerId)
+        .find((conn) => conn.status === 'open' && (this.runOnLimitedConnection === true || conn.limits == null))
+
+      if (connection == null) {
+        continue
+      }
+
+      const existing = this.streamsOutbound.get(id)
+      if (existing != null) {
+        this.removeOutboundStream(id, existing)
+      }
+
+      this.outboundInflightQueue.push({ peerId, connection })
+    }
+  }
+
+  /**
    * Maybe attempt connection given signed peer records
    */
   private async pxConnect (peers: RPC.PeerInfo[]): Promise<void> {
@@ -2684,6 +2723,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       // we only do this every few ticks to allow pending connections to complete and account for restarts/downtime
       await this.directConnect()
     }
+
+    // ensure connected peers have an open outbound stream
+    this.reconcileOutboundStreams()
 
     // EXTRA: Prune caches
     this.fastMsgIdCache?.prune()
