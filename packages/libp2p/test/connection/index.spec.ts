@@ -309,11 +309,10 @@ describe('connection', () => {
       middleware1,
       middleware2
     ]
-    const handler = Sinon.stub()
 
     registrar.getMiddleware.withArgs(streamProtocol).returns(middleware)
     registrar.getHandler.withArgs(streamProtocol).returns({
-      handler,
+      handler: () => {},
       options: {}
     })
 
@@ -323,7 +322,6 @@ describe('connection', () => {
 
     expect(middleware1.called).to.be.true()
     expect(middleware2.called).to.be.true()
-    expect(handler.calledOnce).to.be.true()
   })
 
   it('should support incoming stream middleware', async () => {
@@ -340,10 +338,11 @@ describe('connection', () => {
       middleware1,
       middleware2
     ]
+    const handler = Sinon.stub()
 
     registrar.getMiddleware.withArgs(streamProtocol).returns(middleware)
     registrar.getHandler.withArgs(streamProtocol).returns({
-      handler: () => {},
+      handler,
       options: {}
     })
 
@@ -381,6 +380,7 @@ describe('connection', () => {
 
     expect(middleware1.called).to.be.true()
     expect(middleware2.called).to.be.true()
+    expect(handler.calledOnce).to.be.true()
   })
 
   it('should not mutate incoming stream middleware when appending handler', async () => {
