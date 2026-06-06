@@ -309,10 +309,11 @@ describe('connection', () => {
       middleware1,
       middleware2
     ]
+    const handler = Sinon.stub()
 
     registrar.getMiddleware.withArgs(streamProtocol).returns(middleware)
     registrar.getHandler.withArgs(streamProtocol).returns({
-      handler: () => {},
+      handler,
       options: {}
     })
 
@@ -322,6 +323,7 @@ describe('connection', () => {
 
     expect(middleware1.called).to.be.true()
     expect(middleware2.called).to.be.true()
+    expect(handler.calledOnce).to.be.true()
   })
 
   it('should support incoming stream middleware', async () => {
@@ -544,7 +546,7 @@ describe('connection', () => {
     expect(incomingStream.abort.called).to.be.false()
   })
 
-  it('should allow outbound stream middleware to stop the chain', async () => {
+  it('should allow outbound stream middleware to stop the chain without aborting', async () => {
     const streamProtocol = '/test/protocol'
 
     const middleware1 = Sinon.stub().callsFake(() => {
@@ -563,12 +565,60 @@ describe('connection', () => {
       options: {}
     })
 
+    const abort = Sinon.stub()
+    const muxedStream = stubInterface<Stream>({
+      abort,
+      log: defaultLogger().forComponent('stream'),
+      protocol: streamProtocol,
+      status: 'open'
+    })
+    muxer.createStream = async () => muxedStream
+
     const connection = createConnection(components, init)
 
     await connection.newStream(streamProtocol)
 
     expect(middleware1.calledOnce).to.be.true()
     expect(middleware2.called).to.be.false()
+    expect(abort.called).to.be.false()
+  })
+
+  it('should allow async outbound stream middleware to stop the chain without aborting', async () => {
+    const streamProtocol = '/test/protocol'
+
+    const middleware1 = Sinon.stub().callsFake(async () => {
+      await delay(1)
+      return false
+    })
+    const middleware2 = Sinon.stub().callsFake((stream, connection, next) => {
+      next(stream, connection)
+    })
+
+    registrar.getMiddleware.withArgs(streamProtocol).returns([
+      middleware1,
+      middleware2
+    ])
+    registrar.getHandler.withArgs(streamProtocol).returns({
+      handler: () => {},
+      options: {}
+    })
+
+    const abort = Sinon.stub()
+    const muxedStream = stubInterface<Stream>({
+      abort,
+      log: defaultLogger().forComponent('stream'),
+      protocol: streamProtocol,
+      status: 'open'
+    })
+    muxer.createStream = async () => muxedStream
+
+    const connection = createConnection(components, init)
+
+    await connection.newStream(streamProtocol)
+
+    expect(middleware1.calledOnce).to.be.true()
+    expect(middleware2.called).to.be.false()
+    expect(abort.called).to.be.false()
   })
 
   it('should abort the outgoing stream when middleware throws', async () => {
