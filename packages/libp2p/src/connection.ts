@@ -250,7 +250,11 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
         throw new LimitedConnectionError('Cannot open protocol stream on limited connection')
       }
 
-      const middleware = this.components.registrar.getMiddleware(muxedStream.protocol)
+      // Copy registered middleware before appending the handler wrapper below;
+      // the registered middleware array is reused across streams.
+      const middleware = [
+        ...this.components.registrar.getMiddleware(muxedStream.protocol)
+      ]
 
       middleware.push(async (stream, connection, next) => {
         await handler(stream, connection)
@@ -268,22 +272,14 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
       const mw = middleware[i]
       stream.log.trace('running middleware', i, mw)
 
-      // eslint-disable-next-line no-loop-func
-      await new Promise<void>((resolve, reject) => {
-        try {
-          const result = mw(stream, connection, (s, c) => {
-            stream = s
-            connection = c
-            resolve()
-          })
+      const result = await runMiddleware(mw, stream, connection)
+      stream = result.stream
+      connection = result.connection
 
-          if (result instanceof Promise) {
-            result.catch(reject)
-          }
-        } catch (err) {
-          reject(err)
-        }
-      })
+      if (result.stop) {
+        stream.log.trace('middleware stopped chain', i, mw)
+        break
+      }
 
       stream.log.trace('ran middleware', i, mw)
     }
@@ -351,6 +347,40 @@ function findOutgoingStreamLimit (protocol: string, registrar: Registrar, option
   }
 
   return options.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
+}
+
+interface RunMiddlewareResult {
+  stream: Stream
+  connection: ConnectionInterface
+  stop: boolean
+}
+
+function runMiddleware (mw: StreamMiddleware, stream: Stream, connection: ConnectionInterface): Promise<RunMiddlewareResult> {
+  return new Promise<RunMiddlewareResult>((resolve, reject) => {
+    const continueChain = (s: Stream, c: ConnectionInterface): void => {
+      resolve({ stream: s, connection: c, stop: false })
+    }
+
+    const stopChain = (): void => {
+      resolve({ stream, connection, stop: true })
+    }
+
+    try {
+      const result = mw(stream, connection, continueChain)
+
+      if (result === false) {
+        stopChain()
+      } else if (result != null) {
+        result.then(result => {
+          if (result === false) {
+            stopChain()
+          }
+        }).catch(reject)
+      }
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
 
 function countStreams (protocol: string, direction: 'inbound' | 'outbound', connection: Connection): number {
