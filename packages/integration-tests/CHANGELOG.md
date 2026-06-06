@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.13](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.12...integration-tests-v1.2.13) (2026-06-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/gossipsub bumped from ^16.0.1 to ^16.0.2
+    * @libp2p/daemon-client bumped from ^10.0.28 to ^10.0.29
+    * @libp2p/daemon-server bumped from ^9.0.28 to ^9.0.29
+    * @libp2p/interop bumped from ^14.0.28 to ^14.0.29
+    * @libp2p/kad-dht bumped from ^16.3.1 to ^16.3.2
+    * @libp2p/webtransport bumped from ^6.0.28 to ^6.0.29
+
 ## [1.2.12](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.11...integration-tests-v1.2.12) (2026-05-30)
 
 

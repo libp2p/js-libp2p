@@ -106,6 +106,13 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.3.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.1...kad-dht-v16.3.2) (2026-06-06)
+
+
+### Refactors
+
+* **kad-dht:** only check dialability for closer peers ([#3528](https://github.com/libp2p/js-libp2p/issues/3528)) ([7550173](https://github.com/libp2p/js-libp2p/commit/75501730c073e7a69ac0018353bb6ba3cc944846))
+
 ## [16.3.1](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.0...kad-dht-v16.3.1) (2026-05-30)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.0.2](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.1...gossipsub-v16.0.2) (2026-06-06)
+
+
+### Bug Fixes
+
+* **gossipsub:** remove closed outbound streams from the registry ([#3531](https://github.com/libp2p/js-libp2p/issues/3531)) ([7ae12f9](https://github.com/libp2p/js-libp2p/commit/7ae12f9b0a6ca49b854afdd5457211eabf00e8a9))
+
 ## [16.0.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.0...gossipsub-v16.0.1) (2026-05-30)
 
 
