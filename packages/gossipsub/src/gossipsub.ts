@@ -672,10 +672,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
 
     try {
+      const rawStream = await connection.newStream(this.protocols, {
+        runOnLimitedConnection: this.runOnLimitedConnection
+      })
       const stream = new OutboundStream(
-        await connection.newStream(this.protocols, {
-          runOnLimitedConnection: this.runOnLimitedConnection
-        }),
+        rawStream,
         (e) => { this.log.error('outbound pipe error', e) },
         { maxBufferSize: this.opts.maxOutboundBufferSize }
       )
@@ -689,6 +690,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.floodsubPeers.add(id)
       }
       this.metrics?.peersPerProtocol.inc({ protocol }, 1)
+
+      rawStream.addEventListener('close', () => {
+        if (this.streamsOutbound.get(id) === stream) {
+          this.streamsOutbound.delete(id)
+          this.floodsubPeers.delete(id)
+          this.metrics?.peersPerProtocol.inc({ protocol }, -1)
+        }
+      }, { once: true })
 
       // Immediately send own subscriptions via the newly attached stream
       if (this.subscriptions.size > 0) {
