@@ -213,11 +213,9 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
   public readonly reconnectQueue: ReconnectQueue
   public readonly connectionPruner: ConnectionPruner
   private readonly inboundConnectionRateLimiter: RateLimiter
-  private readonly peerStore: PeerStore
   private readonly metrics?: Metrics
-  private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly log: Logger
-  private readonly peerId: PeerId
+  private readonly components: DefaultConnectionManagerComponents
 
   constructor (components: DefaultConnectionManagerComponents, init: ConnectionManagerInit = {}) {
     this.maxConnections = init.maxConnections ?? defaultOptions.maxConnections
@@ -232,11 +230,9 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.connections = new PeerMap()
 
     this.started = false
-    this.peerId = components.peerId
-    this.peerStore = components.peerStore
-    this.metrics = components.metrics
-    this.events = components.events
     this.log = components.logger.forComponent('libp2p:connection-manager')
+    this.components = components
+    this.metrics = components.metrics
 
     this.onConnect = this.onConnect.bind(this)
     this.onDisconnect = this.onDisconnect.bind(this)
@@ -374,8 +370,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       }
     })
 
-    this.events.addEventListener('connection:open', this.onConnect)
-    this.events.addEventListener('connection:close', this.onDisconnect)
+    this.components.events.addEventListener('connection:open', this.onConnect)
+    this.components.events.addEventListener('connection:close', this.onDisconnect)
 
     await start(
       this.dialQueue,
@@ -391,8 +387,8 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
    * Stops the Connection Manager
    */
   async stop (): Promise<void> {
-    this.events.removeEventListener('connection:open', this.onConnect)
-    this.events.removeEventListener('connection:close', this.onDisconnect)
+    this.components.events.removeEventListener('connection:open', this.onConnect)
+    this.components.events.removeEventListener('connection:close', this.onDisconnect)
 
     await stop(
       this.reconnectQueue,
@@ -482,13 +478,13 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     // only need to store RSA public keys, all other types are embedded in the peer id
     if (peerId.publicKey != null && peerId.type === 'RSA') {
-      await this.peerStore.patch(peerId, {
+      await this.components.peerStore.patch(peerId, {
         publicKey: peerId.publicKey
       })
     }
 
     if (isNewPeer) {
-      this.events.safeDispatchEvent('peer:connect', { detail: connection.remotePeer })
+      this.components.events.safeDispatchEvent('peer:connect', { detail: connection.remotePeer })
     }
   }
 
@@ -512,7 +508,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
       this.connections.delete(peerId)
 
       // broadcast disconnect event
-      this.events.safeDispatchEvent('peer:disconnect', { detail: peerId })
+      this.components.events.safeDispatchEvent('peer:disconnect', { detail: peerId })
     }
   }
 
@@ -547,7 +543,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
       const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
-      if (this.peerId.equals(peerId)) {
+      if (this.components.peerId.equals(peerId)) {
         throw new InvalidPeerIdError('Can not dial self')
       }
 

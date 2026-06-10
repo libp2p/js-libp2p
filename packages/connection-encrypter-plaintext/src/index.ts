@@ -38,11 +38,11 @@ export interface PlaintextComponents {
 
 class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
-  private readonly privateKey: PrivateKey
+  private readonly components: PlaintextComponents
   private readonly log: Logger
 
   constructor (components: PlaintextComponents) {
-    this.privateKey = components.privateKey
+    this.components = components
     this.log = components.logger.forComponent('libp2p:plaintext')
   }
 
@@ -69,7 +69,7 @@ class Plaintext implements ConnectionEncrypter {
 
     log('write pubkey exchange to peer %p', options?.remotePeer)
 
-    const publicKey = this.privateKey.publicKey
+    const publicKey = this.components.privateKey.publicKey
 
     // Encode the public key and write it to the remote peer
     await pb.write({

@@ -20,14 +20,12 @@ export interface DefaultPeerRoutingComponents {
 
 export class DefaultPeerRouting implements PeerRouting {
   private readonly log: Logger
-  private readonly peerId: PeerId
-  private readonly peerStore: PeerStore
+  private readonly components: DefaultPeerRoutingComponents
   private readonly routers: PeerRouting[]
 
   constructor (components: DefaultPeerRoutingComponents, init: PeerRoutingInit = {}) {
     this.log = components.logger.forComponent('libp2p:peer-routing')
-    this.peerId = components.peerId
-    this.peerStore = components.peerStore
+    this.components = components
     this.routers = init.routers ?? []
 
     this.findPeer = components.metrics?.traceFunction('libp2p.peerRouting.findPeer', this.findPeer.bind(this), {
@@ -66,7 +64,7 @@ export class DefaultPeerRouting implements PeerRouting {
       throw new NoPeerRoutersError('No peer routers available')
     }
 
-    if (id.toString() === this.peerId.toString()) {
+    if (id.toString() === this.components.peerId.toString()) {
       throw new QueriedForSelfError('Should not try to find self')
     }
 
@@ -90,7 +88,7 @@ export class DefaultPeerRouting implements PeerRouting {
 
       // store the addresses for the peer if found
       if (peer.multiaddrs.length > 0) {
-        await this.peerStore.merge(peer.id, {
+        await this.components.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
         }, options)
       }
@@ -146,7 +144,7 @@ export class DefaultPeerRouting implements PeerRouting {
 
       // store the addresses for the peer if found
       if (peer.multiaddrs.length > 0) {
-        await this.peerStore.merge(peer.id, {
+        await this.components.peerStore.merge(peer.id, {
           multiaddrs: peer.multiaddrs
         }, options)
       }

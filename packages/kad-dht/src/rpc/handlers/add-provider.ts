@@ -20,16 +20,14 @@ export interface AddProviderHandlerInit {
 }
 
 export class AddProviderHandler implements DHTMessageHandler {
-  private readonly peerId: PeerId
+  private readonly components: AddProviderComponents
   private readonly providers: Providers
-  private readonly peerStore: PeerStore
   private readonly log: Logger
 
   constructor (components: AddProviderComponents, init: AddProviderHandlerInit) {
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:add-provider`)
-    this.peerId = components.peerId
+    this.components = components
     this.providers = init.providers
-    this.peerStore = components.peerStore
   }
 
   async handle (peerId: PeerId, msg: Message): Promise<Message | undefined> {
@@ -49,7 +47,7 @@ export class AddProviderHandler implements DHTMessageHandler {
       this.log.error('no providers found in message')
     }
 
-    this.log('%p asked us, %p to store provider record for for %c', peerId, this.peerId, cid)
+    this.log('%p asked us, %p to store provider record for for %c', peerId, this.components.peerId, cid)
 
     await Promise.all(
       msg.providers.map(async (pi) => {
@@ -71,7 +69,7 @@ export class AddProviderHandler implements DHTMessageHandler {
         this.log.trace('received provider %p for %s (addrs %s)', peerId, cid, providerMultiaddrs)
 
         await this.providers.addProvider(cid, providerId)
-        await this.peerStore.merge(providerId, {
+        await this.components.peerStore.merge(providerId, {
           multiaddrs: providerMultiaddrs
         })
       })

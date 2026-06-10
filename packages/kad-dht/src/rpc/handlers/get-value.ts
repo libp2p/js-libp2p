@@ -25,8 +25,7 @@ export interface GetValueHandlerComponents {
 }
 
 export class GetValueHandler implements DHTMessageHandler {
-  private readonly peerStore: PeerStore
-  private readonly datastore: Datastore
+  private readonly components: GetValueHandlerComponents
   private readonly peerRouting: PeerRouting
   private readonly log: Logger
   private readonly datastorePrefix: string
@@ -34,8 +33,7 @@ export class GetValueHandler implements DHTMessageHandler {
   constructor (components: GetValueHandlerComponents, init: GetValueHandlerInit) {
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:get-value`)
     this.datastorePrefix = `${init.datastorePrefix}/record`
-    this.peerStore = components.peerStore
-    this.datastore = components.datastore
+    this.components = components
     this.peerRouting = init.peerRouting
   }
 
@@ -62,7 +60,7 @@ export class GetValueHandler implements DHTMessageHandler {
       let pubKey: Uint8Array | undefined
 
       try {
-        const peer = await this.peerStore.get(idFromKey)
+        const peer = await this.components.peerStore.get(idFromKey)
 
         if (peer.id.publicKey == null) {
           throw new NotFoundError('No public key found in key book')
@@ -116,7 +114,7 @@ export class GetValueHandler implements DHTMessageHandler {
     // Fetch value from ds
     let rawRecord
     try {
-      rawRecord = await this.datastore.get(dsKey)
+      rawRecord = await this.components.datastore.get(dsKey)
     } catch (err: any) {
       if (err.name === 'NotFoundError') {
         return undefined
@@ -131,7 +129,7 @@ export class GetValueHandler implements DHTMessageHandler {
     if (record.timeReceived == null ||
       Date.now() - record.timeReceived.getTime() > PROVIDERS_VALIDITY) {
       // If record is bad delete it and return
-      await this.datastore.delete(dsKey)
+      await this.components.datastore.delete(dsKey)
       return undefined
     }
 

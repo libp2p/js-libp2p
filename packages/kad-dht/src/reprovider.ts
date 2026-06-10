@@ -46,7 +46,6 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
   private readonly log: Logger
   private readonly reprovideQueue: Queue<void, QueueJobOptions>
   private readonly maxQueueSize: number
-  private readonly datastore: Datastore
   private timeout?: ReturnType<typeof setTimeout>
   private readonly reprovideTimeout: AdaptiveTimeout
   private running: boolean
@@ -54,16 +53,15 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
   private readonly reprovideThreshold: number
   private readonly contentRouting: ContentRouting
   private readonly datastorePrefix: string
-  private readonly addressManager: AddressManager
   private readonly validity: number
   private readonly interval: number
-  private readonly peerId: PeerId
+  private readonly components: ReproviderComponents
 
   constructor (components: ReproviderComponents, init: ReproviderInit) {
     super()
 
     this.log = components.logger.forComponent(`${init.logPrefix}:reprovider`)
-    this.peerId = components.peerId
+    this.components = components
     this.reprovideQueue = new Queue({
       concurrency: init.concurrency ?? REPROVIDE_CONCURRENCY,
       metrics: components.metrics,
@@ -74,8 +72,6 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
       metrics: components.metrics,
       metricName: `${init.metricsPrefix}_reprovide_timeout_milliseconds`
     })
-    this.datastore = components.datastore
-    this.addressManager = components.addressManager
     this.datastorePrefix = `${init.datastorePrefix}/provider`
     this.reprovideThreshold = init.threshold ?? REPROVIDE_THRESHOLD
     this.maxQueueSize = init.maxQueueSize ?? REPROVIDE_MAX_QUEUE_SIZE
@@ -122,7 +118,7 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
       this.safeDispatchEvent('reprovide:start')
       this.log('starting reprovide/cleanup')
       // Get all provider entries from the datastore
-      for await (const entry of this.datastore.query({
+      for await (const entry of this.components.datastore.query({
         prefix: this.datastorePrefix
       }, options)) {
         try {
@@ -132,14 +128,14 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
           const expires = created + this.validity
           const now = Date.now()
           const expired = now > expires
-          const isSelf = this.peerId.equals(peerId)
+          const isSelf = this.components.peerId.equals(peerId)
 
           this.log.trace('comparing: %d (now) < %d (expires) = %s %s', now, expires, expired, expired ? '(expired)' : '(valid)')
 
           // delete the record if it has expired and isn't us
           // so that if user node is down for a while, we still persist provide intent
           if (expired && !isSelf) {
-            await this.datastore.delete(entry.key, options)
+            await this.components.datastore.delete(entry.key, options)
           }
 
           // if the provider is us and we are within the reprovide threshold,
@@ -239,6 +235,6 @@ export class Reprovider extends TypedEventEmitter<ReprovideEvents> {
 
   private async reprovide (cid: CID, options?: AbortOptions): Promise<void> {
     // reprovide
-    await drain(this.contentRouting.provide(cid, this.addressManager.getAddresses(), options))
+    await drain(this.contentRouting.provide(cid, this.components.addressManager.getAddresses(), options))
   }
 }

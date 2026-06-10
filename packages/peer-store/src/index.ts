@@ -63,14 +63,12 @@ export interface PersistentPeerStoreInit {
  */
 class PersistentPeerStore implements PeerStore {
   private readonly store: PersistentStore
-  private readonly events: TypedEventTarget<Libp2pEvents>
-  private readonly peerId: PeerId
   private readonly log: Logger
+  private readonly components: PersistentPeerStoreComponents
 
   constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
     this.log = components.logger.forComponent('libp2p:peer-store')
-    this.events = components.events
-    this.peerId = components.peerId
+    this.components = components
     this.store = new PersistentStore(components, init)
   }
 
@@ -220,10 +218,10 @@ class PersistentPeerStore implements PeerStore {
       return
     }
 
-    if (this.peerId.equals(id)) {
-      this.events.safeDispatchEvent('self:peer:update', { detail: result })
+    if (this.components.peerId.equals(id)) {
+      this.components.events.safeDispatchEvent('self:peer:update', { detail: result })
     } else {
-      this.events.safeDispatchEvent('peer:update', { detail: result })
+      this.components.events.safeDispatchEvent('peer:update', { detail: result })
     }
   }
 }

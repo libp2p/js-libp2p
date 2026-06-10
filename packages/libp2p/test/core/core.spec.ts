@@ -1,7 +1,8 @@
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { createLibp2p, isLibp2p } from '../../src/index.ts'
+import { createLibp2p, createLibp2pSync, isLibp2p } from '../../src/index.ts'
 import type { Libp2p, Transport } from '@libp2p/interface'
 
 describe('core', () => {
@@ -15,6 +16,30 @@ describe('core', () => {
     libp2p = await createLibp2p()
 
     expect(libp2p).to.have.property('status', 'started')
+  })
+
+  it('should synchronously create a node', async () => {
+    libp2p = createLibp2pSync({
+      start: false
+    })
+
+    expect(() => libp2p.peerId).to.throw()
+      .with.property('name', 'NotStartedError')
+
+    await libp2p.start()
+
+    expect(libp2p.peerId).to.be.ok()
+  })
+
+  it('should make a peer id available immediately if a private key is passed', async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+
+    libp2p = createLibp2pSync({
+      privateKey,
+      start: false
+    })
+
+    expect(libp2p.peerId).to.be.ok()
   })
 
   it('should detect the libp2p type', async () => {

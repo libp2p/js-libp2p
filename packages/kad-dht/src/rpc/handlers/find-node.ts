@@ -24,16 +24,14 @@ export interface FindNodeHandlerComponents {
 export class FindNodeHandler implements DHTMessageHandler {
   private readonly peerRouting: PeerRouting
   private readonly peerInfoMapper: PeerInfoMapper
-  private readonly peerId: PeerId
-  private readonly addressManager: AddressManager
+  private readonly components: FindNodeHandlerComponents
   private readonly log: Logger
 
   constructor (components: FindNodeHandlerComponents, init: FindNodeHandlerInit) {
     const { peerRouting, logPrefix } = init
 
     this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:find-node`)
-    this.peerId = components.peerId
-    this.addressManager = components.addressManager
+    this.components = components
     this.peerRouting = peerRouting
     this.peerInfoMapper = init.peerInfoMapper
   }
@@ -54,14 +52,14 @@ export class FindNodeHandler implements DHTMessageHandler {
           peerId,
 
           // do not include the server in the results
-          this.peerId
+          this.components.peerId
         ]
       })
 
-      if (uint8ArrayEquals(this.peerId.toMultihash().bytes, msg.key)) {
+      if (uint8ArrayEquals(this.components.peerId.toMultihash().bytes, msg.key)) {
         closer.push({
-          id: this.peerId,
-          multiaddrs: this.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
+          id: this.components.peerId,
+          multiaddrs: this.components.addressManager.getAddresses().map(ma => ma.decapsulateCode(CODE_P2P))
         })
       }
 

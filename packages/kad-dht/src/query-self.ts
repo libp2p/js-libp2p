@@ -34,9 +34,8 @@ export interface QuerySelfComponents {
  */
 export class QuerySelf implements Startable {
   private readonly log: Logger
-  private readonly peerId: PeerId
+  private readonly components: QuerySelfComponents
   private readonly peerRouting: PeerRouting
-  private readonly events: EventTarget
   private readonly count: number
   private readonly interval: number
   private readonly initialInterval: number
@@ -48,9 +47,8 @@ export class QuerySelf implements Startable {
   private querySelfPromise?: DeferredPromise<void>
 
   constructor (components: QuerySelfComponents, init: QuerySelfInit) {
-    this.peerId = components.peerId
     this.log = components.logger.forComponent(`${init.logPrefix}:query-self`)
-    this.events = components.events
+    this.components = components
     this.running = false
     this.peerRouting = init.peerRouting
     this.count = init.count ?? K
@@ -125,7 +123,7 @@ export class QuerySelf implements Startable {
         const start = Date.now()
 
         const peers = await pipe(
-          this.peerRouting.getClosestPeers(this.peerId.toMultihash().bytes, {
+          this.peerRouting.getClosestPeers(this.components.peerId.toMultihash().bytes, {
             signal,
             isSelfQuery: true
           }),
@@ -139,7 +137,7 @@ export class QuerySelf implements Startable {
 
         this.log('self-query found %d peers in %dms', peers, duration)
 
-        this.events.dispatchEvent(new CustomEvent('kad-dht:query:self', {
+        this.components.events.dispatchEvent(new CustomEvent('kad-dht:query:self', {
           detail: {
             peers,
             duration

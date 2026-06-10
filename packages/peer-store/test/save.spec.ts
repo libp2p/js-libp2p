@@ -187,7 +187,7 @@ describe('save', () => {
 
   it('should not store a public key if part of peer id', async () => {
     // @ts-expect-error private fields
-    const spy = sinon.spy(peerStore.store.datastore, 'put')
+    const spy = sinon.spy(peerStore.store.components.datastore, 'put')
 
     if (otherPeerId.publicKey == null) {
       throw new Error('Public key was missing')

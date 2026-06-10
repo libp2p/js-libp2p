@@ -140,7 +140,7 @@ export interface GetClosestPeersOptions extends AbortOptions {
  * configurable prefix length, bucket split threshold and size.
  */
 export class KBucket {
-  private readonly peerId: PeerId
+  private readonly components: KBucketComponents
   public root: Bucket
   public localPeer?: Peer
   private readonly prefixLength: number
@@ -156,7 +156,7 @@ export class KBucket {
   private readonly addingPeerMap: PeerMap<Promise<void>>
 
   constructor (components: KBucketComponents, options: KBucketOptions) {
-    this.peerId = components.peerId
+    this.components = components
     this.prefixLength = options.prefixLength ?? PREFIX_LENGTH
     this.kBucketSize = options.kBucketSize ?? KBUCKET_SIZE
     this.splitThreshold = options.splitThreshold ?? this.kBucketSize
@@ -179,7 +179,7 @@ export class KBucket {
   }
 
   async start (): Promise<void> {
-    await this.addSelfPeer(this.peerId)
+    await this.addSelfPeer(this.components.peerId)
   }
 
   stop (): void {

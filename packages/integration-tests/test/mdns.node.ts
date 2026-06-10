@@ -1,6 +1,8 @@
 import { randomBytes } from '@libp2p/crypto'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { start, stop } from '@libp2p/interface'
 import { mdns } from '@libp2p/mdns'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { tcp } from '@libp2p/tcp'
 import { multiaddr } from '@multiformats/multiaddr'
 import { createLibp2p } from 'libp2p'
@@ -31,7 +33,7 @@ describe('mdns', () => {
     // use a random tag to prevent CI collision
     const serviceTag = `libp2p-test-${uint8ArrayToString(randomBytes(4), 'base16')}.local`
 
-    const getConfig = (): Libp2pOptions => ({
+    const getConfig = (opts?: Libp2pOptions): Libp2pOptions => ({
       start: false,
       addresses: {
         listen: [
@@ -46,16 +48,25 @@ describe('mdns', () => {
           interval: 200, // discover quickly
           serviceTag
         })
-      ]
+      ],
+      ...opts
     })
 
     libp2p = await createLibp2p(getConfig())
-    const remoteLibp2p1 = await createLibp2p(getConfig())
-    const remoteLibp2p2 = await createLibp2p(getConfig())
+
+    const remotePeer1 = await generateKeyPair('Ed25519')
+    const remotePeer2 = await generateKeyPair('Ed25519')
+
+    const remoteLibp2p1 = await createLibp2p(getConfig({
+      privateKey: remotePeer1
+    }))
+    const remoteLibp2p2 = await createLibp2p(getConfig({
+      privateKey: remotePeer2
+    }))
 
     const expectedPeers = new Set([
-      remoteLibp2p1.peerId.toString(),
-      remoteLibp2p2.peerId.toString()
+      peerIdFromPrivateKey(remotePeer1).toString(),
+      peerIdFromPrivateKey(remotePeer2).toString()
     ])
 
     libp2p.addEventListener('peer:discovery', (evt) => {

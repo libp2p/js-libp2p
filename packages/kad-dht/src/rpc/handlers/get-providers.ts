@@ -25,10 +25,9 @@ export interface GetProvidersHandlerComponents {
 }
 
 export class GetProvidersHandler implements DHTMessageHandler {
-  private readonly peerId: PeerId
   private readonly peerRouting: PeerRouting
   private readonly providers: Providers
-  private readonly peerStore: PeerStore
+  private readonly components: GetProvidersHandlerComponents
   private readonly peerInfoMapper: PeerInfoMapper
   private readonly log: Logger
 
@@ -36,8 +35,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
     const { peerRouting, providers, logPrefix } = init
 
     this.log = components.logger.forComponent(`${logPrefix}:rpc:handlers:get-providers`)
-    this.peerId = components.peerId
-    this.peerStore = components.peerStore
+    this.components = components
     this.peerRouting = peerRouting
     this.providers = providers
     this.peerInfoMapper = init.peerInfoMapper
@@ -59,7 +57,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
 
     const [providerPeers, closerPeers] = await Promise.all([
       all(map(await this.providers.getProviders(cid), async (peerId) => {
-        const peer = await this.peerStore.get(peerId)
+        const peer = await this.components.peerStore.get(peerId)
         const info: PeerInfo = {
           id: peer.id,
           multiaddrs: peer.addresses.map(({ multiaddr }) => multiaddr)

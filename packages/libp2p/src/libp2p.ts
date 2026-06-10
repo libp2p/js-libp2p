@@ -1,8 +1,8 @@
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
+import { generateKeyPair, publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError, NotStartedError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
-import { peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { CODE_P2P, isMultiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -28,7 +28,6 @@ import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
-  public peerId: PeerId
   public peerStore: PeerStore
   public contentRouting: ContentRouting
   public peerRouting: PeerRouting
@@ -39,9 +38,10 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
   public components: Components & T
   private readonly log: Logger
+  private _peerId?: PeerId
 
   // eslint-disable-next-line complexity
-  constructor (init: Libp2pInit<T> & { peerId: PeerId }) {
+  constructor (init: Libp2pInit<T>) {
     super()
 
     this.status = 'stopped'
@@ -62,7 +62,6 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     // This emitter gets listened to a lot
     setMaxListeners(Infinity, events)
 
-    this.peerId = init.peerId
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
@@ -73,7 +72,6 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
 
     // @ts-expect-error defaultComponents is missing component types added later
     const components = this.components = defaultComponents({
-      peerId: init.peerId,
       privateKey: init.privateKey,
       nodeInfo: {
         name: nodeInfoName,
@@ -86,6 +84,11 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
       connectionGater: connectionGater(init.connectionGater),
       dns: init.dns
     })
+
+    // can make the peer id available immediately if a private key was supplied
+    if (init.privateKey != null) {
+      this.components.components.peerId = this._peerId = peerIdFromPrivateKey(init.privateKey)
+    }
 
     // Create Metrics
     if (init.metrics != null) {
@@ -207,6 +210,14 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     checkServiceDependencies(components)
   }
 
+  get peerId (): PeerId {
+    if (this._peerId == null) {
+      throw new NotStartedError()
+    }
+
+    return this._peerId
+  }
+
   private configureComponent <T> (name: string, component: T): T {
     if (component == null) {
       this.log.error('component %s was null or undefined', name)
@@ -229,6 +240,12 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.status = 'starting'
 
     this.log('libp2p is starting')
+
+    this.components.components.privateKey = this.components.components.privateKey ?? await generateKeyPair('Ed25519')
+
+    if (this._peerId == null) {
+      this.components.components.peerId = this._peerId = peerIdFromPrivateKey(this.components.privateKey)
+    }
 
     try {
       await this.components.beforeStart?.()

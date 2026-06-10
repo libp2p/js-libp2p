@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
-import { createLibp2p } from '../../src/index.ts'
+import { createLibp2p, createLibp2pSync } from '../../src/index.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('events', () => {
@@ -13,7 +13,7 @@ describe('events', () => {
   })
 
   it('should emit a start event', async () => {
-    node = await createLibp2p({
+    node = createLibp2pSync({
       start: false
     })
 

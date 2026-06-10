@@ -14,8 +14,6 @@
  * ```
  */
 
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { validateConfig } from './config.ts'
 import { Libp2p as Libp2pClass } from './libp2p.ts'
 import type { AddressManagerInit, AddressFilter } from './address-manager/index.ts'
@@ -199,11 +197,8 @@ export type Libp2pOptions<T extends ServiceMap = ServiceMap> = Libp2pInit<T> & {
  * ```
  */
 export async function createLibp2p <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T> = {}): Promise<Libp2p<T>> {
-  options.privateKey ??= await generateKeyPair('Ed25519')
-
   const node = new Libp2pClass({
-    ...await validateConfig(options),
-    peerId: peerIdFromPrivateKey(options.privateKey)
+    ...validateConfig(options)
   })
 
   if (options.start !== false) {
@@ -211,6 +206,39 @@ export async function createLibp2p <T extends ServiceMap = ServiceMap> (options:
   }
 
   return node
+}
+
+/**
+ * If you wish more control over the lifecycle of the node, use this function
+ * to synchronously return a `Libp2p` instance.
+ *
+ * All async work will then be deferred until the `.start()` method is invoked.
+ *
+ * This is the same as passing `{ start: false }` to `createLibp2p()` except the
+ * returned libp2p node is not wrapped in a promise.
+ *
+ * Note that if no private key is passed to `createLibp2p`, the peer id of the
+ * node will not be available until the node is started.
+ *
+ * @example
+ *
+ * ```TypeScript
+ * import { createLibp2pSync } from 'libp2p'
+ *
+ * // create libp2p
+ * const libp2p = createLibp2pSync({
+ *   start: false,
+ *   // ...other options
+ * })
+ *
+ * // some time later
+ * await libp2p.start()
+ * ```
+ */
+export function createLibp2pSync <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T> = {}): Libp2p<T> {
+  return new Libp2pClass({
+    ...validateConfig(options)
+  })
 }
 
 // a non-exhaustive list of methods found on the libp2p object

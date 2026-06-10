@@ -51,8 +51,7 @@ export class QueryManager implements Startable {
   private shutDownController: AbortController
   private running: boolean
   private readonly logger: ComponentLogger
-  private readonly peerId: PeerId
-  private readonly connectionManager: ConnectionManager
+  private readonly components: QueryManagerComponents
   private readonly routingTable: RoutingTable
   private initialQuerySelfHasRun?: DeferredPromise<void>
   private readonly logPrefix: string
@@ -65,8 +64,7 @@ export class QueryManager implements Startable {
     this.initialQuerySelfHasRun = init.initialQuerySelfHasRun
     this.routingTable = init.routingTable
     this.logger = components.logger
-    this.peerId = components.peerId
-    this.connectionManager = components.connectionManager
+    this.components = components
     this.allowQueryWithZeroPeers = init.allowQueryWithZeroPeers ?? false
 
     // allow us to stop queries on shut down
@@ -149,7 +147,7 @@ export class QueryManager implements Startable {
         // wait to discover at least one DHT peer that isn't us
         await pEvent(this.routingTable, 'peer:add', {
           signal,
-          filter: (event) => !this.peerId.equals(event.detail)
+          filter: (event) => !this.components.peerId.equals(event.detail)
         })
         log('routing table has peers, continuing with%s query', options.isSelfQuery === true ? ' self' : '')
       }
@@ -200,7 +198,7 @@ export class QueryManager implements Startable {
           ...options,
           key,
           startingPeers: peer,
-          ourPeerId: this.peerId,
+          ourPeerId: this.components.peerId,
           signal,
           query: queryFunc,
           path: index,
@@ -209,7 +207,7 @@ export class QueryManager implements Startable {
           log,
           peersSeen,
           onProgress: options.onProgress,
-          connectionManager: this.connectionManager
+          connectionManager: this.components.connectionManager
         })
       })
 

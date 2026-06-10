@@ -2,7 +2,7 @@ import { FaultTolerance, stop } from '@libp2p/interface'
 import { memory } from '@libp2p/memory'
 import { plaintext } from '@libp2p/plaintext'
 import { expect } from 'aegir/chai'
-import { createLibp2p } from 'libp2p'
+import { createLibp2p, createLibp2pSync } from 'libp2p'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('Listening', () => {
@@ -41,13 +41,12 @@ describe('Listening', () => {
   })
 
   it('fails to start if multiaddr fails to listen', async () => {
-    libp2p = await createLibp2p({
+    libp2p = createLibp2pSync({
       addresses: {
         listen: ['/ip4/127.0.0.1/tcp/0']
       },
       transports: [memory()],
-      connectionEncrypters: [plaintext()],
-      start: false
+      connectionEncrypters: [plaintext()]
     })
 
     await expect(libp2p.start()).to.eventually.be.rejected
@@ -55,7 +54,7 @@ describe('Listening', () => {
   })
 
   it('does not fail to start if provided listen multiaddr are not compatible to configured transports (when supporting dial only mode)', async () => {
-    libp2p = await createLibp2p({
+    libp2p = createLibp2pSync({
       addresses: {
         listen: ['/ip4/127.0.0.1/tcp/0']
       },
@@ -67,15 +66,14 @@ describe('Listening', () => {
       ],
       connectionEncrypters: [
         plaintext()
-      ],
-      start: false
+      ]
     })
 
     await expect(libp2p.start()).to.eventually.be.undefined()
   })
 
   it('does not fail to start if provided listen multiaddr fail to listen on configured transports (when supporting dial only mode)', async () => {
-    libp2p = await createLibp2p({
+    libp2p = createLibp2pSync({
       addresses: {
         listen: ['/ip4/127.0.0.1/tcp/12345/p2p/QmWDn2LY8nannvSWJzruUYoLZ4vV83vfCBwd8DipvdgQc3/p2p-circuit']
       },
@@ -87,8 +85,7 @@ describe('Listening', () => {
       ],
       connectionEncrypters: [
         plaintext()
-      ],
-      start: false
+      ]
     })
 
     await expect(libp2p.start()).to.eventually.be.undefined()

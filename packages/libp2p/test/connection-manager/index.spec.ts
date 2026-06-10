@@ -75,12 +75,11 @@ describe('Connection Manager', () => {
   })
 
   it('should fail if the connection manager has mismatched connection limit options', async () => {
-    await expect(
-      createLibp2p({
-        connectionManager: {
-          maxConnections: -1
-        }
-      })
+    await expect(createLibp2p({
+      connectionManager: {
+        maxConnections: -1
+      }
+    })
     ).to.eventually.rejected('maxConnections must be greater')
   })
 

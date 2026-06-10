@@ -1,6 +1,6 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
-import { createLibp2p } from '../../src/index.ts'
+import { createLibp2pSync } from '../../src/index.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('status', () => {
@@ -11,9 +11,7 @@ describe('status', () => {
   })
 
   it('should have status', async () => {
-    libp2p = await createLibp2p({
-      start: false
-    })
+    libp2p = createLibp2pSync()
 
     expect(libp2p).to.have.property('status', 'stopped')
 

@@ -11,10 +11,8 @@ import { HopMessage, Status } from '../pb/index.ts'
 import { getExpirationMilliseconds } from '../utils.ts'
 import type { TransportReservationStoreComponents, TransportReservationStoreInit } from '../index.ts'
 import type { Reservation } from '../pb/index.ts'
-import type { AbortOptions, Libp2pEvents, Logger, PeerId, PeerStore, Startable, Peer, Connection } from '@libp2p/interface'
-import type { ConnectionManager } from '@libp2p/interface-internal'
+import type { AbortOptions, Logger, PeerId, Startable, Peer, Connection } from '@libp2p/interface'
 import type { Filter } from '@libp2p/utils'
-import type { TypedEventTarget } from 'main-event'
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
 const REFRESH_WINDOW = (60 * 1000) * 10
@@ -69,10 +67,7 @@ export interface ReservationStoreEvents {
 }
 
 export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> implements Startable {
-  private readonly peerId: PeerId
-  private readonly connectionManager: ConnectionManager
-  private readonly peerStore: PeerStore
-  private readonly events: TypedEventTarget<Libp2pEvents>
+  private readonly components: TransportReservationStoreComponents
   private readonly reserveQueue: PeerQueue<RelayReservation>
   private readonly reservations: PeerMap<RelayEntry>
   private readonly pendingReservations: string[]
@@ -86,10 +81,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     super()
 
     this.log = components.logger.forComponent('libp2p:circuit-relay:transport:reservation-store')
-    this.peerId = components.peerId
-    this.connectionManager = components.connectionManager
-    this.peerStore = components.peerStore
-    this.events = components.events
+    this.components = components
     this.reservations = new PeerMap()
     this.pendingReservations = []
     this.maxReservationQueueLength = init?.maxReservationQueueLength ?? DEFAULT_MAX_RESERVATION_QUEUE_LENGTH
@@ -107,7 +99,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     // reservations are only valid while we are still connected to the relay.
     // if we had a reservation opened via that connection, remove it and maybe
     // trigger a search for new relays
-    this.events.addEventListener('connection:close', (evt) => {
+    this.components.events.addEventListener('connection:close', (evt) => {
       const reservation = [...this.reservations.values()]
         .find(reservation => reservation.connection === evt.detail.id)
 
@@ -134,7 +126,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     // remove old relay tags
     void Promise.resolve()
       .then(async () => {
-        const relayPeers: Peer[] = await this.peerStore.all({
+        const relayPeers: Peer[] = await this.components.peerStore.all({
           filters: [(peer) => {
             return peer.tags.has(KEEP_ALIVE_TAG)
           }]
@@ -145,7 +137,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         // remove old relay tag and redial
         await Promise.all(
           relayPeers.map(async peer => {
-            await this.peerStore.merge(peer.id, {
+            await this.components.peerStore.merge(peer.id, {
               tags: {
                 [KEEP_ALIVE_TAG]: undefined
               }
@@ -191,7 +183,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
    * to reserve a slot on the remote peer
    */
   async addRelay (peerId: PeerId, type: RelayType): Promise<RelayReservation> {
-    if (this.peerId.equals(peerId)) {
+    if (this.components.peerId.equals(peerId)) {
       this.log.trace('not trying to use self as relay')
       throw new ListenError('Cannot use self as relay')
     }
@@ -221,7 +213,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         const existingReservation = this.reservations.get(peerId)
 
         if (existingReservation != null) {
-          const connections = this.connectionManager.getConnections(peerId)
+          const connections = this.components.connectionManager.getConnections(peerId)
           let connected = false
 
           if (connections.length === 0) {
@@ -251,7 +243,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         const signal = AbortSignal.timeout(this.reservationCompletionTimeout)
         setMaxListeners(Infinity, signal)
 
-        const connection = await this.connectionManager.openConnection(peerId, {
+        const connection = await this.components.connectionManager.openConnection(peerId, {
           signal
         })
 
@@ -314,7 +306,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         this.reservations.set(peerId, res)
 
         // ensure we don't close the connection to the relay
-        await this.peerStore.merge(peerId, {
+        await this.components.peerStore.merge(peerId, {
           tags: {
             [KEEP_ALIVE_TAG]: {
               value: 1,
@@ -473,7 +465,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     }
 
     // untag the relay
-    await this.peerStore.merge(peerId, {
+    await this.components.peerStore.merge(peerId, {
       tags: {
         [KEEP_ALIVE_TAG]: undefined
       }
