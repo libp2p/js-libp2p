@@ -108,17 +108,19 @@ describe('connection monitor', () => {
     expect(connection.rtt).to.be.gte(0)
   })
 
-  it('should abort a connection that times out', async () => {
+  it('should abort a connection that times out and is silent', async () => {
     monitor = new ConnectionMonitor(components, {
       pingInterval: 50,
       pingTimeout: {
         maxTimeout: 50
-      }
+      },
+      connectionStaleTimeout: 50
     })
 
     await start(monitor)
 
     const connection = stubInterface<Connection>()
+    connection.timeline = { open: Date.now() }
     connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
       await delay(200)
       opts?.signal?.throwIfAborted()
@@ -132,14 +134,16 @@ describe('connection monitor', () => {
     expect(connection.abort).to.have.property('called', true)
   })
 
-  it('should abort a connection that fails', async () => {
+  it('should abort a connection that fails and is silent', async () => {
     monitor = new ConnectionMonitor(components, {
-      pingInterval: 10
+      pingInterval: 10,
+      connectionStaleTimeout: 50
     })
 
     await start(monitor)
 
     const connection = stubInterface<Connection>()
+    connection.timeline = { open: Date.now() }
     connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
       throw new ConnectionClosedError('Connection closed')
     })
@@ -149,6 +153,28 @@ describe('connection monitor', () => {
     await delay(500)
 
     expect(connection.abort).to.have.property('called', true)
+    expect(connection.abort.firstCall.args[0]).to.have.property('name', 'ConnectionStaleError')
+  })
+
+  it('should not abort a connection that fails but recently received data', async () => {
+    monitor = new ConnectionMonitor(components, {
+      pingInterval: 10,
+      connectionStaleTimeout: 10_000
+    })
+
+    await start(monitor)
+
+    const connection = stubInterface<Connection>()
+    connection.timeline = { open: Date.now(), lastReadAt: Date.now() }
+    connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
+      throw new ConnectionClosedError('Connection closed')
+    })
+
+    components.connectionManager.getConnections.returns([connection])
+
+    await delay(500)
+
+    expect(connection.abort).to.have.property('called', false)
   })
 
   it('should abort the probe stream when the ping exchange fails', async () => {
@@ -160,6 +186,7 @@ describe('connection monitor', () => {
     stream.send.throws(new Error('write failed'))
 
     const connection = stubInterface<Connection>()
+    connection.timeline = { open: Date.now(), lastReadAt: Date.now() }
     connection.newStream.withArgs('/ipfs/ping/1.0.0').resolves(stream)
     components.connectionManager.getConnections.returns([connection])
 
@@ -179,6 +206,7 @@ describe('connection monitor', () => {
     await start(monitor)
 
     const connection = stubInterface<Connection>()
+    connection.timeline = { open: Date.now() }
     connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
       throw new ConnectionClosedError('Connection closed')
     })
@@ -190,15 +218,17 @@ describe('connection monitor', () => {
     expect(connection.abort).to.have.property('called', false)
   })
 
-  it('should abort a connection that fails when abortConnectionOnPingFailure is true', async () => {
+  it('should abort a silent connection that fails when abortConnectionOnPingFailure is true', async () => {
     monitor = new ConnectionMonitor(components, {
       pingInterval: 10,
-      abortConnectionOnPingFailure: true
+      abortConnectionOnPingFailure: true,
+      connectionStaleTimeout: 50
     })
 
     await start(monitor)
 
     const connection = stubInterface<Connection>()
+    connection.timeline = { open: Date.now() }
     connection.newStream.withArgs('/ipfs/ping/1.0.0').callsFake(async (protocols, opts) => {
       throw new ConnectionClosedError('Connection closed')
     })

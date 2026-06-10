@@ -121,6 +121,21 @@ export class ConnectionFailedError extends Error {
 }
 
 /**
+ * Thrown when a connection is aborted because it has not received any data
+ * from the remote peer within the configured staleness threshold. Distinct
+ * from a transport-level failure - the connection appeared healthy at the
+ * transport layer but went silent.
+ */
+export class ConnectionStaleError extends Error {
+  static name = 'ConnectionStaleError'
+
+  constructor (message = 'Connection stale - no data received from peer') {
+    super(message)
+    this.name = 'ConnectionStaleError'
+  }
+}
+
+/**
  * Thrown when the muxer is closed and an attempt to open a stream occurs
  */
 export class MuxerClosedError extends Error {
