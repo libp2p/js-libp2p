@@ -263,12 +263,8 @@ export class PeerRouting {
         yield event
       }
 
-      // only add the peer to the closest set if it actually responded - a peer
-      // we could not contact is a dead or stale routing-table entry, and
-      // including it both wastes a PUT_VALUE and lets dead peers fill the
-      // closest-K so the lookup stops before finding live peers slightly
-      // further out
       if (responded) {
+        // add the peer to the list if we've managed to contact it successfully
         peers.addWithKadId(peer, peerKadId, path)
       }
     }
