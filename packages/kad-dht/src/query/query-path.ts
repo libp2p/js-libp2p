@@ -3,6 +3,7 @@ import { Queue } from '@libp2p/utils'
 import { pushable } from 'it-pushable'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
+import { PeerDistanceList } from '../peer-distance-list.ts'
 import { convertPeerId, convertBuffer } from '../utils.ts'
 import { pathEndedEvent, queryErrorEvent } from './events.ts'
 import type { QueryEvent } from '../index.ts'
@@ -48,6 +49,12 @@ export interface QueryPathOptions extends RoutingOptions {
   numPaths: number
 
   /**
+   * The maximum number of closest peers to find - used as the capacity of the
+   * closest-peer set that drives lookup termination
+   */
+  kBucketSize: number
+
+  /**
    * Query log
    */
   log: Logger
@@ -77,7 +84,7 @@ interface QueryQueueOptions extends AbortOptions {
  * every peer encountered that we have not seen before
  */
 export async function * queryPath (options: QueryPathOptions): AsyncGenerator<QueryEvent, void, undefined> {
-  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, log, peersSeen, connectionManager, signal } = options
+  const { key, startingPeers, ourPeerId, query, alpha, path, numPaths, kBucketSize, log, peersSeen, connectionManager, signal } = options
   const events = pushable<QueryEvent>({
     objectMode: true
   })
@@ -117,6 +124,11 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
       signal
     })
 
+    // the closest peers that have responded along this path - once it is full
+    // we stop querying peers that are further away than the furthest entry,
+    // which is the Kademlia/S-Kademlia lookup termination condition
+    const closest = new PeerDistanceList(kadId, kBucketSize)
+
     /**
      * Adds the passed peer to the query queue if it's not us and no other path
      * has passed through this peer
@@ -131,6 +143,12 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
       const peerXor = uint8ArrayXor(peerKadId, kadId)
 
       queue.add(async () => {
+        // if this peer can no longer enter the closest-peer set there is no
+        // point querying it - the lookup has converged along this path
+        if (!closest.canAddKadId(peerKadId)) {
+          return
+        }
+
         try {
           for await (const event of query({
             ...options,
@@ -148,6 +166,10 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           })) {
             // if there are closer peers and the query has not completed, continue the query
             if (event.name === 'PEER_RESPONSE') {
+              // record that this peer responded so the closest-peer set
+              // tightens and the convergence check above can end the path
+              closest.addWithKadId(peer, peerKadId)
+
               for (const closerPeer of event.closer) {
                 if (peersSeen.has(closerPeer.id.toMultihash().bytes)) { // eslint-disable-line max-depth
                   log('already seen %p in query', closerPeer.id)
@@ -167,6 +189,13 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                 // only continue query if closer peer is actually closer
                 if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
                   log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer.id)
+                  continue
+                }
+
+                // ...and skip queuing it if it can no longer enter the
+                // closest-peer set - the path has converged, and this also
+                // avoids the dialability check below for peers we would not query
+                if (!closest.canAddKadId(closerPeerKadId)) { // eslint-disable-line max-depth
                   continue
                 }
 
