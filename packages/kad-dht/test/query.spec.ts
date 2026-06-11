@@ -1030,4 +1030,58 @@ describe('QueryManager', () => {
 
     await manager.stop()
   })
+
+  it('should not query peers farther than the kth-closest already found', async () => {
+    // the closest-peer set capacity is the kBucketSize - keep it small so the
+    // convergence gate is exercised with only a handful of peers
+    const rt = stubInterface<RoutingTable>({ kBucketSize: 1 })
+    rt.closestPeers.returns([peers[10].peerId])
+
+    const manager = new QueryManager({
+      peerId: ourPeerId,
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
+    }, {
+      ...defaultInit(),
+      routingTable: rt,
+      disjointPaths: 1,
+      alpha: 1
+    })
+    await manager.start()
+
+    // peers are sorted closest (0) -> farthest (38)
+    // 10 -> [1, 9]  both closer than the seed (10)
+    //  1 -> [0]
+    //  0 -> []
+    //  9 -> []      once 1 and 0 respond, 9 is farther than the kth-closest
+    //               (k=1) and must NOT be queried, despite being closer than
+    //               its parent (10)
+    const topology = createTopology({
+      10: { closerPeers: [1, 9] },
+      1: { closerPeers: [0] },
+      0: {},
+      9: {}
+    })
+
+    const results = await all(manager.run(key, createQueryFunction(topology)))
+    const traversed = results
+      .filter(evt => evt.type !== EventTypes.PATH_ENDED)
+      .map(event => {
+        if (event.type !== EventTypes.PEER_RESPONSE && event.type !== EventTypes.VALUE) {
+          throw new Error(`Unexpected query event type ${event.type}`)
+        }
+
+        return event.from.toString()
+      })
+
+    expect(traversed).to.include(peers[10].peerId.toString())
+    expect(traversed).to.include(peers[1].peerId.toString())
+    expect(traversed).to.include(peers[0].peerId.toString())
+    // closer than its parent (10) but farther than the kth-closest found
+    expect(traversed).to.not.include(peers[9].peerId.toString())
+
+    await manager.stop()
+  })
 })
