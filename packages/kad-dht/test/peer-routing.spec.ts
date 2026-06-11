@@ -5,14 +5,17 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
 import { K } from '../src/constants.ts'
+import { MessageType } from '../src/message/dht.ts'
 import { PeerRouting } from '../src/peer-routing/index.ts'
-import { convertBuffer } from '../src/utils.ts'
+import { peerResponseEvent, queryErrorEvent } from '../src/query/events.ts'
+import { convertBuffer, convertPeerId } from '../src/utils.ts'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
 import { sortClosestPeers } from './utils/sort-closest-peers.ts'
 import type { PeerAndKey } from './utils/create-peer-id.ts'
-import type { Validators } from '../src/index.ts'
+import type { QueryEvent, Validators } from '../src/index.ts'
 import type { Network } from '../src/network.ts'
 import type { QueryManager } from '../src/query/manager.ts'
+import type { QueryFunc } from '../src/query/types.ts'
 import type { RoutingTable } from '../src/routing-table/index.ts'
 import type { Peer, ComponentLogger, PeerId, PeerStore } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
@@ -133,6 +136,50 @@ describe('peer-routing', () => {
       expect(closer).to.have.lengthOf(2)
       expect(closer[0].id).to.equal(clientPeer.id)
       expect(closer[1].id).to.equal(serverPeer.id)
+    })
+  })
+
+  describe('getClosestPeers', () => {
+    it('only adds peers to the closest set if they responded to the query', async () => {
+      const key = Uint8Array.from([0, 1, 2, 3, 4])
+      const [livePeer, deadPeer] = await getSortedPeers(key, 2)
+      const path = { index: 0, queued: 0, running: 0, total: 1 }
+
+      // the QueryManager is stubbed, so drive the query function ourselves for
+      // both peers and re-yield whatever the network produces for each
+      const run = async function * (_key: Uint8Array, query: QueryFunc): AsyncGenerator<QueryEvent> {
+        for (const { peerId } of [livePeer, deadPeer]) {
+          yield * query({
+            key,
+            peer: { id: peerId, multiaddrs: [] },
+            peerKadId: await convertPeerId(peerId),
+            path,
+            numPaths: 1
+          })
+        }
+      }
+      init.queryManager.run.callsFake(run)
+
+      // the live peer answers; the dead peer only errors, never sending a
+      // PEER_RESPONSE
+      const sendRequest = async function * (to: PeerId): AsyncGenerator<QueryEvent> {
+        if (to.equals(livePeer.peerId)) {
+          yield peerResponseEvent({ from: to, messageType: MessageType.FIND_NODE, path })
+        } else {
+          yield queryErrorEvent({ from: to, error: new Error('could not dial peer'), path })
+        }
+      }
+      init.network.sendRequest.callsFake(sendRequest)
+
+      const finalPeerIds: PeerId[] = []
+      for await (const event of peerRouting.getClosestPeers(key)) {
+        if (event.name === 'FINAL_PEER') {
+          finalPeerIds.push(event.peer.id)
+        }
+      }
+
+      expect(finalPeerIds).to.have.lengthOf(1)
+      expect(finalPeerIds[0].equals(livePeer.peerId)).to.be.true()
     })
   })
 })

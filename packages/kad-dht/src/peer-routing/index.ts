@@ -249,14 +249,28 @@ export class PeerRouting {
         key
       }
 
-      yield * self.network.sendRequest(peer.id, request, {
+      let responded = false
+
+      for await (const event of self.network.sendRequest(peer.id, request, {
         ...options,
         signal,
         path
-      })
+      })) {
+        if (event.name === 'PEER_RESPONSE') {
+          responded = true
+        }
 
-      // add the peer to the list if we've managed to contact it successfully
-      peers.addWithKadId(peer, peerKadId, path)
+        yield event
+      }
+
+      // only add the peer to the closest set if it actually responded - a peer
+      // we could not contact is a dead or stale routing-table entry, and
+      // including it both wastes a PUT_VALUE and lets dead peers fill the
+      // closest-K so the lookup stops before finding live peers slightly
+      // further out
+      if (responded) {
+        peers.addWithKadId(peer, peerKadId, path)
+      }
     }
 
     yield * this.queryManager.run(key, getCloserPeersQuery, options)
