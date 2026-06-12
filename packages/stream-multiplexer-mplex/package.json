@@ -68,7 +68,6 @@
     "@libp2p/logger": "^6.2.8",
     "aegir": "^48.0.11",
     "benchmark": "^2.1.4",
-    "iso-random-stream": "^2.0.2",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
     "it-foreach": "^2.1.4",
