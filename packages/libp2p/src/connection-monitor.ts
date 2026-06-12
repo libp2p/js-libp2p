@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { serviceCapabilities } from '@libp2p/interface'
 import { AdaptiveTimeout, byteStream } from '@libp2p/utils'
 import { setMaxListeners } from 'main-event'
@@ -110,7 +109,7 @@ export class ConnectionMonitor implements Startable {
             start = Date.now()
 
             await Promise.all([
-              bs.write(randomBytes(PING_LENGTH), {
+              bs.write(crypto.getRandomValues(new Uint8Array(PING_LENGTH)), {
                 signal
               }),
               bs.read({

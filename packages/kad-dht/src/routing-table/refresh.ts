@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
@@ -178,7 +177,7 @@ export class RoutingTableRefresh {
       throw new Error('Local peer not set')
     }
 
-    const randomData = randomBytes(2)
+    const randomData = crypto.getRandomValues(new Uint8Array(2))
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
     const key = this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)

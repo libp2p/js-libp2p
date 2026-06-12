@@ -1,5 +1,4 @@
 import { expect } from 'aegir/chai'
-import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
 import drain from 'it-drain'
 import each from 'it-foreach'
@@ -15,10 +14,10 @@ describe('restrict size', () => {
     const maxSize = 32
 
     const input: Message[] = [
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(8)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(maxSize)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(64)) }
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(8))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(maxSize))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(64))) }
     ]
 
     const output: Message[] = []
@@ -65,13 +64,13 @@ describe('restrict size', () => {
     const maxUnprocessedMessageQueueSize = 64
 
     const input: Message[] = [
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) },
-      { id: 0, type: 1, data: new Uint8ArrayList(randomBytes(16)) }
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) },
+      { id: 0, type: 1, data: new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(16))) }
     ]
 
     const output: Message[] = []
@@ -101,7 +100,7 @@ describe('restrict size', () => {
   it('should throw when unprocessed message queue size is too big because of garbage', async () => {
     const maxMessageSize = 32
     const maxUnprocessedMessageQueueSize = 64
-    const input = randomBytes(maxUnprocessedMessageQueueSize + 1)
+    const input = crypto.getRandomValues(new Uint8Array(maxUnprocessedMessageQueueSize + 1))
     const output: Message[] = []
 
     try {

@@ -1,7 +1,6 @@
 import { StreamCloseEvent } from '@libp2p/interface'
 import { echo, multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import randomBytes from 'iso-random-stream/src/random.js'
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
 import randomInt from 'random-int'
@@ -17,7 +16,7 @@ import type { MplexStream } from '../src/stream.ts'
 import type { MessageStream } from '@libp2p/interface'
 
 function randomInput (min = 1, max = 100): Uint8ArrayList[] {
-  return Array.from(Array(randomInt(min, max)), () => new Uint8ArrayList(randomBytes(randomInt(1, 128))))
+  return Array.from(Array(randomInt(min, max)), () => new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(randomInt(1, 128)))))
 }
 
 function expectMsgType (actual: keyof typeof MessageTypeNames, expected: keyof typeof MessageTypeNames): void {

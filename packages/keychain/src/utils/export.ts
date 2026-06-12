@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { AES_GCM } from '@libp2p/crypto/ciphers'
 import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import webcrypto from '@libp2p/crypto/webcrypto'
@@ -130,7 +129,7 @@ export async function exportToPem (privateKey: RSAPrivateKey, password: string):
 
   const keyBuf = keyWrapper.toBER()
   const keyArr = new Uint8Array(keyBuf, 0, keyBuf.byteLength)
-  const salt = randomBytes(SALT_LENGTH)
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
 
   const encryptionKey = await pbkdf2Async(
     sha512,
@@ -141,7 +140,7 @@ export async function exportToPem (privateKey: RSAPrivateKey, password: string):
     }
   )
 
-  const iv = randomBytes(16)
+  const iv = crypto.getRandomValues(new Uint8Array(16))
   const cryptoKey = await crypto.subtle.importKey('raw', withArrayBuffer(encryptionKey), 'AES-CBC', false, ['encrypt'])
   const encrypted = await crypto.subtle.encrypt({
     name: 'AES-CBC',
