@@ -54,7 +54,7 @@
     "@libp2p/utils": "^7.2.2",
     "@multiformats/multiaddr": "^13.0.3",
     "it-drain": "^3.0.10",
-    "it-length-prefixed": "^10.0.1",
+    "it-length-prefixed": "^11.0.1",
     "it-pushable": "^3.2.3",
     "multiformats": "^14.0.0",
     "p-event": "^7.0.0",

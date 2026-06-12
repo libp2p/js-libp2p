@@ -57,7 +57,7 @@
     "cborg": "^5.1.0",
     "delay": "^7.0.0",
     "is-loopback-addr": "^2.0.2",
-    "it-length-prefixed": "^10.0.1",
+    "it-length-prefixed": "^11.0.1",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
@@ -67,8 +67,8 @@
     "p-event": "^7.0.0",
     "progress-events": "^1.1.0",
     "race-signal": "^2.0.0",
-    "uint8-varint": "^2.0.4",
-    "uint8arraylist": "^2.4.8",
+    "uint8-varint": "^3.0.0",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
