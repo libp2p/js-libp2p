@@ -57,16 +57,16 @@
     "it-drain": "^3.0.10",
     "it-parallel": "^3.0.13",
     "main-event": "^1.0.1",
-    "protons-runtime": "^6.0.1",
-    "uint8arraylist": "^2.4.8",
+    "protons-runtime": "^7.0.0",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.8",
     "aegir": "^48.0.11",
     "delay": "^7.0.0",
-    "it-length-prefixed": "^10.0.1",
-    "protons": "^8.1.1",
+    "it-length-prefixed": "^11.0.1",
+    "protons": "^9.0.1",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

@@ -103,19 +103,19 @@
     "it-drain": "^3.0.10",
     "it-map": "^3.1.4",
     "it-pushable": "^3.2.3",
-    "it-to-buffer": "^4.0.10",
+    "it-to-buffer": "^5.0.0",
     "libp2p": "^3.3.3",
     "p-defer": "^4.0.1",
     "p-event": "^7.0.0",
     "p-retry": "^8.0.0",
     "p-wait-for": "^6.0.0",
-    "protons-runtime": "^6.0.1",
+    "protons-runtime": "^7.0.0",
     "race-signal": "^2.0.0",
     "sinon": "^21.0.0",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "protons": "^8.1.1"
+    "protons": "^9.0.1"
   }
 }

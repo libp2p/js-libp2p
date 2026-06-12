@@ -55,13 +55,13 @@
     "@libp2p/peer-id": "^6.0.10",
     "@libp2p/peer-record": "^9.0.11",
     "@multiformats/multiaddr": "^13.0.3",
-    "interface-datastore": "^9.0.1",
+    "interface-datastore": "^10.0.1",
     "it-all": "^3.0.9",
     "main-event": "^1.0.1",
     "mortice": "^3.3.1",
     "multiformats": "^14.0.0",
-    "protons-runtime": "^6.0.1",
-    "uint8arraylist": "^2.4.8",
+    "protons-runtime": "^7.0.0",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
@@ -69,11 +69,11 @@
     "@types/sinon": "^21.0.1",
     "aegir": "^48.0.11",
     "benchmark": "^2.1.4",
-    "datastore-core": "^11.0.1",
+    "datastore-core": "^12.0.1",
     "delay": "^7.0.0",
     "p-defer": "^4.0.1",
     "p-event": "^7.0.0",
-    "protons": "^8.1.1",
+    "protons": "^9.0.1",
     "sinon": "^21.0.0"
   },
   "sideEffects": false
