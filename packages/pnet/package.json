@@ -46,7 +46,7 @@
   "dependencies": {
     "@libp2p/interface": "^3.2.3",
     "@libp2p/utils": "^7.2.2",
-    "uint8arraylist": "^2.4.8",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1",
     "xsalsa20": "^1.2.0"
   },
