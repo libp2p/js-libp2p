@@ -1,6 +1,5 @@
 import { lpStream, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import randomBytes from 'iso-random-stream/src/random.js'
 import drain from 'it-drain'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -10,7 +9,7 @@ describe('Listener', () => {
   describe('listener.handle', () => {
     it('should handle a protocol', async () => {
       const protocol = '/echo/1.0.0'
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
       const [outgoingStream, incomingStream] = await streamPair()
       const outputStream = lpStream(incomingStream)
@@ -32,7 +31,7 @@ describe('Listener', () => {
 
     it('should reject unhandled protocols', async () => {
       const protocol = '/echo/1.0.0'
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
       const [outgoingStream, incomingStream] = await streamPair()
       const outputStream = lpStream(incomingStream)
@@ -57,7 +56,7 @@ describe('Listener', () => {
 
     it('should reject when unsupported protocols are ignored', async () => {
       const protocol = '/echo/1.0.0'
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
       const [outgoingStream, incomingStream] = await streamPair()
       const outputStream = lpStream(incomingStream)
@@ -73,7 +72,7 @@ describe('Listener', () => {
 
     it('should handle ls', async () => {
       const protocol = '/echo/1.0.0'
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
       const [outgoingStream, incomingStream] = await streamPair()
       const outputStream = lpStream(incomingStream)

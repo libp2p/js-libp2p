@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { stop, TimeoutError } from '@libp2p/interface'
 import { prefixLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
@@ -335,7 +334,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = randomBytes(1024)
+      const input = crypto.getRandomValues(new Uint8Array(1024))
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
@@ -351,7 +350,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = uint8ArrayConcat(new Array(160).fill(0).map(() => randomBytes(65536)))
+      const input = uint8ArrayConcat(new Array(160).fill(0).map(() => crypto.getRandomValues(new Uint8Array(65536))))
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
@@ -369,7 +368,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const echoProtocol = dialer.services.echo.protocol
 
       for (let i = 0; i < 2_000; i++) {
-        const input = randomBytes(1024)
+        const input = crypto.getRandomValues(new Uint8Array(1024))
         const output = await dialer.services.echo.echo(connection.remotePeer, input, {
           signal: AbortSignal.timeout(timeout)
         })

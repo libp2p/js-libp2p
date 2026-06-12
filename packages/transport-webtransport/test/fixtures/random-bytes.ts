@@ -1,5 +1,4 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { randomBytes as randB } from '@noble/hashes/utils.js'
 
 /**
  * Generates a Uint8Array with length `number` populated by random bytes
@@ -9,5 +8,5 @@ export function randomBytes (length: number): Uint8Array {
     throw new InvalidParametersError('random bytes length must be a Number bigger than 0')
   }
 
-  return randB(length)
+  return crypto.getRandomValues(new Uint8Array(length))
 }

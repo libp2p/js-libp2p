@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { ProtocolError, serviceCapabilities, setMaxListeners, TimeoutError } from '@libp2p/interface'
 import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
@@ -95,7 +94,7 @@ export class Ping implements Startable, PingInterface {
    * Ping a given peer and wait for its response, getting the operation latency.
    */
   async ping (peer: DialTarget, options: DialProtocolOptions = {}): Promise<number> {
-    const data = randomBytes(PING_LENGTH)
+    const data = crypto.getRandomValues(new Uint8Array(PING_LENGTH))
     const stream = await this.components.connectionManager.openStream(peer, this.protocol, {
       runOnLimitedConnection: this.runOnLimitedConnection,
       ...options
