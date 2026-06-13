@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.7](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.6...echo-v3.1.7) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
 ## [3.1.6](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.5...echo-v3.1.6) (2026-05-30)
 
 

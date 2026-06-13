@@ -106,6 +106,36 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.3.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.2...kad-dht-v16.3.3) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Documentation
+
+* **kad-dht:** correct the alpha option default in the JSDoc ([#3541](https://github.com/libp2p/js-libp2p/issues/3541)) ([5e07d59](https://github.com/libp2p/js-libp2p/commit/5e07d5963d691ed8e695ca0af8e1d8f23af54795))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/peer-collections bumped from ^7.0.21 to ^7.0.22
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/ping bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/record bumped from ^4.0.13 to ^4.0.14
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/peer-store bumped from ^12.0.21 to ^12.0.22
+
 ## [16.3.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.1...kad-dht-v16.3.2) (2026-06-06)
 
 
