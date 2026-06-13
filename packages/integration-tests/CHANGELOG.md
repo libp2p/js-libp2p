@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.2.14](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.13...integration-tests-v1.2.14) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/gossipsub bumped from ^16.0.2 to ^16.0.3
+    * @libp2p/bootstrap bumped from ^12.0.24 to ^12.0.25
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.6 to ^4.2.7
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/daemon-client bumped from ^10.0.29 to ^10.0.30
+    * @libp2p/daemon-server bumped from ^9.0.29 to ^9.0.30
+    * @libp2p/dcutr bumped from ^3.0.21 to ^3.0.22
+    * @libp2p/echo bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/fetch bumped from ^4.1.6 to ^4.1.7
+    * @libp2p/floodsub bumped from ^11.0.23 to ^11.0.24
+    * @libp2p/identify bumped from ^4.1.7 to ^4.1.8
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-compliance-tests bumped from ^7.0.24 to ^7.0.25
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/interop bumped from ^14.0.29 to ^14.0.30
+    * @libp2p/kad-dht bumped from ^16.3.2 to ^16.3.3
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/mdns bumped from ^12.0.24 to ^12.0.25
+    * @libp2p/memory bumped from ^2.0.21 to ^2.0.22
+    * @libp2p/mplex bumped from ^12.0.24 to ^12.0.25
+    * @libp2p/peer-collections bumped from ^7.0.21 to ^7.0.22
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/ping bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/plaintext bumped from ^3.0.21 to ^3.0.22
+    * @libp2p/tcp bumped from ^11.0.21 to ^11.0.22
+    * @libp2p/tls bumped from ^3.1.3 to ^3.1.4
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+    * @libp2p/webrtc bumped from ^6.0.24 to ^6.0.25
+    * @libp2p/websockets bumped from ^10.1.14 to ^10.1.15
+    * @libp2p/webtransport bumped from ^6.0.29 to ^6.0.30
+    * libp2p bumped from ^3.3.3 to ^3.3.4
+
 ## [1.2.13](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.12...integration-tests-v1.2.13) (2026-06-06)
 
 

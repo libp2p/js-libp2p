@@ -1,5 +1,17 @@
 # Changelog
 
+## [14.0.30](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.29...interop-v14.0.30) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-client bumped from ^10.0.29 to ^10.0.30
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
 ## [14.0.29](https://github.com/libp2p/js-libp2p/compare/interop-v14.0.28...interop-v14.0.29) (2026-06-06)
 
 

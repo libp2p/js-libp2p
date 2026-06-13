@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.14](https://github.com/libp2p/js-libp2p/compare/record-v4.0.13...record-v4.0.14) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+
 ## [4.0.13](https://github.com/libp2p/js-libp2p/compare/record-v4.0.12...record-v4.0.13) (2026-05-30)
 
 
