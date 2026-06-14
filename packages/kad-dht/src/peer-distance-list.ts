@@ -97,10 +97,8 @@ export class PeerDistanceList {
   }
 
   /**
-   * Returns true if a peer with the passed kadId would be added to the list,
-   * that is the list is not yet at capacity or the peer is closer to the origin
-   * key than the current furthest peer. Synchronous companion to `isCloser` for
-   * callers that have already computed the peer's kadId.
+   * True if a peer with this (already-computed) kadId could still enter the
+   * list: under capacity, or strictly closer than the furthest entry.
    */
   canAddKadId (kadId: Uint8Array): boolean {
     if (this.peerDistances.length < this.capacity) {

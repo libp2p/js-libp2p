@@ -124,9 +124,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
       signal
     })
 
-    // the closest peers that have responded along this path - once it is full
-    // we stop querying peers that are further away than the furthest entry,
-    // which is the Kademlia/S-Kademlia lookup termination condition
+    // closest peers that have responded on this path; drives lookup termination
     const closest = new PeerDistanceList(kadId, kBucketSize)
 
     /**
@@ -143,9 +141,8 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
       const peerXor = uint8ArrayXor(peerKadId, kadId)
 
       queue.add(async () => {
-        // if this peer can no longer enter the closest-peer set there is no
-        // point querying it - the lookup has converged along this path
         if (!closest.canAddKadId(peerKadId)) {
+          log('skipping %p, path converged', peer.id)
           return
         }
 
@@ -166,8 +163,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
           })) {
             // if there are closer peers and the query has not completed, continue the query
             if (event.name === 'PEER_RESPONSE') {
-              // record that this peer responded so the closest-peer set
-              // tightens and the convergence check above can end the path
               closest.addWithKadId(peer, peerKadId)
 
               for (const closerPeer of event.closer) {
@@ -192,9 +187,7 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                   continue
                 }
 
-                // ...and skip queuing it if it can no longer enter the
-                // closest-peer set - the path has converged, and this also
-                // avoids the dialability check below for peers we would not query
+                // skip queuing peers that can't enter the closest set (saves the dialability check)
                 if (!closest.canAddKadId(closerPeerKadId)) { // eslint-disable-line max-depth
                   continue
                 }
