@@ -4,6 +4,25 @@
 
 * update all deps ([#348](https://github.com/libp2p/js-libp2p-daemon/issues/348)) ([44bf148](https://github.com/libp2p/js-libp2p-daemon/commit/44bf148f37b9f4091dc8ed26cf343e196607ebbc))
 
+## [10.0.30](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.29...daemon-client-v10.0.30) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-protocol bumped from ^8.0.8 to ^8.0.9
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/tcp bumped from ^11.0.21 to ^11.0.22
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/daemon-server bumped from ^9.0.29 to ^9.0.30
+    * @libp2p/gossipsub bumped from ^16.0.2 to ^16.0.3
+    * @libp2p/kad-dht bumped from ^16.3.2 to ^16.3.3
+
 ## [10.0.29](https://github.com/libp2p/js-libp2p/compare/daemon-client-v10.0.28...daemon-client-v10.0.29) (2026-06-06)
 
 
