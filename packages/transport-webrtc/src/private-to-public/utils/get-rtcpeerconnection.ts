@@ -1,90 +1,21 @@
 import { Crypto } from '@peculiar/webcrypto'
-import { PeerConnection } from 'node-datachannel'
-import { RTCPeerConnection } from 'node-datachannel/polyfill'
+import * as WebRTCNode from '@mertushka/webrtc-node'
 import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.ts'
 import { DataChannelMuxerFactory } from '../../muxer.ts'
 import { generateTransportCertificate } from './generate-certificates.ts'
 import type { DataChannelOptions, TransportCertificate } from '../../index.ts'
 import type { CounterGroup } from '@libp2p/interface'
-import type { CertificateFingerprint } from 'node-datachannel'
 
 const crypto = new Crypto()
+const webRTCNode = (WebRTCNode as unknown as { default?: typeof WebRTCNode }).default ?? WebRTCNode
+const {
+  RTCPeerConnection: NodeRTCPeerConnection,
+  nonstandard
+} = webRTCNode
+const RTCPeerConnection = NodeRTCPeerConnection as unknown as typeof globalThis.RTCPeerConnection
 
-interface DirectRTCPeerConnectionInit extends RTCConfiguration {
-  ufrag: string
-  peerConnection: PeerConnection
-}
-
-export class DirectRTCPeerConnection extends RTCPeerConnection {
-  private peerConnection: PeerConnection
-  private readonly ufrag: string
-
-  constructor (init: DirectRTCPeerConnectionInit) {
-    super(init)
-
-    this.peerConnection = init.peerConnection
-    this.ufrag = init.ufrag
-
-    // make sure C++ peer connection is garbage collected
-    // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
-    this.addEventListener('connectionstatechange', () => {
-      switch (this.connectionState) {
-        case 'closed':
-          this.peerConnection.close()
-          break
-        default:
-          break
-      }
-    })
-  }
-
-  async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
-    // have to set ufrag before creating offer
-    if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('offer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
-      })
-    }
-
-    return super.createOffer()
-  }
-
-  async createAnswer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
-    // have to set ufrag before creating answer
-    if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('answer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
-      })
-    }
-
-    return super.createAnswer()
-  }
-
-  remoteFingerprint (): CertificateFingerprint {
-    if (this.peerConnection == null) {
-      throw new Error('Invalid state: peer connection not set')
-    }
-
-    return this.peerConnection.remoteFingerprint()
-  }
-}
-
-function mapIceServers (iceServers?: RTCIceServer[]): string[] {
-  return iceServers
-    ?.map((server) => {
-      const urls = Array.isArray(server.urls) ? server.urls : [server.urls]
-
-      return urls.map((url) => {
-        if (server.username != null && server.credential != null) {
-          const [protocol, rest] = url.split(/:(.*)/)
-          return `${protocol}:${server.username}:${server.credential}@${rest}`
-        }
-        return url
-      })
-    })
-    .flat() ?? []
+export interface DirectRTCPeerConnection extends globalThis.RTCPeerConnection {
+  remoteFingerprint(): ReturnType<typeof nonstandard.getRemoteFingerprint>
 }
 
 export interface CreateDialerRTCPeerConnectionOptions {
@@ -113,23 +44,32 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
   }
 
   const rtcConfig = typeof options.rtcConfiguration === 'function' ? await options.rtcConfiguration() : options.rtcConfiguration
-
-  const peerConnection = new DirectRTCPeerConnection({
-    ...rtcConfig,
-    ufrag,
-    peerConnection: new PeerConnection(`${role}-${Date.now()}`, {
-      disableFingerprintVerification: true,
-      disableAutoNegotiation: true,
-      certificatePemFile: options.certificate.pem,
-      keyPemFile: options.certificate.privateKey,
-      enableIceUdpMux: role === 'server',
-      maxMessageSize: MAX_MESSAGE_SIZE,
-      iceServers: mapIceServers(rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls })))
-    })
+  const certificate = nonstandard.importCertificate({
+    certificatePem: options.certificate.pem,
+    privateKeyPem: options.certificate.privateKey
   })
 
+  const peerConnection = new RTCPeerConnection({
+    ...(rtcConfig ?? {}),
+    certificates: [certificate as unknown as globalThis.RTCCertificate],
+    iceServers: rtcConfig?.iceServers ?? DEFAULT_ICE_SERVERS.map(urls => ({ urls }))
+  }) as DirectRTCPeerConnection
+  const nonstandardPeerConnection = peerConnection as unknown as InstanceType<typeof NodeRTCPeerConnection>
+
+  nonstandard.configurePeerConnection(nonstandardPeerConnection, {
+    disableFingerprintVerification: true,
+    enableIceUdpMux: role === 'server',
+    maxMessageSize: MAX_MESSAGE_SIZE
+  })
+
+  nonstandard.setLocalIceCredentials(nonstandardPeerConnection, {
+    iceUfrag: ufrag,
+    icePwd: ufrag
+  })
+
+  peerConnection.remoteFingerprint = () => nonstandard.getRemoteFingerprint(nonstandardPeerConnection)
+
   const muxerFactory = new DataChannelMuxerFactory({
-    // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     metrics: options.events,
     dataChannelOptions: options.dataChannel

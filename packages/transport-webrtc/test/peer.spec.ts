@@ -44,6 +44,14 @@ interface PrivateToPrivateComponents {
   recipient: Recipient
 }
 
+function closePeerConnection (peerConnection?: RTCPeerConnection): void {
+  if (peerConnection == null || peerConnection.connectionState === 'closed') {
+    return
+  }
+
+  peerConnection.close()
+}
+
 async function getComponents (): Promise<PrivateToPrivateComponents> {
   const relayPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
   const initiatorPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
@@ -82,8 +90,8 @@ describe('webrtc basic', () => {
   let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
-    initiatorPeerConnection?.close()
-    recipient?.peerConnection?.close()
+    closePeerConnection(initiatorPeerConnection)
+    closePeerConnection(recipient?.peerConnection)
   })
 
   it('should connect', async () => {
@@ -146,7 +154,7 @@ describe('webrtc receiver', () => {
   let recipient: Recipient
 
   afterEach(() => {
-    recipient?.peerConnection?.close()
+    closePeerConnection(recipient?.peerConnection)
   })
 
   it('should fail receiving on invalid sdp offer', async () => {
@@ -164,7 +172,7 @@ describe('webrtc dialer', () => {
   let recipient: Recipient
 
   afterEach(() => {
-    recipient?.peerConnection?.close()
+    closePeerConnection(recipient?.peerConnection)
   })
 
   it('should fail receiving on invalid sdp answer', async () => {
@@ -218,7 +226,7 @@ describe('webrtc dialer', () => {
 
     await expect(initiatorPeerConnectionPromise).to.be.rejectedWith(/Remote should send an SDP answer/)
 
-    pc.close()
+    closePeerConnection(pc)
   })
 })
 
