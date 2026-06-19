@@ -65,9 +65,14 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
 
         const localPwd = sdp.getIcePwdFromSdp(peerConnection.localDescription?.sdp)
 
-        if (localPwd != null) {
-          remoteAnswerUfrag = sdp.serverUfragV2(localPwd)
+        if (localPwd == null) {
+          // without the local ICE password we cannot build a valid v2 server
+          // ufrag; fail loudly instead of dialing with an unprefixed ufrag the
+          // server would reject
+          throw new WebRTCTransportError('Could not read local ICE password from local description for v2 dial')
         }
+
+        remoteAnswerUfrag = sdp.serverUfragV2(localPwd)
       } else {
         // v1 compatibility path: force ice-ufrag === ice-pwd so the server can
         // infer credentials from STUN USERNAME without explicit SDP exchange.
@@ -92,7 +97,9 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       options.log.trace('server created local answer')
 
       if (options.remotePwd != null) {
-        // v2 path: keep server answer credentials as generated.
+        // v2 path: the answer credentials were already pinned to server_ufrag
+        // (libp2p+webrtc+v2/<client_pwd>) when the peer connection was created,
+        // so the generated answer already carries them and needs no munging.
         options.log.trace('server setting local description %s', answerSdp.sdp)
         await peerConnection.setLocalDescription(answerSdp)
       } else {

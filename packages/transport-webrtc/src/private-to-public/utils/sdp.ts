@@ -7,6 +7,7 @@ import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { MAX_MESSAGE_SIZE, UFRAG_PREFIX_V2 } from '../../constants.js'
 import { InvalidFingerprintError, UnsupportedHashAlgorithmError } from '../../error.js'
+import { isIcePwd } from './stun.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -47,7 +48,9 @@ export function decodeV2ClientPwd (serverUfrag: string): string | undefined {
 
   const clientPwd = serverUfrag.substring(UFRAG_PREFIX_V2.length)
 
-  if (clientPwd.length === 0) {
+  // The recovered value becomes the inferred offer's ice-pwd, so it must be a
+  // valid ICE password (ice-char, length 22..256) per RFC 8839 section 5.4.
+  if (!isIcePwd(clientPwd)) {
     return undefined
   }
 
@@ -171,8 +174,6 @@ export function clientOfferFromMultiAddr (ma: Multiaddr, ufrag: string, pwd: str
     throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4 or IPv6 address`)
   }
 
-  const normalizedPwd = pwd.length >= 22 ? pwd : `${pwd}${'0'.repeat(22 - pwd.length)}`
-
   const sdp = `v=0
 o=- 0 0 IN IP${type === 'ip4' ? 4 : 6} ${host}
 s=-
@@ -183,7 +184,7 @@ m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:active
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${normalizedPwd}
+a=ice-pwd:${pwd}
 a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
 a=sctp-port:5000
 a=max-message-size:${MAX_MESSAGE_SIZE}

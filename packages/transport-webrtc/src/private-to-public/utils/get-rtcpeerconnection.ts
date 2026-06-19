@@ -42,8 +42,10 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
   }
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
-    // have to set ufrag before creating offer
-    if (this.connectionState === 'new' && !this.ufrag.startsWith('libp2p+webrtc+v2/')) {
+    // node-datachannel needs the ICE credentials set before creating the offer.
+    // This runs for both v1 and v2 dials; the browser path uses a native
+    // RTCPeerConnection and never reaches this class.
+    if (this.connectionState === 'new') {
       this.peerConnection?.setLocalDescription('offer', {
         iceUfrag: this.ufrag,
         icePwd: this.pwd
