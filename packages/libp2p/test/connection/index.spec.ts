@@ -437,6 +437,112 @@ describe('connection', () => {
     expect(handler.callCount).to.equal(2)
   })
 
+  it('should pass stream context from incoming middleware to handler', async () => {
+    const streamProtocol = '/test/protocol'
+    const contextKey = { id: Symbol('context-key') }
+
+    const middleware = Sinon.stub().callsFake((stream, connection, next, context) => {
+      context.set(contextKey, 'middleware-value')
+      next(stream, connection)
+    })
+    const handler = Sinon.stub().callsFake((stream, connection, context) => {
+      expect(context.get(contextKey)).to.equal('middleware-value')
+    })
+
+    registrar.getMiddleware.withArgs(streamProtocol).returns([
+      middleware
+    ])
+    registrar.getHandler.withArgs(streamProtocol).returns({
+      handler,
+      options: {}
+    })
+
+    const muxer = stubInterface<StreamMuxer>({
+      streams: []
+    })
+
+    createConnection(components, {
+      ...init,
+      muxer
+    })
+
+    const onIncomingStream = muxer.addEventListener.getCall(0).args[1]
+
+    if (typeof onIncomingStream !== 'function') {
+      throw new Error('Stream handler was not function')
+    }
+
+    onIncomingStream(new CustomEvent('stream', {
+      detail: stubInterface<Stream>({
+        log: defaultLogger().forComponent('stream'),
+        protocol: streamProtocol
+      })
+    }))
+
+    // incoming stream is opened asynchronously
+    await delay(100)
+
+    expect(middleware.calledOnce).to.be.true()
+    expect(handler.calledOnce).to.be.true()
+  })
+
+  it('should create a new stream context for each incoming stream', async () => {
+    const streamProtocol = '/test/protocol'
+    const contextKey = { id: Symbol('context-key') }
+    let counter = 0
+
+    const middleware = Sinon.stub().callsFake((stream, connection, next, context) => {
+      counter += 1
+      context.set(contextKey, counter)
+      next(stream, connection)
+    })
+    const handler = Sinon.stub().callsFake((stream, connection, context) => {
+      expect(context.get(contextKey)).to.equal(handler.callCount)
+    })
+
+    registrar.getMiddleware.withArgs(streamProtocol).returns([
+      middleware
+    ])
+    registrar.getHandler.withArgs(streamProtocol).returns({
+      handler,
+      options: {}
+    })
+
+    const muxer = stubInterface<StreamMuxer>({
+      streams: []
+    })
+
+    createConnection(components, {
+      ...init,
+      muxer
+    })
+
+    const onIncomingStream = muxer.addEventListener.getCall(0).args[1]
+
+    if (typeof onIncomingStream !== 'function') {
+      throw new Error('Stream handler was not function')
+    }
+
+    onIncomingStream(new CustomEvent('stream', {
+      detail: stubInterface<Stream>({
+        log: defaultLogger().forComponent('stream'),
+        protocol: streamProtocol
+      })
+    }))
+    onIncomingStream(new CustomEvent('stream', {
+      detail: stubInterface<Stream>({
+        log: defaultLogger().forComponent('stream'),
+        protocol: streamProtocol
+      })
+    }))
+
+    // incoming streams are opened asynchronously
+    await delay(100)
+
+    expect(middleware.callCount).to.equal(2)
+    expect(handler.callCount).to.equal(2)
+  })
+
   it('should allow incoming stream middleware to stop the chain without aborting', async () => {
     const streamProtocol = '/test/protocol'
 
