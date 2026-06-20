@@ -148,6 +148,8 @@ export class RoutingTableRefresh {
 
       this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
       this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
+
+      this.commonPrefixLengthRefreshedAt[cpl] = new Date()
     } finally {
       signal.clear()
     }
@@ -162,7 +164,7 @@ export class RoutingTableRefresh {
 
     for (let i = 0; i <= maxCommonPrefix; i++) {
       // defaults to the zero value if we haven't refreshed it yet.
-      dates[i] = this.commonPrefixLengthRefreshedAt[i] ?? new Date()
+      dates[i] = this.commonPrefixLengthRefreshedAt[i] ?? new Date(0)
     }
 
     return dates
