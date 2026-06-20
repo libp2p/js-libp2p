@@ -34,6 +34,7 @@ describe('stun listener username parsing', () => {
     expect(parseStunUsernameUfrags('a'.repeat(257), 'browserClient')).to.be.undefined()
     // multi-byte input: String.length (UTF-16) differs from the byte length
     // go-libp2p measures, but both reject it on the charset check
+    /* spell-checker:disable-next-line */
     expect(parseStunUsernameUfrags('abécd', 'browserClient')).to.be.undefined()
     expect(parseStunUsernameUfrags('ab😀cd', 'browserClient')).to.be.undefined()
   })
