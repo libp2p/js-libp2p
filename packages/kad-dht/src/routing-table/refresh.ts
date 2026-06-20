@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
@@ -149,6 +148,8 @@ export class RoutingTableRefresh {
 
       this.log(`found ${peers} peers that were close to imaginary peer %p`, peerId)
       this.log('finished refreshing cpl %s with key %p (routing table size is now %s)', cpl, peerId, this.routingTable.size)
+
+      this.commonPrefixLengthRefreshedAt[cpl] = new Date()
     } finally {
       signal.clear()
     }
@@ -163,7 +164,7 @@ export class RoutingTableRefresh {
 
     for (let i = 0; i <= maxCommonPrefix; i++) {
       // defaults to the zero value if we haven't refreshed it yet.
-      dates[i] = this.commonPrefixLengthRefreshedAt[i] ?? new Date()
+      dates[i] = this.commonPrefixLengthRefreshedAt[i] ?? new Date(0)
     }
 
     return dates
@@ -178,7 +179,7 @@ export class RoutingTableRefresh {
       throw new Error('Local peer not set')
     }
 
-    const randomData = randomBytes(2)
+    const randomData = crypto.getRandomValues(new Uint8Array(2))
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
     const key = this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)

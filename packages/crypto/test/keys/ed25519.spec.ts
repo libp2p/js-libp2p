@@ -3,7 +3,6 @@ import { isPrivateKey, isPublicKey } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { randomBytes } from '../../src/index.ts'
 import { hashAndSignNoble, hashAndVerifyNoble } from '../../src/keys/ed25519/index.browser.ts'
 import { unmarshalEd25519PrivateKey, unmarshalEd25519PublicKey } from '../../src/keys/ed25519/utils.ts'
 import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyToCryptoKeyPair } from '../../src/keys/index.ts'
@@ -31,7 +30,7 @@ describe('ed25519', function () {
   })
 
   it('generates a valid key from seed', async () => {
-    const seed = randomBytes(32)
+    const seed = crypto.getRandomValues(new Uint8Array(32))
     const seededKey = await generateKeyPairFromSeed('Ed25519', seed)
     expect(seededKey).to.have.property('type', 'Ed25519')
     expect(key.raw).to.have.length(64)
@@ -39,7 +38,7 @@ describe('ed25519', function () {
   })
 
   it('generates the same key from the same seed', async () => {
-    const seed = randomBytes(32)
+    const seed = crypto.getRandomValues(new Uint8Array(32))
     const seededKey1 = await generateKeyPairFromSeed('Ed25519', seed)
     const seededKey2 = await generateKeyPairFromSeed('Ed25519', seed)
     expect(seededKey1.equals(seededKey2)).to.be.true()
@@ -47,30 +46,30 @@ describe('ed25519', function () {
   })
 
   it('generates different keys for different seeds', async () => {
-    const seed1 = randomBytes(32)
+    const seed1 = crypto.getRandomValues(new Uint8Array(32))
     const seededKey1 = await generateKeyPairFromSeed('Ed25519', seed1)
-    const seed2 = randomBytes(32)
+    const seed2 = crypto.getRandomValues(new Uint8Array(32))
     const seededKey2 = await generateKeyPairFromSeed('Ed25519', seed2)
     expect(seededKey1.equals(seededKey2)).to.be.false()
     expect(seededKey1.publicKey.equals(seededKey2.publicKey)).to.be.false()
   })
 
   it('signs', async () => {
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
     const res = await key.publicKey.verify(text, sig)
     expect(res).to.be.be.true()
   })
 
   it('signs using noble', async () => {
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
     const res = hashAndVerifyNoble(key.publicKey.raw, sig, text)
     expect(res).to.be.be.true()
   })
 
   it('verifies using noble', async () => {
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = hashAndSignNoble(key.raw, text)
     const res = await key.publicKey.verify(text, sig)
     expect(res).to.be.be.true()
@@ -78,8 +77,8 @@ describe('ed25519', function () {
 
   it('signs a list', async () => {
     const text = new Uint8ArrayList(
-      randomBytes(512),
-      randomBytes(512)
+      crypto.getRandomValues(new Uint8Array(512)),
+      crypto.getRandomValues(new Uint8Array(512))
     )
     const sig = await key.sign(text)
 
@@ -95,7 +94,7 @@ describe('ed25519', function () {
   it('should abort signing', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     await expect((async () => {
       return key.sign(text, {
         signal: controller.signal
@@ -107,7 +106,7 @@ describe('ed25519', function () {
   it('should abort verifying', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
 
     await expect((async () => {
