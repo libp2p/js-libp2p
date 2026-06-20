@@ -390,7 +390,6 @@ export class AutoNATv2Client implements Startable {
         }
 
         this.dialResults.set(addrString, results)
-
       }
 
       output.push(results)
