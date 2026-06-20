@@ -11,6 +11,7 @@ export interface StreamHandler {
  * Stream middleware allows accessing stream data outside of the stream handler
  *
  * Return false to stop the middleware chain without aborting the stream.
+ * Call next to continue the middleware chain.
  * Throw or reject to abort the stream.
  */
 export interface StreamMiddleware {

@@ -366,17 +366,13 @@ function runMiddleware (mw: StreamMiddleware, stream: Stream, connection: Connec
     }
 
     try {
-      const result = mw(stream, connection, continueChain)
-
-      if (result === false) {
-        stopChain()
-      } else if (result != null) {
-        result.then(result => {
+      Promise.resolve(mw(stream, connection, continueChain))
+        .then(result => {
           if (result === false) {
             stopChain()
           }
-        }).catch(reject)
-      }
+        })
+        .catch(reject)
     } catch (err) {
       reject(err)
     }
