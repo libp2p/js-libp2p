@@ -1123,7 +1123,7 @@ describe('QueryManager', () => {
         yield peerResponseEvent({
           from: peer.id,
           messageType: MessageType.GET_VALUE,
-          closer: [{ id: peers[2].peerId, multiaddrs: [], protocols: [] }],
+          closer: [{ id: peers[2].peerId, multiaddrs: [] }],
           path
         })
         closestFilled.resolve()
@@ -1135,7 +1135,7 @@ describe('QueryManager', () => {
         yield peerResponseEvent({
           from: peer.id,
           messageType: MessageType.GET_VALUE,
-          closer: [{ id: peers[5].peerId, multiaddrs: [peer5Multiaddr], protocols: [] }],
+          closer: [{ id: peers[5].peerId, multiaddrs: [peer5Multiaddr] }],
           path
         })
         return
