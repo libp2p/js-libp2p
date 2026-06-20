@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import * as Digest from 'multiformats/hashes/digest'
@@ -6,13 +5,27 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { StrictSign, StrictNoSign } from '../index.ts'
-import { RPC } from '../message/rpc.js'
-import { PublishConfigType, ValidateError } from '../types.js'
+import { RPC } from '../message/rpc.ts'
+import { PublishConfigType, ValidateError } from '../types.ts'
 import type { Message } from '../index.ts'
-import type { PublishConfig, TopicStr } from '../types.js'
+import type { PublishConfig, TopicStr } from '../types.ts'
 import type { PublicKey, PeerId } from '@libp2p/interface'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
+
+// Monotonic seqno counter seeded from the wall clock in nanoseconds, matching
+// go-libp2p-pubsub and rust-libp2p. The pubsub spec requires a "linearly
+// increasing 64-bit big-endian uint" seqno, and kubo's BasicSeqnoValidator
+// (default since kubo 0.40) drops messages whose seqno isn't strictly greater
+// than the previously-seen max from that peer.
+let seqnoCounter = BigInt(Date.now()) * 1_000_000n
+
+function nextSeqno (): Uint8Array {
+  const v = ++seqnoCounter
+  const out = new Uint8Array(8)
+  new DataView(out.buffer).setBigUint64(0, v, false)
+  return out
+}
 
 export interface RawMessageAndMessage {
   raw: RPC.Message
@@ -30,7 +43,7 @@ export async function buildRawMessage (
       const rpcMsg: RPC.Message = {
         from: publishConfig.author.toMultihash().bytes,
         data: transformedData,
-        seqno: randomBytes(8),
+        seqno: nextSeqno(),
         topic,
         signature: undefined, // Exclude signature field for signing
         key: undefined // Exclude key field for signing

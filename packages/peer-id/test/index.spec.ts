@@ -8,7 +8,7 @@ import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromString } from '../src/index.js'
+import { peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromString } from '../src/index.ts'
 import type { KeyType, PeerId } from '@libp2p/interface'
 
 // these values are from https://github.com/multiformats/multicodec/blob/master/table.csv

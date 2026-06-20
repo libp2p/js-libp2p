@@ -1,20 +1,20 @@
-import { TimeoutError } from '@libp2p/interface'
+import { InvalidMessageError, TimeoutError } from '@libp2p/interface'
 import { pbStream } from '@libp2p/utils'
-import { Message, MessageType } from '../message/dht.js'
+import { Message, MessageType } from '../message/dht.ts'
 import { AddProviderHandler } from './handlers/add-provider.ts'
 import { FindNodeHandler } from './handlers/find-node.ts'
 import { GetProvidersHandler } from './handlers/get-providers.ts'
 import { GetValueHandler } from './handlers/get-value.ts'
 import { PingHandler } from './handlers/ping.ts'
 import { PutValueHandler } from './handlers/put-value.ts'
-import type { PeerInfoMapper, Validators } from '../index.js'
-import type { PeerRouting } from '../peer-routing/index.js'
-import type { Providers } from '../providers.js'
+import type { PeerInfoMapper, Validators } from '../index.ts'
+import type { PeerRouting } from '../peer-routing/index.ts'
+import type { Providers } from '../providers.ts'
 import type { FindNodeHandlerComponents } from './handlers/find-node.ts'
 import type { GetProvidersHandlerComponents } from './handlers/get-providers.ts'
 import type { GetValueHandlerComponents } from './handlers/get-value.ts'
 import type { PutValueHandlerComponents } from './handlers/put-value.ts'
-import type { RoutingTable } from '../routing-table/index.js'
+import type { RoutingTable } from '../routing-table/index.ts'
 import type { CounterGroup, Logger, Metrics, PeerId, MetricGroup, Connection, Stream } from '@libp2p/interface'
 
 export interface DHTMessageHandler {
@@ -75,8 +75,7 @@ export class RPC {
     const handler = this.handlers[msg.type]
 
     if (handler == null) {
-      this.log.error(`no handler found for message type: ${msg.type}`)
-      return
+      throw new InvalidMessageError(`No handler found for message type: ${msg.type}`)
     }
 
     try {
@@ -85,10 +84,12 @@ export class RPC {
       })
 
       return await handler.handle(peerId, msg)
-    } catch {
+    } catch (err) {
       this.metrics.errors?.increment({
         [msg.type]: true
       })
+
+      throw err
     }
   }
 
@@ -134,11 +135,14 @@ export class RPC {
             signal
           })
         }
-      } catch (err) {
+      } catch (err: any) {
         errored = true
         stopErrorTimer?.()
 
-        throw err
+        this.log.error('error handling incoming message - %e', err)
+        stream.abort(err)
+
+        return
       } finally {
         if (!errored) {
           stopSuccessTimer?.()

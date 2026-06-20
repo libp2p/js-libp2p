@@ -183,6 +183,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /** Number of messages we have asked from peer in the last heartbeat */
   private readonly iasked = new Map<PeerIdStr, number>()
 
+  /** Number of IWANT messages we have received from peer in the last heartbeat */
+  private readonly iwantCounts = new Map<PeerIdStr, number>()
+
   /** Prune backoff map */
   private readonly backoff = new Map<TopicStr, Map<PeerIdStr, number>>()
 
@@ -409,7 +412,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.allowedTopics = (opts.allowedTopics != null) ? new Set(opts.allowedTopics) : null
   }
 
-  readonly [Symbol.toStringTag] = '@chainsafe/libp2p-gossipsub'
+  readonly [Symbol.toStringTag] = '@libp2p/gossipsub'
 
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/pubsub'
@@ -574,6 +577,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     this.peers.clear()
     this.subscriptions.clear()
+    this.topics.clear()
 
     // Gossipsub
 
@@ -591,6 +595,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.control.clear()
     this.peerhave.clear()
     this.iasked.clear()
+    this.iwantCounts.clear()
     this.backoff.clear()
     this.outbound.clear()
     this.gossipTracer.clear()
@@ -667,10 +672,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
 
     try {
+      const rawStream = await connection.newStream(this.protocols, {
+        runOnLimitedConnection: this.runOnLimitedConnection
+      })
       const stream = new OutboundStream(
-        await connection.newStream(this.protocols, {
-          runOnLimitedConnection: this.runOnLimitedConnection
-        }),
+        rawStream,
         (e) => { this.log.error('outbound pipe error', e) },
         { maxBufferSize: this.opts.maxOutboundBufferSize }
       )
@@ -684,6 +690,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.floodsubPeers.add(id)
       }
       this.metrics?.peersPerProtocol.inc({ protocol }, 1)
+
+      rawStream.addEventListener('close', () => {
+        if (this.streamsOutbound.get(id) === stream) {
+          this.streamsOutbound.delete(id)
+          this.floodsubPeers.delete(id)
+          this.metrics?.peersPerProtocol.inc({ protocol }, -1)
+        }
+      }, { once: true })
 
       // Immediately send own subscriptions via the newly attached stream
       if (this.subscriptions.size > 0) {
@@ -779,8 +793,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.streamsInbound.delete(id)
 
     // remove peer from topics map
-    for (const peers of this.topics.values()) {
+    for (const [topic, peers] of this.topics) {
       peers.delete(id)
+      if (peers.size === 0) {
+        this.topics.delete(topic)
+      }
     }
 
     // Remove this peer from the mesh
@@ -847,6 +864,29 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   // MESSAGE METHODS
 
   /**
+   * Decode an inbound RPC, enforcing this.decodeRpcLimits.
+   */
+  private decodeRpc (rpcBytes: Uint8Array | Uint8ArrayList): RPC {
+    return RPC.decode(rpcBytes, {
+      limits: {
+        subscriptions: this.decodeRpcLimits.maxSubscriptions,
+        messages: this.decodeRpcLimits.maxMessages,
+        control: {
+          ihave: this.decodeRpcLimits.maxControlMessages,
+          ihave$: { messageIDs: this.decodeRpcLimits.maxIhaveMessageIDs },
+          iwant: this.decodeRpcLimits.maxControlMessages,
+          iwant$: { messageIDs: this.decodeRpcLimits.maxIwantMessageIDs },
+          graft: this.decodeRpcLimits.maxControlMessages,
+          prune: this.decodeRpcLimits.maxControlMessages,
+          prune$: { peers: this.decodeRpcLimits.maxPeerInfos },
+          idontwant: this.decodeRpcLimits.maxControlMessages,
+          idontwant$: { messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs }
+        }
+      }
+    })
+  }
+
+  /**
    * Responsible for processing each RPC message received by other peers.
    */
   private async pipePeerReadStream (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>): Promise<void> {
@@ -858,25 +898,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
             const rpcBytes = data.subarray()
             // Note: This function may throw, it must be wrapped in a try {} catch {} to prevent closing the stream.
             // TODO: What should we do if the entire RPC is invalid?
-            const rpc = RPC.decode(rpcBytes, {
-              limits: {
-                subscriptions: this.decodeRpcLimits.maxSubscriptions,
-                messages: this.decodeRpcLimits.maxMessages,
-                control$: {
-                  ihave: this.decodeRpcLimits.maxIhaveMessageIDs,
-                  iwant: this.decodeRpcLimits.maxIwantMessageIDs,
-                  graft: this.decodeRpcLimits.maxControlMessages,
-                  prune: this.decodeRpcLimits.maxControlMessages,
-                  prune$: {
-                    peers: this.decodeRpcLimits.maxPeerInfos
-                  },
-                  idontwant: this.decodeRpcLimits.maxControlMessages,
-                  idontwant$: {
-                    messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs
-                  }
-                }
-              }
-            })
+            const rpc = this.decodeRpc(rpcBytes)
 
             this.metrics?.onRpcRecv(rpc, rpcBytes.length)
 
@@ -1007,17 +1029,21 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.log('subscription update from %p topic %s', from, topic)
 
     let topicSet = this.topics.get(topic)
-    if (topicSet == null) {
-      topicSet = new Set()
-      this.topics.set(topic, topicSet)
-    }
 
     if (subscribe) {
+      if (topicSet == null) {
+        topicSet = new Set()
+        this.topics.set(topic, topicSet)
+      }
+
       // subscribe peer to new topic
       topicSet.add(from.toString())
-    } else {
+    } else if (topicSet != null) {
       // unsubscribe from existing topic
       topicSet.delete(from.toString())
+      if (topicSet.size === 0) {
+        this.topics.delete(topic)
+      }
     }
 
     // TODO: rust-libp2p has A LOT more logic here
@@ -1308,23 +1334,32 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // string msgId => msgId
     const iwant = new Map<MsgIdStr, Uint8Array>()
 
-    ihave.forEach(({ topicID, messageIDs }) => {
+    // Cap the message ids we examine per call at GossipsubMaxIHaveLength
+    let processed = 0
+    // eslint-disable-next-line no-labels
+    out: for (const { topicID, messageIDs } of ihave) {
       if (topicID == null || (messageIDs == null) || !this.mesh.has(topicID)) {
-        return
+        continue
       }
 
       let idonthave = 0
 
-      messageIDs.forEach((msgId) => {
+      for (const msgId of messageIDs) {
+        if (processed >= constants.GossipsubMaxIHaveLength) {
+          // eslint-disable-next-line no-labels
+          break out
+        }
+        processed++
+
         const msgIdStr = this.msgIdToStrFn(msgId)
         if (!this.seenCache.has(msgIdStr)) {
           iwant.set(msgIdStr, msgId)
           idonthave++
         }
-      })
+      }
 
       this.metrics?.onIhaveRcv(topicID, messageIDs.length, idonthave)
-    })
+    }
 
     if (iwant.size === 0) {
       return []
@@ -1370,29 +1405,49 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return []
     }
 
+    // IWANT flood protection
+    const iwantCount = (this.iwantCounts.get(id) ?? 0) + 1
+    this.iwantCounts.set(id, iwantCount)
+    if (iwantCount > constants.GossipsubMaxIWantMessages) {
+      this.log('IWANT: peer %s has requested too many times within this heartbeat interval; ignoring', id)
+      return []
+    }
+
     const ihave = new Map<MsgIdStr, RPC.Message>()
     const iwantByTopic = new Map<TopicStr, number>()
     let iwantDonthave = 0
 
-    iwant.forEach(({ messageIDs }) => {
-      messageIDs?.forEach((msgId) => {
+    // Cap the message ids we examine per call at GossipsubMaxIHaveLength
+    let processed = 0
+    // eslint-disable-next-line no-labels
+    out: for (const { messageIDs } of iwant) {
+      if (messageIDs == null) {
+        continue
+      }
+      for (const msgId of messageIDs) {
+        if (processed >= constants.GossipsubMaxIHaveLength) {
+          // eslint-disable-next-line no-labels
+          break out
+        }
+        processed++
+
         const msgIdStr = this.msgIdToStrFn(msgId)
         const entry = this.mcache.getWithIWantCount(msgIdStr, id)
         if (entry == null) {
           iwantDonthave++
-          return
+          continue
         }
 
         iwantByTopic.set(entry.msg.topic, 1 + (iwantByTopic.get(entry.msg.topic) ?? 0))
 
         if (entry.count > constants.GossipsubGossipRetransmission) {
           this.log('IWANT: Peer %s has asked for message %s too many times: ignoring request', id, msgId)
-          return
+          continue
         }
 
         ihave.set(msgIdStr, entry.msg)
-      })
-    })
+      }
+    }
 
     this.metrics?.onIwantRcv(iwantByTopic, iwantDonthave)
 
@@ -2607,6 +2662,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.peerhave.clear()
     this.metrics?.cacheSize.set({ cache: 'iasked' }, this.iasked.size)
     this.iasked.clear()
+    this.iwantCounts.clear()
 
     // apply IWANT request penalties
     this.applyIwantPenalties()

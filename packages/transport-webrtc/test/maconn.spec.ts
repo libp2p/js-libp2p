@@ -6,7 +6,7 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { stubObject } from 'sinon-ts'
 import { toMultiaddrConnection } from '../src/rtcpeerconnection-to-conn.ts'
-import { RTCPeerConnection } from '../src/webrtc/index.js'
+import { RTCPeerConnection } from '../src/webrtc/index.ts'
 import type { CounterGroup } from '@libp2p/interface'
 
 describe('Multiaddr Connection', () => {

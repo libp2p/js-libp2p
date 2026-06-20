@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { start, stop } from '@libp2p/interface'
 import { mdns } from '@libp2p/mdns'
 import { tcp } from '@libp2p/tcp'
@@ -29,7 +28,7 @@ describe('mdns', () => {
     const deferred = defer()
 
     // use a random tag to prevent CI collision
-    const serviceTag = `libp2p-test-${uint8ArrayToString(randomBytes(4), 'base16')}.local`
+    const serviceTag = `libp2p-test-${uint8ArrayToString(crypto.getRandomValues(new Uint8Array(4)), 'base16')}.local`
 
     const getConfig = (): Libp2pOptions => ({
       start: false,

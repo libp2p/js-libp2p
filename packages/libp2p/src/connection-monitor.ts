@@ -1,8 +1,7 @@
-import { randomBytes } from '@libp2p/crypto'
 import { serviceCapabilities } from '@libp2p/interface'
 import { AdaptiveTimeout, byteStream } from '@libp2p/utils'
 import { setMaxListeners } from 'main-event'
-import type { ComponentLogger, Logger, Metrics, Startable } from '@libp2p/interface'
+import type { ComponentLogger, Logger, Metrics, Startable, Stream } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 
@@ -99,9 +98,10 @@ export class ConnectionMonitor implements Startable {
           const signal = this.timeout.getTimeoutSignal({
             signal: this.abortController?.signal
           })
+          let stream: Stream | undefined
 
           try {
-            const stream = await conn.newStream(this.protocol, {
+            stream = await conn.newStream(this.protocol, {
               signal,
               runOnLimitedConnection: true
             })
@@ -109,7 +109,7 @@ export class ConnectionMonitor implements Startable {
             start = Date.now()
 
             await Promise.all([
-              bs.write(randomBytes(PING_LENGTH), {
+              bs.write(crypto.getRandomValues(new Uint8Array(PING_LENGTH)), {
                 signal
               }),
               bs.read({
@@ -124,6 +124,8 @@ export class ConnectionMonitor implements Startable {
               signal
             })
           } catch (err: any) {
+            stream?.abort(err)
+
             if (err.name !== 'UnsupportedProtocolError') {
               throw err
             }

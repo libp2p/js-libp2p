@@ -6,23 +6,23 @@ import drain from 'it-drain'
 import pDefer from 'p-defer'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { K } from '../src/constants.js'
-import { EventTypes } from '../src/index.js'
-import { MessageType } from '../src/message/dht.js'
+import { K } from '../src/constants.ts'
+import { EventTypes } from '../src/index.ts'
+import { MessageType } from '../src/message/dht.ts'
 import {
   peerResponseEvent,
   valueEvent,
   queryErrorEvent
-} from '../src/query/events.js'
-import { QueryManager } from '../src/query/manager.js'
-import { convertBuffer } from '../src/utils.js'
+} from '../src/query/events.ts'
+import { QueryManager } from '../src/query/manager.ts'
+import { convertBuffer } from '../src/utils.ts'
 import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
 import { sortClosestPeers } from './utils/sort-closest-peers.ts'
 import type { PeerAndKey } from './utils/create-peer-id.ts'
-import type { QueryEvent } from '../src/index.js'
-import type { QueryManagerInit } from '../src/query/manager.js'
-import type { QueryContext, QueryFunc } from '../src/query/types.js'
-import type { RoutingTable } from '../src/routing-table/index.js'
+import type { QueryEvent } from '../src/index.ts'
+import type { QueryManagerInit } from '../src/query/manager.ts'
+import type { QueryContext, QueryFunc } from '../src/query/types.ts'
+import type { RoutingTable } from '../src/routing-table/index.ts'
 import type { PeerId } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
@@ -152,6 +152,7 @@ describe('QueryManager', () => {
 
   beforeEach(async () => {
     routingTable.closestPeers.returns(peers.slice(0, K).map(p => p.peerId))
+    routingTable.queueRoutingTableUpdate.resetHistory()
   })
 
   it('does not run queries before start', async () => {
@@ -995,6 +996,37 @@ describe('QueryManager', () => {
 
     // should not have visited the next peer on the slow path
     expect(topology[peers[4].peerId.toString()]).to.not.have.property('context', true)
+
+    await manager.stop()
+  })
+
+  it('should queue routing table updates from peer response events', async () => {
+    const manager = new QueryManager({
+      peerId: ourPeerId,
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
+    }, {
+      ...defaultInit()
+    })
+
+    routingTable.closestPeers.returns([peers[0].peerId])
+    await manager.start()
+
+    const queryFunc: QueryFunc = async function * ({ peer, path }) {
+      yield peerResponseEvent({
+        from: peer.id,
+        messageType: MessageType.GET_VALUE,
+        path
+      })
+    }
+
+    await all(manager.run(key, queryFunc))
+
+    expect(routingTable.queueRoutingTableUpdate.calledOnce).to.be.true()
+    expect(routingTable.queueRoutingTableUpdate.firstCall.args[0].toString()).to.equal(peers[0].peerId.toString())
+    expect(routingTable.queueRoutingTableUpdate.firstCall.args).to.have.lengthOf(1)
 
     await manager.stop()
   })

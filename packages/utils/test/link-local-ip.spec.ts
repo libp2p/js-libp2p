@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { isLinkLocalIp } from '../src/link-local-ip.js'
+import { isLinkLocalIp } from '../src/link-local-ip.ts'
 
 describe('isLinkLocalIp', () => {
   it('identifies link-local ip4 multiaddrs', () => {

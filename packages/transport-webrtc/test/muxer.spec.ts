@@ -2,7 +2,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import pRetry from 'p-retry'
 import { stubInterface } from 'sinon-ts'
-import { DataChannelMuxerFactory } from '../src/muxer.js'
+import { DataChannelMuxerFactory } from '../src/muxer.ts'
 import type { MultiaddrConnection } from '@libp2p/interface'
 
 describe('muxer', () => {

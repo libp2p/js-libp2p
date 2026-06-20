@@ -10,9 +10,10 @@ import pRetry from 'p-retry'
 import pWaitFor from 'p-wait-for'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { isValidTick } from '../is-valid-tick.js'
+import { concat as uint8ArrayConcat } from 'uint8arrays'
+import { isValidTick } from '../is-valid-tick.ts'
 import { createPeer, getTransportManager, getUpgrader } from './utils.ts'
-import type { TestSetup } from '../index.js'
+import type { TestSetup } from '../index.ts'
 import type { Echo } from '@libp2p/echo'
 import type { Connection, Libp2p, Stream, StreamHandler } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -333,7 +334,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = new Uint8Array(1024).fill(5)
+      const input = crypto.getRandomValues(new Uint8Array(1024))
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
@@ -349,7 +350,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
 
       const connection = await dialer.dial(dialAddrs[0])
 
-      const input = new Uint8Array(1024 * 1024 * 10).fill(5)
+      const input = uint8ArrayConcat(new Array(160).fill(0).map(() => crypto.getRandomValues(new Uint8Array(65536))))
       const output = await dialer.services.echo.echo(connection.remotePeer, input, {
         signal: AbortSignal.timeout(timeout)
       })
@@ -367,7 +368,7 @@ export default (common: TestSetup<TransportTestFixtures>): void => {
       const echoProtocol = dialer.services.echo.protocol
 
       for (let i = 0; i < 2_000; i++) {
-        const input = new Uint8Array(1024).fill(5)
+        const input = crypto.getRandomValues(new Uint8Array(1024))
         const output = await dialer.services.echo.echo(connection.remotePeer, input, {
           signal: AbortSignal.timeout(timeout)
         })

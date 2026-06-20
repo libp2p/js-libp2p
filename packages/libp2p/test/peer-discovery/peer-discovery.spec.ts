@@ -3,7 +3,7 @@ import { expect } from 'aegir/chai'
 import { TypedEventEmitter } from 'main-event'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { createLibp2p } from '../../src/index.js'
+import { createLibp2p } from '../../src/index.ts'
 import type { PeerDiscovery, PeerDiscoveryEvents, Startable, Libp2p } from '@libp2p/interface'
 
 describe('peer discovery', () => {

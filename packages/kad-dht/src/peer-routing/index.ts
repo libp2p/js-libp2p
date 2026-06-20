@@ -3,25 +3,24 @@ import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
 import { peerIdFromPublicKey, peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import * as Digest from 'multiformats/hashes/digest'
-import { QueryError, InvalidRecordError } from '../errors.js'
-import { MessageType } from '../message/dht.js'
-import { PeerDistanceList } from '../peer-distance-list.js'
+import { QueryError, InvalidRecordError } from '../errors.ts'
+import { MessageType } from '../message/dht.ts'
+import { PeerDistanceList } from '../peer-distance-list.ts'
 import {
   queryErrorEvent,
   finalPeerEvent,
   valueEvent
-} from '../query/events.js'
-import { verifyRecord } from '../record/validators.js'
-import { convertBuffer, keyForPublicKey } from '../utils.js'
-import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
-import type { Message } from '../message/dht.js'
-import type { Network, SendMessageOptions } from '../network.js'
-import type { QueryManager, QueryOptions } from '../query/manager.js'
-import type { QueryFunc } from '../query/types.js'
-import type { RoutingTable } from '../routing-table/index.js'
+} from '../query/events.ts'
+import { verifyRecord } from '../record/validators.ts'
+import { convertBuffer, keyForPublicKey } from '../utils.ts'
+import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.ts'
+import type { Message } from '../message/dht.ts'
+import type { Network, SendMessageOptions } from '../network.ts'
+import type { QueryManager, QueryOptions } from '../query/manager.ts'
+import type { QueryFunc } from '../query/types.ts'
+import type { RoutingTable } from '../routing-table/index.ts'
 import type { GetClosestPeersOptions } from '../routing-table/k-bucket.ts'
 import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
-import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AbortOptions } from 'it-pushable'
 
 export interface PeerRoutingComponents {
@@ -29,7 +28,6 @@ export interface PeerRoutingComponents {
   peerStore: PeerStore
   logger: ComponentLogger
   metrics?: Metrics
-  connectionManager: ConnectionManager
 }
 
 export interface PeerRoutingInit {
@@ -265,29 +263,17 @@ export class PeerRouting {
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (let { peer, path } of peers.peers) {
-      try {
-        if (peer.multiaddrs.length === 0) {
-          peer = await self.components.peerStore.getInfo(peer.id, options)
+    for (const { peer, path } of peers.peers) {
+      yield finalPeerEvent({
+        from: this.components.peerId,
+        peer,
+        path: {
+          index: path.index,
+          queued: 0,
+          running: 0,
+          total: 0
         }
-
-        if (peer.multiaddrs.length === 0) {
-          continue
-        }
-
-        yield finalPeerEvent({
-          from: this.components.peerId,
-          peer: await self.components.peerStore.getInfo(peer.id, options),
-          path: {
-            index: path.index,
-            queued: 0,
-            running: 0,
-            total: 0
-          }
-        }, options)
-      } catch {
-        continue
-      }
+      }, options)
     }
   }
 

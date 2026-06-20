@@ -10,8 +10,8 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
-import { persistentPeerStore } from '../src/index.js'
-import type { PersistentPeerStoreComponents } from '../src/index.js'
+import { persistentPeerStore } from '../src/index.ts'
+import type { PersistentPeerStoreComponents } from '../src/index.ts'
 import type { Libp2pEvents, PeerId, PrivateKey, PeerStore } from '@libp2p/interface'
 import type { TypedEventTarget } from 'main-event'
 
@@ -501,10 +501,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should return peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [
@@ -521,10 +518,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should not include peer id in multiaddrs in returned peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [
@@ -541,10 +535,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should serialize peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [

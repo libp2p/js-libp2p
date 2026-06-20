@@ -3,7 +3,7 @@ import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { TestSetup } from '../index.js'
+import type { TestSetup } from '../index.ts'
 import type { StreamMuxerFactory, StreamMuxer, MultiaddrConnection } from '@libp2p/interface'
 
 async function * messages (nMsg: number): AsyncGenerator<Uint8Array> {
@@ -51,9 +51,7 @@ async function spawn (createMuxer: (maConn: MultiaddrConnection) => Promise<Stre
       const sendMore = outboundStream.send(buf)
 
       if (sendMore === false) {
-        await pEvent(outboundStream, 'drain', {
-          rejectionEvents: ['close']
-        })
+        await outboundStream.onDrain()
       }
     }
 

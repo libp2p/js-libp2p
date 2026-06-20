@@ -1,7 +1,7 @@
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { CID } from 'multiformats/cid'
-import { truncatePeerId } from '../src/utils.js'
+import { truncatePeerId } from '../src/utils.ts'
 
 describe('utils', () => {
   it('should truncate a peer id', () => {

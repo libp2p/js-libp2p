@@ -32,6 +32,55 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [3.1.7](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.6...interface-internal-v3.1.7) (2026-06-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/peer-collections bumped from ^7.0.21 to ^7.0.22
+
+## [3.1.6](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.5...interface-internal-v3.1.6) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/peer-collections bumped from ^7.0.20 to ^7.0.21
+
+## [3.1.5](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.4...interface-internal-v3.1.5) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.19 to ^7.0.20
+
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.3...interface-internal-v3.1.4) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.18 to ^7.0.19
+
+## [3.1.3](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.2...interface-internal-v3.1.3) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.17 to ^7.0.18
+
 ## [3.1.2](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.1...interface-internal-v3.1.2) (2026-04-16)
 
 
