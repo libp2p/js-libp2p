@@ -1,5 +1,4 @@
 // ported from xxbloom - https://github.com/ceejbot/xxbloom/blob/master/LICENSE
-import { randomBytes } from '@libp2p/crypto'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { alloc } from 'uint8arrays/alloc'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -117,7 +116,7 @@ function generateSeeds (count: number): number[] {
   const seeds = []
 
   for (let i = 0; i < count; i++) {
-    buf = new Uint8ArrayList(randomBytes(4))
+    buf = new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(4)))
     seeds[i] = buf.getUint32(0, true)
 
     // Make sure we don't end up with two identical seeds,

@@ -1,5 +1,35 @@
 # Changelog
 
+## [16.0.3](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.2...gossipsub-v16.0.3) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.23 to ^11.0.24
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/peer-store bumped from ^12.0.21 to ^12.0.22
+
+## [16.0.2](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.1...gossipsub-v16.0.2) (2026-06-06)
+
+
+### Bug Fixes
+
+* **gossipsub:** remove closed outbound streams from the registry ([#3531](https://github.com/libp2p/js-libp2p/issues/3531)) ([7ae12f9](https://github.com/libp2p/js-libp2p/commit/7ae12f9b0a6ca49b854afdd5457211eabf00e8a9))
+
 ## [16.0.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.0...gossipsub-v16.0.1) (2026-05-30)
 
 

@@ -68,6 +68,22 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [12.0.22](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.21...peer-store-v12.0.22) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/peer-collections bumped from ^7.0.21 to ^7.0.22
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/peer-record bumped from ^9.0.11 to ^9.0.12
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+
 ## [12.0.21](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.20...peer-store-v12.0.21) (2026-05-30)
 
 

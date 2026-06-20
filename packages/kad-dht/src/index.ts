@@ -501,7 +501,7 @@ export interface KadDHTInit {
   /**
    * How many peers are queried in parallel during a query.
    *
-   * @default 3
+   * @default 10
    */
   alpha?: number
 

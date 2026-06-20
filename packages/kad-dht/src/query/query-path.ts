@@ -159,13 +159,6 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                   continue
                 }
 
-                if (!(await connectionManager.isDialable(closerPeer.multiaddrs, { // eslint-disable-line max-depth
-                  signal
-                }))) {
-                  log('not querying undialable peer')
-                  continue
-                }
-
                 const closerPeerKadId = await convertPeerId(closerPeer.id, {
                   signal
                 })
@@ -174,6 +167,15 @@ export async function * queryPath (options: QueryPathOptions): AsyncGenerator<Qu
                 // only continue query if closer peer is actually closer
                 if (uint8ArrayXorCompare(closerPeerXor, peerXor) !== -1) { // eslint-disable-line max-depth
                   log('skipping %p as they are not closer to %b than %p', closerPeer.id, key, peer.id)
+                  continue
+                }
+
+                // dialability is the most expensive check so only run it for
+                // peers we would actually query
+                if (!(await connectionManager.isDialable(closerPeer.multiaddrs, { // eslint-disable-line max-depth
+                  signal
+                }))) {
+                  log('not querying undialable peer')
                   continue
                 }
 

@@ -96,6 +96,38 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.30](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.29...webtransport-v6.0.30) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/daemon-client bumped from ^10.0.29 to ^10.0.30
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/ping bumped from ^3.1.6 to ^3.1.7
+    * libp2p bumped from ^3.3.3 to ^3.3.4
+
+## [6.0.29](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.28...webtransport-v6.0.29) (2026-06-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.28 to ^10.0.29
+
 ## [6.0.28](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.27...webtransport-v6.0.28) (2026-05-30)
 
 

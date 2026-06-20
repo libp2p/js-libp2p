@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/crypto",
-  "version": "5.1.19",
+  "version": "5.1.20",
   "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
@@ -90,12 +90,12 @@
     "generate": "protons ./src/keys/keys.proto"
   },
   "dependencies": {
-    "@libp2p/interface": "^3.2.3",
+    "@libp2p/interface": "^3.2.4",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
     "multiformats": "^14.0.0",
-    "protons-runtime": "^6.0.1",
-    "uint8arraylist": "^2.4.8",
+    "protons-runtime": "^7.0.0",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
@@ -103,7 +103,7 @@
     "aegir": "^48.0.11",
     "asn1js": "^3.0.6",
     "benchmark": "^2.1.4",
-    "protons": "^8.1.1"
+    "protons": "^9.0.1"
   },
   "browser": {
     "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",
