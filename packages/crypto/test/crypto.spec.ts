@@ -5,7 +5,6 @@ import { base58btc } from 'multiformats/bases/base58'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyToProtobuf } from '../src/keys/index.ts'
 import pbkdf2 from '../src/pbkdf2.ts'
-import randomBytes from '../src/random-bytes.ts'
 import fixtures from './fixtures/go-key-rsa.ts'
 import type { RSAPrivateKey } from '@libp2p/interface'
 
@@ -39,7 +38,7 @@ describe('libp2p-crypto', function () {
   })
 
   it('generateKeyPairFromSeed', () => {
-    const seed = randomBytes(32)
+    const seed = crypto.getRandomValues(new Uint8Array(32))
 
     // @ts-expect-error key type is invalid
     return expect(generateKeyPairFromSeed('invalid-key-type', seed, 512)).to.eventually.be.rejected
@@ -131,14 +130,14 @@ describe('libp2p-crypto', function () {
   describe('randomBytes', () => {
     it('throws with invalid number passed', () => {
       expect(() => {
-        randomBytes(-1)
+        crypto.getRandomValues(new Uint8Array(-1))
       }).to.throw()
     })
 
     it('generates different random things', () => {
-      const buf1 = randomBytes(10)
+      const buf1 = crypto.getRandomValues(new Uint8Array(10))
       expect(buf1.length).to.equal(10)
-      const buf2 = randomBytes(10)
+      const buf2 = crypto.getRandomValues(new Uint8Array(10))
       expect(buf1).to.not.eql(buf2)
     })
   })

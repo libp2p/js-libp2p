@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/interop",
-  "version": "14.0.29",
+  "version": "14.0.30",
   "description": "Interoperability Tests for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/interop#readme",
@@ -43,9 +43,9 @@
     "docs": "aegir docs"
   },
   "dependencies": {
-    "@libp2p/daemon-client": "^10.0.29",
-    "@libp2p/interface": "^3.2.3",
-    "@libp2p/utils": "^7.2.2",
+    "@libp2p/daemon-client": "^10.0.30",
+    "@libp2p/interface": "^3.2.4",
+    "@libp2p/utils": "^7.2.3",
     "@multiformats/multiaddr": "^13.0.3",
     "delay": "^7.0.0",
     "it-all": "^3.0.9",
@@ -53,13 +53,13 @@
     "multiformats": "^14.0.0",
     "p-retry": "^8.0.0",
     "p-wait-for": "^6.0.0",
-    "protons-runtime": "^6.0.1",
-    "uint8arraylist": "^2.4.8",
+    "protons-runtime": "^7.0.0",
+    "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "aegir": "^48.0.11",
-    "protons": "^8.1.1"
+    "protons": "^9.0.1"
   },
   "peerDependencies": {
     "aegir": "^48.0.11"

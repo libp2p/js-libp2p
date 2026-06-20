@@ -7,7 +7,6 @@ import * as asn1js from 'asn1js'
 import { create } from 'multiformats/hashes/digest'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { randomBytes } from '../../src/index.ts'
 import { privateKeyFromCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.ts'
 import * as pb from '../../src/keys/keys.ts'
 import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from '../../src/keys/rsa/rsa.ts'
@@ -67,8 +66,8 @@ describe('RSA', function () {
 
   it('signs a list', async () => {
     const text = new Uint8ArrayList(
-      randomBytes(512),
-      randomBytes(512)
+      crypto.getRandomValues(new Uint8Array(512)),
+      crypto.getRandomValues(new Uint8Array(512))
     )
     const sig = await key.sign(text)
 
@@ -90,7 +89,7 @@ describe('RSA', function () {
   it('should abort signing', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     await expect((async () => {
       return key.sign(text, {
         signal: controller.signal
@@ -102,7 +101,7 @@ describe('RSA', function () {
   it('should abort verifying', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
 
     await expect((async () => {

@@ -98,6 +98,28 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.24](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.23...floodsub-v11.0.24) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/peer-collections bumped from ^7.0.21 to ^7.0.22
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+
 ## [11.0.23](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.22...floodsub-v11.0.23) (2026-05-30)
 
 
