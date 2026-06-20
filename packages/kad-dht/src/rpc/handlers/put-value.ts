@@ -1,10 +1,10 @@
 import { InvalidMessageError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
-import { verifyRecord } from '../../record/validators.js'
-import { bufferToRecordKey } from '../../utils.js'
-import type { Validators } from '../../index.js'
-import type { Message } from '../../message/dht.js'
-import type { DHTMessageHandler } from '../index.js'
+import { verifyRecord } from '../../record/validators.ts'
+import { bufferToRecordKey } from '../../utils.ts'
+import type { Validators } from '../../index.ts'
+import type { Message } from '../../message/dht.ts'
+import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
@@ -51,11 +51,13 @@ export class PutValueHandler implements DHTMessageHandler {
       deserializedRecord.timeReceived = new Date()
       const recordKey = bufferToRecordKey(this.datastorePrefix, deserializedRecord.key)
       await this.components.datastore.put(recordKey, deserializedRecord.serialize().subarray())
-      this.log('put record for %b into datastore under key %k', key, recordKey)
-    } catch (err: any) {
-      this.log('did not put record for key %b into datastore %o', key, err)
-    }
 
-    return msg
+      this.log('accepted put for key %b under %k', key, recordKey)
+
+      return msg
+    } catch (err: any) {
+      this.log('failed to accept put for key %b - %e', key, err)
+      throw err
+    }
   }
 }

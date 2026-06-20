@@ -1,10 +1,10 @@
 import { Crypto } from '@peculiar/webcrypto'
 import { PeerConnection } from 'node-datachannel'
 import { RTCPeerConnection } from 'node-datachannel/polyfill'
-import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.js'
+import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.ts'
 import { DataChannelMuxerFactory } from '../../muxer.ts'
 import { generateTransportCertificate } from './generate-certificates.ts'
-import type { DataChannelOptions, TransportCertificate } from '../../index.js'
+import type { DataChannelOptions, TransportCertificate } from '../../index.ts'
 import type { CounterGroup } from '@libp2p/interface'
 import type { CertificateFingerprint } from 'node-datachannel'
 

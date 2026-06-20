@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { isGenerator } from '../src/is-generator.js'
+import { isGenerator } from '../src/is-generator.ts'
 
 describe('is-generator', () => {
   it('should return true if the value is a generator', () => {

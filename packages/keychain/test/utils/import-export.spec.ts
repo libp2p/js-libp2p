@@ -1,8 +1,8 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
 import { base58btc } from 'multiformats/bases/base58'
-import { exportPrivateKey } from '../../src/utils/export.js'
-import { importFromPem, importPrivateKey } from '../../src/utils/import.js'
+import { exportPrivateKey } from '../../src/utils/export.ts'
+import { importFromPem, importPrivateKey } from '../../src/utils/import.ts'
 
 describe('import/export', () => {
   describe('Ed25519', () => {

@@ -5,10 +5,10 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { StrictSign, StrictNoSign } from '../index.ts'
-import { RPC } from '../message/rpc.js'
-import { PublishConfigType, ValidateError } from '../types.js'
+import { RPC } from '../message/rpc.ts'
+import { PublishConfigType, ValidateError } from '../types.ts'
 import type { Message } from '../index.ts'
-import type { PublishConfig, TopicStr } from '../types.js'
+import type { PublishConfig, TopicStr } from '../types.ts'
 import type { PublicKey, PeerId } from '@libp2p/interface'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')

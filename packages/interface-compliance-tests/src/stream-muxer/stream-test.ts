@@ -237,6 +237,29 @@ export default (common: TestSetup<StreamMuxerFactory>): void => {
       expect(inboundEvent).to.have.nested.property('error.name', 'StreamResetError')
     })
 
+    it('emits idle when a stream with queued data is aborted', async () => {
+      // fill the send buffer until the transport applies backpressure
+      while (true) {
+        const sendMore = outboundStream.send(new Uint8Array(1024))
+
+        if (sendMore === false) {
+          break
+        }
+      }
+
+      // drain is now required, so this chunk stays queued in the write buffer
+      outboundStream.send(new Uint8Array(1024))
+      expect(outboundStream.writableNeedsDrain).to.be.true()
+
+      // aborting discards the queued bytes, emptying the write buffer, which
+      // must emit 'idle' so waiters on the write queue (e.g. a graceful close)
+      // are released rather than left hanging
+      const idle = pEvent(outboundStream, 'idle')
+      outboundStream.abort(new Error('Urk!'))
+
+      await idle
+    })
+
     it('does not send close read when remote closes write', async () => {
       // @ts-expect-error internal method of AbstractMessageStream
       const sendCloseReadSpy = Sinon.spy(outboundStream, 'sendCloseRead')

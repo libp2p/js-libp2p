@@ -5,7 +5,7 @@ import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { tls } from '../src/index.js'
+import { tls } from '../src/index.ts'
 import type { StreamMuxerFactory, ConnectionEncrypter, PeerId, Upgrader } from '@libp2p/interface'
 
 describe('tls', () => {

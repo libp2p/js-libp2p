@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { anySignal } from 'any-signal'
 import length from 'it-length'
@@ -6,10 +5,10 @@ import { setMaxListeners } from 'main-event'
 import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
-import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constants.js'
+import { TABLE_REFRESH_INTERVAL, TABLE_REFRESH_QUERY_TIMEOUT } from '../constants.ts'
 import GENERATED_PREFIXES from './generated-prefix-list.ts'
 import type { RoutingTable } from './index.ts'
-import type { PeerRouting } from '../peer-routing/index.js'
+import type { PeerRouting } from '../peer-routing/index.ts'
 import type { AbortOptions, ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
 /**
@@ -178,7 +177,7 @@ export class RoutingTableRefresh {
       throw new Error('Local peer not set')
     }
 
-    const randomData = randomBytes(2)
+    const randomData = crypto.getRandomValues(new Uint8Array(2))
     const randomUint16 = (randomData[1] << 8) + randomData[0]
 
     const key = this._makePeerId(this.routingTable.kb.localPeer.kadId, randomUint16, targetCommonPrefixLength)

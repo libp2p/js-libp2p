@@ -1,7 +1,7 @@
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import client from 'prom-client'
-import { prometheusMetrics } from '../src/index.js'
+import { prometheusMetrics } from '../src/index.ts'
 import { randomMetricName } from './fixtures/random-metric-name.ts'
 
 describe('histograms', () => {

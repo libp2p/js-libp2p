@@ -1,6 +1,6 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { IceUdpMuxListener } from 'node-datachannel'
-import { UFRAG_PREFIX_V1, UFRAG_PREFIX_V2 } from '../../constants.js'
+import { UFRAG_PREFIX_V1, UFRAG_PREFIX_V2 } from '../../constants.ts'
 import { decodeV2ClientPwd } from './sdp.ts'
 import { parseStunUsernameUfrags } from './stun.ts'
 import type { Logger } from '@libp2p/interface'

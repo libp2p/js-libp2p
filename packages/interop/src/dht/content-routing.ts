@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { CID } from 'multiformats/cid'
-import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.js'
+import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.ts'
 import type { IdentifyResult } from '@libp2p/daemon-client'
 
 export function contentRoutingTests (factory: DaemonFactory): void {

@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { isPrivate } from '../../src/multiaddr/is-private.js'
+import { isPrivate } from '../../src/multiaddr/is-private.ts'
 
 describe('multiaddr isPrivate', () => {
   it('identifies private ip4 multiaddrs', () => {

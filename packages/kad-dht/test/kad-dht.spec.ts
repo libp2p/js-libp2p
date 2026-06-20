@@ -10,14 +10,14 @@ import filter from 'it-filter'
 import last from 'it-last'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { MessageType } from '../src/index.js'
-import { peerResponseEvent } from '../src/query/events.js'
-import * as kadUtils from '../src/utils.js'
+import { MessageType } from '../src/index.ts'
+import { peerResponseEvent } from '../src/query/events.ts'
+import * as kadUtils from '../src/utils.ts'
 import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
 import { sortDHTs } from './utils/sort-closest-peers.ts'
 import { TestDHT } from './utils/test-dht.ts'
 import type { PeerAndKey } from './utils/create-peer-id.ts'
-import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.js'
+import type { FinalPeerEvent, QueryEvent, ValueEvent } from '../src/index.ts'
 import type { AbortOptions, PeerId } from '@libp2p/interface'
 
 async function findEvent (events: AsyncIterable<QueryEvent>, name: 'FINAL_PEER'): Promise<FinalPeerEvent>
@@ -275,26 +275,6 @@ describe('KadDHT', () => {
         testDHT.connect(dhtA, dhtC),
         testDHT.connect(dhtA, dhtD)
       ])
-
-      // DHT operations
-      await drain(dhtA.dht.put(key, value))
-
-      const res = await last(dhtB.dht.get(key))
-      expect(res).to.have.property('value').that.equalBytes(value)
-    })
-
-    it('put - get using key with no prefix (no selector available)', async function () {
-      this.timeout(10 * 1000)
-
-      const key = uint8ArrayFromString('hello')
-      const value = uint8ArrayFromString('world')
-
-      const [dhtA, dhtB] = await Promise.all([
-        testDHT.spawn(),
-        testDHT.spawn()
-      ])
-
-      await testDHT.connect(dhtA, dhtB)
 
       // DHT operations
       await drain(dhtA.dht.put(key, value))

@@ -1,4 +1,4 @@
-import type { RPC } from '../message/rpc.js'
+import type { RPC } from '../message/rpc.ts'
 
 /**
  * Create a gossipsub RPC object
