@@ -391,13 +391,6 @@ export class AutoNATv2Client implements Startable {
 
         this.dialResults.set(addrString, results)
 
-        // First-ever probe of this address — surface as verifying. Re-probes
-        // of an address that already has a verdict stay silent: the verdicts
-        // entry persists across re-probes and only flips on an actual change.
-        if (!this.verdicts.has(addrString)) {
-          this.verdicts.set(addrString, { addr: addr.multiaddr, state: 'verifying' })
-          this.safeDispatchEvent('address:verifying', { detail: { addr: addr.multiaddr } })
-        }
       }
 
       output.push(results)
@@ -482,6 +475,10 @@ export class AutoNATv2Client implements Startable {
       }
 
       return
+    }
+
+    for (const result of results) {
+      this.recordVerifying(result.multiaddr)
     }
 
     this.queue.add(async (options: AbortOptions) => {
@@ -676,6 +673,20 @@ export class AutoNATv2Client implements Startable {
 
     this.verdicts.set(key, { addr, state })
     this.safeDispatchEvent(`address:${state}`, { detail: { addr } })
+  }
+
+  private recordVerifying (addr: Multiaddr): void {
+    const key = addr.toString()
+
+    // First-ever probe of this address — surface as verifying. Re-probes
+    // of an address that already has a verdict stay silent: the verdicts
+    // entry persists across re-probes and only flips on an actual change.
+    if (this.verdicts.has(key)) {
+      return
+    }
+
+    this.verdicts.set(key, { addr, state: 'verifying' })
+    this.safeDispatchEvent('address:verifying', { detail: { addr } })
   }
 
   private getNetworkSegment (ma: Multiaddr): string {

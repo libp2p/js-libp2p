@@ -211,6 +211,22 @@ describe('autonat v2 - events', () => {
     expect(service.unreachable).to.deep.equal([])
   })
 
+  it('does not emit address:verifying when verification is skipped due to connection capacity', async () => {
+    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
+    sinon.stub(connectionManager, 'getConnections').returns(new Array(90).fill(null))
+
+    const verifying = captureEvent('address:verifying')
+    const connection = await makeResponseConnection('124.124.124.124', addr, DialStatus.OK)
+
+    await service.client.verifyExternalAddresses(connection)
+    await delay(100)
+
+    expect(verifying).to.have.lengthOf(0)
+    expect(service.verifying).to.deep.equal([])
+    expect((connection.newStream as sinon.SinonStub).called).to.be.false()
+  })
+
   it('moves address out of service.verifying once a verdict is reached', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
