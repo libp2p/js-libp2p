@@ -23,9 +23,10 @@
  */
 
 import { AutoNATv2Service } from './autonat.ts'
-import type { ComponentLogger, Metrics, PeerStore } from '@libp2p/interface'
+import type { ComponentLogger, Metrics, PeerStore, Startable } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, RandomWalk, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { TypedEventEmitter } from 'main-event'
 
 export interface AddressReachabilityChange {
   addr: Multiaddr
@@ -36,6 +37,9 @@ export interface AutoNATv2Events {
   'address:reachable': CustomEvent<AddressReachabilityChange>
   'address:unreachable': CustomEvent<AddressReachabilityChange>
   'address:removed': CustomEvent<AddressReachabilityChange>
+}
+
+export interface AutoNATv2 extends Startable, TypedEventEmitter<AutoNATv2Events> {
 }
 
 export interface AutoNATv2ServiceInit {
@@ -115,7 +119,7 @@ export interface AutoNATv2Components {
   metrics?: Metrics
 }
 
-export function autoNATv2 (init: AutoNATv2ServiceInit = {}): (components: AutoNATv2Components) => unknown {
+export function autoNATv2 (init: AutoNATv2ServiceInit = {}): (components: AutoNATv2Components) => AutoNATv2 {
   return (components) => {
     return new AutoNATv2Service(components, init)
   }
