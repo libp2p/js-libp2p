@@ -17,7 +17,7 @@ function decodeCerthashStr (s: string): MultihashDigest {
 export interface ParsedMultiaddr {
   url: string
   certhashes: MultihashDigest[]
-  remotePeer: PeerId
+  remotePeer?: PeerId
 }
 
 export function parseMultiaddr (ma: Multiaddr): ParsedMultiaddr {
@@ -37,10 +37,6 @@ export function parseMultiaddr (ma: Multiaddr): ParsedMultiaddr {
     if (components.name === 'p2p' && remotePeer == null) {
       remotePeer = peerIdFromString(components.value ?? '')
     }
-  }
-
-  if (remotePeer == null) {
-    throw new InvalidMultiaddrError('Remote peer must be present in multiaddr')
   }
 
   const opts = getNetConfig(ma)

@@ -16,6 +16,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidCertificateError } from './errors.ts'
 import { KeyType, PublicKey } from './pb/index.ts'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions, MessageStream, StreamCloseEvent } from '@libp2p/interface'
@@ -34,7 +35,7 @@ const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
 
 export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger): Promise<PeerId> {
   const now = Date.now()
-  const x509Cert = new x509.X509Certificate(rawCertificate)
+  const x509Cert = new x509.X509Certificate(withArrayBuffer(rawCertificate))
 
   if (x509Cert.notBefore.getTime() > now) {
     log?.error('the certificate was not valid yet')

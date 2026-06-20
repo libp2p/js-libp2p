@@ -5,6 +5,36 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [2.0.17](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.16...simple-metrics-v2.0.17) (2026-06-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+
+## [2.0.16](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.15...simple-metrics-v2.0.16) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+
+## [2.0.15](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.14...simple-metrics-v2.0.15) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+
 ## [2.0.14](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.13...simple-metrics-v2.0.14) (2026-04-16)
 
 

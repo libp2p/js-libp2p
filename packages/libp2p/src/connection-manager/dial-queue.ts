@@ -8,8 +8,8 @@ import { anySignal } from 'any-signal'
 import { setMaxListeners } from 'main-event'
 import { CustomProgressEvent } from 'progress-events'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { DialDeniedError, NoValidAddressesError } from '../errors.js'
-import { getPeerAddress } from '../get-peer.js'
+import { DialDeniedError, NoValidAddressesError } from '../errors.ts'
+import { getPeerAddress } from '../get-peer.ts'
 import { defaultAddressSorter } from './address-sorter.ts'
 import {
   ADDRESS_DIAL_TIMEOUT,

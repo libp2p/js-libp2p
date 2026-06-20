@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { isPromise } from '../src/is-promise.js'
+import { isPromise } from '../src/is-promise.ts'
 
 describe('is-promise', () => {
   it('should detect Promise.resolve', () => {

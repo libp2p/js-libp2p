@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { AES_GCM } from '@libp2p/crypto/ciphers'
 import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import webcrypto from '@libp2p/crypto/webcrypto'
@@ -8,6 +7,7 @@ import { sha512 } from '@noble/hashes/sha2.js'
 import * as asn1js from 'asn1js'
 import { base64 } from 'multiformats/bases/base64'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { ITERATIONS, KEY_SIZE, SALT_LENGTH } from './constants.ts'
 import type { ECDSAPrivateKey, Ed25519PrivateKey, PrivateKey, RSAPrivateKey, Secp256k1PrivateKey } from '@libp2p/interface'
 import type { Multibase } from 'multiformats/bases/interface'
@@ -129,7 +129,7 @@ export async function exportToPem (privateKey: RSAPrivateKey, password: string):
 
   const keyBuf = keyWrapper.toBER()
   const keyArr = new Uint8Array(keyBuf, 0, keyBuf.byteLength)
-  const salt = randomBytes(SALT_LENGTH)
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH))
 
   const encryptionKey = await pbkdf2Async(
     sha512,
@@ -140,12 +140,12 @@ export async function exportToPem (privateKey: RSAPrivateKey, password: string):
     }
   )
 
-  const iv = randomBytes(16)
-  const cryptoKey = await crypto.subtle.importKey('raw', encryptionKey, 'AES-CBC', false, ['encrypt'])
+  const iv = crypto.getRandomValues(new Uint8Array(16))
+  const cryptoKey = await crypto.subtle.importKey('raw', withArrayBuffer(encryptionKey), 'AES-CBC', false, ['encrypt'])
   const encrypted = await crypto.subtle.encrypt({
     name: 'AES-CBC',
-    iv
-  }, cryptoKey, keyArr)
+    iv: withArrayBuffer(iv)
+  }, cryptoKey, withArrayBuffer(keyArr))
 
   const pbkdf2Params = new asn1js.Sequence({
     value: [
