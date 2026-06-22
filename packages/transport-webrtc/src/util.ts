@@ -3,7 +3,6 @@ import pTimeout from 'p-timeout'
 import { DATA_CHANNEL_DRAIN_TIMEOUT, DEFAULT_ICE_SERVERS, UFRAG_ALPHABET, UFRAG_PREFIX } from './constants.ts'
 import type { LoggerOptions } from '@libp2p/interface'
 import type { Duplex, Source } from 'it-stream-types'
-import type { PeerConnection } from 'node-datachannel'
 
 export const nopSource = async function * nop (): AsyncGenerator<Uint8Array, any, unknown> {}
 
@@ -82,7 +81,7 @@ export interface AbortPromiseOptions {
   message?: string
 }
 
-export function isPeerConnection (obj: any): obj is PeerConnection {
+export function isPeerConnection (obj: any): obj is { state(): RTCPeerConnectionState } {
   return typeof obj.state === 'function'
 }
 

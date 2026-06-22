@@ -1,7 +1,10 @@
 import { isIPv4 } from '@chainsafe/is-ip'
-import { IceUdpMuxListener } from 'node-datachannel'
+import * as WebRTCNode from '@mertushka/webrtc-node'
 import type { Logger } from '@libp2p/interface'
 import type { AddressInfo } from 'node:net'
+
+const webRTCNode = (WebRTCNode as unknown as { default?: typeof WebRTCNode }).default ?? WebRTCNode
+const { nonstandard } = webRTCNode
 
 export interface StunServer {
   close(): Promise<void>
@@ -13,7 +16,7 @@ export interface Callback {
 }
 
 export async function stunListener (host: string, port: number, log: Logger, cb: Callback): Promise<StunServer> {
-  const listener = new IceUdpMuxListener(port, host)
+  const listener = new nonstandard.IceUdpMuxListener(port, host)
   listener.onUnhandledStunRequest(request => {
     if (request.ufrag == null) {
       return
