@@ -3151,7 +3151,6 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.log.error('addDirectPeer: failed to connect to %s', peerIdStr, err)
       })
     }
-
   }
 
   removeDirectPeer (peerId: PeerId | string): boolean {
