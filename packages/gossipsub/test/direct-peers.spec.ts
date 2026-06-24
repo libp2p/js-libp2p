@@ -81,6 +81,23 @@ describe('dynamic direct peer management', () => {
       // gossipsub is stopped — no connection attempt
       expect(node.pubsub.isStarted()).to.equal(false)
     })
+
+    it('should remove promoted peers from mesh and fanout sets', async () => {
+      const remoteKey = await generateKeyPair('Ed25519')
+      const remotePeer = peerIdFromPrivateKey(remoteKey)
+      const remotePeerStr = remotePeer.toString()
+      const addr = multiaddr('/ip4/127.0.0.1/tcp/9000')
+
+      node.pubsub.mesh.set('mesh-topic', new Set([remotePeerStr]))
+      node.pubsub.fanout.set('fanout-topic', new Set([remotePeerStr]))
+
+      const result = await node.pubsub.addDirectPeer(remotePeer, [addr])
+
+      expect(result).to.equal(remotePeerStr)
+      expect(node.pubsub.direct.has(remotePeerStr)).to.equal(true)
+      expect(node.pubsub.mesh.get('mesh-topic')?.has(remotePeerStr)).to.equal(false)
+      expect(node.pubsub.fanout.get('fanout-topic')?.has(remotePeerStr)).to.equal(false)
+    })
   })
 
   // ======== removeDirectPeer ========

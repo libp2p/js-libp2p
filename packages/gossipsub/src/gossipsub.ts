@@ -3137,6 +3137,12 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return null
     }
 
+    this.mesh.forEach((peers) => {
+      peers.delete(peerIdStr)
+    })
+    this.fanout.forEach((peers) => {
+      peers.delete(peerIdStr)
+    })
     this.direct.add(peerIdStr)
     this.log('addDirectPeer: added %s', peerIdStr)
 
