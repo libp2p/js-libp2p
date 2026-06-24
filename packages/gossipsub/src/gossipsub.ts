@@ -3115,8 +3115,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }).catch((err) => { this.log.error('Error untagging peer %s with topic %s', peerId, topic, err) })
   }
 
-  // ======== Dynamic Direct Peer Management ========
-
+  /*
+   * Dynamic Direct Peer Management
+   */
   async addDirectPeer (peerId: PeerId, addrs: Multiaddr[]): Promise<PeerIdStr | null> {
     const peerIdStr = peerId.toString()
 
