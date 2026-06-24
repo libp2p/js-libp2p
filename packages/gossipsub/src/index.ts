@@ -5,7 +5,7 @@ import type { GossipsubOptsSpec } from './config.ts'
 import type { DecodeRPCLimits } from './message/decodeRpc.ts'
 import type { MetricsRegister, TopicStrToLabel } from './metrics.ts'
 import type { PeerScoreParams, PeerScoreThresholds } from './score/index.ts'
-import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn, PeerIdStr } from './types.ts'
+import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn } from './types.ts'
 import type {
   PeerId, PeerStore,
   ComponentLogger,
@@ -398,27 +398,25 @@ export interface GossipSub extends TypedEventTarget<GossipSubEvents> {
   publish(topic: string, data?: Uint8Array): Promise<PublishResult>
 
   /**
-   * Add a peer to the direct peers set at runtime. Direct peers maintain permanent
-   * mesh connections without GRAFT/PRUNE negotiation. Addresses are required so
-   * gossipsub can dial the peer.
-   *
-   * Returns the peer ID string on success, or null if the peer was rejected
-   * (adding self, missing addresses, or peerStore failure).
+   * Add a peer to the direct peers set at runtime. Direct peers are kept connected
+   * and receive messages for topics they are subscribed to without participating
+   * in mesh peer selection. Addresses are required so gossipsub can dial the peer.
    */
-  addDirectPeer(peerId: PeerId, addrs: Multiaddr[]): Promise<PeerIdStr | null>
+  addDirectPeer(peerId: PeerId, addrs: Multiaddr[]): Promise<void>
 
   /**
    * Remove a peer from the direct peers set. The existing connection is not
-   * closed — it will age out through normal mesh pruning.
+   * closed; future mesh and fanout participation is governed by normal peer
+   * selection.
    *
    * Returns true if the peer was removed, false if it was not a direct peer.
    */
   removeDirectPeer(peerId: PeerId | string): boolean
 
   /**
-   * Return a snapshot of the current direct peer ID strings.
+   * Return a snapshot of the current direct peers.
    */
-  getDirectPeers(): PeerIdStr[]
+  getDirectPeers(): PeerId[]
 }
 
 export function gossipsub (

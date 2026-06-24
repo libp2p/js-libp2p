@@ -1709,7 +1709,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
     })
 
-    await Promise.all(toconnect.map(async (id) => this.connect(id)))
+    await Promise.all(toconnect.map(async (id) => {
+      try {
+        await this.connect(id)
+      } catch (err) {
+        this.log.error('directConnect: failed to connect to %s', id, err)
+      }
+    }))
   }
 
   /**
@@ -3118,25 +3124,18 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /*
    * Dynamic Direct Peer Management
    */
-  async addDirectPeer (peerId: PeerId, addrs: Multiaddr[]): Promise<PeerIdStr | null> {
+  async addDirectPeer (peerId: PeerId, addrs: Multiaddr[]): Promise<void> {
     const peerIdStr = peerId.toString()
 
     if (peerId.equals(this.components.peerId)) {
-      this.log('addDirectPeer: cannot add self as a direct peer')
-      return null
+      throw new Error('Cannot add self as a direct peer')
     }
 
     if (addrs.length === 0) {
-      this.log('addDirectPeer: cannot add direct peer %s without addresses', peerIdStr)
-      return null
+      throw new Error('Direct peer addresses are required')
     }
 
-    try {
-      await this.components.peerStore.merge(peerId, { multiaddrs: addrs })
-    } catch (err) {
-      this.log.error('addDirectPeer: failed to store addresses for %s', peerIdStr, err)
-      return null
-    }
+    await this.components.peerStore.merge(peerId, { multiaddrs: addrs })
 
     this.mesh.forEach((peers) => {
       peers.delete(peerIdStr)
@@ -3153,7 +3152,6 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       })
     }
 
-    return peerIdStr
   }
 
   removeDirectPeer (peerId: PeerId | string): boolean {
@@ -3167,7 +3165,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     return removed
   }
 
-  getDirectPeers (): PeerIdStr[] {
-    return Array.from(this.direct)
+  getDirectPeers (): PeerId[] {
+    return Array.from(this.direct).map(id => peerIdFromString(id))
   }
 }

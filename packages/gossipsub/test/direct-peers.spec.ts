@@ -3,6 +3,7 @@ import { stop } from '@libp2p/interface'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import sinon from 'sinon'
 import { createComponents } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 
@@ -25,9 +26,8 @@ describe('dynamic direct peer management', () => {
       const remotePeer = peerIdFromPrivateKey(remoteKey)
       const addr = multiaddr('/ip4/127.0.0.1/tcp/9000')
 
-      const result = await node.pubsub.addDirectPeer(remotePeer, [addr])
+      await node.pubsub.addDirectPeer(remotePeer, [addr])
 
-      expect(result).to.equal(remotePeer.toString())
       expect(node.pubsub.direct.has(remotePeer.toString())).to.equal(true)
 
       const stored = await node.components.peerStore.get(remotePeer)
@@ -39,31 +39,49 @@ describe('dynamic direct peer management', () => {
       const remotePeer = peerIdFromPrivateKey(remoteKey)
       const addr = multiaddr('/ip4/127.0.0.1/tcp/9000')
 
-      const result = await node.pubsub.addDirectPeer(remotePeer, [addr])
+      await node.pubsub.addDirectPeer(remotePeer, [addr])
 
-      // Peer is added and a connection attempt fires (verified by non-null return
-      // and presence in the direct set — connect errors are caught internally)
-      expect(result).to.equal(remotePeer.toString())
+      // Peer is added and a connection attempt fires. Connect errors are caught internally.
       expect(node.pubsub.direct.has(remotePeer.toString())).to.equal(true)
       expect(node.pubsub.isStarted()).to.equal(true)
     })
 
-    it('should return null when adding self as a direct peer', async () => {
+    it('should reject when adding self as a direct peer', async () => {
       const addr = multiaddr('/ip4/127.0.0.1/tcp/9000')
 
-      const result = await node.pubsub.addDirectPeer(node.components.peerId, [addr])
+      await expectRejects(
+        node.pubsub.addDirectPeer(node.components.peerId, [addr]),
+        'Cannot add self as a direct peer'
+      )
 
-      expect(result).to.equal(null)
       expect(node.pubsub.direct.has(node.components.peerId.toString())).to.equal(false)
     })
 
-    it('should return null when no addresses are provided', async () => {
+    it('should reject when no addresses are provided', async () => {
       const remoteKey = await generateKeyPair('Ed25519')
       const remotePeer = peerIdFromPrivateKey(remoteKey)
 
-      const result = await node.pubsub.addDirectPeer(remotePeer, [])
+      await expectRejects(
+        node.pubsub.addDirectPeer(remotePeer, []),
+        'Direct peer addresses are required'
+      )
 
-      expect(result).to.equal(null)
+      expect(node.pubsub.direct.has(remotePeer.toString())).to.equal(false)
+    })
+
+    it('should propagate peer store failures', async () => {
+      const remoteKey = await generateKeyPair('Ed25519')
+      const remotePeer = peerIdFromPrivateKey(remoteKey)
+      const addr = multiaddr('/ip4/127.0.0.1/tcp/9000')
+      const error = new Error('peer store failed')
+      const mergeStub = sinon.stub(node.components.peerStore, 'merge').rejects(error)
+
+      try {
+        await expectRejects(node.pubsub.addDirectPeer(remotePeer, [addr]), 'peer store failed')
+      } finally {
+        mergeStub.restore()
+      }
+
       expect(node.pubsub.direct.has(remotePeer.toString())).to.equal(false)
     })
 
@@ -74,11 +92,10 @@ describe('dynamic direct peer management', () => {
       const remotePeer = peerIdFromPrivateKey(remoteKey)
       const addr = multiaddr('/ip4/127.0.0.1/tcp/9000')
 
-      const result = await node.pubsub.addDirectPeer(remotePeer, [addr])
+      await node.pubsub.addDirectPeer(remotePeer, [addr])
 
-      expect(result).to.equal(remotePeer.toString())
       expect(node.pubsub.direct.has(remotePeer.toString())).to.equal(true)
-      // gossipsub is stopped — no connection attempt
+      // gossipsub is stopped, no connection attempt
       expect(node.pubsub.isStarted()).to.equal(false)
     })
 
@@ -91,9 +108,8 @@ describe('dynamic direct peer management', () => {
       node.pubsub.mesh.set('mesh-topic', new Set([remotePeerStr]))
       node.pubsub.fanout.set('fanout-topic', new Set([remotePeerStr]))
 
-      const result = await node.pubsub.addDirectPeer(remotePeer, [addr])
+      await node.pubsub.addDirectPeer(remotePeer, [addr])
 
-      expect(result).to.equal(remotePeerStr)
       expect(node.pubsub.direct.has(remotePeerStr)).to.equal(true)
       expect(node.pubsub.mesh.get('mesh-topic')?.has(remotePeerStr)).to.equal(false)
       expect(node.pubsub.fanout.get('fanout-topic')?.has(remotePeerStr)).to.equal(false)
@@ -139,7 +155,7 @@ describe('dynamic direct peer management', () => {
   // ======== getDirectPeers ========
 
   describe('getDirectPeers', () => {
-    it('should return all current direct peer ID strings', async () => {
+    it('should return all current direct peers', async () => {
       const key1 = await generateKeyPair('Ed25519')
       const key2 = await generateKeyPair('Ed25519')
       const peer1 = peerIdFromPrivateKey(key1)
@@ -151,8 +167,8 @@ describe('dynamic direct peer management', () => {
 
       const directPeers = node.pubsub.getDirectPeers()
 
-      expect(directPeers).to.include(peer1.toString())
-      expect(directPeers).to.include(peer2.toString())
+      expect(directPeers.map(peer => peer.toString())).to.include(peer1.toString())
+      expect(directPeers.map(peer => peer.toString())).to.include(peer2.toString())
       expect(directPeers).to.have.lengthOf(2)
     })
 
@@ -169,9 +185,49 @@ describe('dynamic direct peer management', () => {
 
       const directPeers = node.pubsub.getDirectPeers()
 
-      expect(directPeers).to.not.include(peer1.toString())
-      expect(directPeers).to.include(peer2.toString())
+      expect(directPeers.map(peer => peer.toString())).to.not.include(peer1.toString())
+      expect(directPeers.map(peer => peer.toString())).to.include(peer2.toString())
       expect(directPeers).to.have.lengthOf(1)
     })
   })
+
+  describe('directConnect', () => {
+    it('should continue connecting direct peers when one connection fails', async () => {
+      const key1 = await generateKeyPair('Ed25519')
+      const key2 = await generateKeyPair('Ed25519')
+      const peer1 = peerIdFromPrivateKey(key1).toString()
+      const peer2 = peerIdFromPrivateKey(key2).toString()
+      const error = new Error('connection failed')
+      const connectStub = sinon.stub(node.pubsub as any, 'connect')
+        .callsFake(async (peer) => {
+          if (peer === peer1) {
+            throw error
+          }
+        })
+
+      node.pubsub.direct.add(peer1)
+      node.pubsub.direct.add(peer2)
+
+      try {
+        await (node.pubsub as any).directConnect()
+      } finally {
+        connectStub.restore()
+      }
+
+      expect(connectStub.calledWith(peer1)).to.equal(true)
+      expect(connectStub.calledWith(peer2)).to.equal(true)
+    })
+  })
 })
+
+async function expectRejects (promise: Promise<unknown>, message: string): Promise<void> {
+  try {
+    await promise
+  } catch (err) {
+    expect(err).to.be.instanceOf(Error)
+    expect((err as Error).message).to.equal(message)
+    return
+  }
+
+  throw new Error('Expected promise to reject')
+}
