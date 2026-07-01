@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.9",
-    "aegir": "^48.0.11",
+    "aegir": "^48.1.1",
     "datastore-core": "^12.0.1"
   },
   "sideEffects": false

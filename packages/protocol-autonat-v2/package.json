@@ -61,7 +61,7 @@
     "@libp2p/crypto": "^5.1.20",
     "@libp2p/logger": "^6.2.9",
     "@libp2p/peer-id": "^6.0.11",
-    "aegir": "^48.0.11",
+    "aegir": "^48.1.1",
     "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-length-prefixed": "^11.0.1",

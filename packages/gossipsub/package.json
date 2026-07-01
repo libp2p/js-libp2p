@@ -102,7 +102,7 @@
     "@types/benchmark": "^2.1.5",
     "@types/sinon": "^21.0.1",
     "abortable-iterator": "^5.1.0",
-    "aegir": "^48.0.11",
+    "aegir": "^48.1.1",
     "benchmark": "^2.1.4",
     "datastore-core": "^12.0.1",
     "delay": "^7.0.0",
