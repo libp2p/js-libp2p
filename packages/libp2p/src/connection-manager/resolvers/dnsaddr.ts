@@ -32,10 +32,6 @@ class DNSAddrResolver implements MultiaddrResolver {
         ]
       })
     } catch (err: any) {
-      // @multiformats/dns >= 1.0.15 throws when a query returns no answers
-      // instead of returning an empty result. Treat "no DNS records" as "no
-      // addresses to dial" so the dial fails with NoValidAddressesError rather
-      // than surfacing a DNSQueryFailedError.
       const noAnswers = err.name === 'DNSQueryFailedError' &&
         Array.isArray(err.errors) &&
         err.errors.length > 0 &&
