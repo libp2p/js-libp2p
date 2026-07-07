@@ -48,7 +48,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        # macos-latest migrated from macos-15 to macos-26 in June 2026
+        # (actions/runner-images#14167), which stalls the go-libp2p p2pd binary
+        # download during install. Pin to macos-15 until that is resolved.
+        os: [windows-latest, ubuntu-latest, macos-15]
         node: [lts/*]
       fail-fast: false
     steps:
