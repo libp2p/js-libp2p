@@ -96,6 +96,24 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.31](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.30...webtransport-v6.0.31) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/daemon-client bumped from ^10.0.30 to ^10.0.31
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/ping bumped from ^3.1.7 to ^3.1.8
+    * libp2p bumped from ^3.3.4 to ^3.3.5
+
 ## [6.0.30](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.29...webtransport-v6.0.30) (2026-06-13)
 
 

@@ -17,9 +17,12 @@ import { MessageType } from '../src/message/dht.ts'
 import { peerResponseEvent } from '../src/query/events.ts'
 import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable } from '../src/routing-table/index.ts'
 import { isLeafBucket } from '../src/routing-table/k-bucket.ts'
+import { RoutingTableRefresh } from '../src/routing-table/refresh.ts'
 import * as kadUtils from '../src/utils.ts'
 import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
+import type { QueryEvent } from '../src/index.ts'
 import type { Network } from '../src/network.ts'
+import type { PeerRouting } from '../src/peer-routing/index.ts'
 import type { RoutingTableComponents } from '../src/routing-table/index.ts'
 import type { Bucket } from '../src/routing-table/k-bucket.ts'
 import type { Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
@@ -570,6 +573,51 @@ describe('Routing Table', () => {
     expect(table.kb.root).to.have.property('depth', 0)
     expect(table.kb.root).to.have.property('prefix', '')
     expect(table.kb.root).to.have.property('peers').that.is.empty()
+  })
+
+  describe('refresh', () => {
+    let peerRouting: StubbedInstance<PeerRouting>
+    let refresh: RoutingTableRefresh
+    let queriedKeys: Uint8Array[]
+
+    beforeEach(() => {
+      queriedKeys = []
+      peerRouting = stubInterface<PeerRouting>()
+      peerRouting.getClosestPeers.callsFake((key: Uint8Array) => {
+        queriedKeys.push(key)
+        return (async function * (): AsyncGenerator<QueryEvent> {})()
+      })
+
+      refresh = new RoutingTableRefresh({ logger: defaultLogger() }, {
+        peerRouting,
+        routingTable: table,
+        logPrefix: ''
+      })
+    })
+
+    afterEach(async () => {
+      await refresh.stop()
+    })
+
+    it('issues refresh queries when run without force (the periodic refresh path)', async () => {
+      refresh.refreshTable(false)
+      await delay(200)
+
+      expect(queriedKeys.length).to.be.greaterThan(0)
+    })
+
+    it('does not re-query a common prefix length that was just refreshed', async () => {
+      refresh.refreshTable(false)
+      await delay(200)
+
+      const afterFirstRefresh = queriedKeys.length
+      expect(afterFirstRefresh).to.be.greaterThan(0)
+
+      refresh.refreshTable(false)
+      await delay(200)
+
+      expect(queriedKeys.length).to.equal(afterFirstRefresh)
+    })
   })
 
   describe('max size', () => {

@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.0.24](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.23...pnet-v3.0.24) (2026-07-07)
+
+
+### Bug Fixes
+
+* **pnet:** forward drain events from the underlying connection ([#3552](https://github.com/libp2p/js-libp2p/issues/3552)) ([dd084c0](https://github.com/libp2p/js-libp2p/commit/dd084c0b267a85ad5db0e05ec1fa83f02fb525f5))
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
 ## [3.0.23](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.22...pnet-v3.0.23) (2026-06-13)
 
 

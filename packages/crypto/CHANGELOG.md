@@ -17,6 +17,16 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.21](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.20...crypto-v5.1.21) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+
 ## [5.1.20](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.19...crypto-v5.1.20) (2026-06-13)
 
 
