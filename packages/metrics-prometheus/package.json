@@ -48,7 +48,7 @@
   "devDependencies": {
     "@libp2p/logger": "^6.2.9",
     "@libp2p/utils": "^7.2.3",
-    "aegir": "^48.0.11",
+    "aegir": "^48.1.1",
     "p-event": "^7.0.0"
   },
   "sideEffects": false

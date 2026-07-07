@@ -56,7 +56,7 @@
     "@libp2p/daemon-server": "^9.0.30",
     "@libp2p/gossipsub": "^16.0.3",
     "@libp2p/kad-dht": "^16.3.3",
-    "aegir": "^48.0.11",
+    "aegir": "^48.1.1",
     "it-all": "^3.0.9",
     "p-event": "^7.0.0",
     "sinon": "^21.0.0",

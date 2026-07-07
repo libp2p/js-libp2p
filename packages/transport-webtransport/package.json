@@ -62,7 +62,7 @@
     "@libp2p/daemon-client": "^10.0.30",
     "@libp2p/logger": "^6.2.9",
     "@libp2p/ping": "^3.1.7",
-    "aegir": "^48.0.11",
+    "aegir": "^48.1.1",
     "execa": "^9.6.0",
     "go-libp2p": "^1.6.0",
     "it-all": "^3.0.9",

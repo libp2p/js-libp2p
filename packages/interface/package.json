@@ -50,7 +50,7 @@
     "uint8arraylist": "^3.0.2"
   },
   "devDependencies": {
-    "aegir": "^48.0.11"
+    "aegir": "^48.1.1"
   },
   "sideEffects": false
 }

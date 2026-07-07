@@ -97,7 +97,7 @@
     "@libp2p/utils": "^7.2.3",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
-    "aegir": "^48.0.11",
+    "aegir": "^48.1.1",
     "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
