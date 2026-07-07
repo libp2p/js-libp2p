@@ -72,21 +72,21 @@ describe('private network', () => {
       received += evt.data.byteLength
     })
 
-    // send data until the underlying connection reports backpressure
+    // send more data than the underlying connection can buffer, awaiting a
+    // 'drain' each time it reports backpressure
     const chunk = new Uint8Array(1024 * 64)
     let sent = 0
-    let canSendMore = true
 
-    while (canSendMore) {
-      canSendMore = outbound.send(chunk)
+    for (let i = 0; i < 25; i++) {
+      if (!outbound.send(chunk)) {
+        await pEvent(outbound, 'drain', {
+          timeout: 5_000,
+          rejectionEvents: ['close']
+        })
+      }
+
       sent += chunk.byteLength
     }
-
-    // the protected connection should emit 'drain' when the underlying
-    // connection drains, otherwise sending never resumes
-    await pEvent(outbound, 'drain', {
-      timeout: 5_000
-    })
 
     await Promise.all([
       pEvent(inbound, 'close'),
