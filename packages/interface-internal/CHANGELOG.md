@@ -32,6 +32,17 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [3.1.8](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.7...interface-internal-v3.1.8) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/peer-collections bumped from ^7.0.22 to ^7.0.23
+
 ## [3.1.7](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.6...interface-internal-v3.1.7) (2026-06-13)
 
 

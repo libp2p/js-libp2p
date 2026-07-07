@@ -110,6 +110,29 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.4...libp2p-v3.3.5) (2026-07-07)
+
+
+### Bug Fixes
+
+* treat empty dnsaddr answer as no addresses ([#3550](https://github.com/libp2p/js-libp2p/issues/3550)) ([3c8a559](https://github.com/libp2p/js-libp2p/commit/3c8a5592c0838f31c90e7742fb4ff34decfb8e7e))
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/interface-internal bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/multistream-select bumped from ^7.0.22 to ^7.0.23
+    * @libp2p/peer-collections bumped from ^7.0.22 to ^7.0.23
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/peer-store bumped from ^12.0.22 to ^12.0.23
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
 ## [3.3.4](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.3...libp2p-v3.3.4) (2026-06-13)
 
 
