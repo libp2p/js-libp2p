@@ -1,5 +1,5 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { peerIdFromMultihash } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromPublicKey } from '@libp2p/peer-id'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -139,8 +139,8 @@ export async function validateToRawMessage (
       let publicKey: PublicKey
       if (msg.key != null) {
         publicKey = publicKeyFromProtobuf(msg.key)
-        // TODO: Should `fromPeerId.pubKey` be optional?
-        if (fromPeerId.publicKey !== undefined && !publicKey.equals(fromPeerId.publicKey)) {
+
+        if (!peerIdFromPublicKey(publicKey).equals(fromPeerId)) {
           return { valid: false, error: ValidateError.InvalidPeerId }
         }
       } else {
