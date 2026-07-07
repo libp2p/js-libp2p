@@ -52,6 +52,50 @@ describe('private network', () => {
     expect(output).to.deep.equal([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
   })
 
+  it('should forward drain events from the underlying connection', async () => {
+    const [outboundConnection, inboundConnection] = multiaddrConnectionPair({
+      delay: 10
+    })
+
+    const protector = preSharedKey({
+      psk: swarmKeyBuffer
+    })()
+
+    const [outbound, inbound] = await Promise.all([
+      protector.protect(outboundConnection),
+      protector.protect(inboundConnection)
+    ])
+
+    let received = 0
+
+    inbound.addEventListener('message', (evt) => {
+      received += evt.data.byteLength
+    })
+
+    // send more data than the underlying connection can buffer, awaiting a
+    // 'drain' each time it reports backpressure
+    const chunk = new Uint8Array(1024 * 64)
+    let sent = 0
+
+    for (let i = 0; i < 25; i++) {
+      if (!outbound.send(chunk)) {
+        await pEvent(outbound, 'drain', {
+          timeout: 5_000,
+          rejectionEvents: ['close']
+        })
+      }
+
+      sent += chunk.byteLength
+    }
+
+    await Promise.all([
+      pEvent(inbound, 'close'),
+      outbound.close()
+    ])
+
+    expect(received).to.equal(sent)
+  })
+
   it('should not be able to share correct data with different keys', async () => {
     const [outboundConnection, inboundConnection] = multiaddrConnectionPair({
       delay: 10
