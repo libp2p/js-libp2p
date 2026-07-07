@@ -273,6 +273,21 @@ describe('PersistentPeerStore', () => {
       await expect(peerStore.has(peerId)).to.eventually.be.false()
     })
 
+    it('ignores records where the envelope signer does not match the peer record peer id', async () => {
+      const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+        peerId: otherPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/4567')
+        ]
+      }), key)
+
+      await expect(peerStore.has(otherPeerId)).to.eventually.be.false()
+      await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal(), {
+        expectedPeer: peerId
+      })).to.eventually.equal(false)
+      await expect(peerStore.has(otherPeerId)).to.eventually.be.false()
+    })
+
     it('allows queries', async () => {
       await peerStore.save(otherPeerId, {
         multiaddrs: [
