@@ -43,7 +43,7 @@
     "npm-run-all": "^4.1.5"
   },
   "overrides": {
-    "go-libp2p": "github:tabcat/npm-go-libp2p#fix/download-on-first-use"
+    "go-libp2p": "github:tabcat/npm-go-libp2p#test/download-on-first-use-dist"
   },
   "workspaces": [
     "doc",
