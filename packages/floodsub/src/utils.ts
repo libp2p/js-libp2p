@@ -7,7 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { PubSubRPCMessage } from './floodsub.ts'
 import type { Message } from './index.ts'
-import type { PublicKey } from '@libp2p/interface'
+import type { PeerId, PublicKey } from '@libp2p/interface'
 
 /**
  * Generate a random sequence number
@@ -58,24 +58,19 @@ export const anyMatch = (a: Set<number> | number[], b: Set<number> | number[]): 
   return false
 }
 
-const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
-  if ((message.sequenceNumber == null) || (message.from == null) || (message.signature == null)) {
-    return false
-  }
-  // if a public key is present in the `from` field, the message should be signed
-  const fromID = peerIdFromMultihash(Digest.decode(message.from))
-  if (fromID.publicKey != null) {
-    return true
-  }
-
+const signingPublicKey = (message: PubSubRPCMessage, fromID: PeerId): PublicKey | undefined => {
   if (message.key != null) {
-    const signingKey = message.key
-    const signingID = peerIdFromPublicKey(publicKeyFromProtobuf(signingKey))
+    const publicKey = publicKeyFromProtobuf(message.key)
+    const signingID = peerIdFromPublicKey(publicKey)
 
-    return signingID.equals(fromID)
+    if (!signingID.equals(fromID)) {
+      throw new InvalidMessageError('RPC message public key did not match from')
+    }
+
+    return publicKey
   }
 
-  return false
+  return fromID.publicKey
 }
 
 export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => {
@@ -83,19 +78,15 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
     throw new InvalidMessageError('RPC message was missing from')
   }
 
-  if (!await isSigned(message)) {
+  const from = peerIdFromMultihash(Digest.decode(message.from))
+  const key = signingPublicKey(message, from)
+
+  if ((message.sequenceNumber == null) || (message.signature == null) || key == null) {
     return {
       type: 'unsigned',
       topic: message.topic ?? '',
       data: message.data ?? new Uint8Array(0)
     }
-  }
-
-  const from = peerIdFromMultihash(Digest.decode(message.from))
-  const key = message.key ?? from.publicKey
-
-  if (key == null) {
-    throw new InvalidMessageError('RPC message was missing public key')
   }
 
   const msg: Message = {
@@ -105,7 +96,7 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
     sequenceNumber: bigIntFromBytes(message.sequenceNumber ?? new Uint8Array(0)),
     data: message.data ?? new Uint8Array(0),
     signature: message.signature ?? new Uint8Array(0),
-    key: key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
+    key
   }
 
   return msg

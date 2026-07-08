@@ -9,7 +9,7 @@ import {
   SignPrefix,
   verifySignature
 } from '../src/sign.ts'
-import { randomSeqno, toRpcMessage } from '../src/utils.ts'
+import { bigIntToBytes, randomSeqno, toRpcMessage } from '../src/utils.ts'
 import type { PubSubRPCMessage } from '../src/floodsub.ts'
 import type { Message } from '../src/index.ts'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
@@ -112,5 +112,34 @@ describe('message signing', () => {
       from: peerId
     }, encodeMessage)
     expect(verified).to.eql(true)
+  })
+
+  it('should reject a supplied public key that does not match the from peer id', async () => {
+    const attackerKey = await generateKeyPair('Ed25519')
+    const victimKey = await generateKeyPair('Ed25519')
+    const victim = peerIdFromPrivateKey(victimKey)
+    const data = uint8ArrayFromString('forged message')
+    const sequenceNumber = 1n
+    const sequenceNumberBytes = bigIntToBytes(sequenceNumber)
+    const rpcMessage = {
+      from: victim.toMultihash().bytes,
+      data,
+      sequenceNumber: sequenceNumberBytes,
+      topic: 'test-topic',
+      signature: undefined,
+      key: undefined
+    }
+
+    const signature = await attackerKey.sign(uint8ArrayConcat([SignPrefix, encodeMessage(rpcMessage).subarray()]))
+
+    await expect(verifySignature({
+      type: 'signed',
+      from: victim,
+      data,
+      sequenceNumber,
+      topic: 'test-topic',
+      signature,
+      key: attackerKey.publicKey
+    }, encodeMessage)).to.eventually.be.rejectedWith('Public key did not match the originator id')
   })
 })

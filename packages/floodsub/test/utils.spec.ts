@@ -1,5 +1,5 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
+import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import * as utils from '../src/utils.ts'
 import type { PubSubRPCMessage } from '../src/floodsub.ts'
@@ -96,47 +96,84 @@ describe('utils', () => {
   })
 
   it('ensures message is signed if public key is extractable', async () => {
-    const dummyKeyPair = await generateKeyPair('RSA', 1024)
-    const dummyPeerID = peerIdFromPrivateKey(dummyKeyPair)
-
+    const ed25519Key = await generateKeyPair('Ed25519')
     const secp256k1Key = await generateKeyPair('secp256k1')
-    const secp256k1Peer = peerIdFromPrivateKey(secp256k1Key)
+    const rsaKey = await generateKeyPair('RSA', 1024)
 
-    const cases: PubSubRPCMessage[] = [
-      {
-        from: secp256k1Peer.toMultihash().bytes,
-        topic: 'test',
-        data: new Uint8Array(0),
-        sequenceNumber: utils.bigIntToBytes(1n),
-        signature: new Uint8Array(0)
-      },
-      {
-        from: peerIdFromString('QmPNdSYk5Rfpo5euNqwtyizzmKXMNHdXeLjTQhcN4yfX22').toMultihash().bytes,
-        topic: 'test',
-        data: new Uint8Array(0),
-        sequenceNumber: utils.bigIntToBytes(1n),
-        signature: new Uint8Array(0)
-      },
-      {
-        from: dummyPeerID.toMultihash().bytes,
+    const cases = [{
+      privateKey: secp256k1Key,
+      includeKey: false,
+      expectedType: 'signed'
+    }, {
+      privateKey: rsaKey,
+      includeKey: false,
+      expectedType: 'unsigned'
+    }, {
+      privateKey: rsaKey,
+      includeKey: true,
+      expectedType: 'signed'
+    }, {
+      privateKey: ed25519Key,
+      includeKey: false,
+      expectedType: 'signed'
+    }] as const
+
+    for (const { privateKey, includeKey, expectedType } of cases) {
+      const peerId = peerIdFromPrivateKey(privateKey)
+
+      const message = await utils.toMessage({
+        from: peerId.toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
         sequenceNumber: utils.bigIntToBytes(1n),
         signature: new Uint8Array(0),
-        key: publicKeyToProtobuf(dummyKeyPair.publicKey)
-      },
-      {
-        from: (peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toMultihash().bytes,
-        topic: 'test',
-        data: new Uint8Array(0),
-        sequenceNumber: utils.bigIntToBytes(1n),
-        signature: new Uint8Array(0)
+        key: includeKey ? publicKeyToProtobuf(privateKey.publicKey) : undefined
+      })
+
+      expect(message.type).to.equal(expectedType)
+      if (expectedType === 'signed') {
+        if (message.type !== 'signed') {
+          throw new Error('expected signed message')
+        }
+
+        expect(message.key.equals(privateKey.publicKey)).to.be.true()
       }
-    ]
+    }
+  })
 
-    const expected = ['signed', 'unsigned', 'signed', 'signed']
-    const actual = (await Promise.all(cases.map(utils.toMessage))).map(m => m.type)
+  it('treats a message with a key but missing signed fields as unsigned', async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+    const peerId = peerIdFromPrivateKey(privateKey)
 
-    expect(actual).to.deep.equal(expected)
+    const message = await utils.toMessage({
+      from: peerId.toMultihash().bytes,
+      topic: 'test',
+      data: new Uint8Array(0),
+      key: publicKeyToProtobuf(privateKey.publicKey)
+    })
+
+    expect(message.type).to.equal('unsigned')
+  })
+
+  it('rejects a message that is missing from', async () => {
+    await expect(utils.toMessage({
+      topic: 'test',
+      data: new Uint8Array(0)
+    })).to.eventually.be.rejectedWith('RPC message was missing from')
+  })
+
+  it('rejects a message if the supplied key does not match from', async () => {
+    const attackerKey = await generateKeyPair('Ed25519')
+    const victimKey = await generateKeyPair('Ed25519')
+    const victim = peerIdFromPrivateKey(victimKey)
+
+    await expect(utils.toMessage({
+      from: victim.toMultihash().bytes,
+      topic: 'test',
+      data: new Uint8Array(0),
+      sequenceNumber: utils.bigIntToBytes(1n),
+      signature: new Uint8Array(0),
+      key: publicKeyToProtobuf(attackerKey.publicKey)
+    })).to.eventually.be.rejectedWith('RPC message public key did not match from')
   })
 })

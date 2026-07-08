@@ -1,4 +1,4 @@
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromPrivateKey, peerIdFromPublicKey } from '@libp2p/peer-id'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toRpcMessage } from './utils.ts'
@@ -81,6 +81,10 @@ export function messagePublicKey (message: SignedMessage): PublicKey {
   }
 
   if (message.key != null) {
+    if (!peerIdFromPublicKey(message.key).equals(message.from)) {
+      throw new Error('Public key did not match the originator id')
+    }
+
     return message.key
   }
 
