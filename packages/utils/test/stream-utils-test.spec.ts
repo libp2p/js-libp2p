@@ -7,7 +7,8 @@ import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { streamPair } from '../src/stream-pair.ts'
-import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.ts'
+import { echo, pipe, messageStreamToDuplex, byteStream, pbStream } from '../src/stream-utils.ts'
+import type { DecodeOptions } from 'protons-runtime'
 
 describe('messageStreamToDuplex', () => {
   it('should source all reads', async () => {
@@ -501,5 +502,50 @@ describe('stream-pair', () => {
     }).to.throw().with.property('name', 'StreamStateError')
 
     outgoing.abort(new Error('cleanup'))
+  })
+})
+
+describe('pbStream', () => {
+  interface TestMessage {
+    values: number[]
+  }
+
+  let lastDecodeOpts: DecodeOptions<TestMessage> | undefined
+
+  const proto = {
+    encode (msg: TestMessage): Uint8Array {
+      return Uint8Array.from(msg.values)
+    },
+    decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<TestMessage>): TestMessage {
+      lastDecodeOpts = opts
+      return { values: [...buf.subarray()] }
+    }
+  }
+
+  beforeEach(() => {
+    lastDecodeOpts = undefined
+  })
+
+  it('should forward decode limits to the decoder', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const [message] = await Promise.all([
+      pbStream(incoming).pb(proto).read({ limits: { values: 5 } }),
+      pbStream(outgoing).pb(proto).write({ values: [1, 2, 3] })
+    ])
+
+    expect(message).to.deep.equal({ values: [1, 2, 3] })
+    expect(lastDecodeOpts).to.have.nested.property('limits.values', 5)
+  })
+
+  it('should not pass limits to the decoder when none are supplied', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    await Promise.all([
+      pbStream(incoming).pb(proto).read(),
+      pbStream(outgoing).pb(proto).write({ values: [4, 5, 6] })
+    ])
+
+    expect(lastDecodeOpts?.limits).to.be.undefined()
   })
 })
