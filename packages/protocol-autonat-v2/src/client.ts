@@ -383,7 +383,7 @@ export class AutoNATv2Client implements Startable {
   /**
    * Removes any multiaddr result objects created for old multiaddrs that we are
    * no longer waiting on, and prunes verdicts for addresses no longer tracked
-   * by the AddressManager (emitting `address:removed` for each).
+   * by the AddressManager.
    */
   private removeOutdatedMultiaddrResults (): void {
     const allAddresses = this.components.addressManager.getAddressesWithMetadata()
@@ -404,7 +404,6 @@ export class AutoNATv2Client implements Startable {
       if (!allKeys.has(key)) {
         this.log.trace('verdict no longer applies for %a', verdict.addr)
         this.verdicts.delete(key)
-        this.safeDispatchEvent('address:removed', { detail: { addr: verdict.addr } })
       }
     }
   }

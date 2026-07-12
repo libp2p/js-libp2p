@@ -36,7 +36,6 @@ export interface AutoNATv2Events {
   'address:verifying': CustomEvent<AddressReachabilityChange>
   'address:reachable': CustomEvent<AddressReachabilityChange>
   'address:unreachable': CustomEvent<AddressReachabilityChange>
-  'address:removed': CustomEvent<AddressReachabilityChange>
 }
 
 export interface AutoNATv2 extends Startable, TypedEventEmitter<AutoNATv2Events> {
