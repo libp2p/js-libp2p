@@ -5,7 +5,6 @@ import { DIAL_BACK, DIAL_REQUEST, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSI
 import { AutoNATv2Server } from './server.ts'
 import type { AutoNATv2Components, AutoNATv2Events, AutoNATv2ServiceInit } from './index.ts'
 import type { Startable } from '@libp2p/interface'
-import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class AutoNATv2Service extends TypedEventEmitter<AutoNATv2Events> implements Startable {
   private readonly client: AutoNATv2Client
@@ -28,18 +27,6 @@ export class AutoNATv2Service extends TypedEventEmitter<AutoNATv2Events> impleme
       dialRequestProtocol,
       dialBackProtocol
     })
-  }
-
-  get verifying (): Multiaddr[] {
-    return this.client.verifying
-  }
-
-  get reachable (): Multiaddr[] {
-    return this.client.reachable
-  }
-
-  get unreachable (): Multiaddr[] {
-    return this.client.unreachable
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/autonat-v2'

@@ -130,24 +130,6 @@ export class AutoNATv2Client implements Startable {
     this.nonces = new Set()
   }
 
-  get verifying (): Multiaddr[] {
-    return [...this.verdicts.values()]
-      .filter(v => v.state === 'verifying')
-      .map(v => v.addr)
-  }
-
-  get reachable (): Multiaddr[] {
-    return [...this.verdicts.values()]
-      .filter(v => v.state === 'reachable')
-      .map(v => v.addr)
-  }
-
-  get unreachable (): Multiaddr[] {
-    return [...this.verdicts.values()]
-      .filter(v => v.state === 'unreachable')
-      .map(v => v.addr)
-  }
-
   readonly [Symbol.toStringTag] = '@libp2p/autonat-v2'
 
   readonly [serviceCapabilities]: string[] = [
