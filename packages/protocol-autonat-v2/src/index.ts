@@ -20,21 +20,63 @@
  *   }
  * })
  * ```
+ *
+ * Subscribe to per-address reachability changes as they are probed:
+ *
+ * ```typescript
+ * node.services.autoNAT.addEventListener('address:reachable', (evt) => {
+ *   console.info(evt.detail.addr, 'is externally dialable')
+ * })
+ * ```
  */
 
 import { AutoNATv2Service } from './autonat.ts'
 import type { ComponentLogger, Metrics, PeerStore } from '@libp2p/interface'
-import type { AddressManager, ConnectionManager, RandomWalk, Registrar } from '@libp2p/interface-internal'
+import type { AddressManager, AddressType, ConnectionManager, RandomWalk, Registrar } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventEmitter } from 'main-event'
 
 export interface AddressReachabilityChange {
-  addr: Multiaddr
+  /**
+   * The address a probe result relates to
+   */
+  readonly addr: Multiaddr
+
+  /**
+   * The type of address being probed (e.g. observed or transport)
+   */
+  readonly type: AddressType
+
+  /**
+   * How many peers have successfully dialled this address so far this round
+   */
+  readonly success: number
+
+  /**
+   * How many peers have failed to dial this address so far this round
+   */
+  readonly failure: number
 }
 
 export interface AutoNATv2Events {
+  /**
+   * Emitted as each peer contributes a dial result for an address, carrying the
+   * running success/failure tally for the current round. A verdict
+   * (reachable/unreachable) is not guaranteed to follow.
+   */
   'address:verifying': CustomEvent<AddressReachabilityChange>
+
+  /**
+   * An address was confirmed to be externally dialable. Carries the tally for
+   * the current round, which is zero when an address is re-affirmed under
+   * connection pressure without probing.
+   */
   'address:reachable': CustomEvent<AddressReachabilityChange>
+
+  /**
+   * An address was confirmed not to be externally dialable, carrying the tally
+   * for the round that reached the failure threshold.
+   */
   'address:unreachable': CustomEvent<AddressReachabilityChange>
 }
 

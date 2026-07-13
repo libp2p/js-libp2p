@@ -6,7 +6,7 @@ import { setMaxListeners } from 'main-event'
 import { DEFAULT_CONNECTION_THRESHOLD, DIAL_DATA_CHUNK_SIZE, MAX_DIAL_DATA_BYTES, MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, TIMEOUT } from './constants.ts'
 import { DialBack, DialBackResponse, DialResponse, DialStatus, Message } from './pb/index.ts'
 import { randomNumber } from './utils.ts'
-import type { AutoNATv2Components, AutoNATv2Events, AutoNATv2ServiceInit } from './index.ts'
+import type { AddressReachabilityChange, AutoNATv2Components, AutoNATv2Events, AutoNATv2ServiceInit } from './index.ts'
 import type { Logger, Connection, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { AddressType } from '@libp2p/interface-internal'
 import type { PeerSet } from '@libp2p/peer-collections'
@@ -74,11 +74,6 @@ export interface AutoNATv2ClientInit extends AutoNATv2ServiceInit {
   safeDispatchEvent: DispatchAutoNATv2Event
 }
 
-interface Verdict {
-  addr: Multiaddr
-  state: 'verifying' | 'reachable' | 'unreachable'
-}
-
 export class AutoNATv2Client implements Startable {
   private readonly components: AutoNATv2Components
   private readonly dialRequestProtocol: string
@@ -93,7 +88,6 @@ export class AutoNATv2Client implements Startable {
   private readonly log: Logger
   private topologyId?: string
   private readonly dialResults: Map<string, DialResults>
-  private readonly verdicts: Map<string, Verdict>
   private readonly findPeers: RepeatingTask
   private readonly addressFilter: Filter
   private readonly connectionThreshold: number
@@ -117,7 +111,6 @@ export class AutoNATv2Client implements Startable {
       name: 'libp2p_autonat_v2_dial_results',
       metrics: components.metrics
     })
-    this.verdicts = new Map()
     this.findPeers = repeatingTask(this.findRandomPeers.bind(this), 60_000)
     this.addressFilter = createScalableCuckooFilter(1024)
     this.queue = new PeerQueue({
@@ -183,7 +176,6 @@ export class AutoNATv2Client implements Startable {
     }
 
     this.dialResults.clear()
-    this.verdicts.clear()
     this.findPeers.stop()
     this.started = false
   }
@@ -382,28 +374,18 @@ export class AutoNATv2Client implements Startable {
 
   /**
    * Removes any multiaddr result objects created for old multiaddrs that we are
-   * no longer waiting on, and prunes verdicts for addresses no longer tracked
-   * by the AddressManager.
+   * no longer waiting on
    */
   private removeOutdatedMultiaddrResults (): void {
-    const allAddresses = this.components.addressManager.getAddressesWithMetadata()
-    const allKeys = new Set(allAddresses.map(({ multiaddr }) => multiaddr.toString()))
-    const unverifiedKeys = new Set(allAddresses
+    const unverifiedMultiaddrs = new Set(this.components.addressManager.getAddressesWithMetadata()
       .filter(({ expires }) => expires < Date.now())
       .map(({ multiaddr }) => multiaddr.toString())
     )
 
     for (const multiaddr of this.dialResults.keys()) {
-      if (!unverifiedKeys.has(multiaddr)) {
+      if (!unverifiedMultiaddrs.has(multiaddr)) {
         this.log.trace('remove results for %a', multiaddr)
         this.dialResults.delete(multiaddr)
-      }
-    }
-
-    for (const [key, verdict] of this.verdicts) {
-      if (!allKeys.has(key)) {
-        this.log.trace('verdict no longer applies for %a', verdict.addr)
-        this.verdicts.delete(key)
       }
     }
   }
@@ -455,10 +437,6 @@ export class AutoNATv2Client implements Startable {
       }
 
       return
-    }
-
-    for (const result of results) {
-      this.recordVerifying(result.multiaddr)
     }
 
     this.queue.add(async (options: AbortOptions) => {
@@ -575,6 +553,9 @@ export class AutoNATv2Client implements Startable {
         if (response.dialResponse.dialStatus === DialStatus.OK) {
           this.log.trace('%p dialed %a successfully', connection.remotePeer, results.multiaddr)
 
+          // surface progress as this new-segment peer contributes, before its
+          // result is counted
+          this.emitReachabilityEvent(results, 'verifying')
           results.success++
 
           // observed addresses require more confirmations
@@ -585,6 +566,7 @@ export class AutoNATv2Client implements Startable {
         } else if (response.dialResponse.dialStatus === DialStatus.E_DIAL_ERROR) {
           this.log.trace('%p could not dial %a', connection.remotePeer, results.multiaddr)
           // the address was not dialable (e.g. not public)
+          this.emitReachabilityEvent(results, 'verifying')
           results.failure++
         } else if (response.dialResponse.dialStatus === DialStatus.E_DIAL_BACK_ERROR) {
           this.log.trace('%p saw error while dialing %a', connection.remotePeer, results.multiaddr)
@@ -628,7 +610,7 @@ export class AutoNATv2Client implements Startable {
     // abort & remove any outstanding verification jobs for this multiaddr
     results.result = true
 
-    this.recordVerdict(results.multiaddr, 'reachable')
+    this.emitReachabilityEvent(results, 'reachable')
   }
 
   private unconfirmAddress (results: DialResults): void {
@@ -640,33 +622,18 @@ export class AutoNATv2Client implements Startable {
     // abort & remove any outstanding verification jobs for this multiaddr
     results.result = false
 
-    this.recordVerdict(results.multiaddr, 'unreachable')
+    this.emitReachabilityEvent(results, 'unreachable')
   }
 
-  private recordVerdict (addr: Multiaddr, state: 'reachable' | 'unreachable'): void {
-    const key = addr.toString()
-    const previous = this.verdicts.get(key)?.state
-
-    if (previous === state) {
-      return
-    }
-
-    this.verdicts.set(key, { addr, state })
-    this.safeDispatchEvent(`address:${state}`, { detail: { addr } })
-  }
-
-  private recordVerifying (addr: Multiaddr): void {
-    const key = addr.toString()
-
-    // First-ever probe of this address — surface as verifying. Re-probes
-    // of an address that already has a verdict stay silent: the verdicts
-    // entry persists across re-probes and only flips on an actual change.
-    if (this.verdicts.has(key)) {
-      return
-    }
-
-    this.verdicts.set(key, { addr, state: 'verifying' })
-    this.safeDispatchEvent('address:verifying', { detail: { addr } })
+  private emitReachabilityEvent (results: DialResults, state: 'verifying' | 'reachable' | 'unreachable'): void {
+    this.safeDispatchEvent<AddressReachabilityChange>(`address:${state}`, {
+      detail: {
+        addr: results.multiaddr,
+        type: results.type,
+        success: results.success,
+        failure: results.failure
+      }
+    })
   }
 
   private getNetworkSegment (ma: Multiaddr): string {
