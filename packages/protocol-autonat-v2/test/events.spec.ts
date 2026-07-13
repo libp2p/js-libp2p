@@ -24,7 +24,7 @@ const defaultInit: AutoNATv2ServiceInit = {
   protocolPrefix: 'libp2p',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
-  timeout: 100,
+  timeout: 1000,
   startupDelay: 120000,
   refreshInterval: 120000
 }
@@ -150,6 +150,10 @@ describe('autonat v2 - events', () => {
     })
   }
 
+  // Builds `count` peers each in a distinct network segment (distinct first
+  // octet via `hostBase + i`), which is what lets them count toward the
+  // success/failure thresholds. Concurrent verification cycles within one test
+  // must use non-overlapping `hostBase` values to avoid colliding segments.
   async function stubResponses (count: number, addr: Multiaddr, dialStatus: DialStatus, hostBase = 100): Promise<Connection[]> {
     const conns: Connection[] = []
     for (let i = 0; i < count; i++) {
@@ -165,7 +169,7 @@ describe('autonat v2 - events', () => {
     }
   }
 
-  function captureEvent (name: 'address:verifying' | 'address:reachable' | 'address:unreachable' | 'address:removed'): Array<CustomEvent<AddressReachabilityChange>> {
+  function captureEvent (name: 'address:verifying' | 'address:reachable' | 'address:unreachable'): Array<CustomEvent<AddressReachabilityChange>> {
     const fired: Array<CustomEvent<AddressReachabilityChange>> = []
     service.addEventListener(name, (evt: CustomEvent<AddressReachabilityChange>) => {
       fired.push(evt)
@@ -173,12 +177,13 @@ describe('autonat v2 - events', () => {
     return fired
   }
 
-  function observedEntry (addr: Multiaddr, opts: { verified?: boolean, expires?: number } = {}): NodeAddress {
+  function observedEntry (addr: Multiaddr, opts: { verified?: boolean, expires?: number, lastVerified?: number } = {}): NodeAddress {
     return {
       multiaddr: addr,
       verified: opts.verified ?? false,
       type: 'observed',
-      expires: opts.expires ?? 0
+      expires: opts.expires ?? 0,
+      lastVerified: opts.lastVerified
     }
   }
 
@@ -191,14 +196,14 @@ describe('autonat v2 - events', () => {
     }
   }
 
-  it('emits address:verifying when probe starts for a new address', async () => {
+  it('emits address:verifying when a probe starts for a new address', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
     const verifying = captureEvent('address:verifying')
 
-    // Drive a single connection to trigger getUnverifiedMultiaddrs without
-    // pushing to a verdict (1 OK is below the 4-success threshold for observed).
+    // Drive a single connection to start a probe without pushing to a verdict
+    // (1 OK is below the 4-success threshold for an observed address).
     await driveConnections(await stubResponses(1, addr, DialStatus.OK))
 
     await pRetry(() => {
@@ -206,9 +211,89 @@ describe('autonat v2 - events', () => {
     })
 
     expect(verifying[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(service.verifying.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
-    expect(service.reachable).to.deep.equal([])
-    expect(service.unreachable).to.deep.equal([])
+  })
+
+  it('emits address:verifying for each probing peer, carrying progress', async () => {
+    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
+
+    const verifying = captureEvent('address:verifying')
+
+    // Three peers from distinct network segments probe the same address (3
+    // successes is below the 4-success threshold for observed, so no verdict).
+    await driveConnections(await stubResponses(3, addr, DialStatus.OK))
+    await pRetry(() => { expect(verifying).to.have.lengthOf(3) })
+
+    // Each event carries the running tally. Exact values depend on async job
+    // interleaving, so assert the shape (monotonic non-decrease, bounded)
+    // rather than the exact sequence.
+    const successes = verifying.map(e => e.detail.success)
+    expect(successes[0]).to.equal(0)
+    expect(successes).to.deep.equal([...successes].sort((a, b) => a - b))
+    expect(Math.max(...successes)).to.be.lessThan(3)
+    expect(verifying.every(e => e.detail.addr.toString() === addr.toString())).to.be.true()
+  })
+
+  it('does not re-emit address:verifying for a peer in an already-probed segment', async () => {
+    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
+
+    const verifying = captureEvent('address:verifying')
+
+    // first peer in segment 100 contributes and records the segment
+    await driveConnections([await makeResponseConnection('100.1.1.1', addr, DialStatus.OK)])
+    await pRetry(() => { expect(verifying).to.have.lengthOf(1) })
+
+    // a second peer in the same segment is skipped, so it emits nothing
+    await driveConnections([await makeResponseConnection('100.2.2.2', addr, DialStatus.OK)])
+    await delay(100)
+
+    expect(verifying).to.have.lengthOf(1)
+  })
+
+  it('emits nothing for an inconclusive dial-back error', async () => {
+    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
+
+    const verifying = captureEvent('address:verifying')
+    const reachable = captureEvent('address:reachable')
+    const unreachable = captureEvent('address:unreachable')
+
+    // E_DIAL_BACK_ERROR advances neither counter, so it is inconclusive: no
+    // event and no verdict
+    await driveConnections(await stubResponses(3, addr, DialStatus.E_DIAL_BACK_ERROR))
+    await delay(100)
+
+    expect(verifying).to.have.lengthOf(0)
+    expect(reachable).to.have.lengthOf(0)
+    expect(unreachable).to.have.lengthOf(0)
+  })
+
+  it('emits address:verifying per address when one peer probes several', async () => {
+    const addr1 = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    const addr2 = multiaddr('/ip4/125.125.125.125/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr1), observedEntry(addr2)])
+
+    const verifying = captureEvent('address:verifying')
+
+    // a single peer verifies both pending addresses in one exchange
+    const connection = await stubPeerResponse({
+      host: '200.200.200.200',
+      messages: {
+        [addr1.toString()]: {
+          dialResponse: { addrIdx: 0, status: DialResponse.ResponseStatus.OK, dialStatus: DialStatus.OK }
+        },
+        [addr2.toString()]: {
+          dialResponse: { addrIdx: 1, status: DialResponse.ResponseStatus.OK, dialStatus: DialStatus.OK }
+        }
+      }
+    })
+    await service.client.verifyExternalAddresses(connection)
+
+    await pRetry(() => { expect(verifying).to.have.lengthOf(2) })
+    expect(verifying.map(e => e.detail.addr.toString()).sort()).to.deep.equal(
+      [addr1.toString(), addr2.toString()].sort()
+    )
   })
 
   it('does not emit address:verifying when verification is skipped due to connection capacity', async () => {
@@ -223,64 +308,51 @@ describe('autonat v2 - events', () => {
     await delay(100)
 
     expect(verifying).to.have.lengthOf(0)
-    expect(service.verifying).to.deep.equal([])
     expect((connection.newStream as sinon.SinonStub).called).to.be.false()
   })
 
-  it('moves address out of service.verifying once a verdict is reached', async () => {
+  it('emits address:reachable without address:verifying when re-affirming a verified address under connection capacity', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
+    // previously verified (lastVerified set) and now up for re-verification
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr, { lastVerified: Date.now() - 1000 })])
+    sinon.stub(connectionManager, 'getConnections').returns(new Array(90).fill(null))
 
     const verifying = captureEvent('address:verifying')
     const reachable = captureEvent('address:reachable')
 
-    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
+    // Near the connection limit we skip the actual probe and re-affirm the
+    // prior verdict, so address:reachable fires with no preceding verifying
+    // and without opening a stream.
+    const connection = await makeResponseConnection('124.124.124.124', addr, DialStatus.OK)
+    await service.client.verifyExternalAddresses(connection)
+    await delay(100)
 
-    await pRetry(() => {
-      expect(reachable).to.have.lengthOf(1)
-    })
-
-    expect(verifying).to.have.lengthOf(1)
-    expect(service.verifying).to.deep.equal([])
-    expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
-  })
-
-  it('does not re-emit address:verifying on re-probe of a reachable address', async () => {
-    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
-
-    const verifying = captureEvent('address:verifying')
-    const reachable = captureEvent('address:reachable')
-
-    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
-    await pRetry(() => { expect(reachable).to.have.lengthOf(1) })
-    expect(verifying).to.have.lengthOf(1)
-
-    // TTL lapses; re-probe runs.
-    addressManager.getAddressesWithMetadata.returns([observedEntry(addr, { verified: true, expires: Date.now() - 1000 })])
-    await driveConnections(await stubResponses(4, addr, DialStatus.OK, 200))
-    await delay(200)
-
-    // verifying should still be 1 — no re-emission for a reachable address.
-    expect(verifying).to.have.lengthOf(1)
-    expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
-  })
-
-  it('emits address:reachable on first verdict for an observed address', async () => {
-    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
-
-    const reachable = captureEvent('address:reachable')
-
-    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
-
-    await pRetry(() => {
-      expect(reachable).to.have.lengthOf(1)
-    })
-
+    expect(reachable).to.have.lengthOf(1)
     expect(reachable[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
-    expect(service.unreachable).to.deep.equal([])
+    // re-affirmed without probing, so the tally is zero
+    expect(reachable[0].detail.success).to.equal(0)
+    expect(reachable[0].detail.failure).to.equal(0)
+    expect(verifying).to.have.lengthOf(0)
+    expect((connection.newStream as sinon.SinonStub).called).to.be.false()
+  })
+
+  it('emits address:verifying then address:reachable when an observed address reaches a verdict', async () => {
+    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
+
+    const verifying = captureEvent('address:verifying')
+    const reachable = captureEvent('address:reachable')
+
+    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
+
+    await pRetry(() => {
+      expect(reachable).to.have.lengthOf(1)
+    })
+
+    expect(verifying).to.have.lengthOf(4)
+    expect(reachable[0].detail.addr.toString()).to.equal(addr.toString())
+    expect(reachable[0].detail.type).to.equal('observed')
+    expect(reachable[0].detail.success).to.equal(4)
   })
 
   it('emits address:reachable on first verdict for a non-observed address (1 success)', async () => {
@@ -296,7 +368,6 @@ describe('autonat v2 - events', () => {
     })
 
     expect(reachable[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
   })
 
   it('emits address:unreachable on first verdict for an observed address (8 failures)', async () => {
@@ -312,176 +383,88 @@ describe('autonat v2 - events', () => {
     })
 
     expect(unreachable[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(service.unreachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
-    expect(service.reachable).to.deep.equal([])
+    expect(unreachable[0].detail.failure).to.equal(8)
   })
 
-  it('does not re-emit address:reachable on re-confirmation', async () => {
+  it('re-emits address:verifying and address:reachable when a reachable address is re-verified', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
+    const verifying = captureEvent('address:verifying')
     const reachable = captureEvent('address:reachable')
 
     await driveConnections(await stubResponses(4, addr, DialStatus.OK))
     await pRetry(() => { expect(reachable).to.have.lengthOf(1) })
+    const afterFirstCycle = verifying.length
 
-    // Simulate the address being marked as needing re-verification (TTL lapsed)
-    // and re-probe with another set of successful responses.
+    // TTL lapses; the address becomes eligible for re-verification.
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr, { verified: true, expires: Date.now() - 1000 })])
-
     await driveConnections(await stubResponses(4, addr, DialStatus.OK, 200))
-    await delay(200)
 
-    expect(reachable).to.have.lengthOf(1)
+    // The new cycle re-emits verifying and produces a fresh reachable verdict.
+    await pRetry(() => {
+      expect(reachable).to.have.lengthOf(2)
+    })
+    expect(verifying.length).to.be.greaterThan(afterFirstCycle)
   })
 
-  it('flips REACHABLE → UNREACHABLE and emits address:unreachable', async () => {
+  it('flips reachable to unreachable, re-emitting address:verifying for the new cycle', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
+    const verifying = captureEvent('address:verifying')
     const reachable = captureEvent('address:reachable')
     const unreachable = captureEvent('address:unreachable')
 
     await driveConnections(await stubResponses(4, addr, DialStatus.OK))
     await pRetry(() => { expect(reachable).to.have.lengthOf(1) })
+    const afterFirstCycle = verifying.length
 
     // TTL lapses; re-probe fails 8 times.
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr, { verified: true, expires: Date.now() - 1000 })])
-
     await driveConnections(await stubResponses(8, addr, DialStatus.E_DIAL_ERROR, 200))
 
     await pRetry(() => {
       expect(unreachable).to.have.lengthOf(1)
     })
 
+    expect(verifying.length).to.be.greaterThan(afterFirstCycle)
+    expect(reachable).to.have.lengthOf(1)
     expect(unreachable[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(service.reachable).to.deep.equal([])
-    expect(service.unreachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
   })
 
-  it('flips UNREACHABLE → REACHABLE for non-observed and emits address:reachable', async () => {
+  it('flips unreachable to reachable for a non-observed address, re-emitting address:verifying', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([transportEntry(addr)])
 
+    const verifying = captureEvent('address:verifying')
     const reachable = captureEvent('address:reachable')
     const unreachable = captureEvent('address:unreachable')
 
-    // 8 failures → unreachable
+    // 8 failures -> unreachable
     await driveConnections(await stubResponses(8, addr, DialStatus.E_DIAL_ERROR))
     await pRetry(() => { expect(unreachable).to.have.lengthOf(1) })
+    const afterFirstCycle = verifying.length
 
     // retry TTL lapses; re-probe succeeds (1 success for non-observed)
     addressManager.getAddressesWithMetadata.returns([transportEntry(addr, { expires: Date.now() - 1000 })])
-
     await driveConnections(await stubResponses(1, addr, DialStatus.OK, 200))
 
     await pRetry(() => {
       expect(reachable).to.have.lengthOf(1)
     })
 
+    expect(verifying.length).to.be.greaterThan(afterFirstCycle)
+    expect(unreachable).to.have.lengthOf(1)
     expect(reachable[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(service.unreachable).to.deep.equal([])
-    expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
   })
 
-  it('emits address:removed on the next reconcile after observed UNREACHABLE (dual-fire)', async () => {
-    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
-
-    const unreachable = captureEvent('address:unreachable')
-    const removed = captureEvent('address:removed')
-
-    await driveConnections(await stubResponses(8, addr, DialStatus.E_DIAL_ERROR))
-    await pRetry(() => { expect(unreachable).to.have.lengthOf(1) })
-
-    expect(removed).to.have.lengthOf(0)
-
-    // The hard-delete from observed.remove would cause the address to disappear
-    // from getAddressesWithMetadata. Simulate that.
-    addressManager.getAddressesWithMetadata.returns([])
-
-    // Trigger a reconcile pass via verifyExternalAddresses (cleanup runs at the
-    // start of that method). Use a fresh peer connection.
-    const triggerConn = await stubPeerResponse({
-      host: '200.0.0.1',
-      messages: {}
-    })
-    await service.client.verifyExternalAddresses(triggerConn)
-    await delay(100)
-
-    await pRetry(() => {
-      expect(removed).to.have.lengthOf(1)
-    })
-
-    expect(removed[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(service.unreachable).to.deep.equal([])
-  })
-
-  it('does not emit address:removed for transport UNREACHABLE (entry stays in AddressManager)', async () => {
-    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([transportEntry(addr)])
-
-    const unreachable = captureEvent('address:unreachable')
-    const removed = captureEvent('address:removed')
-
-    await driveConnections(await stubResponses(8, addr, DialStatus.E_DIAL_ERROR))
-    await pRetry(() => { expect(unreachable).to.have.lengthOf(1) })
-
-    // Transport entry stays in AddressManager (verified: false, retry TTL).
-    addressManager.getAddressesWithMetadata.returns([transportEntry(addr, { verified: false, expires: Date.now() + 60_000 })])
-
-    // Trigger a reconcile pass.
-    const triggerConn = await stubPeerResponse({
-      host: '200.0.0.1',
-      messages: {}
-    })
-    await service.client.verifyExternalAddresses(triggerConn)
-    await delay(100)
-
-    expect(removed).to.have.lengthOf(0)
-    expect(service.unreachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
-  })
-
-  it('emits address:removed without a prior unreachable when a reachable address disappears', async () => {
-    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
-
+  it('does not emit any event when an address disappears before being probed', async () => {
+    const verifying = captureEvent('address:verifying')
     const reachable = captureEvent('address:reachable')
     const unreachable = captureEvent('address:unreachable')
-    const removed = captureEvent('address:removed')
 
-    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
-    await pRetry(() => { expect(reachable).to.have.lengthOf(1) })
-
-    // Address is removed for an unrelated reason (relay drop, transport
-    // shutdown, etc.) - no AutoNAT v2 unreachable verdict involved.
-    addressManager.getAddressesWithMetadata.returns([])
-
-    const triggerConn = await stubPeerResponse({
-      host: '200.0.0.1',
-      messages: {}
-    })
-    await service.client.verifyExternalAddresses(triggerConn)
-    await delay(100)
-
-    await pRetry(() => {
-      expect(removed).to.have.lengthOf(1)
-    })
-
-    expect(removed[0].detail.addr.toString()).to.equal(addr.toString())
-    expect(unreachable).to.have.lengthOf(0)
-    expect(service.reachable).to.deep.equal([])
-  })
-
-  it('does not emit any event when a new address disappears before being probed', async () => {
-    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
-
-    const reachable = captureEvent('address:reachable')
-    const unreachable = captureEvent('address:unreachable')
-    const removed = captureEvent('address:removed')
-
-    // The address is removed before any verdict is reached.
+    // No addresses are tracked when the probe runs.
     addressManager.getAddressesWithMetadata.returns([])
 
     const triggerConn = await stubPeerResponse({
@@ -491,26 +474,59 @@ describe('autonat v2 - events', () => {
     await service.client.verifyExternalAddresses(triggerConn)
     await delay(200)
 
+    expect(verifying).to.have.lengthOf(0)
     expect(reachable).to.have.lengthOf(0)
     expect(unreachable).to.have.lengthOf(0)
-    expect(removed).to.have.lengthOf(0)
   })
 
-  it('clears verdicts state on stop without emitting events', async () => {
+  it('does not emit when a reachable address disappears', async () => {
     const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
-    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
-    await pRetry(() => {
-      expect(service.reachable.map((m: Multiaddr) => m.toString())).to.deep.equal([addr.toString()])
-    })
+    const verifying = captureEvent('address:verifying')
+    const reachable = captureEvent('address:reachable')
+    const unreachable = captureEvent('address:unreachable')
 
-    const removed = captureEvent('address:removed')
+    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
+    await pRetry(() => { expect(reachable).to.have.lengthOf(1) })
+
+    const verifyingCount = verifying.length
+
+    // The address is removed for an unrelated reason (relay drop, transport
+    // shutdown, etc.). There is no removed event, so the disappearance is
+    // silent; in particular it must not surface as a spurious unreachable.
+    addressManager.getAddressesWithMetadata.returns([])
+
+    const triggerConn = await stubPeerResponse({
+      host: '200.0.0.1',
+      messages: {}
+    })
+    await service.client.verifyExternalAddresses(triggerConn)
+    await delay(100)
+
+    // Nothing new is emitted for the disappearance.
+    expect(reachable).to.have.lengthOf(1)
+    expect(unreachable).to.have.lengthOf(0)
+    expect(verifying).to.have.lengthOf(verifyingCount)
+  })
+
+  it('does not emit events once stopped', async () => {
+    const addr = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([observedEntry(addr)])
 
     await stop(service)
 
-    expect(removed).to.have.lengthOf(0)
-    expect(service.reachable).to.deep.equal([])
-    expect(service.unreachable).to.deep.equal([])
+    const verifying = captureEvent('address:verifying')
+    const reachable = captureEvent('address:reachable')
+    const unreachable = captureEvent('address:unreachable')
+
+    // verifyExternalAddresses is a no-op once stopped, so driving probes emits
+    // nothing
+    await driveConnections(await stubResponses(4, addr, DialStatus.OK))
+    await delay(100)
+
+    expect(verifying).to.have.lengthOf(0)
+    expect(reachable).to.have.lengthOf(0)
+    expect(unreachable).to.have.lengthOf(0)
   })
 })
