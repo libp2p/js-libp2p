@@ -19,11 +19,8 @@
  *     autoNAT: autoNATv2()
  *   }
  * })
- * ```
  *
- * Subscribe to per-address reachability changes as they are probed:
- *
- * ```typescript
+ * // observe per-address reachability changes as they are probed
  * node.services.autoNAT.addEventListener('address:reachable', (evt) => {
  *   console.info(evt.detail.addr, 'is externally dialable')
  * })
