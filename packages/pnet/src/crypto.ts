@@ -43,6 +43,11 @@ export class BoxMessageStream extends AbstractMultiaddrConnection {
       }
     })
 
+    // resume sending when the underlying connection can accept more data
+    this.maConn.addEventListener('drain', () => {
+      this.onMuxerDrain()
+    })
+
     this.maConn.addEventListener('close', (evt) => {
       if (evt.error != null) {
         if (evt.local) {

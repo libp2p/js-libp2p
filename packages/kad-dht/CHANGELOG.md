@@ -106,6 +106,32 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.3.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.3...kad-dht-v16.3.4) (2026-07-07)
+
+
+### Bug Fixes
+
+* **kad-dht:** only keep peers that responded in getClosestPeers ([#3537](https://github.com/libp2p/js-libp2p/issues/3537)) ([47a51e3](https://github.com/libp2p/js-libp2p/commit/47a51e3d1e0c508461b4bca1825b42e7397b9e7c))
+* **kad-dht:** run the periodic routing table refresh ([#3538](https://github.com/libp2p/js-libp2p/issues/3538)) ([d4dad9b](https://github.com/libp2p/js-libp2p/commit/d4dad9bf53f6e50012499837fb6db213d2022efd))
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/interface-internal bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/peer-collections bumped from ^7.0.22 to ^7.0.23
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/ping bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/record bumped from ^4.0.14 to ^4.0.15
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/peer-store bumped from ^12.0.22 to ^12.0.23
+
 ## [16.3.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.2...kad-dht-v16.3.3) (2026-06-13)
 
 

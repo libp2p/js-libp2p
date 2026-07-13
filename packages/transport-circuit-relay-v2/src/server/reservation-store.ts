@@ -66,13 +66,16 @@ export class ReservationStore {
         limit: checkedLimit,
         signal: retimeableSignal(this.reservationTtl)
       }
+
+      // only register the abort listener when a new signal is created:
+      // refreshing an existing reservation reuses the same signal, so attaching
+      // a listener on every refresh would leak one listener per refresh
+      reservation.signal.addEventListener('abort', () => {
+        this.reservations.delete(peer)
+      })
     }
 
     this.reservations.set(peer, reservation)
-
-    reservation.signal.addEventListener('abort', () => {
-      this.reservations.delete(peer)
-    })
 
     // return expiry time in seconds
     return { status: Status.OK, expire: Math.round(expiry.getTime() / 1000) }

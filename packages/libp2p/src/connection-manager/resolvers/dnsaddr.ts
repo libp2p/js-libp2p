@@ -1,7 +1,7 @@
 import { dns, RecordType } from '@multiformats/dns'
 import { multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrResolver, MultiaddrResolveOptions } from '@libp2p/interface'
-import type { DNS } from '@multiformats/dns'
+import type { DNS, DNSResponse } from '@multiformats/dns'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 class DNSAddrResolver implements MultiaddrResolver {
@@ -21,12 +21,28 @@ class DNSAddrResolver implements MultiaddrResolver {
     }
 
     const resolver = this.getDNS(options)
-    const result = await resolver.query(`_dnsaddr.${hostname}`, {
-      signal: options?.signal,
-      types: [
-        RecordType.TXT
-      ]
-    })
+
+    let result: DNSResponse
+
+    try {
+      result = await resolver.query(`_dnsaddr.${hostname}`, {
+        signal: options?.signal,
+        types: [
+          RecordType.TXT
+        ]
+      })
+    } catch (err: any) {
+      const noAnswers = err.name === 'DNSQueryFailedError' &&
+        Array.isArray(err.errors) &&
+        err.errors.length > 0 &&
+        err.errors.every((e: Error) => e.name === 'EmptyDNSAnswerError')
+
+      if (noAnswers) {
+        return []
+      }
+
+      throw err
+    }
 
     const peerId = ma.getComponents()
       .find(component => component.name === 'p2p')

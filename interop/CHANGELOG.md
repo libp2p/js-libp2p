@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.32](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.31...transport-interop-libp2p-main-v1.0.32) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.7 to ^4.2.8
+    * @libp2p/identify bumped from ^4.1.8 to ^4.1.9
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/mplex bumped from ^12.0.25 to ^12.0.26
+    * @libp2p/ping bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/tcp bumped from ^11.0.22 to ^11.0.23
+    * @libp2p/tls bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/webrtc bumped from ^6.0.25 to ^6.0.26
+    * @libp2p/websockets bumped from ^10.1.15 to ^10.1.16
+    * @libp2p/webtransport bumped from ^6.0.30 to ^6.0.31
+    * libp2p bumped from ^3.3.4 to ^3.3.5
+
 ## [1.0.31](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.30...transport-interop-libp2p-main-v1.0.31) (2026-06-13)
 
 
