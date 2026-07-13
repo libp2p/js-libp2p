@@ -44,6 +44,14 @@ const node = await createLibp2p({
 })
 ```
 
+Subscribe to per-address reachability changes as they are probed:
+
+```typescript
+node.services.autoNAT.addEventListener('address:reachable', (evt) => {
+  console.info(evt.detail.addr, 'is externally dialable')
+})
+```
+
 # Install
 
 ```console
