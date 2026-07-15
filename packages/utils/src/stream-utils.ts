@@ -8,6 +8,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { UnexpectedEOFError } from './errors.ts'
 import type { MessageStream, MultiaddrConnection, Stream, AbortOptions } from '@libp2p/interface'
 import type { Duplex, Source, Transform, Sink } from 'it-stream-types'
+import type { DecodeOptions } from 'protons-runtime'
 
 const DEFAULT_MAX_BUFFER_SIZE = 4_194_304
 
@@ -378,7 +379,7 @@ export function lpStream <T extends MessageStream> (stream: T, opts: Partial<Len
  * A protobuf decoder - takes a byte array and returns an object
  */
 export interface ProtobufDecoder<T> {
-  (data: Uint8Array | Uint8ArrayList): T
+  (data: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<T>): T
 }
 
 /**
@@ -395,7 +396,7 @@ export interface ProtobufStream<S extends MessageStream = MessageStream> {
   /**
    * Read the next length-prefixed byte array from the stream and decode it as the passed protobuf format
    */
-  read<T>(proto: { decode: ProtobufDecoder<T> }, options?: AbortOptions): Promise<T>
+  read<T>(proto: { decode: ProtobufDecoder<T> }, options?: AbortOptions & DecodeOptions<T>): Promise<T>
 
   /**
    * Encode the passed object as a protobuf message and write it's length-prefixed bytes to the stream
@@ -425,7 +426,7 @@ export interface ProtobufMessageStream <T, S extends MessageStream = MessageStre
   /**
    * Read a message from the stream
    */
-  read(options?: AbortOptions): Promise<T>
+  read(options?: AbortOptions & DecodeOptions<T>): Promise<T>
 
   /**
    * Write a message to the stream
@@ -451,11 +452,11 @@ export function pbStream <T extends MessageStream = Stream> (stream: T, opts?: P
   const lp = lpStream(stream, opts)
 
   const pbStream: ProtobufStream<T> = {
-    read: async (proto, options?: AbortOptions) => {
+    read: async (proto, options?) => {
       // readLP, decode
       const value = await lp.read(options)
 
-      return proto.decode(value)
+      return proto.decode(value, options)
     },
     write: async (message, proto, options?: AbortOptions) => {
       // encode, writeLP
