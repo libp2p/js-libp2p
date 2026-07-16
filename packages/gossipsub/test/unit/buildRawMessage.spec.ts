@@ -3,6 +3,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { StrictSign } from '../../src/index.ts'
+import { ValidateError } from '../../src/types.ts'
 import { buildRawMessage, validateToRawMessage } from '../../src/utils/buildRawMessage.ts'
 import { getPublishConfigFromPeerId } from '../../src/utils/publishConfig.ts'
 import type { PrivateKey } from '@libp2p/interface'
@@ -64,7 +65,7 @@ describe('buildRawMessage', () => {
       expect(raw.from).to.deep.equal(victim.toMultihash().bytes)
 
       const result = await validateToRawMessage(StrictSign, raw)
-      expect(result.valid).to.equal(false)
+      expect(result).to.deep.equal({ valid: false, error: ValidateError.InvalidPeerId })
     })
   })
 })
