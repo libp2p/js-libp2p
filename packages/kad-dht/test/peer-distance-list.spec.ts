@@ -108,4 +108,47 @@ describe('PeerDistanceList', () => {
       expect(closer).to.be.eql(false)
     })
   })
+
+  describe('canAddKadId', () => {
+    // distance to the key (= p1): p1 < p4 < p3 < p6 < p2 (p7 equals p2)
+    it('returns true when the list is under capacity', async () => {
+      const pdl = new PeerDistanceList(key, 100)
+      await pdl.add(p1)
+      await pdl.add(p2)
+
+      // p7 is as far as the current furthest (p2), but there is spare capacity
+      const kadId = await kadUtils.convertPeerId(p7.id)
+      expect(pdl.canAddKadId(kadId)).to.be.true()
+    })
+
+    it('returns true at capacity for a closer peer', async () => {
+      const pdl = new PeerDistanceList(key, 2)
+      await pdl.add(p3)
+      await pdl.add(p2)
+
+      // p6 sits between p3 and the furthest (p2), so it would enter the list
+      const kadId = await kadUtils.convertPeerId(p6.id)
+      expect(pdl.canAddKadId(kadId)).to.be.true()
+    })
+
+    it('returns false at capacity for a peer equal to the furthest', async () => {
+      const pdl = new PeerDistanceList(key, 2)
+      await pdl.add(p3)
+      await pdl.add(p2)
+
+      // p7 is the same distance as the furthest (p2) - equal is not closer
+      const kadId = await kadUtils.convertPeerId(p7.id)
+      expect(pdl.canAddKadId(kadId)).to.be.false()
+    })
+
+    it('returns false at capacity for a farther peer', async () => {
+      const pdl = new PeerDistanceList(key, 2)
+      await pdl.add(p1)
+      await pdl.add(p4)
+
+      // p6 is farther than the furthest (p4)
+      const kadId = await kadUtils.convertPeerId(p6.id)
+      expect(pdl.canAddKadId(kadId)).to.be.false()
+    })
+  })
 })
