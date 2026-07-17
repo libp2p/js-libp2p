@@ -19,10 +19,11 @@ import type { Connection, PeerId, Stream } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
-// small limits so the crafted frames stay tiny
+// small limits so the crafted frames stay tiny. the two caps use distinct
+// values so a transposed subscriptions/messages mapping cannot pass the tests
 const limits = createRPCDecodeLimits({
   maxSubscriptions: 4,
-  maxMessages: 4
+  maxMessages: 2
 })
 
 function subscriptions (n: number): RPC {
@@ -46,11 +47,15 @@ describe('decode rpc limits', () => {
     })
 
     it('rejects an RPC with more messages than the limit', () => {
-      expect(() => RPC.decode(RPC.encode(messages(5)), { limits })).to.throw(MaxLengthError)
+      expect(() => RPC.decode(RPC.encode(messages(3)), { limits })).to.throw(MaxLengthError)
     })
 
-    it('accepts an RPC within the limits', () => {
+    it('accepts subscriptions at the limit', () => {
       expect(() => RPC.decode(RPC.encode(subscriptions(4)), { limits })).to.not.throw()
+    })
+
+    it('accepts messages at the limit', () => {
+      expect(() => RPC.decode(RPC.encode(messages(2)), { limits })).to.not.throw()
     })
 
     it('skips an unknown control block (field 3) instead of decoding it', () => {
@@ -138,8 +143,11 @@ describe('floodsub decode-limits integration', () => {
     const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const [outbound, inbound] = await streamPair()
 
-    let dispatched = 0
-    pubsub.addEventListener('message', () => { dispatched++ })
+    // subscription-change is the honest signal that the frame was decoded: it
+    // fires from processRpc, and unlike pubsub.topics it survives _removePeer's
+    // topic cleanup, so it still reads as non-zero after the peer is torn down
+    let subChanges = 0
+    pubsub.addEventListener('subscription-change', () => { subChanges++ })
 
     const connection = stubInterface<Connection>({ remotePeer })
     ;(pubsub as unknown as { _onIncomingStream(stream: Stream, connection: Connection): void })
@@ -151,12 +159,15 @@ describe('floodsub decode-limits integration', () => {
       subscriptions: Array.from({ length: 5001 }, (_, i) => ({ subscribe: true, topic: `t${i}` })),
       messages: []
     }
+    // the outbound stream is intentionally left open: the only thing that can
+    // tear the peer down here is the decode limit firing, not an EOF from close
     outbound.send(lp.encode.single(RPC.encode(oversized)))
-    await outbound.close()
 
     // the over-limit frame is rejected at decode and the peer is torn down,
     // not left half-open with a dead inbound stream
     await pWaitFor(() => !pubsub.getPeers().some(p => p.equals(remotePeer)))
-    expect(dispatched, 'over-limit frame was dispatched').to.equal(0)
+    // decode threw before processRpc ran, so none of the 5001 subscriptions
+    // were processed
+    expect(subChanges, 'over-limit frame was decoded and its subscriptions processed').to.equal(0)
   })
 })

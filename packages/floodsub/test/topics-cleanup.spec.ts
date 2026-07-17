@@ -70,6 +70,38 @@ describe('topics cleanup', () => {
     expect(pubsub.topics.has('t1'), 'empty topic set left behind after peer removal').to.be.false()
   })
 
+  it('keeps the topic when a peer is removed but another remains subscribed', async () => {
+    const peerA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peerB = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    pubsub.peers.set(peerA, new PeerStreams(peerA))
+    pubsub.peers.set(peerB, new PeerStreams(peerB))
+    pubsub.processRpcSubOpt(peerA, { subscribe: true, topic: 't1' })
+    pubsub.processRpcSubOpt(peerB, { subscribe: true, topic: 't1' })
+    expect(pubsub.topics.get('t1')?.size).to.equal(2)
+
+    ;(pubsub as unknown as { _removePeer(peerId: PeerId): void })._removePeer(peerA)
+
+    // removing one subscriber must not wipe the topic for the others
+    expect(pubsub.topics.has('t1'), 'topic dropped while another peer still subscribed').to.be.true()
+    expect(pubsub.topics.get('t1')?.has(peerB), 'remaining subscriber lost').to.be.true()
+  })
+
+  it('keeps the topic when a peer unsubscribes but another remains subscribed', async () => {
+    const peerA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peerB = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    pubsub.processRpcSubOpt(peerA, { subscribe: true, topic: 't1' })
+    pubsub.processRpcSubOpt(peerB, { subscribe: true, topic: 't1' })
+    expect(pubsub.topics.get('t1')?.size).to.equal(2)
+
+    pubsub.processRpcSubOpt(peerA, { subscribe: false, topic: 't1' })
+
+    // one peer unsubscribing must not wipe the topic for the others
+    expect(pubsub.topics.has('t1'), 'topic dropped while another peer still subscribed').to.be.true()
+    expect(pubsub.topics.get('t1')?.has(peerB), 'remaining subscriber lost').to.be.true()
+  })
+
   it('clears the topics map on stop', async () => {
     const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
