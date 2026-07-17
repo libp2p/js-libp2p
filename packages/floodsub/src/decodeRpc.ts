@@ -3,10 +3,11 @@ import type { DecodeOptions } from 'protons-runtime'
 
 /**
  * Limits applied when decoding incoming RPC messages. A single RPC frame is
- * already byte-capped by the length-prefixed stream (see `maxDataLength`), but
- * that bounds bytes, not element counts - protobuf packs many small repeated
- * entries into a few bytes. These caps bound the number of decoded elements so
- * a single frame cannot expand into millions of objects.
+ * already byte-capped by the underlying byte stream (`maxBufferSize`, which
+ * defaults to 4 MiB), but that bounds bytes, not element counts - protobuf
+ * packs many small repeated entries into a few bytes. These caps bound the
+ * number of decoded elements so a single frame cannot expand into millions of
+ * objects.
  */
 export interface DecodeRPCLimits {
   maxSubscriptions: number
