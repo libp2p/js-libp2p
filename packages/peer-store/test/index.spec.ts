@@ -321,7 +321,7 @@ describe('PersistentPeerStore', () => {
 
     it('should not expire a newly added multiaddr early', async () => {
       const peerStore = persistentPeerStore(components, {
-        maxAddressAge: 1000
+        maxAddressAge: 1500
       })
 
       await peerStore.merge(otherPeerId, {
@@ -330,8 +330,9 @@ describe('PersistentPeerStore', () => {
         ]
       })
 
-      // let the first multiaddr age, but not expire
-      await delay(800)
+      // age the first multiaddr but keep it alive, so it is still present
+      // when the second is added
+      await delay(1000)
 
       // the second multiaddr is observed now, so should outlive the first
       await peerStore.merge(otherPeerId, {
@@ -341,7 +342,7 @@ describe('PersistentPeerStore', () => {
       })
 
       // enough to expire the first multiaddr, but not the second
-      await delay(400)
+      await delay(1000)
 
       const peer = await peerStore.get(otherPeerId)
       expect(peer.addresses.map(({ multiaddr }) => multiaddr.toString())).to.deep.equal([
