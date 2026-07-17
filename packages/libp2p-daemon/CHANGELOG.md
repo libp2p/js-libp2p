@@ -4,6 +4,16 @@
 
 * update all deps ([#348](https://github.com/libp2p/js-libp2p-daemon/issues/348)) ([44bf148](https://github.com/libp2p/js-libp2p-daemon/commit/44bf148f37b9f4091dc8ed26cf343e196607ebbc))
 
+## [6.0.31](https://github.com/libp2p/js-libp2p/compare/daemon-v6.0.30...daemon-v6.0.31) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/daemon-server bumped from ^9.0.30 to ^9.0.31
+
 ## [6.0.30](https://github.com/libp2p/js-libp2p/compare/daemon-v6.0.29...daemon-v6.0.30) (2026-06-13)
 
 

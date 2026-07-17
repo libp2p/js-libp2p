@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.24](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.23...opentelemetry-metrics-v2.0.24) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+
 ## [2.0.23](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.22...opentelemetry-metrics-v2.0.23) (2026-06-13)
 
 
