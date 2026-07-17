@@ -177,7 +177,7 @@ export async function validateToRawMessage (
           sequenceNumber: BigInt(`0x${uint8ArrayToString(msg.seqno, 'base16')}`),
           topic: msg.topic,
           signature: msg.signature,
-          key: msg.key != null ? publicKeyFromProtobuf(msg.key) : publicKey
+          key: publicKey
         }
       }
     }
