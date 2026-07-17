@@ -139,8 +139,9 @@ export async function validateToRawMessage (
       let publicKey: PublicKey
       if (msg.key != null) {
         publicKey = publicKeyFromProtobuf(msg.key)
-        // TODO: Should `fromPeerId.pubKey` be optional?
-        if (fromPeerId.publicKey !== undefined && !publicKey.equals(fromPeerId.publicKey)) {
+
+        // the message key must derive to the `from` peer id
+        if (!fromPeerId.equals(publicKey.toMultihash().bytes)) {
           return { valid: false, error: ValidateError.InvalidPeerId }
         }
       } else {
@@ -176,7 +177,7 @@ export async function validateToRawMessage (
           sequenceNumber: BigInt(`0x${uint8ArrayToString(msg.seqno, 'base16')}`),
           topic: msg.topic,
           signature: msg.signature,
-          key: msg.key != null ? publicKeyFromProtobuf(msg.key) : publicKey
+          key: publicKey
         }
       }
     }
