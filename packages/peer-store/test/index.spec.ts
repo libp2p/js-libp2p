@@ -319,6 +319,37 @@ describe('PersistentPeerStore', () => {
         .with.lengthOf(0, 'did not expire multiaddrs')
     })
 
+    it('should not expire a newly added multiaddr early', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 1500
+      })
+
+      await peerStore.merge(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      // age the first multiaddr but keep it alive, so it is still present
+      // when the second is added
+      await delay(1000)
+
+      // the second multiaddr is observed now, so should outlive the first
+      await peerStore.merge(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/5678')
+        ]
+      })
+
+      // enough to expire the first multiaddr, but not the second
+      await delay(1000)
+
+      const peer = await peerStore.get(otherPeerId)
+      expect(peer.addresses.map(({ multiaddr }) => multiaddr.toString())).to.deep.equal([
+        '/ip4/123.123.123.123/tcp/5678'
+      ], 'expired a newly added multiaddr')
+    })
+
     it('should not expire self peer multiaddrs', async () => {
       const peerStore = persistentPeerStore(components, {
         maxAddressAge: 100
