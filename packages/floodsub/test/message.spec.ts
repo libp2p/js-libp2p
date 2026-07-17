@@ -5,10 +5,13 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { floodsub } from '../src/index.ts'
-import { randomSeqno } from '../src/utils.ts'
-import type { FloodSub } from '../src/index.ts'
+import { RPC } from '../src/message/rpc.ts'
+import { SignPrefix } from '../src/sign.ts'
+import { randomSeqno, toMessage, toRpcMessage } from '../src/utils.ts'
+import type { FloodSub, SignedMessage } from '../src/index.ts'
 import type { PeerId } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
@@ -110,5 +113,31 @@ describe('pubsub base messages', () => {
 
     // @ts-expect-error private method
     await expect(pubsub['validate'](peerId, message)).to.be.rejectedWith(Error, 'Signing required and no signature was present')
+  })
+
+  it('validate with StrictSign rejects a forged message whose key does not derive to the author', async () => {
+    const victim = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const attackerKey = await generateKeyPair('Ed25519')
+
+    // a message claiming the victim as author but signed with, and carrying,
+    // the attacker's key
+    // @ts-expect-error signature and key are added below
+    const forged: SignedMessage = {
+      type: 'signed',
+      from: victim,
+      data: uint8ArrayFromString('hello'),
+      topic: 'test-topic',
+      sequenceNumber: randomSeqno()
+    }
+    const bytes = uint8ArrayConcat([SignPrefix, RPC.Message.encode(toRpcMessage(forged)).subarray()])
+    forged.signature = await attackerKey.sign(bytes)
+    forged.key = attackerKey.publicKey
+
+    // decode through the wire form the way an inbound message is received
+    const received = await toMessage(toRpcMessage(forged))
+    expect(received.type).to.equal('signed')
+
+    // @ts-expect-error private method
+    await expect(pubsub['validate'](victim, received)).to.be.rejectedWith(Error, 'Invalid message signature')
   })
 })
