@@ -1,5 +1,5 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -11,7 +11,7 @@ import {
 } from '../src/sign.ts'
 import { randomSeqno, toRpcMessage } from '../src/utils.ts'
 import type { PubSubRPCMessage } from '../src/floodsub.ts'
-import type { Message } from '../src/index.ts'
+import type { Message, SignedMessage } from '../src/index.ts'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
 
 function encodeMessage (message: PubSubRPCMessage): Uint8Array {
@@ -112,5 +112,70 @@ describe('message signing', () => {
       from: peerId
     }, encodeMessage)
     expect(verified).to.eql(true)
+  })
+})
+
+describe('author key binding', () => {
+  const topic = 'test-topic'
+  const data = uint8ArrayFromString('hello')
+
+  // a message whose `from` is the victim but which is signed by, and carries
+  // the public key of, the attacker
+  async function forge (victim: PeerId, attackerKey: PrivateKey): Promise<SignedMessage> {
+    // @ts-expect-error signature and key are added below
+    const message: SignedMessage = {
+      type: 'signed',
+      from: victim,
+      data,
+      sequenceNumber: randomSeqno(),
+      topic
+    }
+    const bytes = uint8ArrayConcat([SignPrefix, encodeMessage(toRpcMessage(message)).subarray()])
+    message.signature = await attackerKey.sign(bytes)
+    message.key = attackerKey.publicKey
+    return message
+  }
+
+  it('rejects a message whose key does not derive to the Ed25519 author', async () => {
+    const victim = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const forged = await forge(victim, await generateKeyPair('Ed25519'))
+
+    await expect(verifySignature(forged, encodeMessage)).to.eventually.equal(false)
+  })
+
+  it('rejects a message whose key does not derive to the secp256k1 author', async () => {
+    const victim = peerIdFromPrivateKey(await generateKeyPair('secp256k1'))
+    const forged = await forge(victim, await generateKeyPair('Ed25519'))
+
+    await expect(verifySignature(forged, encodeMessage)).to.eventually.equal(false)
+  })
+
+  // an RSA peer id does not carry its public key, so `from.publicKey` is
+  // undefined and verification goes through the derive-to-author check rather
+  // than the authoritative-key branch that the inlined types above exercise
+  describe('peer id without an inline public key (RSA)', () => {
+    let rsaKey: PrivateKey
+    let author: PeerId
+
+    before(async () => {
+      rsaKey = await generateKeyPair('RSA', 2048)
+      // on the wire `from` is rebuilt from its multihash and carries no key
+      author = peerIdFromMultihash(peerIdFromPrivateKey(rsaKey).toMultihash())
+    })
+
+    it('accepts a message whose key derives to the author', async () => {
+      const signed = await signMessage(rsaKey, { from: author, topic, data, sequenceNumber: randomSeqno() }, encodeMessage)
+      // signMessage rebuilds `from` from the private key, so it carries the key;
+      // use the wire form so the derive-to-author check is exercised
+      signed.from = author
+
+      await expect(verifySignature(signed, encodeMessage)).to.eventually.equal(true)
+    })
+
+    it('rejects a message whose key does not derive to the author', async () => {
+      const forged = await forge(author, await generateKeyPair('Ed25519'))
+
+      await expect(verifySignature(forged, encodeMessage)).to.be.rejectedWith('Could not get the public key from the originator id')
+    })
   })
 })
