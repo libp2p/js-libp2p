@@ -68,4 +68,28 @@ describe('buildRawMessage', () => {
       expect(result).to.deep.equal({ valid: false, error: ValidateError.InvalidPeerId })
     })
   })
+
+  describe('malformed message fields', () => {
+    const topic = 'test-topic'
+    const data = uint8ArrayFromString('hello')
+
+    it('rejects a malformed key rather than throwing, so the peer is still scored', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const id = peerIdFromPrivateKey(key)
+      const { raw } = await buildRawMessage(getPublishConfigFromPeerId(StrictSign, id, key), topic, data, data)
+      raw.key = uint8ArrayFromString('not a valid protobuf key')
+
+      await expect(validateToRawMessage(StrictSign, raw)).to.eventually.deep.equal({ valid: false, error: ValidateError.InvalidPeerId })
+    })
+
+    it('rejects a malformed signature rather than throwing, so the peer is still scored', async () => {
+      const key = await generateKeyPair('Ed25519')
+      const id = peerIdFromPrivateKey(key)
+      const { raw } = await buildRawMessage(getPublishConfigFromPeerId(StrictSign, id, key), topic, data, data)
+      // a wrong-length signature makes the Ed25519 verify throw rather than return false
+      raw.signature = uint8ArrayFromString('too-short')
+
+      await expect(validateToRawMessage(StrictSign, raw)).to.eventually.deep.equal({ valid: false, error: ValidateError.InvalidSignature })
+    })
+  })
 })
