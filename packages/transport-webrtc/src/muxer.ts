@@ -30,6 +30,17 @@ export interface DataChannelMuxerFactoryComponents {
   logger: ComponentLogger
 }
 
+interface EarlyDataChannel {
+  channel: RTCDataChannel
+
+  /**
+   * Messages that arrived before the muxer adopted the channel - without
+   * buffering these they would be silently dropped as the stream's `message`
+   * listener is only added when the muxer is created
+   */
+  messages: MessageEvent[]
+}
+
 export class DataChannelMuxerFactory implements StreamMuxerFactory {
   public readonly protocol: string
 
@@ -39,7 +50,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   private readonly peerConnection: RTCPeerConnection
   private readonly metrics?: CounterGroup
   private readonly dataChannelOptions?: DataChannelOptions
-  private readonly earlyDataChannels: RTCDataChannel[]
+  private readonly earlyDataChannels: EarlyDataChannel[]
 
   constructor (init: DataChannelMuxerFactoryInit) {
     this.onEarlyDataChannel = this.onEarlyDataChannel.bind(this)
@@ -53,7 +64,19 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   }
 
   private onEarlyDataChannel (evt: RTCDataChannelEvent): void {
-    this.earlyDataChannels.push(evt.channel)
+    const early: EarlyDataChannel = {
+      channel: evt.channel,
+      messages: []
+    }
+
+    // buffer incoming messages until the muxer adopts the channel, otherwise
+    // any data sent by the remote before the connection upgrade completes is
+    // silently dropped
+    evt.channel.onmessage = (messageEvent) => {
+      early.messages.push(messageEvent)
+    }
+
+    this.earlyDataChannels.push(early)
   }
 
   createStreamMuxer (maConn: MultiaddrConnection): StreamMuxer {
@@ -74,9 +97,10 @@ export interface DataChannelMuxerInit extends DataChannelMuxerFactoryInit {
 
   /**
    * Incoming data channels that were opened by the remote before the peer
-   * connection was established
+   * connection was established, along with any messages that arrived before
+   * the muxer was created
    */
-  earlyDataChannels: RTCDataChannel[]
+  earlyDataChannels: EarlyDataChannel[]
 }
 
 export interface DataChannelMuxerComponents {
@@ -112,19 +136,19 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
 
     queueMicrotask(() => {
       if (this.status !== 'open') {
-        init.earlyDataChannels.forEach(channel => {
+        init.earlyDataChannels.forEach(({ channel }) => {
           channel.close()
         })
         return
       }
 
-      init.earlyDataChannels.forEach(channel => {
-        this.onDataChannel(channel)
+      init.earlyDataChannels.forEach(({ channel, messages }) => {
+        this.onDataChannel(channel, messages)
       })
     })
   }
 
-  private onDataChannel (channel: RTCDataChannel): void {
+  private onDataChannel (channel: RTCDataChannel, earlyMessages?: MessageEvent[]): void {
     this.log('incoming datachannel with channel id %d, protocol %s and status %s', channel.id, channel.protocol, channel.readyState)
 
     // 'init' channel is only used during connection establishment, it is
@@ -142,6 +166,13 @@ export class DataChannelMuxer extends AbstractStreamMuxer<WebRTCStream> implemen
       channel,
       direction: 'inbound',
       log: this.log
+    })
+
+    // replay any messages that arrived before the muxer was created - the
+    // stream has just attached its `message` handler so this preserves
+    // ordering with any messages that arrive later
+    earlyMessages?.forEach(messageEvent => {
+      channel.onmessage?.(messageEvent)
     })
 
     this.onRemoteStream(stream)
