@@ -16,7 +16,7 @@
 interfaces exposed by the prom-client module</p>
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">SummaryOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#agebuckets">ageBuckets</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#compresscount">compressCount</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#help">help</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#label">label</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxageseconds">maxAgeSeconds</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#percentiles">percentiles</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#pruneagedbuckets">pruneAgedBuckets</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="13441">
+<section class="tsd-panel tsd-hierarchy" data-refl="13486">
 <h4>Hierarchy (<a href="../hierarchy.html#@libp2p/interface.SummaryOptions">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="_libp2p_interface.MetricOptions.html" class="tsd-signature-type tsd-kind-interface">MetricOptions</a>
@@ -25,7 +25,7 @@ interfaces exposed by the prom-client module</p>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="_libp2p_interface.CalculatedSummaryOptions.html" class="tsd-signature-type tsd-kind-interface">CalculatedSummaryOptions</a></li></ul></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L201">packages/interface/src/metrics.ts:201</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L201">packages/interface/src/metrics.ts:201</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -50,14 +50,14 @@ interfaces exposed by the prom-client module</p>
 <div class="tsd-comment tsd-typography"><p>Configure how many buckets in the sliding window</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L215">packages/interface/src/metrics.ts:215</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L215">packages/interface/src/metrics.ts:215</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="compresscount"><code class="tsd-tag">Optional</code><span>compress<wbr/>Count</span><a href="#compresscount" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">compressCount</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Control compression of data in t-digest</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L225">packages/interface/src/metrics.ts:225</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L225">packages/interface/src/metrics.ts:225</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="help"><code class="tsd-tag">Optional</code><span>help</span><a href="#help" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">help</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -65,7 +65,7 @@ interfaces exposed by the prom-client module</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_interface.MetricOptions.html">MetricOptions</a>.<a href="_libp2p_interface.MetricOptions.html#help">help</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L16">packages/interface/src/metrics.ts:16</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L16">packages/interface/src/metrics.ts:16</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="label"><code class="tsd-tag">Optional</code><span>label</span><a href="#label" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">label</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -73,28 +73,28 @@ interfaces exposed by the prom-client module</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_interface.MetricOptions.html">MetricOptions</a>.<a href="_libp2p_interface.MetricOptions.html#label">label</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L11">packages/interface/src/metrics.ts:11</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L11">packages/interface/src/metrics.ts:11</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxageseconds"><code class="tsd-tag">Optional</code><span>max<wbr/>Age<wbr/>Seconds</span><a href="#maxageseconds" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxAgeSeconds</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>Configure how old a bucket can be before it is reset for sliding window</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L210">packages/interface/src/metrics.ts:210</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L210">packages/interface/src/metrics.ts:210</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="percentiles"><code class="tsd-tag">Optional</code><span>percentiles</span><a href="#percentiles" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">percentiles</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>Percentiles for the summary</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L205">packages/interface/src/metrics.ts:205</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L205">packages/interface/src/metrics.ts:205</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pruneagedbuckets"><code class="tsd-tag">Optional</code><span>prune<wbr/>Aged<wbr/>Buckets</span><a href="#pruneagedbuckets" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pruneAgedBuckets</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>Remove entries without any new values in the last <code>maxAgeSeconds</code></p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/metrics.ts#L220">packages/interface/src/metrics.ts:220</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/metrics.ts#L220">packages/interface/src/metrics.ts:220</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

@@ -18,7 +18,7 @@ and storing mappings between internal and external addresses.</p>
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">AddressManager</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-call-signature" href="#adddnsmapping-1">addDNSMapping</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">domain</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">ipAddresses</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#addobservedaddr-1">addObservedAddr</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">addr</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#addpublicaddressmapping-1">addPublicAddressMapping</a><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">internalIp</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">internalPort</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">externalIp</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">externalPort</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">&quot;tcp&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;udp&quot;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#confirmobservedaddr-1">confirmObservedAddr</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">addr</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_interface-internal.ConfirmAddressOptions.html" class="tsd-signature-type tsd-kind-interface">ConfirmAddressOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#getaddresses-1">getAddresses</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#getaddresseswithmetadata-1">getAddressesWithMetadata</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface-internal.NodeAddress.html" class="tsd-signature-type tsd-kind-interface">NodeAddress</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#getannounceaddrs-1">getAnnounceAddrs</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#getlistenaddrs-1">getListenAddrs</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#getobservedaddrs-1">getObservedAddrs</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#removednsmapping-1">removeDNSMapping</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">domain</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#removeobservedaddr-1">removeObservedAddr</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">addr</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#removepublicaddressmapping-1">removePublicAddressMapping</a><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">internalIp</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">internalPort</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">externalIp</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">externalPort</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">&quot;tcp&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;udp&quot;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L65">packages/interface-internal/src/address-manager.ts:65</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L65">packages/interface-internal/src/address-manager.ts:65</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -64,7 +64,7 @@ tuples replaced with <code>dns4</code> and `dns6 ones respectively.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L137">packages/interface-internal/src/address-manager.ts:137</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L137">packages/interface-internal/src/address-manager.ts:137</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="addobservedaddr"><span>add<wbr/>Observed<wbr/>Addr</span><a href="#addobservedaddr" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -83,7 +83,7 @@ confirmObservedAddr.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L112">packages/interface-internal/src/address-manager.ts:112</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L112">packages/interface-internal/src/address-manager.ts:112</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="addpublicaddressmapping"><span>add<wbr/>Public<wbr/>Address<wbr/>Mapping</span><a href="#addpublicaddressmapping" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -118,7 +118,7 @@ port forwarding configured, but it does IPv6 -&gt; IPv4 NAT.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L162">packages/interface-internal/src/address-manager.ts:162</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L162">packages/interface-internal/src/address-manager.ts:162</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="confirmobservedaddr"><span>confirm<wbr/>Observed<wbr/>Addr</span><a href="#confirmobservedaddr" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -139,7 +139,7 @@ this will make it appear in the output of <code>getAddresses()</code></p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L95">packages/interface-internal/src/address-manager.ts:95</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L95">packages/interface-internal/src/address-manager.ts:95</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getaddresses"><span>get<wbr/>Addresses</span><a href="#getaddresses" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -151,7 +151,7 @@ this will make it appear in the output of <code>getAddresses()</code></p>
 <h4 class="tsd-returns-title">Returns <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span></h4><p>An array of <code>Multiaddr</code> objects representing node addresses.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L119">packages/interface-internal/src/address-manager.ts:119</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L119">packages/interface-internal/src/address-manager.ts:119</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getaddresseswithmetadata"><span>get<wbr/>Addresses<wbr/>With<wbr/>Metadata</span><a href="#getaddresseswithmetadata" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -163,7 +163,7 @@ this will make it appear in the output of <code>getAddresses()</code></p>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_interface-internal.NodeAddress.html" class="tsd-signature-type tsd-kind-interface">NodeAddress</a><span class="tsd-signature-symbol">[]</span></h4><p>An array of <code>NodeAddress</code> objects.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L126">packages/interface-internal/src/address-manager.ts:126</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L126">packages/interface-internal/src/address-manager.ts:126</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getannounceaddrs"><span>get<wbr/>Announce<wbr/>Addrs</span><a href="#getannounceaddrs" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -175,7 +175,7 @@ this will make it appear in the output of <code>getAddresses()</code></p>
 <h4 class="tsd-returns-title">Returns <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span></h4><p>An array of <code>Multiaddr</code> objects representing announce addresses.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L78">packages/interface-internal/src/address-manager.ts:78</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L78">packages/interface-internal/src/address-manager.ts:78</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getlistenaddrs"><span>get<wbr/>Listen<wbr/>Addrs</span><a href="#getlistenaddrs" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -187,7 +187,7 @@ this will make it appear in the output of <code>getAddresses()</code></p>
 <h4 class="tsd-returns-title">Returns <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span></h4><p>An array of <code>Multiaddr</code> objects representing listen addresses.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L71">packages/interface-internal/src/address-manager.ts:71</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L71">packages/interface-internal/src/address-manager.ts:71</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getobservedaddrs"><span>get<wbr/>Observed<wbr/>Addrs</span><a href="#getobservedaddrs" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -200,7 +200,7 @@ publicly dialable yet</p>
 <h4 class="tsd-returns-title">Returns <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">[]</span></h4><p>An array of <code>Multiaddr</code> objects representing observed addresses.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L86">packages/interface-internal/src/address-manager.ts:86</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L86">packages/interface-internal/src/address-manager.ts:86</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="removednsmapping"><span>remove<wbr/>DNS<wbr/>Mapping</span><a href="#removednsmapping" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -217,7 +217,7 @@ publicly dialable yet</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L144">packages/interface-internal/src/address-manager.ts:144</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L144">packages/interface-internal/src/address-manager.ts:144</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="removeobservedaddr"><span>remove<wbr/>Observed<wbr/>Addr</span><a href="#removeobservedaddr" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -235,7 +235,7 @@ this will remove it from the output of <code>getObservedAddrs()</code></p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L103">packages/interface-internal/src/address-manager.ts:103</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L103">packages/interface-internal/src/address-manager.ts:103</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="removepublicaddressmapping"><span>remove<wbr/>Public<wbr/>Address<wbr/>Mapping</span><a href="#removepublicaddressmapping" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -264,7 +264,7 @@ this will remove it from the output of <code>getObservedAddrs()</code></p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/address-manager.ts#L173">packages/interface-internal/src/address-manager.ts:173</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/address-manager.ts#L173">packages/interface-internal/src/address-manager.ts:173</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

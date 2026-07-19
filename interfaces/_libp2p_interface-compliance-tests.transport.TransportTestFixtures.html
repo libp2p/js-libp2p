@@ -14,7 +14,7 @@
 <h1>Interface TransportTestFixtures</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">TransportTestFixtures</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#dialaddrs">dialAddrs</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">[</span><a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">,</span> <a href="https://multiformats.github.io/js-multiaddr/interfaces/Multiaddr.html" class="tsd-signature-type external" target="_blank">Multiaddr</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dialer">dialer</a><span class="tsd-signature-symbol">:</span> <a href="libp2p.index.Libp2pInit.html" class="tsd-signature-type tsd-kind-interface">Libp2pInit</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dialmultiaddrmatcher">dialMultiaddrMatcher</a><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr-matcher/interfaces/index.MultiaddrMatcher.html" class="tsd-signature-type external" target="_blank">MultiaddrMatcher</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#listener">listener</a><span class="tsd-signature-symbol">?:</span> <a href="libp2p.index.Libp2pInit.html" class="tsd-signature-type tsd-kind-interface">Libp2pInit</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/_libp2p_interface.ServiceMap.html" class="tsd-signature-type tsd-kind-type-alias">ServiceMap</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#listenmultiaddrmatcher">listenMultiaddrMatcher</a><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr-matcher/interfaces/index.MultiaddrMatcher.html" class="tsd-signature-type external" target="_blank">MultiaddrMatcher</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-compliance-tests/src/transport/index.ts#L23">transport/index.ts:23</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-compliance-tests/src/transport/index.ts#L23">transport/index.ts:23</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -38,35 +38,35 @@
 to the same node</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-compliance-tests/src/transport/index.ts#L28">transport/index.ts:28</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-compliance-tests/src/transport/index.ts#L28">transport/index.ts:28</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="dialer"><span>dialer</span><a href="#dialer" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">dialer</span><span class="tsd-signature-symbol">:</span> <a href="libp2p.index.Libp2pInit.html" class="tsd-signature-type tsd-kind-interface">Libp2pInit</a></div>
 <div class="tsd-comment tsd-typography"><p>Config that creates a libp2p node that can dial a listener</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-compliance-tests/src/transport/index.ts#L43">transport/index.ts:43</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-compliance-tests/src/transport/index.ts#L43">transport/index.ts:43</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="dialmultiaddrmatcher"><span>dial<wbr/>Multiaddr<wbr/>Matcher</span><a href="#dialmultiaddrmatcher" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">dialMultiaddrMatcher</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr-matcher/interfaces/index.MultiaddrMatcher.html" class="tsd-signature-type external" target="_blank">MultiaddrMatcher</a></div>
 <div class="tsd-comment tsd-typography"><p>Filter out any addresses that cannot be dialed by the transport</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-compliance-tests/src/transport/index.ts#L33">transport/index.ts:33</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-compliance-tests/src/transport/index.ts#L33">transport/index.ts:33</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="listener"><code class="tsd-tag">Optional</code><span>listener</span><a href="#listener" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">listener</span><span class="tsd-signature-symbol">?:</span> <a href="libp2p.index.Libp2pInit.html" class="tsd-signature-type tsd-kind-interface">Libp2pInit</a><span class="tsd-signature-symbol">&lt;</span><a href="../types/_libp2p_interface.ServiceMap.html" class="tsd-signature-type tsd-kind-type-alias">ServiceMap</a><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Config that creates a libp2p node that can accept dials</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-compliance-tests/src/transport/index.ts#L48">transport/index.ts:48</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-compliance-tests/src/transport/index.ts#L48">transport/index.ts:48</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="listenmultiaddrmatcher"><span>listen<wbr/>Multiaddr<wbr/>Matcher</span><a href="#listenmultiaddrmatcher" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">listenMultiaddrMatcher</span><span class="tsd-signature-symbol">:</span> <a href="https://multiformats.github.io/js-multiaddr-matcher/interfaces/index.MultiaddrMatcher.html" class="tsd-signature-type external" target="_blank">MultiaddrMatcher</a></div>
 <div class="tsd-comment tsd-typography"><p>Filter out any addresses that cannot be listened on by the transport</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-compliance-tests/src/transport/index.ts#L38">transport/index.ts:38</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-compliance-tests/src/transport/index.ts#L38">transport/index.ts:38</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

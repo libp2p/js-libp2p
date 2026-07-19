@@ -23,7 +23,7 @@ to function.</p>
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">Registrar</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-call-signature" href="#gethandler-1">getHandler</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.StreamHandlerRecord.html" class="tsd-signature-type tsd-kind-interface">StreamHandlerRecord</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#getmiddleware-1">getMiddleware</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.StreamMiddleware.html" class="tsd-signature-type tsd-kind-interface">StreamMiddleware</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#getprotocols-1">getProtocols</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#gettopologies-1">getTopologies</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.Topology.html" class="tsd-signature-type tsd-kind-interface">Topology</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#handle-1">handle</a><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">handler</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.StreamHandler.html" class="tsd-signature-type tsd-kind-interface">StreamHandler</a><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_interface.StreamHandlerOptions.html" class="tsd-signature-type tsd-kind-interface">StreamHandlerOptions</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#register-1">register</a><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">topology</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.Topology.html" class="tsd-signature-type tsd-kind-interface">Topology</a><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_interface.AbortOptions.html" class="tsd-signature-type tsd-kind-interface">AbortOptions</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#unhandle-1">unhandle</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_interface.AbortOptions.html" class="tsd-signature-type tsd-kind-interface">AbortOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#unregister-1">unregister</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">id</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#unuse-1">unuse</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#use-1">use</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">protocol</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">middleware</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.StreamMiddleware.html" class="tsd-signature-type tsd-kind-interface">StreamMiddleware</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L15">packages/interface-internal/src/registrar.ts:15</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L15">packages/interface-internal/src/registrar.ts:15</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -62,7 +62,7 @@ to function.</p>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_interface.StreamHandlerRecord.html" class="tsd-signature-type tsd-kind-interface">StreamHandlerRecord</a></h4><p>A <code>StreamHandlerRecord</code> containing the handler and options.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L47">packages/interface-internal/src/registrar.ts:47</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L47">packages/interface-internal/src/registrar.ts:47</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getmiddleware"><span>get<wbr/>Middleware</span><a href="#getmiddleware" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -80,7 +80,7 @@ to function.</p>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_interface.StreamMiddleware.html" class="tsd-signature-type tsd-kind-interface">StreamMiddleware</a><span class="tsd-signature-symbol">[]</span></h4><p>A list of <code>StreamMiddleware</code> implementations</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L71">packages/interface-internal/src/registrar.ts:71</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L71">packages/interface-internal/src/registrar.ts:71</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="getprotocols"><span>get<wbr/>Protocols</span><a href="#getprotocols" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -92,7 +92,7 @@ to function.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4><p>An array of protocol strings.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L21">packages/interface-internal/src/registrar.ts:21</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L21">packages/interface-internal/src/registrar.ts:21</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="gettopologies"><span>get<wbr/>Topologies</span><a href="#gettopologies" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -111,7 +111,7 @@ supporting a given protocol.</p>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_interface.Topology.html" class="tsd-signature-type tsd-kind-interface">Topology</a><span class="tsd-signature-symbol">[]</span></h4><p>An array of registered <code>Topology</code> handlers.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L101">packages/interface-internal/src/registrar.ts:101</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L101">packages/interface-internal/src/registrar.ts:101</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="handle"><span>handle</span><a href="#handle" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -135,7 +135,7 @@ supporting a given protocol.</p>
 <h4 class="tsd-returns-title">Returns <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><p>A promise that resolves once the handler is registered.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L31">packages/interface-internal/src/registrar.ts:31</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L31">packages/interface-internal/src/registrar.ts:31</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="register"><span>register</span><a href="#register" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -161,7 +161,7 @@ topology.</p>
 <h4 class="tsd-returns-title">Returns <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4><p>A promise resolving to a unique ID for the registered topology.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L85">packages/interface-internal/src/registrar.ts:85</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L85">packages/interface-internal/src/registrar.ts:85</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="unhandle"><span>unhandle</span><a href="#unhandle" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -180,7 +180,7 @@ topology.</p>
 <h4 class="tsd-returns-title">Returns <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise" class="tsd-signature-type external" target="_blank">Promise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><p>A promise that resolves once the handler is removed.</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L39">packages/interface-internal/src/registrar.ts:39</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L39">packages/interface-internal/src/registrar.ts:39</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="unregister"><span>unregister</span><a href="#unregister" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -197,7 +197,7 @@ topology.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L92">packages/interface-internal/src/registrar.ts:92</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L92">packages/interface-internal/src/registrar.ts:92</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="unuse"><span>unuse</span><a href="#unuse" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -215,7 +215,7 @@ topology.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>A list of <code>StreamMiddleware</code> implementations</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L63">packages/interface-internal/src/registrar.ts:63</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L63">packages/interface-internal/src/registrar.ts:63</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="use"><span>use</span><a href="#use" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -234,7 +234,7 @@ topology.</p>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><p>A list of <code>StreamMiddleware</code> implementations</p>
 <aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface-internal/src/registrar.ts#L55">packages/interface-internal/src/registrar.ts:55</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface-internal/src/registrar.ts#L55">packages/interface-internal/src/registrar.ts:55</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

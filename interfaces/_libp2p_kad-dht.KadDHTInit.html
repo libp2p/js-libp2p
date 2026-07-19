@@ -13,7 +13,7 @@
 <h1>Interface KadDHTInit</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">KadDHTInit</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#allowquerywithzeropeers">allowQueryWithZeroPeers</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#alpha">alpha</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#clientmode">clientMode</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#datastoreprefix">datastorePrefix</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#disjointpaths">disjointPaths</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#incomingmessagetimeout">incomingMessageTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#initialqueryselfinterval">initialQuerySelfInterval</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#kbucketsize">kBucketSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#kbucketsplitthreshold">kBucketSplitThreshold</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#logprefix">logPrefix</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxinboundstreams">maxInboundStreams</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxoutboundstreams">maxOutboundStreams</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#metricsprefix">metricsPrefix</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#networkdialtimeout">networkDialTimeout</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" class="tsd-signature-type external" target="_blank">Omit</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_utils.AdaptiveTimeoutInit.html" class="tsd-signature-type tsd-kind-interface">AdaptiveTimeoutInit</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">&quot;metricsName&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;metrics&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#onpeerconnecttimeout">onPeerConnectTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#pingnewcontactconcurrency">pingNewContactConcurrency</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#pingnewcontactmaxqueuesize">pingNewContactMaxQueueSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#pingnewcontacttimeout">pingNewContactTimeout</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" class="tsd-signature-type external" target="_blank">Omit</a><span class="tsd-signature-symbol">&lt;</span><br/>        <a href="_libp2p_utils.AdaptiveTimeoutInit.html" class="tsd-signature-type tsd-kind-interface">AdaptiveTimeoutInit</a><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-signature-type">&quot;metricsName&quot;</span><br/>        <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;metrics&quot;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#pingoldcontactconcurrency">pingOldContactConcurrency</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#pingoldcontactmaxqueuesize">pingOldContactMaxQueueSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#pingoldcontacttimeout">pingOldContactTimeout</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" class="tsd-signature-type external" target="_blank">Omit</a><span class="tsd-signature-symbol">&lt;</span><br/>        <a href="_libp2p_utils.AdaptiveTimeoutInit.html" class="tsd-signature-type tsd-kind-interface">AdaptiveTimeoutInit</a><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-signature-type">&quot;metricsName&quot;</span><br/>        <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;metrics&quot;</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#prefixlength">prefixLength</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#protocol">protocol</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#providers">providers</a><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_kad-dht.ProvidersInit.html" class="tsd-signature-type tsd-kind-interface">ProvidersInit</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#queryselfinterval">querySelfInterval</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#reprovide">reprovide</a><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_kad-dht.ReProvideInit.html" class="tsd-signature-type tsd-kind-interface">ReProvideInit</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#routingtableupdatemaxqueuesize">routingTableUpdateMaxQueueSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#routingtableupdatequeueconcurrency">routingTableUpdateQueueConcurrency</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#selectors">selectors</a><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_kad-dht.Selectors.html" class="tsd-signature-type tsd-kind-type-alias">Selectors</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#validators">validators</a><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_kad-dht.Validators.html" class="tsd-signature-type tsd-kind-type-alias">Validators</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#peerinfomapper-1">peerInfoMapper</a><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">peer</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.PeerInfo.html" class="tsd-signature-type tsd-kind-interface">PeerInfo</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.PeerInfo.html" class="tsd-signature-type tsd-kind-interface">PeerInfo</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L478">kad-dht/src/index.ts:478</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L478">kad-dht/src/index.ts:478</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -73,7 +73,7 @@ one peer in the routing table.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L608">kad-dht/src/index.ts:608</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L608">kad-dht/src/index.ts:608</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="alpha"><code class="tsd-tag">Optional</code><span>alpha</span><a href="#alpha" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">alpha</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -86,7 +86,7 @@ one peer in the routing table.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L506">kad-dht/src/index.ts:506</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L506">kad-dht/src/index.ts:506</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="clientmode"><code class="tsd-tag">Optional</code><span>client<wbr/>Mode</span><a href="#clientmode" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">clientMode</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -105,7 +105,7 @@ is safe to assume that the current node is dialable.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L573">kad-dht/src/index.ts:573</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L573">kad-dht/src/index.ts:573</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="datastoreprefix"><code class="tsd-tag">Optional</code><span>datastore<wbr/>Prefix</span><a href="#datastoreprefix" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">datastorePrefix</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -118,7 +118,7 @@ is safe to assume that the current node is dialable.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L629">kad-dht/src/index.ts:629</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L629">kad-dht/src/index.ts:629</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="disjointpaths"><code class="tsd-tag">Optional</code><span>disjoint<wbr/>Paths</span><a href="#disjointpaths" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">disjointPaths</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -134,7 +134,7 @@ is safe to assume that the current node is dialable.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L515">kad-dht/src/index.ts:515</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L515">kad-dht/src/index.ts:515</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="incomingmessagetimeout"><code class="tsd-tag">Optional</code><span>incoming<wbr/>Message<wbr/>Timeout</span><a href="#incomingmessagetimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">incomingMessageTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -148,7 +148,7 @@ this timeout in ms otherwise the stream will be closed.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L733">kad-dht/src/index.ts:733</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L733">kad-dht/src/index.ts:733</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="initialqueryselfinterval"><code class="tsd-tag">Optional</code><span>initial<wbr/>Query<wbr/>Self<wbr/>Interval</span><a href="#initialqueryselfinterval" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">initialQuerySelfInterval</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -163,7 +163,7 @@ here in ms.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L598">kad-dht/src/index.ts:598</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L598">kad-dht/src/index.ts:598</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="kbucketsize"><code class="tsd-tag">Optional</code><span>k<wbr/>Bucket<wbr/>Size</span><a href="#kbucketsize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">kBucketSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -179,7 +179,7 @@ they will be evicted and the new peer added.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L487">kad-dht/src/index.ts:487</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L487">kad-dht/src/index.ts:487</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="kbucketsplitthreshold"><code class="tsd-tag">Optional</code><span>k<wbr/>Bucket<wbr/>Split<wbr/>Threshold</span><a href="#kbucketsplitthreshold" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">kBucketSplitThreshold</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -196,7 +196,7 @@ and <code>kBucketSplitThreshold</code> to 20.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L499">kad-dht/src/index.ts:499</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L499">kad-dht/src/index.ts:499</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="logprefix"><code class="tsd-tag">Optional</code><span>log<wbr/>Prefix</span><a href="#logprefix" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">logPrefix</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -209,7 +209,7 @@ and <code>kBucketSplitThreshold</code> to 20.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L622">kad-dht/src/index.ts:622</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L622">kad-dht/src/index.ts:622</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxinboundstreams"><code class="tsd-tag">Optional</code><span>max<wbr/>Inbound<wbr/>Streams</span><a href="#maxinboundstreams" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxInboundStreams</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -223,7 +223,7 @@ connection</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L686">kad-dht/src/index.ts:686</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L686">kad-dht/src/index.ts:686</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxoutboundstreams"><code class="tsd-tag">Optional</code><span>max<wbr/>Outbound<wbr/>Streams</span><a href="#maxoutboundstreams" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxOutboundStreams</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -237,7 +237,7 @@ connection</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L694">kad-dht/src/index.ts:694</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L694">kad-dht/src/index.ts:694</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="metricsprefix"><code class="tsd-tag">Optional</code><span>metrics<wbr/>Prefix</span><a href="#metricsprefix" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">metricsPrefix</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -250,14 +250,14 @@ connection</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L636">kad-dht/src/index.ts:636</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L636">kad-dht/src/index.ts:636</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="networkdialtimeout"><code class="tsd-tag">Optional</code><span>network<wbr/>Dial<wbr/>Timeout</span><a href="#networkdialtimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">networkDialTimeout</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" class="tsd-signature-type external" target="_blank">Omit</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_utils.AdaptiveTimeoutInit.html" class="tsd-signature-type tsd-kind-interface">AdaptiveTimeoutInit</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">&quot;metricsName&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;metrics&quot;</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Dynamic network timeout settings for sending messages to peers</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L715">kad-dht/src/index.ts:715</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L715">kad-dht/src/index.ts:715</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="onpeerconnecttimeout"><code class="tsd-tag">Optional</code><span>on<wbr/>Peer<wbr/>Connect<wbr/>Timeout</span><a href="#onpeerconnecttimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">onPeerConnectTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -273,7 +273,7 @@ routing table update queue does not count towards this timeout.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L725">kad-dht/src/index.ts:725</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L725">kad-dht/src/index.ts:725</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pingnewcontactconcurrency"><code class="tsd-tag">Optional</code><span>ping<wbr/>New<wbr/>Contact<wbr/>Concurrency</span><a href="#pingnewcontactconcurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pingNewContactConcurrency</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -287,7 +287,7 @@ the routing table or not</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L671">kad-dht/src/index.ts:671</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L671">kad-dht/src/index.ts:671</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pingnewcontactmaxqueuesize"><code class="tsd-tag">Optional</code><span>ping<wbr/>New<wbr/>Contact<wbr/>Max<wbr/>Queue<wbr/>Size</span><a href="#pingnewcontactmaxqueuesize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pingNewContactMaxQueueSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -300,7 +300,7 @@ the routing table or not</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L678">kad-dht/src/index.ts:678</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L678">kad-dht/src/index.ts:678</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pingnewcontacttimeout"><code class="tsd-tag">Optional</code><span>ping<wbr/>New<wbr/>Contact<wbr/>Timeout</span><a href="#pingnewcontacttimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pingNewContactTimeout</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" class="tsd-signature-type external" target="_blank">Omit</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_utils.AdaptiveTimeoutInit.html" class="tsd-signature-type tsd-kind-interface">AdaptiveTimeoutInit</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">&quot;metricsName&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;metrics&quot;</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -308,7 +308,7 @@ the routing table or not</p>
 they should be added to the routing table or not.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L663">kad-dht/src/index.ts:663</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L663">kad-dht/src/index.ts:663</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pingoldcontactconcurrency"><code class="tsd-tag">Optional</code><span>ping<wbr/>Old<wbr/>Contact<wbr/>Concurrency</span><a href="#pingoldcontactconcurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pingOldContactConcurrency</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -322,7 +322,7 @@ be evicted from the routing table or not</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L650">kad-dht/src/index.ts:650</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L650">kad-dht/src/index.ts:650</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pingoldcontactmaxqueuesize"><code class="tsd-tag">Optional</code><span>ping<wbr/>Old<wbr/>Contact<wbr/>Max<wbr/>Queue<wbr/>Size</span><a href="#pingoldcontactmaxqueuesize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pingOldContactMaxQueueSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -335,7 +335,7 @@ be evicted from the routing table or not</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L657">kad-dht/src/index.ts:657</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L657">kad-dht/src/index.ts:657</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pingoldcontacttimeout"><code class="tsd-tag">Optional</code><span>ping<wbr/>Old<wbr/>Contact<wbr/>Timeout</span><a href="#pingoldcontacttimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pingOldContactTimeout</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#omittype-keys" class="tsd-signature-type external" target="_blank">Omit</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_utils.AdaptiveTimeoutInit.html" class="tsd-signature-type tsd-kind-interface">AdaptiveTimeoutInit</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">&quot;metricsName&quot;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">&quot;metrics&quot;</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -343,7 +343,7 @@ be evicted from the routing table or not</p>
 they should be evicted from the routing table or not.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L642">kad-dht/src/index.ts:642</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L642">kad-dht/src/index.ts:642</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="prefixlength"><code class="tsd-tag">Optional</code><span>prefix<wbr/>Length</span><a href="#prefixlength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">prefixLength</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -373,7 +373,7 @@ contain.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L558">kad-dht/src/index.ts:558</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L558">kad-dht/src/index.ts:558</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="protocol"><code class="tsd-tag">Optional</code><span>protocol</span><a href="#protocol" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">protocol</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -386,14 +386,14 @@ contain.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L615">kad-dht/src/index.ts:615</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L615">kad-dht/src/index.ts:615</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="providers"><code class="tsd-tag">Optional</code><span>providers</span><a href="#providers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">providers</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_kad-dht.ProvidersInit.html" class="tsd-signature-type tsd-kind-interface">ProvidersInit</a></div>
 <div class="tsd-comment tsd-typography"><p>Initialization options for the Providers component</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L699">kad-dht/src/index.ts:699</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L699">kad-dht/src/index.ts:699</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="queryselfinterval"><code class="tsd-tag">Optional</code><span>query<wbr/>Self<wbr/>Interval</span><a href="#queryselfinterval" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">querySelfInterval</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -401,14 +401,14 @@ contain.</p>
 good view on the KAD address space local to our PeerId</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L589">kad-dht/src/index.ts:589</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L589">kad-dht/src/index.ts:589</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="reprovide"><code class="tsd-tag">Optional</code><span>reprovide</span><a href="#reprovide" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">reprovide</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_kad-dht.ReProvideInit.html" class="tsd-signature-type tsd-kind-interface">ReProvideInit</a></div>
 <div class="tsd-comment tsd-typography"><p>Initialization options for the Reprovider component</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L704">kad-dht/src/index.ts:704</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L704">kad-dht/src/index.ts:704</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="routingtableupdatemaxqueuesize"><code class="tsd-tag">Optional</code><span>routing<wbr/>Table<wbr/>Update<wbr/>Max<wbr/>Queue<wbr/>Size</span><a href="#routingtableupdatemaxqueuesize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">routingTableUpdateMaxQueueSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -421,7 +421,7 @@ good view on the KAD address space local to our PeerId</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L529">kad-dht/src/index.ts:529</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L529">kad-dht/src/index.ts:529</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="routingtableupdatequeueconcurrency"><code class="tsd-tag">Optional</code><span>routing<wbr/>Table<wbr/>Update<wbr/>Queue<wbr/>Concurrency</span><a href="#routingtableupdatequeueconcurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">routingTableUpdateQueueConcurrency</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -434,21 +434,21 @@ good view on the KAD address space local to our PeerId</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L522">kad-dht/src/index.ts:522</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L522">kad-dht/src/index.ts:522</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="selectors"><code class="tsd-tag">Optional</code><span>selectors</span><a href="#selectors" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">selectors</span><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_kad-dht.Selectors.html" class="tsd-signature-type tsd-kind-type-alias">Selectors</a></div>
 <div class="tsd-comment tsd-typography"><p>Record selectors</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L578">kad-dht/src/index.ts:578</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L578">kad-dht/src/index.ts:578</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="validators"><code class="tsd-tag">Optional</code><span>validators</span><a href="#validators" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">validators</span><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_kad-dht.Validators.html" class="tsd-signature-type tsd-kind-type-alias">Validators</a></div>
 <div class="tsd-comment tsd-typography"><p>Record validators</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L583">kad-dht/src/index.ts:583</a></li></ul></aside></section></section></details>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L583">kad-dht/src/index.ts:583</a></li></ul></aside></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -467,7 +467,7 @@ with this filter.</p>
 <li><span><span class="tsd-kind-parameter">peer</span>: <a href="_libp2p_interface.PeerInfo.html" class="tsd-signature-type tsd-kind-interface">PeerInfo</a></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="_libp2p_interface.PeerInfo.html" class="tsd-signature-type tsd-kind-interface">PeerInfo</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/kad-dht/src/index.ts#L710">kad-dht/src/index.ts:710</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/kad-dht/src/index.ts#L710">kad-dht/src/index.ts:710</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

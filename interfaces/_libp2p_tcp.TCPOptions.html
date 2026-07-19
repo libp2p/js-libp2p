@@ -13,7 +13,7 @@
 <h1>Interface TCPOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">TCPOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#backlog">backlog</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#closeserveronmaxconnections">closeServerOnMaxConnections</a><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_tcp.CloseServerOnMaxConnectionsOpts.html" class="tsd-signature-type tsd-kind-interface">CloseServerOnMaxConnectionsOpts</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dialopts">dialOpts</a><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_tcp.TCPSocketOptions.html" class="tsd-signature-type tsd-kind-interface">TCPSocketOptions</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#inboundsocketinactivitytimeout">inboundSocketInactivityTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#listenopts">listenOpts</a><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_tcp.TCPSocketOptions.html" class="tsd-signature-type tsd-kind-interface">TCPSocketOptions</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxconnections">maxConnections</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#outboundsocketinactivitytimeout">outboundSocketInactivityTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L51">packages/transport-tcp/src/index.ts:51</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L51">packages/transport-tcp/src/index.ts:51</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -39,7 +39,7 @@
 <a href="https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten">https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten</a></p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L72">packages/transport-tcp/src/index.ts:72</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L72">packages/transport-tcp/src/index.ts:72</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="closeserveronmaxconnections"><code class="tsd-tag">Optional</code><span>close<wbr/>Server<wbr/>On<wbr/>Max<wbr/>Connections</span><a href="#closeserveronmaxconnections" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">closeServerOnMaxConnections</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_tcp.CloseServerOnMaxConnectionsOpts.html" class="tsd-signature-type tsd-kind-interface">CloseServerOnMaxConnectionsOpts</a></div>
@@ -47,28 +47,28 @@
 Open server (start listening for new connections) if connections fall below a limit.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L78">packages/transport-tcp/src/index.ts:78</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L78">packages/transport-tcp/src/index.ts:78</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="dialopts"><code class="tsd-tag">Optional</code><span>dial<wbr/>Opts</span><a href="#dialopts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">dialOpts</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_tcp.TCPSocketOptions.html" class="tsd-signature-type tsd-kind-interface">TCPSocketOptions</a></div>
 <div class="tsd-comment tsd-typography"><p>Options passed to <code>net.connect</code> for every opened TCP socket</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L83">packages/transport-tcp/src/index.ts:83</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L83">packages/transport-tcp/src/index.ts:83</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="inboundsocketinactivitytimeout"><code class="tsd-tag">Optional</code><span>inbound<wbr/>Socket<wbr/>Inactivity<wbr/>Timeout</span><a href="#inboundsocketinactivitytimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">inboundSocketInactivityTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>An optional number in ms that is used as an inactivity timeout after which the socket will be closed</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L55">packages/transport-tcp/src/index.ts:55</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L55">packages/transport-tcp/src/index.ts:55</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="listenopts"><code class="tsd-tag">Optional</code><span>listen<wbr/>Opts</span><a href="#listenopts" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">listenOpts</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_tcp.TCPSocketOptions.html" class="tsd-signature-type tsd-kind-interface">TCPSocketOptions</a></div>
 <div class="tsd-comment tsd-typography"><p>Options passed to every <code>net.createServer</code> for every TCP server</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L88">packages/transport-tcp/src/index.ts:88</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L88">packages/transport-tcp/src/index.ts:88</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxconnections"><code class="tsd-tag">Optional</code><span>max<wbr/>Connections</span><a href="#maxconnections" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxConnections</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -76,14 +76,14 @@ Open server (start listening for new connections) if connections fall below a li
 <a href="https://nodejs.org/api/net.html#servermaxconnections">https://nodejs.org/api/net.html#servermaxconnections</a></p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L66">packages/transport-tcp/src/index.ts:66</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L66">packages/transport-tcp/src/index.ts:66</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="outboundsocketinactivitytimeout"><code class="tsd-tag">Optional</code><span>outbound<wbr/>Socket<wbr/>Inactivity<wbr/>Timeout</span><a href="#outboundsocketinactivitytimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">outboundSocketInactivityTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>An optional number in ms that is used as an inactivity timeout after which the socket will be closed</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-tcp/src/index.ts#L60">packages/transport-tcp/src/index.ts:60</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-tcp/src/index.ts#L60">packages/transport-tcp/src/index.ts:60</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

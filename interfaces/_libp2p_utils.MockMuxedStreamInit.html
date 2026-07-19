@@ -15,14 +15,14 @@
 <div class="tsd-comment tsd-typography"><p>User-facing message stream options</p>
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">MockMuxedStreamInit</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#direction">direction</a><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_interface.MessageStreamDirection.html" class="tsd-signature-type tsd-kind-type-alias">MessageStreamDirection</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#encoding">encoding</a><span class="tsd-signature-symbol">:</span> <a href="https://achingbrain.github.io/uint8arrays/types/index.SupportedEncodings.html" class="tsd-signature-type external" target="_blank">SupportedEncodings</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#id">id</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#inactivitytimeout">inactivityTimeout</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#log">log</a><span class="tsd-signature-symbol">:</span> <a href="_libp2p_interface.Logger.html" class="tsd-signature-type tsd-kind-interface">Logger</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxmessagesize">maxMessageSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxreadbufferlength">maxReadBufferLength</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxwritebufferlength">maxWriteBufferLength</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#protocol">protocol</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#sendmessage-1">sendMessage</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">message</span><span class="tsd-signature-symbol">:</span> <a href="https://www.npmjs.com/package/@libp2p/utils" class="tsd-signature-type external" target="_blank">StreamMessage</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="17972">
+<section class="tsd-panel tsd-hierarchy" data-refl="18052">
 <h4>Hierarchy (<a href="../hierarchy.html#@libp2p/utils.MockMuxedStreamInit">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="_libp2p_utils.AbstractStreamInit.html" class="tsd-signature-type tsd-kind-interface">AbstractStreamInit</a>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">MockMuxedStreamInit</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/mock-muxer.ts#L53">packages/utils/src/mock-muxer.ts:53</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/mock-muxer.ts#L53">packages/utils/src/mock-muxer.ts:53</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -54,12 +54,12 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_utils.AbstractStreamInit.html">AbstractStreamInit</a>.<a href="_libp2p_utils.AbstractStreamInit.html#direction">direction</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/abstract-message-stream.ts#L20">packages/utils/src/abstract-message-stream.ts:20</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/abstract-message-stream.ts#L20">packages/utils/src/abstract-message-stream.ts:20</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="encoding"><span>encoding</span><a href="#encoding" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">encoding</span><span class="tsd-signature-symbol">:</span> <a href="https://achingbrain.github.io/uint8arrays/types/index.SupportedEncodings.html" class="tsd-signature-type external" target="_blank">SupportedEncodings</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/mock-muxer.ts#L55">packages/utils/src/mock-muxer.ts:55</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/mock-muxer.ts#L55">packages/utils/src/mock-muxer.ts:55</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="id"><span>id</span><a href="#id" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">id</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
@@ -67,7 +67,7 @@
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_utils.AbstractStreamInit.html">AbstractStreamInit</a>.<a href="_libp2p_utils.AbstractStreamInit.html#id">id</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/abstract-stream.ts#L10">packages/utils/src/abstract-stream.ts:10</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/abstract-stream.ts#L10">packages/utils/src/abstract-stream.ts:10</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="inactivitytimeout"><code class="tsd-tag">Optional</code><span>inactivity<wbr/>Timeout</span><a href="#inactivitytimeout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">inactivityTimeout</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -90,7 +90,7 @@ reset and an 'error' event emitted.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_utils.AbstractStreamInit.html">AbstractStreamInit</a>.<a href="_libp2p_utils.AbstractStreamInit.html#log">log</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/abstract-message-stream.ts#L15">packages/utils/src/abstract-message-stream.ts:15</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/abstract-message-stream.ts#L15">packages/utils/src/abstract-message-stream.ts:15</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxmessagesize"><code class="tsd-tag">Optional</code><span>max<wbr/>Message<wbr/>Size</span><a href="#maxmessagesize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxMessageSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -99,7 +99,7 @@ extending classes, if smaller chunks are required, pass a value here.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_utils.AbstractStreamInit.html">AbstractStreamInit</a>.<a href="_libp2p_utils.AbstractStreamInit.html#maxmessagesize">maxMessageSize</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/abstract-message-stream.ts#L26">packages/utils/src/abstract-message-stream.ts:26</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/abstract-message-stream.ts#L26">packages/utils/src/abstract-message-stream.ts:26</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxreadbufferlength"><code class="tsd-tag">Optional</code><span>max<wbr/>Read<wbr/>Buffer<wbr/>Length</span><a href="#maxreadbufferlength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxReadBufferLength</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -139,7 +139,7 @@ applying backpressure, or when it is slow to accept new bytes.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_utils.AbstractStreamInit.html">AbstractStreamInit</a>.<a href="_libp2p_utils.AbstractStreamInit.html#protocol">protocol</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/abstract-stream.ts#L15">packages/utils/src/abstract-stream.ts:15</a></li></ul></aside></section></section></details>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/abstract-stream.ts#L15">packages/utils/src/abstract-stream.ts:15</a></li></ul></aside></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -155,7 +155,7 @@ applying backpressure, or when it is slow to accept new bytes.</p>
 <li><span><span class="tsd-kind-parameter">message</span>: <a href="https://www.npmjs.com/package/@libp2p/utils" class="tsd-signature-type external" target="_blank">StreamMessage</a></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/utils/src/mock-muxer.ts#L54">packages/utils/src/mock-muxer.ts:54</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/utils/src/mock-muxer.ts#L54">packages/utils/src/mock-muxer.ts:54</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

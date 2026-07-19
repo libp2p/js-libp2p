@@ -13,14 +13,14 @@
 <li><a href="" aria-current="page">GossipsubOpts</a></li></ul>
 <h1>Interface GossipsubOpts</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">GossipsubOpts</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#allowedtopics">allowedTopics</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span> <span class="tsd-signature-symbol">|</span> <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set" class="tsd-signature-type external" target="_blank">Set</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#allowpublishtozerotopicpeers">allowPublishToZeroTopicPeers</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#asyncvalidation">asyncValidation</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#awaitrpchandler">awaitRpcHandler</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#awaitrpcmessagehandler">awaitRpcMessageHandler</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#batchpublish">batchPublish</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#canrelaymessage">canRelayMessage</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#d">D</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#datatransform">dataTransform</a><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_gossipsub.types.DataTransform.html" class="tsd-signature-type tsd-kind-interface">DataTransform</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#debugname">debugName</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#decoderpclimits">decodeRpcLimits</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/@libp2p/gossipsub" class="tsd-signature-type external" target="_blank">DecodeRPCLimits</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dhi">Dhi</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#directconnectticks">directConnectTicks</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#directpeers">directPeers</a><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.AddrInfo.html" class="tsd-signature-type tsd-kind-interface">AddrInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dlazy">Dlazy</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dlo">Dlo</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dopx">doPX</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dout">Dout</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#dscore">Dscore</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#emitself">emitSelf</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#fallbacktofloodsub">fallbackToFloodsub</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#fanoutttl">fanoutTTL</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#fastmsgidfn">fastMsgIdFn</a><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.FastMsgIdFn.html" class="tsd-signature-type tsd-kind-interface">FastMsgIdFn</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#floodpublish">floodPublish</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#globalsignaturepolicy">globalSignaturePolicy</a><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_gossipsub..SignaturePolicy.html" class="tsd-signature-type tsd-kind-type-alias">SignaturePolicy</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#gossipfactor">gossipFactor</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#gossipsubiwantfollowupms">gossipsubIWantFollowupMs</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#graftfloodthreshold">graftFloodThreshold</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#heartbeatinterval">heartbeatInterval</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#idontwantmaxmessages">idontwantMaxMessages</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#idontwantmindatasize">idontwantMinDataSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#ignoreduplicatepublisherror">ignoreDuplicatePublishError</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxinbounddatalength">maxInboundDataLength</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxinboundstreams">maxInboundStreams</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxoutboundbuffersize">maxOutboundBufferSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxoutboundstreams">maxOutboundStreams</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#mcachegossip">mcacheGossip</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#mcachelength">mcacheLength</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#messagecache">messageCache</a><span class="tsd-signature-symbol">:</span> <a href="https://www.npmjs.com/package/@libp2p/gossipsub" class="tsd-signature-type external" target="_blank">MessageCache</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#messageprocessingconcurrency">messageProcessingConcurrency</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#metricsregister">metricsRegister</a><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_gossipsub.metrics.MetricsRegister.html" class="tsd-signature-type tsd-kind-interface">MetricsRegister</a> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#metricstopicstrtolabel">metricsTopicStrToLabel</a><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_gossipsub.metrics.TopicStrToLabel.html" class="tsd-signature-type tsd-kind-type-alias">TopicStrToLabel</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#msgidfn">msgIdFn</a><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.MsgIdFn.html" class="tsd-signature-type tsd-kind-interface">MsgIdFn</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#msgidtostrfn">msgIdToStrFn</a><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.MsgIdToStrFn.html" class="tsd-signature-type tsd-kind-interface">MsgIdToStrFn</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#opportunisticgraftpeers">opportunisticGraftPeers</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#opportunisticgraftticks">opportunisticGraftTicks</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#protocols">protocols</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#prunebackoff">pruneBackoff</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#prunepeers">prunePeers</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#runonlimitedconnection">runOnLimitedConnection</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#scoreparams">scoreParams</a><span class="tsd-signature-symbol">:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" class="tsd-signature-type external" target="_blank">Partial</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_gossipsub.score.PeerScoreParams.html" class="tsd-signature-type tsd-kind-interface">PeerScoreParams</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#scorethresholds">scoreThresholds</a><span class="tsd-signature-symbol">:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" class="tsd-signature-type external" target="_blank">Partial</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_gossipsub.score.PeerScoreThresholds.html" class="tsd-signature-type tsd-kind-interface">PeerScoreThresholds</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#seenttl">seenTTL</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#tagmeshpeers">tagMeshPeers</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#unsubcribebackoff">unsubcribeBackoff</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="9817">
+<section class="tsd-panel tsd-hierarchy" data-refl="9862">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="https://www.npmjs.com/package/@libp2p/gossipsub" class="tsd-signature-type external" target="_blank">GossipsubOptsSpec</a>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">GossipsubOpts</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L96">packages/gossipsub/src/index.ts:96</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L96">packages/gossipsub/src/index.ts:96</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -93,7 +93,7 @@
 <div class="tsd-comment tsd-typography"><p>If provided, only allow topics in this list</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L198">packages/gossipsub/src/index.ts:198</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L198">packages/gossipsub/src/index.ts:198</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="allowpublishtozerotopicpeers"><span>allow<wbr/>Publish<wbr/>To<wbr/>Zero<wbr/>Topic<wbr/>Peers</span><a href="#allowpublishtozerotopicpeers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">allowPublishToZeroTopicPeers</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -104,7 +104,7 @@ with no peers listening on that topic, no other network node will ever
 receive the message.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L121">packages/gossipsub/src/index.ts:121</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L121">packages/gossipsub/src/index.ts:121</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="asyncvalidation"><span>async<wbr/>Validation</span><a href="#asyncvalidation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">asyncValidation</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -113,35 +113,35 @@ Messages will be cached in mcache for some time after which they are evicted. Ca
 reportMessageValidationResult() after the message is dropped from mcache won't forward the message.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L112">packages/gossipsub/src/index.ts:112</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L112">packages/gossipsub/src/index.ts:112</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="awaitrpchandler"><span>await<wbr/>Rpc<wbr/>Handler</span><a href="#awaitrpchandler" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">awaitRpcHandler</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>For a single stream, await processing each RPC before processing the next</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L125">packages/gossipsub/src/index.ts:125</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L125">packages/gossipsub/src/index.ts:125</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="awaitrpcmessagehandler"><span>await<wbr/>Rpc<wbr/>Message<wbr/>Handler</span><a href="#awaitrpcmessagehandler" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">awaitRpcMessageHandler</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>For a single RPC, await processing each message before processing the next</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L127">packages/gossipsub/src/index.ts:127</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L127">packages/gossipsub/src/index.ts:127</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="batchpublish"><span>batch<wbr/>Publish</span><a href="#batchpublish" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">batchPublish</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>serialize message once and send to all peers without control messages</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L102">packages/gossipsub/src/index.ts:102</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L102">packages/gossipsub/src/index.ts:102</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="canrelaymessage"><code class="tsd-tag">Optional</code><span>can<wbr/>Relay<wbr/>Message</span><a href="#canrelaymessage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">canRelayMessage</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>if can relay messages not subscribed</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L247">packages/gossipsub/src/index.ts:247</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L247">packages/gossipsub/src/index.ts:247</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="d"><span>D</span><a href="#d" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">D</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -149,26 +149,26 @@ reportMessageValidationResult() after the message is dropped from mcache won't f
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.D</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L3">packages/gossipsub/src/config.ts:3</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L3">packages/gossipsub/src/config.ts:3</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="datatransform"><code class="tsd-tag">Optional</code><span>data<wbr/>Transform</span><a href="#datatransform" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">dataTransform</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_gossipsub.types.DataTransform.html" class="tsd-signature-type tsd-kind-interface">DataTransform</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L153">packages/gossipsub/src/index.ts:153</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L153">packages/gossipsub/src/index.ts:153</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="debugname"><code class="tsd-tag">Optional</code><span>debug<wbr/>Name</span><a href="#debugname" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">debugName</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>Prefix tag for debug logs</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L159">packages/gossipsub/src/index.ts:159</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L159">packages/gossipsub/src/index.ts:159</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="decoderpclimits"><code class="tsd-tag">Optional</code><span>decode<wbr/>Rpc<wbr/>Limits</span><a href="#decoderpclimits" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">decodeRpcLimits</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/@libp2p/gossipsub" class="tsd-signature-type external" target="_blank">DecodeRPCLimits</a></div>
 <div class="tsd-comment tsd-typography"><p>Limits to bound protobuf decoding</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L203">packages/gossipsub/src/index.ts:203</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L203">packages/gossipsub/src/index.ts:203</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="dhi"><span>Dhi</span><a href="#dhi" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">Dhi</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -176,19 +176,19 @@ reportMessageValidationResult() after the message is dropped from mcache won't f
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.Dhi</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L7">packages/gossipsub/src/config.ts:7</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L7">packages/gossipsub/src/config.ts:7</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="directconnectticks"><code class="tsd-tag">Optional</code><span>direct<wbr/>Connect<wbr/>Ticks</span><a href="#directconnectticks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">directConnectTicks</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L151">packages/gossipsub/src/index.ts:151</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L151">packages/gossipsub/src/index.ts:151</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="directpeers"><span>direct<wbr/>Peers</span><a href="#directpeers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">directPeers</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.AddrInfo.html" class="tsd-signature-type tsd-kind-interface">AddrInfo</a><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>peers with which we will maintain direct connections</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L106">packages/gossipsub/src/index.ts:106</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L106">packages/gossipsub/src/index.ts:106</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="dlazy"><span>Dlazy</span><a href="#dlazy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">Dlazy</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -197,7 +197,7 @@ heartbeat.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.Dlazy</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L16">packages/gossipsub/src/config.ts:16</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L16">packages/gossipsub/src/config.ts:16</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="dlo"><span>Dlo</span><a href="#dlo" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">Dlo</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -205,14 +205,14 @@ heartbeat.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.Dlo</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L5">packages/gossipsub/src/config.ts:5</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L5">packages/gossipsub/src/config.ts:5</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="dopx"><span>do<wbr/>PX</span><a href="#dopx" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">doPX</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>whether PX is enabled; this should be enabled in bootstrappers and other well connected/trusted nodes.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L104">packages/gossipsub/src/index.ts:104</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L104">packages/gossipsub/src/index.ts:104</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="dout"><span>Dout</span><a href="#dout" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">Dout</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -220,7 +220,7 @@ heartbeat.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.Dout</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L11">packages/gossipsub/src/config.ts:11</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L11">packages/gossipsub/src/config.ts:11</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="dscore"><span>Dscore</span><a href="#dscore" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">Dscore</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -228,21 +228,21 @@ heartbeat.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.Dscore</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L9">packages/gossipsub/src/config.ts:9</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L9">packages/gossipsub/src/config.ts:9</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="emitself"><code class="tsd-tag">Optional</code><span>emit<wbr/>Self</span><a href="#emitself" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">emitSelf</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>if publish should emit to self, if subscribed</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L252">packages/gossipsub/src/index.ts:252</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L252">packages/gossipsub/src/index.ts:252</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="fallbacktofloodsub"><span>fallback<wbr/>To<wbr/>Floodsub</span><a href="#fallbacktofloodsub" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">fallbackToFloodsub</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>if dial should fallback to floodsub</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L98">packages/gossipsub/src/index.ts:98</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L98">packages/gossipsub/src/index.ts:98</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="fanoutttl"><span>fanout<wbr/>TTL</span><a href="#fanoutttl" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">fanoutTTL</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -252,28 +252,28 @@ we'll delete the fanout map for that topic.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.fanoutTTL</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L24">packages/gossipsub/src/config.ts:24</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L24">packages/gossipsub/src/config.ts:24</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="fastmsgidfn"><span>fast<wbr/>Msg<wbr/>Id<wbr/>Fn</span><a href="#fastmsgidfn" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">fastMsgIdFn</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.FastMsgIdFn.html" class="tsd-signature-type tsd-kind-interface">FastMsgIdFn</a></div>
 <div class="tsd-comment tsd-typography"><p>fast message id function</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L132">packages/gossipsub/src/index.ts:132</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L132">packages/gossipsub/src/index.ts:132</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="floodpublish"><span>flood<wbr/>Publish</span><a href="#floodpublish" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">floodPublish</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>if self-published messages should be sent to all peers</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L100">packages/gossipsub/src/index.ts:100</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L100">packages/gossipsub/src/index.ts:100</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="globalsignaturepolicy"><code class="tsd-tag">Optional</code><span>global<wbr/>Signature<wbr/>Policy</span><a href="#globalsignaturepolicy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">globalSignaturePolicy</span><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_gossipsub..SignaturePolicy.html" class="tsd-signature-type tsd-kind-type-alias">SignaturePolicy</a></div>
 <div class="tsd-comment tsd-typography"><p>defines how signatures should be handled</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L242">packages/gossipsub/src/index.ts:242</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L242">packages/gossipsub/src/index.ts:242</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="gossipfactor"><span>gossip<wbr/>Factor</span><a href="#gossipfactor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">gossipFactor</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -282,19 +282,19 @@ a number smaller than <code>Dlazy</code>, <code>Dlazy</code> will be used instea
 <p>It should be a number between 0 and 1, with a reasonable default of 0.25</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L216">packages/gossipsub/src/index.ts:216</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L216">packages/gossipsub/src/index.ts:216</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="gossipsubiwantfollowupms"><span>gossipsub<wbr/>I<wbr/>Want<wbr/>Followup<wbr/>Ms</span><a href="#gossipsubiwantfollowupms" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">gossipsubIWantFollowupMs</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>customize GossipsubIWantFollowupTime in order not to apply IWANT penalties</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L142">packages/gossipsub/src/index.ts:142</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L142">packages/gossipsub/src/index.ts:142</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="graftfloodthreshold"><code class="tsd-tag">Optional</code><span>graft<wbr/>Flood<wbr/>Threshold</span><a href="#graftfloodthreshold" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">graftFloodThreshold</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L148">packages/gossipsub/src/index.ts:148</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L148">packages/gossipsub/src/index.ts:148</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="heartbeatinterval"><span>heartbeat<wbr/>Interval</span><a href="#heartbeatinterval" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">heartbeatInterval</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -302,7 +302,7 @@ a number smaller than <code>Dlazy</code>, <code>Dlazy</code> will be used instea
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.heartbeatInterval</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L18">packages/gossipsub/src/config.ts:18</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L18">packages/gossipsub/src/config.ts:18</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="idontwantmaxmessages"><code class="tsd-tag">Optional</code><span>idontwant<wbr/>Max<wbr/>Messages</span><a href="#idontwantmaxmessages" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">idontwantMaxMessages</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -315,7 +315,7 @@ a number smaller than <code>Dlazy</code>, <code>Dlazy</code> will be used instea
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L230">packages/gossipsub/src/index.ts:230</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L230">packages/gossipsub/src/index.ts:230</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="idontwantmindatasize"><code class="tsd-tag">Optional</code><span>idontwant<wbr/>Min<wbr/>Data<wbr/>Size</span><a href="#idontwantmindatasize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">idontwantMinDataSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -328,14 +328,14 @@ a number smaller than <code>Dlazy</code>, <code>Dlazy</code> will be used instea
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L223">packages/gossipsub/src/index.ts:223</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L223">packages/gossipsub/src/index.ts:223</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="ignoreduplicatepublisherror"><span>ignore<wbr/>Duplicate<wbr/>Publish<wbr/>Error</span><a href="#ignoreduplicatepublisherror" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">ignoreDuplicatePublishError</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>Do not throw <code>PublishError.Duplicate</code> if publishing duplicate messages</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L123">packages/gossipsub/src/index.ts:123</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L123">packages/gossipsub/src/index.ts:123</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxinbounddatalength"><code class="tsd-tag">Optional</code><span>max<wbr/>Inbound<wbr/>Data<wbr/>Length</span><a href="#maxinbounddatalength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxInboundDataLength</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -343,7 +343,7 @@ a number smaller than <code>Dlazy</code>, <code>Dlazy</code> will be used instea
 section exceeds this size.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L193">packages/gossipsub/src/index.ts:193</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L193">packages/gossipsub/src/index.ts:193</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxinboundstreams"><code class="tsd-tag">Optional</code><span>max<wbr/>Inbound<wbr/>Streams</span><a href="#maxinboundstreams" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxInboundStreams</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -351,7 +351,7 @@ section exceeds this size.</p>
 streams that are allowed to be open concurrently</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L165">packages/gossipsub/src/index.ts:165</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L165">packages/gossipsub/src/index.ts:165</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxoutboundbuffersize"><code class="tsd-tag">Optional</code><span>max<wbr/>Outbound<wbr/>Buffer<wbr/>Size</span><a href="#maxoutboundbuffersize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxOutboundBufferSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -359,7 +359,7 @@ streams that are allowed to be open concurrently</p>
 If full it will throw and reject sending any more data.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L186">packages/gossipsub/src/index.ts:186</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L186">packages/gossipsub/src/index.ts:186</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxoutboundstreams"><code class="tsd-tag">Optional</code><span>max<wbr/>Outbound<wbr/>Streams</span><a href="#maxoutboundstreams" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxOutboundStreams</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -367,7 +367,7 @@ If full it will throw and reject sending any more data.</p>
 streams that are allowed to be open concurrently</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L171">packages/gossipsub/src/index.ts:171</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L171">packages/gossipsub/src/index.ts:171</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="mcachegossip"><span>mcache<wbr/>Gossip</span><a href="#mcachegossip" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">mcacheGossip</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -375,7 +375,7 @@ streams that are allowed to be open concurrently</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.mcacheGossip</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L28">packages/gossipsub/src/config.ts:28</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L28">packages/gossipsub/src/config.ts:28</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="mcachelength"><span>mcache<wbr/>Length</span><a href="#mcachelength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">mcacheLength</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -383,55 +383,55 @@ streams that are allowed to be open concurrently</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.mcacheLength</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L26">packages/gossipsub/src/config.ts:26</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L26">packages/gossipsub/src/config.ts:26</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="messagecache"><span>message<wbr/>Cache</span><a href="#messagecache" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">messageCache</span><span class="tsd-signature-symbol">:</span> <a href="https://www.npmjs.com/package/@libp2p/gossipsub" class="tsd-signature-type external" target="_blank">MessageCache</a></div>
 <div class="tsd-comment tsd-typography"><p>override the default MessageCache</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L136">packages/gossipsub/src/index.ts:136</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L136">packages/gossipsub/src/index.ts:136</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="messageprocessingconcurrency"><code class="tsd-tag">Optional</code><span>message<wbr/>Processing<wbr/>Concurrency</span><a href="#messageprocessingconcurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">messageProcessingConcurrency</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>handle this many incoming pubsub messages concurrently</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L257">packages/gossipsub/src/index.ts:257</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L257">packages/gossipsub/src/index.ts:257</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="metricsregister"><code class="tsd-tag">Optional</code><span>metrics<wbr/>Register</span><a href="#metricsregister" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">metricsRegister</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_gossipsub.metrics.MetricsRegister.html" class="tsd-signature-type tsd-kind-interface">MetricsRegister</a> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L154">packages/gossipsub/src/index.ts:154</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L154">packages/gossipsub/src/index.ts:154</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="metricstopicstrtolabel"><code class="tsd-tag">Optional</code><span>metrics<wbr/>Topic<wbr/>Str<wbr/>To<wbr/>Label</span><a href="#metricstopicstrtolabel" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">metricsTopicStrToLabel</span><span class="tsd-signature-symbol">?:</span> <a href="../types/_libp2p_gossipsub.metrics.TopicStrToLabel.html" class="tsd-signature-type tsd-kind-type-alias">TopicStrToLabel</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L155">packages/gossipsub/src/index.ts:155</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L155">packages/gossipsub/src/index.ts:155</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="msgidfn"><span>msg<wbr/>Id<wbr/>Fn</span><a href="#msgidfn" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">msgIdFn</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.MsgIdFn.html" class="tsd-signature-type tsd-kind-interface">MsgIdFn</a></div>
 <div class="tsd-comment tsd-typography"><p>message id function</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L130">packages/gossipsub/src/index.ts:130</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L130">packages/gossipsub/src/index.ts:130</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="msgidtostrfn"><span>msg<wbr/>Id<wbr/>To<wbr/>Str<wbr/>Fn</span><a href="#msgidtostrfn" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">msgIdToStrFn</span><span class="tsd-signature-symbol">:</span> <a href="_libp2p_gossipsub.types.MsgIdToStrFn.html" class="tsd-signature-type tsd-kind-interface">MsgIdToStrFn</a></div>
 <div class="tsd-comment tsd-typography"><p>Uint8Array message id to string function</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L134">packages/gossipsub/src/index.ts:134</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L134">packages/gossipsub/src/index.ts:134</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="opportunisticgraftpeers"><code class="tsd-tag">Optional</code><span>opportunistic<wbr/>Graft<wbr/>Peers</span><a href="#opportunisticgraftpeers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">opportunisticGraftPeers</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L149">packages/gossipsub/src/index.ts:149</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L149">packages/gossipsub/src/index.ts:149</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="opportunisticgraftticks"><code class="tsd-tag">Optional</code><span>opportunistic<wbr/>Graft<wbr/>Ticks</span><a href="#opportunisticgraftticks" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">opportunisticGraftTicks</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L150">packages/gossipsub/src/index.ts:150</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L150">packages/gossipsub/src/index.ts:150</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="protocols"><code class="tsd-tag">Optional</code><span>protocols</span><a href="#protocols" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">protocols</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
@@ -444,19 +444,19 @@ streams that are allowed to be open concurrently</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L237">packages/gossipsub/src/index.ts:237</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L237">packages/gossipsub/src/index.ts:237</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="prunebackoff"><code class="tsd-tag">Optional</code><span>prune<wbr/>Backoff</span><a href="#prunebackoff" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">pruneBackoff</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L146">packages/gossipsub/src/index.ts:146</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L146">packages/gossipsub/src/index.ts:146</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="prunepeers"><code class="tsd-tag">Optional</code><span>prune<wbr/>Peers</span><a href="#prunepeers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">prunePeers</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>override constants for fine tuning</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L145">packages/gossipsub/src/index.ts:145</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L145">packages/gossipsub/src/index.ts:145</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="runonlimitedconnection"><code class="tsd-tag">Optional</code><span>run<wbr/>On<wbr/>Limited<wbr/>Connection</span><a href="#runonlimitedconnection" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">runOnLimitedConnection</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -471,21 +471,21 @@ connections.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L180">packages/gossipsub/src/index.ts:180</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L180">packages/gossipsub/src/index.ts:180</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="scoreparams"><span>score<wbr/>Params</span><a href="#scoreparams" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">scoreParams</span><span class="tsd-signature-symbol">:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" class="tsd-signature-type external" target="_blank">Partial</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_gossipsub.score.PeerScoreParams.html" class="tsd-signature-type tsd-kind-interface">PeerScoreParams</a><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>peer score parameters</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L138">packages/gossipsub/src/index.ts:138</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L138">packages/gossipsub/src/index.ts:138</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="scorethresholds"><span>score<wbr/>Thresholds</span><a href="#scorethresholds" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">scoreThresholds</span><span class="tsd-signature-symbol">:</span> <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#partialtype" class="tsd-signature-type external" target="_blank">Partial</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_gossipsub.score.PeerScoreThresholds.html" class="tsd-signature-type tsd-kind-interface">PeerScoreThresholds</a><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>peer score thresholds</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L140">packages/gossipsub/src/index.ts:140</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L140">packages/gossipsub/src/index.ts:140</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="seenttl"><span>seen<wbr/>TTL</span><a href="#seenttl" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">seenTTL</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -493,19 +493,19 @@ connections.</p>
 </div><aside class="tsd-sources">
 <p>Inherited from GossipsubOptsSpec.seenTTL</p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/config.ts#L30">packages/gossipsub/src/config.ts:30</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/config.ts#L30">packages/gossipsub/src/config.ts:30</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="tagmeshpeers"><span>tag<wbr/>Mesh<wbr/>Peers</span><a href="#tagmeshpeers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">tagMeshPeers</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>If true, will utilize the libp2p connection manager tagging system to prune/graft connections to peers, defaults to true</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L208">packages/gossipsub/src/index.ts:208</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L208">packages/gossipsub/src/index.ts:208</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="unsubcribebackoff"><code class="tsd-tag">Optional</code><span>unsubcribe<wbr/>Backoff</span><a href="#unsubcribebackoff" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">unsubcribeBackoff</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/gossipsub/src/index.ts#L147">packages/gossipsub/src/index.ts:147</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/gossipsub/src/index.ts#L147">packages/gossipsub/src/index.ts:147</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

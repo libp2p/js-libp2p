@@ -22,14 +22,14 @@ the optional <code>signal</code> property.</p>
 
 </div></div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">WebSocketsInit</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#bufferedamountpollinterval">bufferedAmountPollInterval</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#http">http</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/@types/node" class="tsd-signature-type external" target="_blank">ServerOptions</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpincomingmessage" class="tsd-signature-type external" target="_blank">IncomingMessage</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpserverresponse" class="tsd-signature-type external" target="_blank">ServerResponse</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#https">https</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/@types/node" class="tsd-signature-type external" target="_blank">ServerOptions</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpincomingmessage" class="tsd-signature-type external" target="_blank">IncomingMessage</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpserverresponse" class="tsd-signature-type external" target="_blank">ServerResponse</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxbufferedamount">maxBufferedAmount</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#signal">signal</a><span class="tsd-signature-symbol">?:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="16450">
+<section class="tsd-panel tsd-hierarchy" data-refl="16530">
 <h4>Hierarchy (<a href="../hierarchy.html#@libp2p/websockets.WebSocketsInit">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="_libp2p_interface.AbortOptions.html" class="tsd-signature-type tsd-kind-interface">AbortOptions</a>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">WebSocketsInit</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-websockets/src/index.ts#L40">transport-websockets/src/index.ts:40</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-websockets/src/index.ts#L40">transport-websockets/src/index.ts:40</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -60,14 +60,14 @@ this number of ms to see if the socket can accept new data.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-websockets/src/index.ts#L69">transport-websockets/src/index.ts:69</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-websockets/src/index.ts#L69">transport-websockets/src/index.ts:69</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="http"><code class="tsd-tag">Optional</code><span>http</span><a href="#http" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">http</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/@types/node" class="tsd-signature-type external" target="_blank">ServerOptions</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpincomingmessage" class="tsd-signature-type external" target="_blank">IncomingMessage</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpserverresponse" class="tsd-signature-type external" target="_blank">ServerResponse</a><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Options used to create the HTTP server</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-websockets/src/index.ts#L44">transport-websockets/src/index.ts:44</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-websockets/src/index.ts#L44">transport-websockets/src/index.ts:44</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="https"><code class="tsd-tag">Optional</code><span>https</span><a href="#https" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">https</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/@types/node" class="tsd-signature-type external" target="_blank">ServerOptions</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpincomingmessage" class="tsd-signature-type external" target="_blank">IncomingMessage</a><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-keyword">typeof</span> <a href="https://nodejs.org/dist/latest/docs/api/http.html#class-httpserverresponse" class="tsd-signature-type external" target="_blank">ServerResponse</a><span class="tsd-signature-symbol">&gt;</span></div>
@@ -75,7 +75,7 @@ this number of ms to see if the socket can accept new data.</p>
 unspecified.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-websockets/src/index.ts#L50">transport-websockets/src/index.ts:50</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-websockets/src/index.ts#L50">transport-websockets/src/index.ts:50</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="maxbufferedamount"><code class="tsd-tag">Optional</code><span>max<wbr/>Buffered<wbr/>Amount</span><a href="#maxbufferedamount" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxBufferedAmount</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -90,7 +90,7 @@ property of incoming and outgoing websockets is allowed to get in bytes.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/transport-websockets/src/index.ts#L60">transport-websockets/src/index.ts:60</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/transport-websockets/src/index.ts#L60">transport-websockets/src/index.ts:60</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="signal"><code class="tsd-tag">Optional</code><span>signal</span><a href="#signal" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">signal</span><span class="tsd-signature-symbol">?:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a></div><aside class="tsd-sources">

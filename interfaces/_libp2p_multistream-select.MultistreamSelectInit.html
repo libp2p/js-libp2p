@@ -22,7 +22,7 @@ the optional <code>signal</code> property.</p>
 
 </div></div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">MultistreamSelectInit</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#lengthdecoder">lengthDecoder</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="https://achingbrain.github.io/uint8arraylist/classes/Uint8ArrayList.html" class="tsd-signature-type external" target="_blank">Uint8ArrayList</a><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#lengthencoder">lengthEncoder</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array" class="tsd-signature-type external" target="_blank">Uint8Array</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol">&gt;</span> <span class="tsd-signature-symbol">|</span> <a href="https://achingbrain.github.io/uint8arraylist/classes/Uint8ArrayList.html" class="tsd-signature-type external" target="_blank">Uint8ArrayList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxbuffersize">maxBufferSize</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxdatalength">maxDataLength</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#maxlengthlength">maxLengthLength</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#negotiatefully">negotiateFully</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#signal">signal</a><span class="tsd-signature-symbol">?:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="15530">
+<section class="tsd-panel tsd-hierarchy" data-refl="15575">
 <h4>Hierarchy (<a href="../hierarchy.html#@libp2p/multistream-select.MultistreamSelectInit">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="_libp2p_interface.AbortOptions.html" class="tsd-signature-type tsd-kind-interface">AbortOptions</a></li>
@@ -30,7 +30,7 @@ the optional <code>signal</code> property.</p>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">MultistreamSelectInit</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/multistream-select/src/index.ts#L29">multistream-select/src/index.ts:29</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/multistream-select/src/index.ts#L29">multistream-select/src/index.ts:29</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -54,13 +54,13 @@ the optional <code>signal</code> property.</p>
 <div class="tsd-signature"><span class="tsd-kind-property">lengthDecoder</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">data</span><span class="tsd-signature-symbol">:</span> <a href="https://achingbrain.github.io/uint8arraylist/classes/Uint8ArrayList.html" class="tsd-signature-type external" target="_blank">Uint8ArrayList</a><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <p>Inherited from <a href="https://www.npmjs.com/package/@libp2p/utils" class="external" target="_blank">Partial.lengthDecoder</a></p>
 <ul>
-<li>Defined in utils/dist/src/stream-utils.d.ts:91</li></ul></aside></section>
+<li>Defined in utils/dist/src/stream-utils.d.ts:92</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="lengthencoder"><code class="tsd-tag">Optional</code><span>length<wbr/>Encoder</span><a href="#lengthencoder" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">lengthEncoder</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">value</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <a href="https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array" class="tsd-signature-type external" target="_blank">Uint8Array</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol">&gt;</span> <span class="tsd-signature-symbol">|</span> <a href="https://achingbrain.github.io/uint8arraylist/classes/Uint8ArrayList.html" class="tsd-signature-type external" target="_blank">Uint8ArrayList</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
 <p>Inherited from <a href="https://www.npmjs.com/package/@libp2p/utils" class="external" target="_blank">Partial.lengthEncoder</a></p>
 <ul>
-<li>Defined in utils/dist/src/stream-utils.d.ts:90</li></ul></aside></section>
+<li>Defined in utils/dist/src/stream-utils.d.ts:91</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxbuffersize"><code class="tsd-tag">Optional</code><span>max<wbr/>Buffer<wbr/>Size</span><a href="#maxbuffersize" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxBufferSize</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -75,19 +75,19 @@ will be buffered.</p>
 </div></div><aside class="tsd-sources">
 <p>Inherited from <a href="https://www.npmjs.com/package/@libp2p/utils" class="external" target="_blank">Partial.maxBufferSize</a></p>
 <ul>
-<li>Defined in utils/dist/src/stream-utils.d.ts:38</li></ul></aside></section>
+<li>Defined in utils/dist/src/stream-utils.d.ts:39</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxdatalength"><code class="tsd-tag">Optional</code><span>max<wbr/>Data<wbr/>Length</span><a href="#maxdatalength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxDataLength</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <p>Inherited from <a href="https://www.npmjs.com/package/@libp2p/utils" class="external" target="_blank">Partial.maxDataLength</a></p>
 <ul>
-<li>Defined in utils/dist/src/stream-utils.d.ts:93</li></ul></aside></section>
+<li>Defined in utils/dist/src/stream-utils.d.ts:94</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="maxlengthlength"><code class="tsd-tag">Optional</code><span>max<wbr/>Length<wbr/>Length</span><a href="#maxlengthlength" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">maxLengthLength</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div><aside class="tsd-sources">
 <p>Inherited from <a href="https://www.npmjs.com/package/@libp2p/utils" class="external" target="_blank">Partial.maxLengthLength</a></p>
 <ul>
-<li>Defined in utils/dist/src/stream-utils.d.ts:92</li></ul></aside></section>
+<li>Defined in utils/dist/src/stream-utils.d.ts:93</li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="negotiatefully"><code class="tsd-tag">Optional</code><span>negotiate<wbr/>Fully</span><a href="#negotiatefully" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">negotiateFully</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -102,7 +102,7 @@ initial message, saving a round trip for connection establishment.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/multistream-select/src/index.ts#L37">multistream-select/src/index.ts:37</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/multistream-select/src/index.ts#L37">multistream-select/src/index.ts:37</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited">
 <h3 class="tsd-anchor-link" id="signal"><code class="tsd-tag">Optional</code><span>signal</span><a href="#signal" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">signal</span><span class="tsd-signature-symbol">?:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a></div><aside class="tsd-sources">

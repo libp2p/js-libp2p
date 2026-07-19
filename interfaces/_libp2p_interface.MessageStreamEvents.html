@@ -13,7 +13,7 @@
 <h1>Interface MessageStreamEvents</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">MessageStreamEvents</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#close">close</a><span class="tsd-signature-symbol">:</span> <a href="../classes/_libp2p_interface.StreamCloseEvent.html" class="tsd-signature-type tsd-kind-class">StreamCloseEvent</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#drain">drain</a><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/API/Event" class="tsd-signature-type external" target="_blank">Event</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#idle">idle</a><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/API/Event" class="tsd-signature-type external" target="_blank">Event</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#message">message</a><span class="tsd-signature-symbol">:</span> <a href="../classes/_libp2p_interface.StreamMessageEvent.html" class="tsd-signature-type tsd-kind-class">StreamMessageEvent</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#remoteclosewrite">remoteCloseWrite</a><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/API/Event" class="tsd-signature-type external" target="_blank">Event</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/message-stream.ts#L40">packages/interface/src/message-stream.ts:40</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/message-stream.ts#L40">packages/interface/src/message-stream.ts:40</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -40,7 +40,7 @@ the stream cannot be used to send or receive any more data.</p>
 occurred and the peer sent a reset signal.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/message-stream.ts#L60">packages/interface/src/message-stream.ts:60</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/message-stream.ts#L60">packages/interface/src/message-stream.ts:60</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="drain"><span>drain</span><a href="#drain" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">drain</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/API/Event" class="tsd-signature-type external" target="_blank">Event</a></div>
@@ -48,7 +48,7 @@ occurred and the peer sent a reset signal.</p>
 more, unless it is currently closing.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/message-stream.ts#L50">packages/interface/src/message-stream.ts:50</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/message-stream.ts#L50">packages/interface/src/message-stream.ts:50</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="idle"><span>idle</span><a href="#idle" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">idle</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/API/Event" class="tsd-signature-type external" target="_blank">Event</a></div>
@@ -56,14 +56,14 @@ more, unless it is currently closing.</p>
 sending to the remote end of the stream.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/message-stream.ts#L76">packages/interface/src/message-stream.ts:76</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/message-stream.ts#L76">packages/interface/src/message-stream.ts:76</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="message"><span>message</span><a href="#message" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">:</span> <a href="../classes/_libp2p_interface.StreamMessageEvent.html" class="tsd-signature-type tsd-kind-class">StreamMessageEvent</a></div>
 <div class="tsd-comment tsd-typography"><p>Data was received from the remote end of the message stream</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/message-stream.ts#L44">packages/interface/src/message-stream.ts:44</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/message-stream.ts#L44">packages/interface/src/message-stream.ts:44</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="remoteclosewrite"><span>remote<wbr/>Close<wbr/>Write</span><a href="#remoteclosewrite" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">remoteCloseWrite</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/API/Event" class="tsd-signature-type external" target="_blank">Event</a></div>
@@ -74,7 +74,7 @@ though the stream can still be written to, if it has not been closed at
 this end.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/message-stream.ts#L70">packages/interface/src/message-stream.ts:70</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/message-stream.ts#L70">packages/interface/src/message-stream.ts:70</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

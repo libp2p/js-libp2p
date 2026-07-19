@@ -19,7 +19,7 @@
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameter-list">
 <li><span id="connectionupgradeevents"><span class="tsd-kind-type-parameter">ConnectionUpgradeEvents</span> <span class="tsd-signature-keyword">extends</span> <a href="https://achingbrain.github.io/progress-events/interfaces/ProgressEvent.html" class="tsd-signature-type external" target="_blank">ProgressEvent</a> = <a href="https://achingbrain.github.io/progress-events/interfaces/ProgressEvent.html" class="tsd-signature-type external" target="_blank">ProgressEvent</a></span></li></ul></section>
-<section class="tsd-panel tsd-hierarchy" data-refl="13575">
+<section class="tsd-panel tsd-hierarchy" data-refl="13620">
 <h4>Hierarchy (<a href="../hierarchy.html#@libp2p/interface.UpgraderOptions">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="https://achingbrain.github.io/progress-events/interfaces/ProgressOptions.html" class="tsd-signature-type external" target="_blank">ProgressOptions</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#connectionupgradeevents">ConnectionUpgradeEvents</a><span class="tsd-signature-symbol">&gt;</span></li>
@@ -29,7 +29,7 @@
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="_libp2p_interface.UpgraderWithoutEncryptionOptions.html" class="tsd-signature-type tsd-kind-interface">UpgraderWithoutEncryptionOptions</a></li></ul></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/transport.ts#L137">packages/interface/src/transport.ts:137</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/transport.ts#L137">packages/interface/src/transport.ts:137</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -56,14 +56,14 @@ and one returned from <code>upgrader.upgradeInbound</code> will be the responder
 <p>Pass a value here to override the default.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/transport.ts#L164">packages/interface/src/transport.ts:164</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/transport.ts#L164">packages/interface/src/transport.ts:164</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="limits"><code class="tsd-tag">Optional</code><span>limits</span><a href="#limits" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">limits</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_interface.ConnectionLimits.html" class="tsd-signature-type tsd-kind-interface">ConnectionLimits</a></div>
 <div class="tsd-comment tsd-typography"><p>If the connection is to have limits applied to it, pass them here</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/transport.ts#L155">packages/interface/src/transport.ts:155</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/transport.ts#L155">packages/interface/src/transport.ts:155</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="muxerfactory"><code class="tsd-tag">Optional</code><span>muxer<wbr/>Factory</span><a href="#muxerfactory" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">muxerFactory</span><span class="tsd-signature-symbol">?:</span> <a href="_libp2p_interface.StreamMuxerFactory.html" class="tsd-signature-type tsd-kind-interface">StreamMuxerFactory</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_interface.StreamMuxer.html" class="tsd-signature-type tsd-kind-interface">StreamMuxer</a><span class="tsd-signature-symbol">&lt;</span><a href="_libp2p_interface.Stream.html" class="tsd-signature-type tsd-kind-interface">Stream</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -73,7 +73,7 @@ select after an encryption protocol has been agreed on.</p>
 factory instance here to skip muxer negotiation.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/transport.ts#L150">packages/interface/src/transport.ts:150</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/transport.ts#L150">packages/interface/src/transport.ts:150</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited tsd-is-external">
 <h3 class="tsd-anchor-link" id="onprogress"><code class="tsd-tag">Optional</code><span>on<wbr/>Progress</span><a href="#onprogress" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">onProgress</span><span class="tsd-signature-symbol">?:</span> <a href="https://achingbrain.github.io/progress-events/interfaces/ProgressEventListener.html" class="tsd-signature-type external" target="_blank">ProgressEventListener</a><span class="tsd-signature-symbol">&lt;</span><a class="tsd-signature-type tsd-kind-type-parameter" href="#connectionupgradeevents">ConnectionUpgradeEvents</a><span class="tsd-signature-symbol">&gt;</span></div><aside class="tsd-sources">
@@ -85,14 +85,14 @@ factory instance here to skip muxer negotiation.</p>
 <div class="tsd-signature"><span class="tsd-kind-property">signal</span><span class="tsd-signature-symbol">:</span> <a href="https://developer.mozilla.org/docs/Web/API/AbortSignal" class="tsd-signature-type external" target="_blank">AbortSignal</a></div><aside class="tsd-sources">
 <p>Inherited from <a href="_libp2p_interface.AbortOptions.html">AbortOptions</a>.<a href="_libp2p_interface.AbortOptions.html#signal">signal</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/index.ts#L884">packages/interface/src/index.ts:884</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/index.ts#L884">packages/interface/src/index.ts:884</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="skipprotection"><code class="tsd-tag">Optional</code><span>skip<wbr/>Protection</span><a href="#skipprotection" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">skipProtection</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>If true no connection protection will be performed on the connection.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/interface/src/transport.ts#L141">packages/interface/src/transport.ts:141</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/interface/src/transport.ts#L141">packages/interface/src/transport.ts:141</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

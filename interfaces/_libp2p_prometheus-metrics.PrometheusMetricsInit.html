@@ -13,7 +13,7 @@
 <h1>Interface PrometheusMetricsInit</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">PrometheusMetricsInit</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#collectdefaultmetrics">collectDefaultMetrics</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#defaultmetrics">defaultMetrics</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/prom-client" class="tsd-signature-type external" target="_blank">DefaultMetricsCollectorConfiguration</a><span class="tsd-signature-symbol">&lt;</span><a href="https://www.npmjs.com/package/prom-client" class="tsd-signature-type external" target="_blank">RegistryContentType</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#preserveexistingmetrics">preserveExistingMetrics</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#registry">registry</a><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/prom-client" class="tsd-signature-type external" target="_blank">Registry</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;text/plain; version=0.0.4; charset=utf-8&quot;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#statfslocation">statfsLocation</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/metrics-prometheus/src/index.ts#L90">packages/metrics-prometheus/src/index.ts:90</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/metrics-prometheus/src/index.ts#L90">packages/metrics-prometheus/src/index.ts:90</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -37,14 +37,14 @@
 this, pass true here</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/metrics-prometheus/src/index.ts#L101">packages/metrics-prometheus/src/index.ts:101</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/metrics-prometheus/src/index.ts#L101">packages/metrics-prometheus/src/index.ts:101</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="defaultmetrics"><code class="tsd-tag">Optional</code><span>default<wbr/>Metrics</span><a href="#defaultmetrics" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">defaultMetrics</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/prom-client" class="tsd-signature-type external" target="_blank">DefaultMetricsCollectorConfiguration</a><span class="tsd-signature-symbol">&lt;</span><a href="https://www.npmjs.com/package/prom-client" class="tsd-signature-type external" target="_blank">RegistryContentType</a><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>prom-client options to pass to the <code>collectDefaultMetrics</code> function</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/metrics-prometheus/src/index.ts#L106">packages/metrics-prometheus/src/index.ts:106</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/metrics-prometheus/src/index.ts#L106">packages/metrics-prometheus/src/index.ts:106</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="preserveexistingmetrics"><code class="tsd-tag">Optional</code><span>preserve<wbr/>Existing<wbr/>Metrics</span><a href="#preserveexistingmetrics" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">preserveExistingMetrics</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
@@ -53,7 +53,7 @@ we reset the global metrics registry on creation - to not do this,
 pass true here</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/metrics-prometheus/src/index.ts#L113">packages/metrics-prometheus/src/index.ts:113</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/metrics-prometheus/src/index.ts#L113">packages/metrics-prometheus/src/index.ts:113</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="registry"><code class="tsd-tag">Optional</code><span>registry</span><a href="#registry" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">registry</span><span class="tsd-signature-symbol">?:</span> <a href="https://www.npmjs.com/package/prom-client" class="tsd-signature-type external" target="_blank">Registry</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">&quot;text/plain; version=0.0.4; charset=utf-8&quot;</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -61,7 +61,7 @@ pass true here</p>
 By default, the global registry is used to register metrics.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/metrics-prometheus/src/index.ts#L95">packages/metrics-prometheus/src/index.ts:95</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/metrics-prometheus/src/index.ts#L95">packages/metrics-prometheus/src/index.ts:95</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="statfslocation"><code class="tsd-tag">Optional</code><span>statfs<wbr/>Location</span><a href="#statfslocation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">statfsLocation</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
@@ -71,7 +71,7 @@ default location to stat is the current working directory, configured this
 location here</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/66e022d053da39b2dba11f90158c046f84299488/packages/metrics-prometheus/src/index.ts#L121">packages/metrics-prometheus/src/index.ts:121</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/cf0dbb38a2bc86e4346660c804a873fefbbeab49/packages/metrics-prometheus/src/index.ts#L121">packages/metrics-prometheus/src/index.ts:121</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
