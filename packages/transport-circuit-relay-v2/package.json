@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/circuit-relay-v2",
-  "version": "4.2.8",
+  "version": "4.2.9",
   "description": "Implementation of Circuit Relay v2",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-circuit-relay-v2#readme",
@@ -48,11 +48,11 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.21",
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/interface-internal": "^3.1.8",
-    "@libp2p/peer-collections": "^7.0.23",
+    "@libp2p/interface-internal": "^3.1.9",
+    "@libp2p/peer-collections": "^7.0.24",
     "@libp2p/peer-id": "^6.0.12",
     "@libp2p/peer-record": "^9.0.13",
-    "@libp2p/utils": "^7.2.4",
+    "@libp2p/utils": "^7.3.0",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "any-signal": "^4.1.1",

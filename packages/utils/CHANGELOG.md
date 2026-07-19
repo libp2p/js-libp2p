@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.3.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.2.4...utils-v7.3.0) (2026-07-19)
+
+
+### Features
+
+* **utils:** forward decode options through pbStream ([#3563](https://github.com/libp2p/js-libp2p/issues/3563)) ([a04f5e0](https://github.com/libp2p/js-libp2p/commit/a04f5e0bf392ef1cc018c0e5d58f802de7dd09c5))
+
 ## [7.2.4](https://github.com/libp2p/js-libp2p/compare/utils-v7.2.3...utils-v7.2.4) (2026-07-07)
 
 

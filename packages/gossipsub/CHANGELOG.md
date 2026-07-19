@@ -1,5 +1,24 @@
 # Changelog
 
+## [16.0.5](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.4...gossipsub-v16.0.5) (2026-07-19)
+
+
+### Bug Fixes
+
+* **gossipsub:** reject malformed key and signature during validation ([#3578](https://github.com/libp2p/js-libp2p/issues/3578)) ([ff9e5fc](https://github.com/libp2p/js-libp2p/commit/ff9e5fc7c17b7e58436669d73d0f9c86a68e0793))
+* **gossipsub:** validate the message key for all peer id types ([#3569](https://github.com/libp2p/js-libp2p/issues/3569)) ([cec2b1f](https://github.com/libp2p/js-libp2p/commit/cec2b1f349d130065e561349a0336a239528267f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.25 to ^11.0.26
+    * @libp2p/peer-store bumped from ^12.0.23 to ^12.0.24
+
 ## [16.0.4](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.3...gossipsub-v16.0.4) (2026-07-07)
 
 
