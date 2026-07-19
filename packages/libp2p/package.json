@@ -118,7 +118,7 @@
     "it-map": "^3.1.4",
     "it-take": "^3.0.9",
     "p-wait-for": "^6.0.0",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^3.0.2",
     "wherearewe": "^2.0.1"
