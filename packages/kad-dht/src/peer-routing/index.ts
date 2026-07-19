@@ -3,6 +3,7 @@ import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
 import { peerIdFromPublicKey, peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import * as Digest from 'multiformats/hashes/digest'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { QueryError, InvalidRecordError } from '../errors.ts'
 import { MessageType } from '../message/dht.ts'
 import { PeerDistanceList } from '../peer-distance-list.ts'
@@ -299,7 +300,7 @@ export class PeerRouting {
         if (event.record != null) {
           // We have a record
           try {
-            await this._verifyRecordOnline(event.record, options)
+            await this._verifyRecordOnline(event.record, key, options)
           } catch (err: any) {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
@@ -322,9 +323,14 @@ export class PeerRouting {
    * Verify a record, fetching missing public keys from the network.
    * Throws an error if the record is invalid.
    */
-  async _verifyRecordOnline (record: DHTRecord, options?: AbortOptions): Promise<void> {
+  async _verifyRecordOnline (record: DHTRecord, key: Uint8Array, options?: AbortOptions): Promise<void> {
     if (record.timeReceived == null) {
       throw new InvalidRecordError('invalid record received')
+    }
+
+    // the returned record must be for the key that was requested
+    if (!uint8ArrayEquals(record.key, key)) {
+      throw new InvalidRecordError('received record key did not match the requested key')
     }
 
     await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived), options)
