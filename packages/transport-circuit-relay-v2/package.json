@@ -58,7 +58,7 @@
     "any-signal": "^4.1.1",
     "main-event": "^1.0.1",
     "multiformats": "^14.0.0",
-    "nanoid": "^5.1.5",
+    "nanoid": "^6.0.0",
     "progress-events": "^1.1.0",
     "protons-runtime": "^7.0.0",
     "retimeable-signal": "^1.0.1",

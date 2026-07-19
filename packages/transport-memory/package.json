@@ -54,7 +54,7 @@
     "it-map": "^3.1.4",
     "it-pushable": "^3.2.3",
     "main-event": "^1.0.1",
-    "nanoid": "^5.1.5",
+    "nanoid": "^6.0.0",
     "race-signal": "^2.0.0",
     "uint8arraylist": "^3.0.2"
   },
