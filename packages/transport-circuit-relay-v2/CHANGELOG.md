@@ -101,6 +101,22 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.2.9](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v4.2.8...circuit-relay-v2-v4.2.9) (2026-07-19)
+
+
+### Bug Fixes
+
+* **circuit-relay-v2:** avoid leaking abort listeners on refresh ([#3560](https://github.com/libp2p/js-libp2p/issues/3560)) ([4bb8fbe](https://github.com/libp2p/js-libp2p/commit/4bb8fbe8d3f3590e4af51a1f5f7de56fffa5804d))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/peer-collections bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
 ## [4.2.8](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v4.2.7...circuit-relay-v2-v4.2.8) (2026-07-07)
 
 

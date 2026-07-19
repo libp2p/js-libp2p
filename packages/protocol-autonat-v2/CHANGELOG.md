@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.0](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.0.23...autonat-v2-v2.1.0) (2026-07-19)
+
+
+### Features
+
+* **autonat-v2:** emit address reachability events ([#3490](https://github.com/libp2p/js-libp2p/issues/3490)) ([084ad78](https://github.com/libp2p/js-libp2p/commit/084ad7890bfe360c67fc41e1635fde73cb4fce0a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/peer-collections bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
 ## [2.0.23](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.0.22...autonat-v2-v2.0.23) (2026-07-07)
 
 

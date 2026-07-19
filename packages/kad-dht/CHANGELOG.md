@@ -106,6 +106,30 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.4.0](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.4...kad-dht-v16.4.0) (2026-07-19)
+
+
+### Features
+
+* **kad-dht:** terminate query paths once the closest-K set is full ([#3539](https://github.com/libp2p/js-libp2p/issues/3539)) ([bd7f0cd](https://github.com/libp2p/js-libp2p/commit/bd7f0cda6d1ef7dfda23210a1534cc17e1a1c9ef))
+
+
+### Bug Fixes
+
+* verify records and public keys match what was requested ([#3577](https://github.com/libp2p/js-libp2p/issues/3577)) ([523b52b](https://github.com/libp2p/js-libp2p/commit/523b52bd690943526f5554a3d8418c8d0c92cae5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/peer-collections bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/ping bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+  * devDependencies
+    * @libp2p/peer-store bumped from ^12.0.23 to ^12.0.24
+
 ## [16.3.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.3.3...kad-dht-v16.3.4) (2026-07-07)
 
 
