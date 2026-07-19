@@ -99,12 +99,14 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     }
   })
 
-  proc.catch(() => {
-    // go-libp2p daemon throws when killed
-  })
-
-  proc.once('exit', code => {
-    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
+  // the daemon should keep running and print its control socket, so any exit
+  // before that, clean or killed, is a startup failure. execa 10 removed the
+  // child-process 'exit' event, so the settled promise is the signal. once
+  // startup has resolved the deferred, a teardown kill's rejection is a no-op
+  void proc.then(result => {
+    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${result.exitCode ?? 'unknown'})`))
+  }, err => {
+    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${err?.exitCode ?? 'unknown'})`))
   })
 
   let controlMultiaddr: Multiaddr | undefined
