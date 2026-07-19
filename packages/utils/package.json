@@ -79,7 +79,7 @@
     "benchmark": "^2.1.4",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
   },

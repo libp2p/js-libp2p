@@ -59,7 +59,7 @@
     "aegir": "^48.1.1",
     "it-all": "^3.0.9",
     "p-event": "^7.0.0",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"

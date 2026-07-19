@@ -57,7 +57,7 @@
   "devDependencies": {
     "@libp2p/peer-id": "^6.0.12",
     "aegir": "^48.1.1",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "uint8arrays": "^6.1.1"
   },
   "browser": {
