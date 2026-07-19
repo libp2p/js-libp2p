@@ -71,7 +71,7 @@
   "devDependencies": {
     "@libp2p/logger": "^6.2.10",
     "@multiformats/multiaddr": "^13.0.3",
-    "@types/sinon": "^21.0.1",
+    "@types/sinon": "^22.0.0",
     "aegir": "^48.1.1",
     "delay": "^7.0.0",
     "p-wait-for": "^6.0.0",
