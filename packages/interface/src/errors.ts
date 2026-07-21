@@ -365,6 +365,18 @@ export class TooManyInboundProtocolStreamsError extends Error {
 }
 
 /**
+ * This error is thrown when an inbound protocol stream exceeds the configured rate limit
+ */
+export class InboundStreamRateLimitError extends Error {
+  static name = 'InboundStreamRateLimitError'
+
+  constructor (message = 'Inbound stream rate limit exceeded') {
+    super(message)
+    this.name = 'InboundStreamRateLimitError'
+  }
+}
+
+/**
  * This error is thrown where there are too many outbound protocols streams open
  */
 export class TooManyOutboundProtocolStreamsError extends Error {
