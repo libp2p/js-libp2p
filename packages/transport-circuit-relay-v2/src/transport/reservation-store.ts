@@ -293,17 +293,14 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         let res: RelayEntry
 
-        // assign a reservation id if one was requested - a refresh reuses the id
-        // its reservation already holds, but only while that reservation is
-        // still the live entry. if it was removed up front (disconnected
-        // refresh) or by a concurrent connection:close, its id was returned to
-        // the pool, so reclaim from the pool instead of duplicating the id.
         if (type === 'discovered') {
-          const isLiveDiscoveredRefresh = existingReservation?.type === 'discovered' &&
-            this.reservations.get(peerId) === existingReservation
-
-          const id = isLiveDiscoveredRefresh
-            ? existingReservation.id
+          // a live refresh reuses the slot id its reservation still holds. if
+          // that entry was removed while we were refreshing (a disconnected
+          // refresh, or a concurrent connection:close) its id went back to the
+          // pool, so claim a fresh one - an id is never both live and pending
+          const live = this.reservations.get(peerId)
+          const id = live?.type === 'discovered'
+            ? live.id
             : this.pendingReservations.pop()
 
           if (id == null) {
