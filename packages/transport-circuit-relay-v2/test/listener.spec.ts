@@ -197,6 +197,9 @@ describe('listener', () => {
       throw new Error('did not register a relay:created-reservation listener')
     }
 
+    // only observe confirmations from the refresh, not the initial listen()
+    components.addressManager.confirmObservedAddr.resetHistory()
+
     // a refresh returning the SAME address must not withdraw it
     createdReservationListener(
       new CustomEvent('relay:created-reservation', {

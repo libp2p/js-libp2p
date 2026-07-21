@@ -167,13 +167,18 @@ describe('transport reservation-store', () => {
     store.reserveRelay()
     await store.addRelay(relayPeer, 'discovered')
 
-    // make the next (refresh) reservation attempt fail
+    // make the next (refresh) reservation attempt fail, recording when it runs
+    const order: string[] = []
     connection.newStream.reset()
-    connection.newStream.rejects(new Error('stream failed'))
+    connection.newStream.callsFake(async () => {
+      order.push('attempt')
+      throw new Error('stream failed')
+    })
 
     const removed: PeerId[] = []
     store.addEventListener('relay:removed', (evt) => {
       removed.push(evt.detail.relay)
+      order.push('removed')
     })
     let notEnough = 0
     store.addEventListener('relay:not-enough-relays', () => { notEnough++ })
@@ -186,6 +191,9 @@ describe('transport reservation-store', () => {
     // the freed slot returns to the pool so rediscovery can replace the relay
     expect((store as any).pendingReservations).to.have.lengthOf(1)
     expect(notEnough).to.be.greaterThan(0)
+    // keep-until-failure: a still-connected reservation is removed only after
+    // the refresh attempt runs, not dropped up front before trying
+    expect(order).to.deep.equal(['attempt', 'removed'])
   })
 
   it('should reclaim the slot when a disconnected discovered reservation refreshes', async () => {
@@ -240,11 +248,16 @@ describe('transport reservation-store', () => {
     await store.addRelay(relayPeer, 'discovered')
     expect((store as any).pendingReservations).to.have.lengthOf(1)
 
-    // refreshing must not touch the other still-pending slot
+    // a live refresh must not withdraw the address...
+    const removed: string[] = []
+    store.addEventListener('relay:removed', () => { removed.push('removed') })
+
+    // ...nor touch the other still-pending slot
     await store.addRelay(relayPeer, 'discovered')
 
     expect((store as any).pendingReservations).to.have.lengthOf(1)
     expect(store.hasReservation(relayPeer)).to.equal(true)
+    expect(removed).to.have.lengthOf(0)
   })
 
   it('should clear the previous refresh timer when a reservation is refreshed', async () => {
@@ -278,13 +291,18 @@ describe('transport reservation-store', () => {
     const connection = addConnectedRelay(relayPeer, 300)
     await store.addRelay(relayPeer, 'configured')
 
-    // make the next (refresh) reservation attempt fail
+    // make the next (refresh) reservation attempt fail, recording when it runs
+    const order: string[] = []
     connection.newStream.reset()
-    connection.newStream.rejects(new Error('stream failed'))
+    connection.newStream.callsFake(async () => {
+      order.push('attempt')
+      throw new Error('stream failed')
+    })
 
     const removed: PeerId[] = []
     store.addEventListener('relay:removed', (evt) => {
       removed.push(evt.detail.relay)
+      order.push('removed')
     })
 
     // the refresh rejects; the catch path must clean up the stale reservation
@@ -295,5 +313,37 @@ describe('transport reservation-store', () => {
 
     expect(removed).to.have.lengthOf(1)
     expect(store.hasReservation(relayPeer)).to.equal(false)
+    // keep-until-failure: the still-connected reservation is removed only after
+    // the refresh attempt runs, not dropped up front before trying
+    expect(order).to.deep.equal(['attempt', 'removed'])
+  })
+
+  it('should withdraw the address and re-check the count even when the datastore untag fails', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = addConnectedRelay(relayPeer, 300)
+    store.reserveRelay()
+    await store.addRelay(relayPeer, 'discovered')
+    expect((store as any).pendingReservations).to.have.lengthOf(0)
+
+    // the datastore rejects the untag write performed during removal
+    components.peerStore.merge.rejects(new Error('datastore down'))
+
+    const removed: PeerId[] = []
+    store.addEventListener('relay:removed', (evt) => {
+      removed.push(evt.detail.relay)
+    })
+    let notEnough = 0
+    store.addEventListener('relay:not-enough-relays', () => { notEnough++ })
+
+    // the relay connection closes, triggering removal; the untag rejection must
+    // not prevent withdrawing the address or freeing the slot for rediscovery
+    components.events.dispatchEvent(new CustomEvent('connection:close', { detail: connection }))
+    await delay(0)
+
+    expect(removed).to.have.lengthOf(1)
+    expect(store.hasReservation(relayPeer)).to.equal(false)
+    // the freed slot returns to the pool despite the failed datastore write
+    expect((store as any).pendingReservations).to.have.lengthOf(1)
+    expect(notEnough).to.be.greaterThan(0)
   })
 })
