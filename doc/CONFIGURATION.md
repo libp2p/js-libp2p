@@ -302,7 +302,7 @@ const node = await createLibp2p({
 
 node.addEventListener('peer:discovery', (event) => {
   console.log('Discovered new peer:', event.detail.id.toString())
-  node.dial(event.detail.multiaddrs)
+  node.dial(event.detail.id)
 })
 ```
 
