@@ -150,20 +150,22 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     this.listeningAddrs = reservation.details.reservation.addrs
       .map(buf => multiaddr(buf).encapsulate('/p2p-circuit'))
 
-    // withdraw any previously advertised address the refresh no longer includes,
-    // otherwise a changed relay address leaves the stale one advertised
-    previousAddrs
-      .filter(ma => !this.listeningAddrs.some(current => current.equals(ma)))
-      .forEach(ma => {
-        this.addressManager.removeObservedAddr(ma)
-      })
-
+    // confirm the refreshed addresses first so that failing to withdraw a stale
+    // one below cannot leave us with nothing advertised
     this.listeningAddrs.forEach(ma => {
       // mark as externally dialable
       this.addressManager.confirmObservedAddr(ma, {
         type: 'transport'
       })
     })
+
+    // then withdraw any previously advertised address the refresh no longer
+    // includes, otherwise a changed relay address leaves the stale one advertised
+    previousAddrs
+      .filter(ma => !this.listeningAddrs.some(current => current.equals(ma)))
+      .forEach(ma => {
+        this.addressManager.removeObservedAddr(ma)
+      })
 
     // if that succeeded announce listen addresses change
     queueMicrotask(() => {
