@@ -241,10 +241,17 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
             } satisfies RelayReservation
           }
 
-          await this.#removeReservation(peerId)
+          // keep a still-connected reservation advertised while we refresh it in
+          // place - the catch path below removes it if the refresh fails. only
+          // drop it up front when the relay connection is already gone.
+          if (!connected) {
+            await this.#removeReservation(peerId)
+          }
         }
 
-        if (type === 'discovered' && this.pendingReservations.length === 0) {
+        // a refresh keeps the slot it already holds; only a brand new discovered
+        // reservation needs a free pending slot
+        if (type === 'discovered' && existingReservation == null && this.pendingReservations.length === 0) {
           throw new HadEnoughRelaysError('Not making reservation on discovered relay because we do not need any more relays')
         }
 
@@ -286,9 +293,18 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         let res: RelayEntry
 
-        // assign a reservation id if one was requested
+        // assign a reservation id if one was requested - a refresh reuses the id
+        // its reservation already holds, but only while that reservation is
+        // still the live entry. if it was removed up front (disconnected
+        // refresh) or by a concurrent connection:close, its id was returned to
+        // the pool, so reclaim from the pool instead of duplicating the id.
         if (type === 'discovered') {
-          const id = this.pendingReservations.pop()
+          const isLiveDiscoveredRefresh = existingReservation?.type === 'discovered' &&
+            this.reservations.get(peerId) === existingReservation
+
+          const id = isLiveDiscoveredRefresh
+            ? existingReservation.id
+            : this.pendingReservations.pop()
 
           if (id == null) {
             throw new HadEnoughRelaysError('Made reservation on relay but did not need any more discovered relays')
@@ -308,6 +324,12 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
             type,
             connection: connection.id
           }
+        }
+
+        // clear the previous reservation's refresh timer before replacing it,
+        // otherwise it stays armed and later fires against the new reservation
+        if (existingReservation != null) {
+          clearTimeout(existingReservation.timeout)
         }
 
         // we've managed to create a reservation successfully
@@ -472,13 +494,9 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       )
     }
 
-    // untag the relay
-    await this.peerStore.merge(peerId, {
-      tags: {
-        [KEEP_ALIVE_TAG]: undefined
-      }
-    })
-
+    // withdraw the address and re-check the relay count from the in-memory
+    // state updated above, independent of the tag write below, so a datastore
+    // failure cannot strand the advertised address or stall rediscovery
     this.safeDispatchEvent('relay:removed', {
       detail: {
         relay: peerId,
@@ -488,6 +506,13 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
     // maybe trigger discovery of new relays
     this.#checkReservationCount()
+
+    // untag the relay so the connection manager may reap the connection
+    await this.peerStore.merge(peerId, {
+      tags: {
+        [KEEP_ALIVE_TAG]: undefined
+      }
+    })
   }
 
   #checkReservationCount (): void {

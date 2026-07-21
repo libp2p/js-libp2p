@@ -71,6 +71,14 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     } = evt.detail
 
     if (details.type === 'configured') {
+      // listen() applies a configured relay's initial reservation directly.
+      // This handler also fires for that initial event, but this.relay is not
+      // set yet so the guard below skips it. A later refresh fires with
+      // this.relay set, so re-apply it for our relay to pick up a changed address.
+      if (this.relay?.equals(evt.detail.relay) === true) {
+        this.addedRelay(evt.detail)
+      }
+
       return
     }
 
@@ -136,9 +144,19 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
 
     this.relay = reservation.relay
 
+    const previousAddrs = this.listeningAddrs
+
     // add all addresses from the relay reservation
     this.listeningAddrs = reservation.details.reservation.addrs
       .map(buf => multiaddr(buf).encapsulate('/p2p-circuit'))
+
+    // withdraw any previously advertised address the refresh no longer includes,
+    // otherwise a changed relay address leaves the stale one advertised
+    previousAddrs
+      .filter(ma => !this.listeningAddrs.some(current => current.equals(ma)))
+      .forEach(ma => {
+        this.addressManager.removeObservedAddr(ma)
+      })
 
     this.listeningAddrs.forEach(ma => {
       // mark as externally dialable
