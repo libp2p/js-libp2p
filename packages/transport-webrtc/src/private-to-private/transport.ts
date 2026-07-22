@@ -168,6 +168,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       signal: options.signal,
       connectionManager: this.components.connectionManager,
       transportManager: this.components.transportManager,
+      metrics: this.metrics,
       log: this.log,
       logger: this.components.logger,
       onProgress: options.onProgress
@@ -181,14 +182,24 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       log: this.components.logger.forComponent('libp2p:webrtc:connection')
     })
 
-    const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
-      skipProtection: true,
-      skipEncryption: true,
-      remotePeer: getRemotePeer(ma),
-      muxerFactory,
-      onProgress: options.onProgress,
-      signal: options.signal
-    })
+    let connection: Connection
+
+    try {
+      connection = await options.upgrader.upgradeOutbound(webRTCConn, {
+        skipProtection: true,
+        skipEncryption: true,
+        remotePeer: getRemotePeer(ma),
+        muxerFactory,
+        onProgress: options.onProgress,
+        signal: options.signal
+      })
+    } catch (err) {
+      // discard any early data channels buffered before the upgrade failed and
+      // close the peer connection
+      muxerFactory.close()
+      peerConnection.close()
+      throw err
+    }
 
     // close the connection on shut down
     this._closeOnShutdown(peerConnection, webRTCConn)
@@ -213,7 +224,9 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     const muxerFactory = new DataChannelMuxerFactory({
       // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
-      dataChannelOptions: this.init.dataChannel
+      dataChannelOptions: this.init.dataChannel,
+      metrics: this.metrics?.listenerEvents,
+      log: this.log
     })
 
     try {
@@ -251,6 +264,8 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     } catch (err: any) {
       this.log.error('incoming signaling error - %e', err)
 
+      // discard any early data channels buffered before the upgrade failed
+      muxerFactory.close()
       peerConnection.close()
       stream.abort(err)
       throw err

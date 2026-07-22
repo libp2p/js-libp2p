@@ -83,7 +83,9 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   const muxerFactory = new DataChannelMuxerFactory({
     // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
-    dataChannelOptions: dataChannel
+    dataChannelOptions: dataChannel,
+    metrics: metrics?.dialerEvents,
+    log
   })
 
   try {
