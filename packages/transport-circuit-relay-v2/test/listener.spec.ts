@@ -98,4 +98,196 @@ describe('listener', () => {
       relayAddr.encapsulate('/p2p-circuit')
     )).to.be.true()
   })
+
+  it('should re-confirm a configured relay reservation when it is refreshed', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${relayPeer}/p2p-circuit`)
+    const conn = stubInterface<Connection>({
+      id: 'connection-id-1234',
+      remotePeer: relayPeer
+    })
+
+    components.connectionManager.openConnection.withArgs(relayAddr.decapsulate('/p2p-circuit')).resolves(conn)
+
+    components.reservationStore.addRelay.withArgs(relayPeer).resolves({
+      relay: relayPeer,
+      details: {
+        type: 'configured',
+        reservation: {
+          addrs: [
+            relayAddr.bytes
+          ],
+          expire: 100n
+        },
+        timeout: 0 as any,
+        connection: conn.id
+      }
+    })
+
+    // establish the configured relay
+    await listener.listen(relayAddr)
+
+    // the relay reservation is refreshed with a new address for the same relay
+    const refreshedAddr = multiaddr(`/ip4/124.124.124.124/tcp/4321/p2p/${relayPeer}/p2p-circuit`)
+    const createdReservationListener = components.reservationStore.addEventListener.getCall(1).args[1]
+
+    if (typeof createdReservationListener !== 'function') {
+      throw new Error('did not register a relay:created-reservation listener')
+    }
+
+    createdReservationListener(
+      new CustomEvent('relay:created-reservation', {
+        detail: {
+          relay: relayPeer,
+          details: {
+            type: 'configured',
+            reservation: {
+              addrs: [
+                refreshedAddr.bytes
+              ],
+              expire: 200n
+            },
+            timeout: 0 as any,
+            connection: conn.id
+          }
+        }
+      })
+    )
+
+    const confirmedAddrs = components.addressManager.confirmObservedAddr.getCalls()
+      .map(call => call.args[0].toString())
+
+    expect(confirmedAddrs).to.include(refreshedAddr.encapsulate('/p2p-circuit').toString())
+
+    // the previous, now-stale address is withdrawn, not left advertised
+    const withdrawnAddrs = components.addressManager.removeObservedAddr.getCalls()
+      .map(call => call.args[0].toString())
+    expect(withdrawnAddrs).to.include(relayAddr.encapsulate('/p2p-circuit').toString())
+  })
+
+  it('should not withdraw an unchanged configured relay address on refresh', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${relayPeer}/p2p-circuit`)
+    const conn = stubInterface<Connection>({
+      id: 'connection-id-1234',
+      remotePeer: relayPeer
+    })
+
+    components.connectionManager.openConnection.withArgs(relayAddr.decapsulate('/p2p-circuit')).resolves(conn)
+    components.reservationStore.addRelay.withArgs(relayPeer).resolves({
+      relay: relayPeer,
+      details: {
+        type: 'configured',
+        reservation: {
+          addrs: [
+            relayAddr.bytes
+          ],
+          expire: 100n
+        },
+        timeout: 0 as any,
+        connection: conn.id
+      }
+    })
+
+    await listener.listen(relayAddr)
+
+    const createdReservationListener = components.reservationStore.addEventListener.getCall(1).args[1]
+
+    if (typeof createdReservationListener !== 'function') {
+      throw new Error('did not register a relay:created-reservation listener')
+    }
+
+    // only observe confirmations from the refresh, not the initial listen()
+    components.addressManager.confirmObservedAddr.resetHistory()
+
+    // a refresh returning the SAME address must not withdraw it
+    createdReservationListener(
+      new CustomEvent('relay:created-reservation', {
+        detail: {
+          relay: relayPeer,
+          details: {
+            type: 'configured',
+            reservation: {
+              addrs: [
+                relayAddr.bytes
+              ],
+              expire: 200n
+            },
+            timeout: 0 as any,
+            connection: conn.id
+          }
+        }
+      })
+    )
+
+    const withdrawnAddrs = components.addressManager.removeObservedAddr.getCalls()
+      .map(call => call.args[0].toString())
+    expect(withdrawnAddrs).to.not.include(relayAddr.encapsulate('/p2p-circuit').toString())
+
+    // and it stays confirmed
+    const confirmedAddrs = components.addressManager.confirmObservedAddr.getCalls()
+      .map(call => call.args[0].toString())
+    expect(confirmedAddrs).to.include(relayAddr.encapsulate('/p2p-circuit').toString())
+  })
+
+  it('should ignore a configured reservation refresh for a different relay', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayAddr = multiaddr(`/ip4/123.123.123.123/tcp/1234/p2p/${relayPeer}/p2p-circuit`)
+    const conn = stubInterface<Connection>({
+      id: 'connection-id-1234',
+      remotePeer: relayPeer
+    })
+
+    components.connectionManager.openConnection.withArgs(relayAddr.decapsulate('/p2p-circuit')).resolves(conn)
+
+    components.reservationStore.addRelay.withArgs(relayPeer).resolves({
+      relay: relayPeer,
+      details: {
+        type: 'configured',
+        reservation: {
+          addrs: [
+            relayAddr.bytes
+          ],
+          expire: 100n
+        },
+        timeout: 0 as any,
+        connection: conn.id
+      }
+    })
+
+    await listener.listen(relayAddr)
+
+    // a configured refresh for a different relay must not be applied as ours
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const otherAddr = multiaddr(`/ip4/124.124.124.124/tcp/4321/p2p/${otherPeer}/p2p-circuit`)
+    const createdReservationListener = components.reservationStore.addEventListener.getCall(1).args[1]
+
+    if (typeof createdReservationListener !== 'function') {
+      throw new Error('did not register a relay:created-reservation listener')
+    }
+
+    createdReservationListener(
+      new CustomEvent('relay:created-reservation', {
+        detail: {
+          relay: otherPeer,
+          details: {
+            type: 'configured',
+            reservation: {
+              addrs: [
+                otherAddr.bytes
+              ],
+              expire: 200n
+            },
+            timeout: 0 as any,
+            connection: 'connection-id-5678'
+          }
+        }
+      })
+    )
+
+    const confirmedAddrs = components.addressManager.confirmObservedAddr.getCalls()
+      .map(call => call.args[0].toString())
+
+    expect(confirmedAddrs).to.not.include(otherAddr.encapsulate('/p2p-circuit').toString())
+  })
 })
