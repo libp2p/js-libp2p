@@ -1709,7 +1709,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
     })
 
-    await Promise.all(toconnect.map(async (id) => this.connect(id)))
+    await Promise.all(toconnect.map(async (id) => {
+      try {
+        await this.connect(id)
+      } catch (err) {
+        this.log.error('directConnect: failed to connect to %s', id, err)
+      }
+    }))
   }
 
   /**
@@ -3113,5 +3119,52 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         [topic]: undefined
       }
     }).catch((err) => { this.log.error('Error untagging peer %s with topic %s', peerId, topic, err) })
+  }
+
+  /*
+   * Dynamic Direct Peer Management
+   */
+  async addDirectPeer (peerId: PeerId, addrs: Multiaddr[]): Promise<void> {
+    const peerIdStr = peerId.toString()
+
+    if (peerId.equals(this.components.peerId)) {
+      throw new Error('Cannot add self as a direct peer')
+    }
+
+    if (addrs.length === 0) {
+      throw new Error('Direct peer addresses are required')
+    }
+
+    await this.components.peerStore.merge(peerId, { multiaddrs: addrs })
+
+    this.mesh.forEach((peers) => {
+      peers.delete(peerIdStr)
+    })
+    this.fanout.forEach((peers) => {
+      peers.delete(peerIdStr)
+    })
+    this.direct.add(peerIdStr)
+    this.log('addDirectPeer: added %s', peerIdStr)
+
+    if (this.status.code === GossipStatusCode.started) {
+      this.connect(peerIdStr).catch((err) => {
+        this.log.error('addDirectPeer: failed to connect to %s', peerIdStr, err)
+      })
+    }
+  }
+
+  removeDirectPeer (peerId: PeerId | string): boolean {
+    const peerIdStr = typeof peerId === 'string' ? peerId : peerId.toString()
+    const removed = this.direct.delete(peerIdStr)
+
+    if (removed) {
+      this.log('removeDirectPeer: removed %s', peerIdStr)
+    }
+
+    return removed
+  }
+
+  getDirectPeers (): PeerId[] {
+    return Array.from(this.direct).map(id => peerIdFromString(id))
   }
 }
