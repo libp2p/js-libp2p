@@ -4,14 +4,30 @@ export interface StreamHandler {
   /**
    * A callback function that accepts the incoming stream data
    */
-  (stream: Stream, connection: Connection): void | Promise<void>
+  (stream: Stream, connection: Connection, context?: StreamContext): void | Promise<void>
+}
+
+export interface StreamContext {
+  get<T = unknown>(key: StreamContextKey<T>): T | undefined
+  set<T = unknown>(key: StreamContextKey<T>, value: T): void
+  has<T = unknown>(key: StreamContextKey<T>): boolean
+  delete<T = unknown>(key: StreamContextKey<T>): boolean
+}
+
+export interface StreamContextKey<T = unknown> {
+  id: symbol
+  type?: T
 }
 
 /**
  * Stream middleware allows accessing stream data outside of the stream handler
+ *
+ * Return false to stop the middleware chain without aborting the stream.
+ * Call next to continue the middleware chain.
+ * Throw or reject to abort the stream.
  */
 export interface StreamMiddleware {
-  (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void): void | Promise<void>
+  (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void, context: StreamContext): void | false | Promise<void | false>
 }
 
 export interface StreamHandlerOptions extends AbortOptions {
