@@ -68,6 +68,22 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [12.0.24](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.23...peer-store-v12.0.24) (2026-07-19)
+
+
+### Bug Fixes
+
+* **peer-store:** copy observation times from the matching address ([#3574](https://github.com/libp2p/js-libp2p/issues/3574)) ([89335e3](https://github.com/libp2p/js-libp2p/commit/89335e39f51eba5ffd71d6706fbc5054dd0aec2d))
+* use the same peer id to load and store peer records ([#3570](https://github.com/libp2p/js-libp2p/issues/3570)) ([3bf5d39](https://github.com/libp2p/js-libp2p/commit/3bf5d395cbca1488eea6e87cd771e4613b661c30))
+* verify records and public keys match what was requested ([#3577](https://github.com/libp2p/js-libp2p/issues/3577)) ([523b52b](https://github.com/libp2p/js-libp2p/commit/523b52bd690943526f5554a3d8418c8d0c92cae5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.23 to ^7.0.24
+
 ## [12.0.23](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.22...peer-store-v12.0.23) (2026-07-07)
 
 

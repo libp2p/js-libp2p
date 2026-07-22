@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/memory",
-  "version": "2.0.23",
+  "version": "2.0.24",
   "description": "A memory transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-memory#readme",
@@ -46,15 +46,15 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/utils": "^7.2.4",
+    "@libp2p/utils": "^7.3.0",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
-    "@types/sinon": "^21.0.1",
+    "@types/sinon": "^22.0.0",
     "delay": "^7.0.0",
     "it-map": "^3.1.4",
     "it-pushable": "^3.2.3",
     "main-event": "^1.0.1",
-    "nanoid": "^5.1.5",
+    "nanoid": "^6.0.0",
     "race-signal": "^2.0.0",
     "uint8arraylist": "^3.0.2"
   },
@@ -62,7 +62,7 @@
     "@libp2p/logger": "^6.2.10",
     "@libp2p/peer-id": "^6.0.12",
     "aegir": "^48.1.1",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },
   "browser": {

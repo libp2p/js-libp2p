@@ -110,6 +110,24 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.5...libp2p-v3.3.6) (2026-07-19)
+
+
+### Bug Fixes
+
+* verify records and public keys match what was requested ([#3577](https://github.com/libp2p/js-libp2p/issues/3577)) ([523b52b](https://github.com/libp2p/js-libp2p/commit/523b52bd690943526f5554a3d8418c8d0c92cae5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/multistream-select bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/peer-collections bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/peer-store bumped from ^12.0.23 to ^12.0.24
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
 ## [3.3.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.4...libp2p-v3.3.5) (2026-07-07)
 
 

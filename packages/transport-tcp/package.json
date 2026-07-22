@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/tcp",
-  "version": "11.0.23",
+  "version": "11.0.24",
   "description": "A TCP transport for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-tcp#readme",
@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/utils": "^7.2.4",
+    "@libp2p/utils": "^7.3.0",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "main-event": "^1.0.1",
@@ -65,12 +65,12 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.10",
-    "@types/sinon": "^21.0.1",
+    "@types/sinon": "^22.0.0",
     "aegir": "^48.1.1",
     "delay": "^7.0.0",
     "p-defer": "^4.0.1",
     "p-wait-for": "^6.0.0",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
   },

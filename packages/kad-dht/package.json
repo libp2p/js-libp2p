@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/kad-dht",
-  "version": "16.3.4",
+  "version": "16.4.0",
   "description": "JavaScript implementation of the Kad-DHT for libp2p",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/kad-dht#readme",
@@ -50,12 +50,12 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.21",
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/interface-internal": "^3.1.8",
-    "@libp2p/peer-collections": "^7.0.23",
+    "@libp2p/interface-internal": "^3.1.9",
+    "@libp2p/peer-collections": "^7.0.24",
     "@libp2p/peer-id": "^6.0.12",
-    "@libp2p/ping": "^3.1.8",
+    "@libp2p/ping": "^3.1.9",
     "@libp2p/record": "^4.0.15",
-    "@libp2p/utils": "^7.2.4",
+    "@libp2p/utils": "^7.3.0",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "any-signal": "^4.1.1",
@@ -82,16 +82,16 @@
   },
   "devDependencies": {
     "@libp2p/logger": "^6.2.10",
-    "@libp2p/peer-store": "^12.0.23",
+    "@libp2p/peer-store": "^12.0.24",
     "@types/lodash.random": "^3.2.9",
     "@types/lodash.range": "^3.2.9",
-    "@types/sinon": "^21.0.1",
+    "@types/sinon": "^22.0.0",
     "@types/which": "^3.0.4",
     "aegir": "^48.1.1",
     "benchmark": "^2.1.4",
     "datastore-core": "^12.0.1",
     "delay": "^7.0.0",
-    "execa": "^9.6.0",
+    "execa": "^10.0.0",
     "it-filter": "^3.1.4",
     "it-first": "^3.0.9",
     "it-last": "^3.0.9",
@@ -100,9 +100,9 @@
     "lodash.range": "^3.2.0",
     "p-retry": "^8.0.0",
     "protons": "^9.0.1",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
-    "which": "^6.0.0"
+    "which": "^7.0.0"
   },
   "browser": {
     "./dist/src/routing-table/generated-prefix-list.js": "./dist/src/routing-table/generated-prefix-list-browser.js"

@@ -18,8 +18,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     throw new InvalidParametersError('Invalid PeerData')
   }
 
-  if (data.publicKey != null && peerId.publicKey != null && !data.publicKey.equals(peerId.publicKey)) {
-    throw new InvalidParametersError('publicKey bytes do not match peer id publicKey bytes')
+  if (data.publicKey != null && !peerId.equals(data.publicKey.toMultihash().bytes)) {
+    throw new InvalidParametersError('publicKey does not match peer id')
   }
 
   const existingPeer = options.existingPeer?.peer

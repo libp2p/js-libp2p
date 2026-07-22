@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/gossipsub",
-  "version": "16.0.4",
+  "version": "16.0.5",
   "description": "A typescript implementation of gossipsub",
   "files": [
     "src",
@@ -81,9 +81,9 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.21",
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/interface-internal": "^3.1.8",
+    "@libp2p/interface-internal": "^3.1.9",
     "@libp2p/peer-id": "^6.0.12",
-    "@libp2p/utils": "^7.2.4",
+    "@libp2p/utils": "^7.3.0",
     "@multiformats/multiaddr": "^13.0.3",
     "denque": "^2.1.0",
     "it-length-prefixed": "^11.0.1",
@@ -96,11 +96,11 @@
   },
   "devDependencies": {
     "@chainsafe/as-sha256": "^1.2.0",
-    "@libp2p/floodsub": "^11.0.25",
+    "@libp2p/floodsub": "^11.0.26",
     "@libp2p/logger": "^6.2.10",
-    "@libp2p/peer-store": "^12.0.23",
+    "@libp2p/peer-store": "^12.0.24",
     "@types/benchmark": "^2.1.5",
-    "@types/sinon": "^21.0.1",
+    "@types/sinon": "^22.0.0",
     "abortable-iterator": "^5.1.0",
     "aegir": "^48.1.1",
     "benchmark": "^2.1.4",
@@ -113,7 +113,7 @@
     "p-retry": "^8.0.0",
     "p-wait-for": "^6.0.0",
     "protons": "^9.0.1",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "time-cache": "^0.3.0"
   },

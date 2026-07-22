@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/utils",
-  "version": "7.2.4",
+  "version": "7.3.0",
   "description": "Package to aggregate shared logic and dependencies for the libp2p ecosystem",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/utils#readme",
@@ -79,7 +79,7 @@
     "benchmark": "^2.1.4",
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
-    "sinon": "^21.0.0",
+    "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
   },
