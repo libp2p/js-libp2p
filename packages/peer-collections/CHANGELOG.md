@@ -35,6 +35,18 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [7.0.25](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.24...peer-collections-v7.0.25) (2026-07-20)
+
+
+### Dependencies
+
+* bump @types/sinon from 21.0.1 to 22.0.0 ([#3554](https://github.com/libp2p/js-libp2p/issues/3554)) ([02fcf70](https://github.com/libp2p/js-libp2p/commit/02fcf704d8795dd24f1dd243f67d12b7ffd9b259))
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
 ## [7.0.24](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.23...peer-collections-v7.0.24) (2026-07-19)
 
 

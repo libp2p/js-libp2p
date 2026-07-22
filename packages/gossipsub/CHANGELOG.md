@@ -1,5 +1,22 @@
 # Changelog
 
+## [16.0.6](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.5...gossipsub-v16.0.6) (2026-07-20)
+
+
+### Dependencies
+
+* bump @types/sinon from 21.0.1 to 22.0.0 ([#3554](https://github.com/libp2p/js-libp2p/issues/3554)) ([02fcf70](https://github.com/libp2p/js-libp2p/commit/02fcf704d8795dd24f1dd243f67d12b7ffd9b259))
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.26 to ^11.0.27
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/peer-store bumped from ^12.0.24 to ^12.0.25
+
 ## [16.0.5](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.4...gossipsub-v16.0.5) (2026-07-19)
 
 

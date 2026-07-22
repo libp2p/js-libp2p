@@ -76,6 +76,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.1.11](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.10...identify-v4.1.11) (2026-07-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/peer-record bumped from ^9.0.13 to ^9.0.14
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+
 ## [4.1.10](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.9...identify-v4.1.10) (2026-07-19)
 
 

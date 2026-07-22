@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.2.17](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.16...integration-tests-v1.2.17) (2026-07-20)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/gossipsub bumped from ^16.0.5 to ^16.0.6
+    * @libp2p/bootstrap bumped from ^12.0.27 to ^12.0.28
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.9 to ^4.2.10
+    * @libp2p/daemon-client bumped from ^10.0.32 to ^10.0.33
+    * @libp2p/daemon-server bumped from ^9.0.32 to ^9.0.33
+    * @libp2p/dcutr bumped from ^3.0.24 to ^3.0.25
+    * @libp2p/echo bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/fetch bumped from ^4.1.9 to ^4.1.10
+    * @libp2p/floodsub bumped from ^11.0.26 to ^11.0.27
+    * @libp2p/identify bumped from ^4.1.10 to ^4.1.11
+    * @libp2p/interface-compliance-tests bumped from ^7.0.27 to ^7.0.28
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/interop bumped from ^14.0.32 to ^14.0.33
+    * @libp2p/kad-dht bumped from ^16.4.0 to ^16.4.1
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/mdns bumped from ^12.0.27 to ^12.0.28
+    * @libp2p/memory bumped from ^2.0.24 to ^2.0.25
+    * @libp2p/mplex bumped from ^12.0.27 to ^12.0.28
+    * @libp2p/peer-collections bumped from ^7.0.24 to ^7.0.25
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/ping bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/plaintext bumped from ^3.0.24 to ^3.0.25
+    * @libp2p/tcp bumped from ^11.0.24 to ^11.0.25
+    * @libp2p/tls bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+    * @libp2p/webrtc bumped from ^6.0.27 to ^6.0.28
+    * @libp2p/websockets bumped from ^10.1.17 to ^10.1.18
+    * @libp2p/webtransport bumped from ^6.0.32 to ^6.0.33
+    * libp2p bumped from ^3.3.6 to ^3.3.7
+
 ## [1.2.16](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.15...integration-tests-v1.2.16) (2026-07-19)
 
 

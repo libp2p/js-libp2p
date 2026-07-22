@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-record",
-  "version": "9.0.13",
+  "version": "9.0.14",
   "description": "Used to transfer signed peer data across the network",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-record#readme",
@@ -51,7 +51,7 @@
   "dependencies": {
     "@libp2p/crypto": "^5.1.21",
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/peer-id": "^6.0.12",
+    "@libp2p/peer-id": "^6.0.13",
     "@multiformats/multiaddr": "^13.0.3",
     "multiformats": "^14.0.0",
     "protons-runtime": "^7.0.0",

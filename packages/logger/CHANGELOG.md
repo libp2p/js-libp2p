@@ -21,6 +21,16 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [6.2.11](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.10...logger-v6.2.11) (2026-07-20)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+
 ## [6.2.10](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.9...logger-v6.2.10) (2026-07-07)
 
 
