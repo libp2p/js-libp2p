@@ -5,8 +5,9 @@ import { base64url } from 'multiformats/bases/base64'
 import { bases, digest } from 'multiformats/basics'
 import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { MAX_MESSAGE_SIZE } from '../../constants.ts'
+import { MAX_MESSAGE_SIZE, UFRAG_PREFIX_V2 } from '../../constants.ts'
 import { InvalidFingerprintError, UnsupportedHashAlgorithmError } from '../../error.ts'
+import { isIcePwd } from './stun.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -17,6 +18,8 @@ import type { MultihashDigest } from 'multiformats/hashes/interface'
 export const multibaseDecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
 const fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m
+const icePwdRegex = /^a=ice-pwd:(?<pwd>[^\r\n]+)$/m
+
 export function getFingerprintFromSdp (sdp: string | undefined): string | undefined {
   if (sdp == null) {
     return undefined
@@ -24,6 +27,34 @@ export function getFingerprintFromSdp (sdp: string | undefined): string | undefi
 
   const searchResult = sdp.match(fingerprintRegex)
   return searchResult?.groups?.fingerprint
+}
+
+export function getIcePwdFromSdp (sdp: string | undefined): string | undefined {
+  if (sdp == null) {
+    return undefined
+  }
+
+  return sdp.match(icePwdRegex)?.groups?.pwd
+}
+
+export function serverUfragV2 (clientIcePwd: string): string {
+  return `${UFRAG_PREFIX_V2}${clientIcePwd}`
+}
+
+export function decodeV2ClientPwd (serverUfrag: string): string | undefined {
+  if (!serverUfrag.startsWith(UFRAG_PREFIX_V2)) {
+    return undefined
+  }
+
+  const clientPwd = serverUfrag.substring(UFRAG_PREFIX_V2.length)
+
+  // The recovered value becomes the inferred offer's ice-pwd, so it must be a
+  // valid ICE password (ice-char, length 22..256) per RFC 8839 section 5.4.
+  if (!isIcePwd(clientPwd)) {
+    return undefined
+  }
+
+  return clientPwd
 }
 
 // Extract the certhash from a multiaddr
@@ -136,7 +167,7 @@ a=end-of-candidates
 /**
  * Create an offer SDP message from a multiaddr
  */
-export function clientOfferFromMultiAddr (ma: Multiaddr, ufrag: string): RTCSessionDescriptionInit {
+export function clientOfferFromMultiAddr (ma: Multiaddr, ufrag: string, pwd: string = ufrag): RTCSessionDescriptionInit {
   const { host, port, type } = getNetConfig(ma)
 
   if (type !== 'ip4' && type !== 'ip6') {
@@ -153,7 +184,7 @@ m=application ${port} UDP/DTLS/SCTP webrtc-datachannel
 a=mid:0
 a=setup:active
 a=ice-ufrag:${ufrag}
-a=ice-pwd:${ufrag}
+a=ice-pwd:${pwd}
 a=fingerprint:sha-256 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
 a=sctp-port:5000
 a=max-message-size:${MAX_MESSAGE_SIZE}

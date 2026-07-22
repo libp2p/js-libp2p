@@ -342,7 +342,17 @@ export interface TransportCertificate {
 export type { WebRTCTransportDirectInit, WebRTCDirectTransportComponents }
 
 function webRTCDirect (init?: WebRTCTransportDirectInit): (components: WebRTCDirectTransportComponents) => Transport {
-  return (components: WebRTCDirectTransportComponents) => new WebRTCDirectTransport(components, init)
+  return (components: WebRTCDirectTransportComponents) => new WebRTCDirectTransport(components, {
+    version: 'v1',
+    ...(init ?? {})
+  })
+}
+
+function webRTCDirectV2 (init?: WebRTCTransportDirectInit): (components: WebRTCDirectTransportComponents) => Transport {
+  return (components: WebRTCDirectTransportComponents) => new WebRTCDirectTransport(components, {
+    version: 'v2',
+    ...(init ?? {})
+  })
 }
 
 export type { WebRTCTransportInit, WebRTCTransportComponents }
@@ -351,4 +361,4 @@ function webRTC (init?: WebRTCTransportInit): (components: WebRTCTransportCompon
   return (components: WebRTCTransportComponents) => new WebRTCTransport(components, init)
 }
 
-export { webRTC, webRTCDirect }
+export { webRTC, webRTCDirect, webRTCDirectV2 }

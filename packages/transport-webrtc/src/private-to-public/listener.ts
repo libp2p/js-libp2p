@@ -155,10 +155,10 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
             this.log.trace('listening on free port %d', port)
           }
 
-          return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
+          return stunListener(host, port, this.log, (serverUfrag, clientUfrag, clientPwd, remoteHost, remotePort) => {
             const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
 
-            this.incomingConnection(ufrag, remoteHost, remotePort, signal)
+            this.incomingConnection(serverUfrag, clientUfrag, clientPwd, remoteHost, remotePort, signal)
               .catch(err => {
                 this.log.error('error processing incoming STUN request - %e', err)
               })
@@ -170,8 +170,8 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     }
   }
 
-  private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number, signal: AbortSignal): Promise<void> {
-    const key = `${remoteHost}:${remotePort}:${ufrag}`
+  private async incomingConnection (serverUfrag: string, clientUfrag: string, clientPwd: string | undefined, remoteHost: string, remotePort: number, signal: AbortSignal): Promise<void> {
+    const key = `${remoteHost}:${remotePort}:${serverUfrag}:${clientUfrag}`
     let peerConnection = this.connections.get(key)
 
     if (peerConnection != null) {
@@ -185,7 +185,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     signal.throwIfAborted()
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    const results = await createDialerRTCPeerConnection('server', ufrag, {
+    const results = await createDialerRTCPeerConnection('server', serverUfrag, {
       rtcConfiguration: this.init.rtcConfiguration,
       certificate: this.certificate,
       events: this.metrics?.listenerEvents,
@@ -208,12 +208,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     })
 
     try {
-      await connect(peerConnection, results.muxerFactory, ufrag, {
+      await connect(peerConnection, results.muxerFactory, serverUfrag, {
         role: 'server',
         log: this.log,
         logger: this.components.logger,
         events: this.metrics?.listenerEvents,
         signal,
+        remoteUfrag: clientUfrag,
+        remotePwd: clientPwd,
         remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}/webrtc-direct`),
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,

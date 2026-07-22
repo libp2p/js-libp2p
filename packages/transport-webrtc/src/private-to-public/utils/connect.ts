@@ -23,6 +23,9 @@ export interface ConnectOptions {
   remotePeer?: PeerId
   signal: AbortSignal
   privateKey: PrivateKey
+  remoteUfrag?: string
+  remotePwd?: string
+  version?: 'v1' | 'v2'
 }
 
 export interface ClientOptions extends ConnectOptions {
@@ -48,37 +51,63 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
   try {
     if (options.role === 'client') {
       // the client has to set the local offer before the remote answer
-
-      // Create offer and munge sdp with ufrag == pwd. This allows the remote to
-      // respond to STUN messages without performing an actual SDP exchange.
-      // This is because it can infer the passwd field by reading the USERNAME
-      // attribute of the STUN message.
       options.log.trace('client creating local offer')
       const offerSdp = await peerConnection.createOffer()
       options.log.trace('client created local offer %s', offerSdp.sdp)
-      const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
-      options.log.trace('client setting local offer %s', mungedOfferSdp.sdp)
-      await peerConnection.setLocalDescription(mungedOfferSdp)
 
-      const answerSdp = sdp.serverAnswerFromMultiaddr(options.remoteAddr, ufrag)
+      let remoteAnswerUfrag = ufrag
+
+      if (options.version === 'v2') {
+        // v2 path: do not munge local SDP. Keep client credentials as generated
+        // and encode client_pwd in the synthetic server ufrag.
+        options.log.trace('client setting local offer %s', offerSdp.sdp)
+        await peerConnection.setLocalDescription(offerSdp)
+
+        const localPwd = sdp.getIcePwdFromSdp(peerConnection.localDescription?.sdp)
+
+        if (localPwd == null) {
+          // without the local ICE password we cannot build a valid v2 server
+          // ufrag; fail loudly instead of dialing with an unprefixed ufrag the
+          // server would reject
+          throw new WebRTCTransportError('Could not read local ICE password from local description for v2 dial')
+        }
+
+        remoteAnswerUfrag = sdp.serverUfragV2(localPwd)
+      } else {
+        // v1 compatibility path: force ice-ufrag === ice-pwd so the server can
+        // infer credentials from STUN USERNAME without explicit SDP exchange.
+        const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
+        options.log.trace('client setting local offer %s', mungedOfferSdp.sdp)
+        await peerConnection.setLocalDescription(mungedOfferSdp)
+      }
+
+      const answerSdp = sdp.serverAnswerFromMultiaddr(options.remoteAddr, remoteAnswerUfrag)
       options.log.trace('client setting server description %s', answerSdp.sdp)
       await peerConnection.setRemoteDescription(answerSdp)
     } else {
       // the server has to set the remote offer before the local answer
-      const offerSdp = sdp.clientOfferFromMultiAddr(options.remoteAddr, ufrag)
+      const remoteUfrag = options.remoteUfrag ?? ufrag
+      const remotePwd = options.remotePwd ?? remoteUfrag
+      const offerSdp = sdp.clientOfferFromMultiAddr(options.remoteAddr, remoteUfrag, remotePwd)
       options.log.trace('server setting client %s %s', offerSdp.type, offerSdp.sdp)
       await peerConnection.setRemoteDescription(offerSdp)
 
-      // Create offer and munge sdp with ufrag == pwd. This allows the remote to
-      // respond to STUN messages without performing an actual SDP exchange.
-      // This is because it can infer the passwd field by reading the USERNAME
-      // attribute of the STUN message.
       options.log.trace('server creating local answer')
       const answerSdp = await peerConnection.createAnswer()
       options.log.trace('server created local answer')
-      const mungedAnswerSdp = sdp.munge(answerSdp, ufrag)
-      options.log.trace('server setting local description %s', answerSdp.sdp)
-      await peerConnection.setLocalDescription(mungedAnswerSdp)
+
+      if (options.remotePwd != null) {
+        // v2 path: the answer credentials were already pinned to server_ufrag
+        // (libp2p+webrtc+v2/<client_pwd>) when the peer connection was created,
+        // so the generated answer already carries them and needs no munging.
+        options.log.trace('server setting local description %s', answerSdp.sdp)
+        await peerConnection.setLocalDescription(answerSdp)
+      } else {
+        // v1 compatibility path: keep local answer credentials aligned to ufrag.
+        const mungedAnswerSdp = sdp.munge(answerSdp, ufrag)
+        options.log.trace('server setting local description %s', answerSdp.sdp)
+        await peerConnection.setLocalDescription(mungedAnswerSdp)
+      }
     }
 
     if (handshakeDataChannel.readyState !== 'open') {
