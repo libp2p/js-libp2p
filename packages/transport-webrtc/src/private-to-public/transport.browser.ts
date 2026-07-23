@@ -92,6 +92,8 @@ export class WebRTCDirectTransport implements Transport {
       muxerFactory
     } = await createDialerRTCPeerConnection('client', ufrag, {
       rtcConfiguration: typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {},
+      events: this.metrics?.dialerEvents,
+      log: this.log,
       dataChannel: this.init.dataChannel
     })
 

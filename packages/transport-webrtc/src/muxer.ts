@@ -54,9 +54,9 @@ interface EarlyDataChannel {
 }
 
 /**
- * Close a data channel, tolerating a synchronous throw from the
- * node-datachannel polyfill when its cached `readyState` is stale (see the
- * same guard around `channel.send` in stream.ts). Closing is best-effort.
+ * Close a data channel. Closing is best-effort and wrapped so a synchronous
+ * throw from an already-closed or stale channel cannot escape and abort
+ * disposal of the remaining early channels.
  */
 function closeChannel (channel: RTCDataChannel, log?: Logger): void {
   try {
@@ -105,21 +105,15 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
   private onEarlyDataChannel (evt: RTCDataChannelEvent): void {
     const channel = evt.channel
 
-    // reject channels opened before the muxer exists beyond the count cap
-    // rather than buffer them - closes the excess channel without aborting the
-    // connection (a well-behaved remote does not open this many streams before
-    // the connection upgrade completes)
+    // reject (don't buffer) channels beyond the count cap, keeping the connection
     if (this.earlyDataChannels.length >= MAX_EARLY_DATA_CHANNELS) {
       this.log?.('rejecting early data channel %d - too many early channels', channel.id)
       this.metrics?.increment({ early_data_channel_count_exceeded: true })
-      channel.onmessage = null
       closeChannel(channel, this.log)
       return
     }
 
-    // ensure incoming messages arrive as ArrayBuffers so their size can be
-    // measured and so replayed messages match what the stream expects (see
-    // stream.ts)
+    // deliver binary as ArrayBuffer so it can be sized and replayed to the stream
     channel.binaryType = 'arraybuffer'
 
     const early: EarlyDataChannel = {
@@ -128,27 +122,19 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
       bytes: 0
     }
 
-    // buffer incoming messages until the muxer adopts the channel, otherwise
-    // any data sent by the remote before the connection upgrade completes is
-    // silently dropped. The buffer is bounded so a remote cannot make us hold
-    // unbounded data before the connection has even been admitted.
-    //
-    // NOTE: this must stay on the `onmessage` property rather than
-    // `addEventListener` - adoption relies on `createStream` overwriting
-    // `onmessage` (see stream.ts) to detach this buffer
+    // buffer until the muxer adopts the channel, bounded so a remote cannot hold
+    // unbounded data pre-admission. Must stay on `.onmessage` so `createStream`
+    // can overwrite it on adoption (see stream.ts)
     channel.onmessage = (messageEvent) => {
       const { data } = messageEvent
 
-      // only binary frames are valid early stream data - a text frame (or any
-      // non-ArrayBuffer payload) has no measurable size and is not something a
-      // stream could consume, so treat it as a misbehaving remote
+      // text frames arrive as strings despite binaryType - unsizeable, so reject
       if (!(data instanceof ArrayBuffer)) {
         this.closeEarlyDataChannel(early, 'invalid_message')
         return
       }
 
-      // bound the message count as well as the byte total, otherwise a flood of
-      // tiny or empty messages evades the byte cap by contributing ~0 bytes each
+      // cap count too, else a flood of ~0-byte messages evades the byte cap
       if (early.messages.length >= MAX_EARLY_DATA_CHANNEL_MESSAGES) {
         this.closeEarlyDataChannel(early, 'message_count_exceeded')
         return

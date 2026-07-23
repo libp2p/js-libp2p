@@ -4,7 +4,8 @@ import pRetry from 'p-retry'
 import { stubInterface } from 'sinon-ts'
 import { MAX_EARLY_DATA_CHANNEL_BYTES, MAX_EARLY_DATA_CHANNEL_MESSAGES, MAX_EARLY_DATA_CHANNELS } from '../src/constants.ts'
 import { DataChannelMuxerFactory } from '../src/muxer.ts'
-import type { MultiaddrConnection } from '@libp2p/interface'
+import type { DataChannelMuxerFactoryInit } from '../src/muxer.ts'
+import type { CounterGroup, MultiaddrConnection } from '@libp2p/interface'
 
 describe('muxer', () => {
   it.skip('should delay notification of early streams', async () => {
@@ -89,9 +90,10 @@ function dispatchChannel (pc: EventTarget, channel: FakeDataChannel): void {
   pc.dispatchEvent(Object.assign(new Event('datachannel'), { channel }))
 }
 
-function makeFactory (pc: EventTarget): DataChannelMuxerFactory {
+function makeFactory (pc: EventTarget, init: Partial<DataChannelMuxerFactoryInit> = {}): DataChannelMuxerFactory {
   return new DataChannelMuxerFactory({
-    peerConnection: pc as unknown as RTCPeerConnection
+    peerConnection: pc as unknown as RTCPeerConnection,
+    ...init
   })
 }
 
@@ -102,6 +104,10 @@ describe('muxer early data channel buffer bounds', () => {
 
     const channel = makeChannel()
     dispatchChannel(pc, channel)
+
+    // binaryType is forced to arraybuffer so message sizes are measurable in
+    // browsers (where the default is blob)
+    expect(channel.binaryType).to.equal('arraybuffer')
 
     // buffering up to the cap is fine, the channel stays open
     channel.emit(MAX_EARLY_DATA_CHANNEL_BYTES)
@@ -165,6 +171,46 @@ describe('muxer early data channel buffer bounds', () => {
 
     // the connection itself is not aborted
     expect(pcClosed).to.be.false()
+  })
+
+  it('frees a count slot when an over-limit channel is closed', () => {
+    const pc = new EventTarget()
+    makeFactory(pc)
+
+    const buffered: FakeDataChannel[] = []
+    for (let i = 0; i < MAX_EARLY_DATA_CHANNELS; i++) {
+      const channel = makeChannel()
+      buffered.push(channel)
+      dispatchChannel(pc, channel)
+    }
+
+    // dropping a buffered channel must splice it out, not merely close it
+    buffered[0].emitData('a text frame')
+    expect(buffered[0].closed).to.be.true()
+
+    // the freed slot lets a newly-arriving channel be buffered rather than
+    // rejected - if the dropped channel were left in the buffer the count would
+    // still be at the cap and this channel would be closed on arrival
+    const late = makeChannel()
+    dispatchChannel(pc, late)
+    expect(late.closed, 'late channel should be accepted after a slot frees').to.be.false()
+    expect(late.onmessage, 'late channel should be buffered').to.not.be.null()
+  })
+
+  it('meters a drop with the reason as the metric key', () => {
+    const pc = new EventTarget()
+    const increments: Array<Record<string, boolean>> = []
+    makeFactory(pc, {
+      metrics: {
+        increment: (values: Record<string, boolean>) => { increments.push(values) }
+      } as unknown as CounterGroup
+    })
+
+    const channel = makeChannel()
+    dispatchChannel(pc, channel)
+    channel.emitData('a text frame')
+
+    expect(increments).to.deep.include({ early_data_channel_invalid_message: true })
   })
 
   it('close() detaches the datachannel listener and clears buffered early channels', () => {

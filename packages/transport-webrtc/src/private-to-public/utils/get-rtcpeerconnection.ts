@@ -5,7 +5,7 @@ import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.ts'
 import { DataChannelMuxerFactory } from '../../muxer.ts'
 import { generateTransportCertificate } from './generate-certificates.ts'
 import type { DataChannelOptions, TransportCertificate } from '../../index.ts'
-import type { CounterGroup } from '@libp2p/interface'
+import type { CounterGroup, Logger } from '@libp2p/interface'
 import type { CertificateFingerprint } from 'node-datachannel'
 
 const crypto = new Crypto()
@@ -91,6 +91,7 @@ export interface CreateDialerRTCPeerConnectionOptions {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   certificate?: TransportCertificate
   events?: CounterGroup
+  log?: Logger
   dataChannel?: DataChannelOptions
 }
 
@@ -132,6 +133,7 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
     // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     metrics: options.events,
+    log: options.log,
     dataChannelOptions: options.dataChannel
   })
 

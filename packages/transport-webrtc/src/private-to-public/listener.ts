@@ -189,6 +189,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       rtcConfiguration: this.init.rtcConfiguration,
       certificate: this.certificate,
       events: this.metrics?.listenerEvents,
+      log: this.log,
       dataChannel: this.init.dataChannel
     })
     peerConnection = results.peerConnection
