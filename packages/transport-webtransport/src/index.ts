@@ -54,10 +54,6 @@ export interface WebTransportCertificate {
   secret: string
 }
 
-interface WebTransportSessionCleanup {
-  (metric: string): void
-}
-
 export interface WebTransportInit {
   certificates?: WebTransportCertificate[]
 }
@@ -130,48 +126,27 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     const { url, certhashes, remotePeer } = parseMultiaddr(ma)
     let abortListener: (() => void) | undefined
     let maConn: MultiaddrConnection | undefined
-    let cleanUpWTSession: WebTransportSessionCleanup = () => {}
-    let closed = false
+    let wt: InstanceType<typeof WebTransport> | undefined
     let ready = false
     let authenticated = false
 
     try {
       this.metrics?.dialerEvents.increment({ pending: true })
 
-      const wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
+      wt = new WebTransport(`${url}/.well-known/libp2p-webtransport?type=noise`, {
         serverCertificateHashes: certhashes.map(certhash => ({
           algorithm: 'sha-256',
           value: withArrayBuffer(certhash.digest)
         }))
       })
 
-      cleanUpWTSession = (metric: string) => {
-        if (closed) {
-          // already closed session
-          return
-        }
-
-        try {
-          this.metrics?.dialerEvents.increment({ [metric]: true })
-          wt.close()
-        } catch (err) {
-          this.log.error('error closing wt session - %e', err)
-        } finally {
-          // This is how we specify the connection is closed and shouldn't be used.
-          if (maConn != null) {
-            maConn.timeline.close = Date.now()
-          }
-
-          closed = true
-        }
-      }
-
       // if the dial is aborted before we are ready, close the WebTransport session
       abortListener = () => {
-        if (ready) {
-          cleanUpWTSession('noise_timeout')
+        this.metrics?.dialerEvents.increment({ [ready ? 'noise_timeout' : 'ready_timeout']: true })
+        if (maConn != null) {
+          maConn.abort(new Error('dial aborted'))
         } else {
-          cleanUpWTSession('ready_timeout')
+          try { wt?.close() } catch (err) { this.log.error('error aborting wt session - %e', err) }
         }
       }
       options.signal.addEventListener('abort', abortListener, {
@@ -188,22 +163,16 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
 
       ready = true
       this.metrics?.dialerEvents.increment({ ready: true })
-
-      // this promise resolves/throws when the session is closed
-      wt.closed.catch((err: Error) => {
-        this.log.error('error on remote wt session close - %e', err)
-      })
-        .finally(() => {
-          cleanUpWTSession('remote_close')
-        })
-
       this.metrics?.dialerEvents.increment({ open: true })
 
+      // maConn takes ownership of the session: wires wt.closed lifecycle and
+      // calls wt.close() directly from sendClose/sendReset
       maConn = toMultiaddrConnection({
         remoteAddr: ma,
-        cleanUpWTSession,
+        webTransport: wt,
         direction: 'outbound',
-        log: this.components.logger.forComponent('libp2p:webtransport:connection')
+        log: this.components.logger.forComponent('libp2p:webtransport:connection'),
+        onSessionClose: (reason) => { this.metrics?.dialerEvents.increment({ [reason]: true }) }
       })
 
       const securePeer = await this.authenticateWebTransport({
@@ -234,12 +203,20 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
     } catch (err: any) {
       this.log.error('caught wt session err - %e', err)
 
-      if (authenticated) {
-        cleanUpWTSession('upgrade_error')
-      } else if (ready) {
-        cleanUpWTSession('noise_error')
+      if (!options.signal.aborted) {
+        if (authenticated) {
+          this.metrics?.dialerEvents.increment({ upgrade_error: true })
+        } else if (ready) {
+          this.metrics?.dialerEvents.increment({ noise_error: true })
+        } else {
+          this.metrics?.dialerEvents.increment({ ready_error: true })
+        }
+      }
+
+      if (maConn != null) {
+        maConn.abort(err)
       } else {
-        cleanUpWTSession('ready_error')
+        try { wt?.close() } catch (closeErr) { this.log.error('error closing wt session - %e', closeErr) }
       }
 
       throw err
