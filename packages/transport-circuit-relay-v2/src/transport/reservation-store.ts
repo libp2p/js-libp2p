@@ -117,7 +117,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
       this.#removeReservation(evt.detail.remotePeer)
         .catch(err => {
-          this.log('could not remove relay %p - %e', evt.detail, err)
+          this.log.error('could not remove relay %p - %e', evt.detail.remotePeer, err)
         })
     })
   }
@@ -297,7 +297,10 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
           // a live refresh reuses the slot id its reservation still holds. if
           // that entry was removed while we were refreshing (a disconnected
           // refresh, or a concurrent connection:close) its id went back to the
-          // pool, so claim a fresh one - an id is never both live and pending
+          // pool, so claim a fresh one - an id is never both live and pending.
+          // this re-reads instead of trusting existingReservation because only
+          // one addRelay runs per peer at a time, so the entry here is only ever
+          // our own (removed or not), never another reservation's
           const live = this.reservations.get(peerId)
           const id = live?.type === 'discovered'
             ? live.id
