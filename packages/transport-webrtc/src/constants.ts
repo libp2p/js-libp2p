@@ -57,20 +57,20 @@ export const MAX_MESSAGE_SIZE = 16 * 1024
 export const MAX_EARLY_DATA_CHANNEL_BYTES = MAX_MESSAGE_SIZE
 
 /**
- * The maximum number of incoming data channels buffered before the muxer has
- * been created. Channels beyond this are rejected (closed) without aborting the
- * connection.
+ * Default for the `maxEarlyStreams` transport option, which caps both the data
+ * channels buffered before the muxer exists and the early streams the muxer
+ * surfaces on adoption. They are one budget - buffered channels become early
+ * streams on adoption, so a larger channel buffer would abort on hand-off.
  */
-export const MAX_EARLY_DATA_CHANNELS = 64
+export const DEFAULT_MAX_EARLY_STREAMS = 10
 
 /**
- * The maximum number of buffered messages per early data channel. A legitimate
- * early channel only carries the multistream-select proposal (one or two
- * frames), so this bounds a flood of tiny or empty messages that would
- * otherwise evade `MAX_EARLY_DATA_CHANNEL_BYTES` by contributing ~0 bytes each.
- * Together these caps bound early buffer memory per connection.
+ * Max buffered messages per early data channel. A legitimate early channel
+ * carries only the multistream-select proposal (one or two frames), so this
+ * bounds a flood of tiny or empty messages that would otherwise evade the byte
+ * cap by contributing ~0 bytes each.
  */
-export const MAX_EARLY_DATA_CHANNEL_MESSAGES = 16
+export const MAX_EARLY_DATA_CHANNEL_MESSAGES = 8
 
 /**
  * max protobuf overhead:

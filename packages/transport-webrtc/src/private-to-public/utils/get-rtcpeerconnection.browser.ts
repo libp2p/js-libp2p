@@ -30,7 +30,8 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
     peerConnection,
     metrics: options.events,
     log: options.log,
-    dataChannelOptions: options.dataChannel
+    dataChannelOptions: options.dataChannel,
+    maxEarlyStreams: options.maxEarlyStreams
   })
 
   return {

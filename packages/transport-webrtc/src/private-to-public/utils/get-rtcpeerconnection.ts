@@ -93,6 +93,7 @@ export interface CreateDialerRTCPeerConnectionOptions {
   events?: CounterGroup
   log?: Logger
   dataChannel?: DataChannelOptions
+  maxEarlyStreams?: number
 }
 
 export async function createDialerRTCPeerConnection (role: 'client', ufrag: string, options?: CreateDialerRTCPeerConnectionOptions): Promise<{ peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }>
@@ -134,7 +135,8 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
     peerConnection,
     metrics: options.events,
     log: options.log,
-    dataChannelOptions: options.dataChannel
+    dataChannelOptions: options.dataChannel,
+    maxEarlyStreams: options.maxEarlyStreams
   })
 
   return {

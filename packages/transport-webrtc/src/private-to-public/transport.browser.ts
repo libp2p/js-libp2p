@@ -39,6 +39,14 @@ export interface WebRTCTransportDirectInit {
    * The default configuration used by all created RTCDataChannels
    */
   dataChannel?: DataChannelOptions
+
+  /**
+   * Caps the inbound streams accepted before the connection surfaces them, and
+   * the data channels buffered before the muxer exists (excess are closed).
+   *
+   * @default 10
+   */
+  maxEarlyStreams?: number
 }
 
 export class WebRTCDirectTransport implements Transport {
@@ -94,7 +102,8 @@ export class WebRTCDirectTransport implements Transport {
       rtcConfiguration: typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {},
       events: this.metrics?.dialerEvents,
       log: this.log,
-      dataChannel: this.init.dataChannel
+      dataChannel: this.init.dataChannel,
+      maxEarlyStreams: this.init.maxEarlyStreams
     })
 
     try {

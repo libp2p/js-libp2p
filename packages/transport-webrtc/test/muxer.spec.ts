@@ -1,11 +1,14 @@
 import { defaultLogger } from '@libp2p/logger'
+import { byteStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
+import * as lengthPrefixed from 'it-length-prefixed'
 import pRetry from 'p-retry'
 import { stubInterface } from 'sinon-ts'
-import { MAX_EARLY_DATA_CHANNEL_BYTES, MAX_EARLY_DATA_CHANNEL_MESSAGES, MAX_EARLY_DATA_CHANNELS } from '../src/constants.ts'
+import { DEFAULT_MAX_EARLY_STREAMS, MAX_EARLY_DATA_CHANNEL_BYTES, MAX_EARLY_DATA_CHANNEL_MESSAGES } from '../src/constants.ts'
 import { DataChannelMuxerFactory } from '../src/muxer.ts'
+import { Message } from '../src/private-to-public/pb/message.ts'
 import type { DataChannelMuxerFactoryInit } from '../src/muxer.ts'
-import type { CounterGroup, MultiaddrConnection } from '@libp2p/interface'
+import type { CounterGroup, MultiaddrConnection, Stream } from '@libp2p/interface'
 
 describe('muxer', () => {
   it.skip('should delay notification of early streams', async () => {
@@ -97,6 +100,16 @@ function makeFactory (pc: EventTarget, init: Partial<DataChannelMuxerFactoryInit
   })
 }
 
+/**
+ * Frame a payload the way a remote puts it on the wire: a length-prefixed
+ * protobuf `Message` carrying the bytes in its `message` field, as an
+ * ArrayBuffer (early buffering only accepts ArrayBuffer)
+ */
+function framed (payload: Uint8Array): ArrayBuffer {
+  const encoded = lengthPrefixed.encode.single(Message.encode({ message: payload })).subarray()
+  return new Uint8Array(encoded).buffer
+}
+
 describe('muxer early data channel buffer bounds', () => {
   it('closes an early data channel that exceeds the per-channel byte cap', () => {
     const pc = new EventTarget()
@@ -155,19 +168,19 @@ describe('muxer early data channel buffer bounds', () => {
     makeFactory(pc)
 
     const channels: FakeDataChannel[] = []
-    for (let i = 0; i < MAX_EARLY_DATA_CHANNELS + 1; i++) {
+    for (let i = 0; i < DEFAULT_MAX_EARLY_STREAMS + 1; i++) {
       const channel = makeChannel()
       channels.push(channel)
       dispatchChannel(pc, channel)
     }
 
-    // the first MAX_EARLY_DATA_CHANNELS are buffered and stay open
-    for (let i = 0; i < MAX_EARLY_DATA_CHANNELS; i++) {
+    // the first DEFAULT_MAX_EARLY_STREAMS are buffered and stay open
+    for (let i = 0; i < DEFAULT_MAX_EARLY_STREAMS; i++) {
       expect(channels[i].closed, `channel ${i} should be open`).to.be.false()
     }
 
     // the channel beyond the cap is rejected (closed)
-    expect(channels[MAX_EARLY_DATA_CHANNELS].closed).to.be.true()
+    expect(channels[DEFAULT_MAX_EARLY_STREAMS].closed).to.be.true()
 
     // the connection itself is not aborted
     expect(pcClosed).to.be.false()
@@ -178,7 +191,7 @@ describe('muxer early data channel buffer bounds', () => {
     makeFactory(pc)
 
     const buffered: FakeDataChannel[] = []
-    for (let i = 0; i < MAX_EARLY_DATA_CHANNELS; i++) {
+    for (let i = 0; i < DEFAULT_MAX_EARLY_STREAMS; i++) {
       const channel = makeChannel()
       buffered.push(channel)
       dispatchChannel(pc, channel)
@@ -252,5 +265,81 @@ describe('muxer early data channel buffer bounds', () => {
 
     expect(channel.closed).to.be.false()
     expect(channel.onmessage).to.not.be.null()
+  })
+
+  it('caps early data channels at the configured maxEarlyStreams', () => {
+    const pc = new EventTarget()
+    makeFactory(pc, { maxEarlyStreams: 2 })
+
+    const channels: FakeDataChannel[] = []
+    for (let i = 0; i < 3; i++) {
+      const channel = makeChannel()
+      channels.push(channel)
+      dispatchChannel(pc, channel)
+    }
+
+    // the first two fit under the configured cap
+    expect(channels[0].closed, 'channel 0 should be open').to.be.false()
+    expect(channels[1].closed, 'channel 1 should be open').to.be.false()
+
+    // the third exceeds the configured cap and is rejected
+    expect(channels[2].closed, 'channel beyond the configured cap is rejected').to.be.true()
+  })
+
+  it('applies maxEarlyStreams to the muxer it creates', () => {
+    const pc = new EventTarget()
+    const factory = makeFactory(pc, { maxEarlyStreams: 3 })
+
+    const muxer = factory.createStreamMuxer(stubInterface<MultiaddrConnection>({
+      log: defaultLogger().forComponent('libp2p:maconn')
+    }))
+
+    // the buffered-channel cap and the muxer's early-stream cap are one value -
+    // the channels we buffer become the muxer's early streams on adoption
+    expect((muxer as unknown as { maxEarlyStreams: number }).maxEarlyStreams).to.equal(3)
+  })
+
+  it('defaults the muxer maxEarlyStreams to DEFAULT_MAX_EARLY_STREAMS', () => {
+    const pc = new EventTarget()
+    const factory = makeFactory(pc)
+
+    const muxer = factory.createStreamMuxer(stubInterface<MultiaddrConnection>({
+      log: defaultLogger().forComponent('libp2p:maconn')
+    }))
+
+    expect((muxer as unknown as { maxEarlyStreams: number }).maxEarlyStreams).to.equal(DEFAULT_MAX_EARLY_STREAMS)
+  })
+
+  it('replays buffered early messages to the stream in order, before live messages', async () => {
+    const pc = new EventTarget()
+    const factory = makeFactory(pc)
+
+    const channel = makeChannel()
+    dispatchChannel(pc, channel)
+
+    // two messages arrive before the muxer exists - they are buffered
+    channel.emitData(framed(Uint8Array.from([1])))
+    channel.emitData(framed(Uint8Array.from([2])))
+
+    const muxer = factory.createStreamMuxer(stubInterface<MultiaddrConnection>({
+      log: defaultLogger().forComponent('libp2p:maconn')
+    }))
+
+    // capture the stream surfaced when the muxer adopts the channel - the
+    // listener must be attached before the adoption microtask runs
+    const stream = await new Promise<Stream>((resolve) => {
+      muxer.addEventListener('stream', (evt) => {
+        resolve(evt.detail)
+      }, { once: true })
+    })
+
+    // a message arriving after adoption must land after the replayed ones
+    channel.emitData(framed(Uint8Array.from([3])))
+
+    const bytes = byteStream(stream)
+    const received = await bytes.read({ bytes: 3, signal: AbortSignal.timeout(1_000) })
+
+    // buffered [1, 2] replayed in order, then live [3]
+    expect(received.subarray()).to.equalBytes(Uint8Array.from([1, 2, 3]))
   })
 })

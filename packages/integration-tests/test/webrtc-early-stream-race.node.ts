@@ -21,30 +21,12 @@ const ECHO_PROTOCOL = '/test/webrtc-early-stream/1.0.0'
 const STREAM_TIMEOUT = 5_000
 
 /**
- * How long the recipient takes to finish upgrading the incoming WebRTC
- * connection after the underlying peer connection is established.
- *
- * Both peers in a private-to-private WebRTC connection create their muxer -
- * which attaches stream/protocol handlers to incoming data channels - only
- * when the connection is upgraded, some time after the peer connection itself
- * connects. Any data channel that arrives before that is parked in
- * `earlyDataChannels` (see `packages/transport-webrtc/src/muxer.ts`) without a
- * `message` listener, and `node-datachannel` does not buffer messages that are
- * dispatched without a listener, so any bytes that arrive before the muxer
- * adopts the channel are silently dropped.
- *
- * On a LAN with an idle event loop the window between the data channel arriving
- * and the muxer adopting it is only a few milliseconds wide, so to make the
- * test deterministic we hold the recipient at the pre-muxer upgrade checkpoint
- * (the `denyInboundEncryptedConnection` connection gater hook runs before the
- * muxer is created) - this models a recipient that takes longer to finish its
- * upgrade than the dialer takes to open its first stream, e.g. due to network
- * latency or a busy event loop.
- *
- * If early data channels were buffered until the muxer adopted them this delay
- * would only add latency - the stream would still echo well within
- * `STREAM_TIMEOUT`. Instead the initial multistream-select bytes are lost and
- * protocol negotiation stalls until it is aborted.
+ * How long the recipient is held at the pre-muxer upgrade checkpoint (the
+ * `denyInboundEncryptedConnection` gater runs before the muxer is created), to
+ * deterministically widen the window in which the dialer's first stream arrives
+ * before the recipient's muxer exists. Absent the early-channel buffer (see
+ * `packages/transport-webrtc/src/muxer.ts`) those bytes would be dropped and
+ * negotiation would stall; with it, the stream echoes within `STREAM_TIMEOUT`.
  */
 const RECIPIENT_UPGRADE_DELAY = 500
 
@@ -61,10 +43,9 @@ describe('webrtc early stream race', () => {
 
     const streamPromise = Promise.withResolvers<Stream>()
 
-    // open a stream to the recipient in the same event loop turn that
-    // publishes the outgoing direct connection - the recipient has not
-    // finished upgrading the connection so its muxer does not exist yet and
-    // the multistream-select bytes are dropped
+    // open a stream in the same event loop turn that publishes the direct
+    // connection - the recipient's muxer does not exist yet, so the early bytes
+    // must be buffered rather than dropped for this to succeed
     initiator.addEventListener('connection:open', (event) => {
       if (!WebRTC.exactMatch(event.detail.remoteAddr)) {
         return
