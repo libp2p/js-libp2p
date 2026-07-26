@@ -8,6 +8,8 @@ import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { MessageStreamInit, SendResult } from '@libp2p/utils'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
+const XOR_WINDOW_SIZE = 65536
+
 export interface BoxMessageStreamInit extends MessageStreamInit {
   maConn: MultiaddrConnection
   localNonce: Uint8Array
@@ -35,10 +37,10 @@ export class BoxMessageStream extends AbstractMultiaddrConnection {
       const data = evt.data
 
       if (data instanceof Uint8Array) {
-        this.onData(this.inboundXor.update(data))
+        this.onData(this.xorWindowed(this.inboundXor, data))
       } else {
         for (const buf of data) {
-          this.onData(this.inboundXor.update(buf))
+          this.onData(this.xorWindowed(this.inboundXor, buf))
         }
       }
     })
@@ -68,7 +70,7 @@ export class BoxMessageStream extends AbstractMultiaddrConnection {
   sendData (data: Uint8ArrayList): SendResult {
     return {
       sentBytes: data.byteLength,
-      canSendMore: this.maConn.send(this.outboundXor.update(data.subarray()))
+      canSendMore: this.maConn.send(this.xorWindowed(this.outboundXor, data.subarray()))
     }
   }
 
@@ -82,6 +84,17 @@ export class BoxMessageStream extends AbstractMultiaddrConnection {
 
   sendResume (): void {
     this.maConn.resume()
+  }
+
+  private xorWindowed (xor: xsalsa20.Xor, input: Uint8Array): Uint8Array {
+    const output = new Uint8Array(input.byteLength)
+
+    for (let offset = 0; offset < input.byteLength; offset += XOR_WINDOW_SIZE) {
+      const end = Math.min(offset + XOR_WINDOW_SIZE, input.byteLength)
+      xor.update(input.subarray(offset, end), output.subarray(offset, end))
+    }
+
+    return output
   }
 }
 
