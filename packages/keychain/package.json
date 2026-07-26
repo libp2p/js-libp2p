@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/keychain",
-  "version": "6.1.4",
+  "version": "6.1.5",
   "description": "Key management and cryptographically protected messages",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#readme",
@@ -63,7 +63,7 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.10",
+    "@libp2p/logger": "^6.2.11",
     "aegir": "^48.1.1",
     "datastore-core": "^12.0.1"
   },

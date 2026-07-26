@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-collections",
-  "version": "7.0.24",
+  "version": "7.0.25",
   "description": "Stores values against a peer id",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-collections#readme",
@@ -49,8 +49,8 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/peer-id": "^6.0.12",
-    "@libp2p/utils": "^7.3.0",
+    "@libp2p/peer-id": "^6.0.13",
+    "@libp2p/utils": "^7.3.1",
     "multiformats": "^14.0.0"
   },
   "devDependencies": {
