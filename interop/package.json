@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/transport-interop-libp2p-main",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "type": "module",
   "private": true,
   "scripts": {
@@ -13,19 +13,19 @@
   "devDependencies": {
     "@chainsafe/libp2p-noise": "^17.0.0",
     "@chainsafe/libp2p-yamux": "^8.0.0",
-    "@libp2p/circuit-relay-v2": "^4.2.9",
-    "@libp2p/identify": "^4.1.10",
+    "@libp2p/circuit-relay-v2": "^4.2.10",
+    "@libp2p/identify": "^4.1.11",
     "@libp2p/interface": "^3.2.5",
-    "@libp2p/mplex": "^12.0.27",
-    "@libp2p/ping": "^3.1.9",
-    "@libp2p/tcp": "^11.0.24",
-    "@libp2p/tls": "^3.1.6",
-    "@libp2p/webrtc": "^6.0.27",
-    "@libp2p/websockets": "^10.1.17",
-    "@libp2p/webtransport": "^6.0.32",
+    "@libp2p/mplex": "^12.0.28",
+    "@libp2p/ping": "^3.1.10",
+    "@libp2p/tcp": "^11.0.25",
+    "@libp2p/tls": "^3.1.7",
+    "@libp2p/webrtc": "^6.0.28",
+    "@libp2p/websockets": "^10.1.18",
+    "@libp2p/webtransport": "^6.0.33",
     "@multiformats/multiaddr": "^13.0.3",
     "aegir": "^48.1.1",
-    "libp2p": "^3.3.6",
+    "libp2p": "^3.3.7",
     "p-event": "^7.0.0",
     "redis": "^6.1.0"
   }
