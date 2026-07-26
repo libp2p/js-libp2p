@@ -193,6 +193,8 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       signal: options.signal
     })
   } catch (err) {
+    // discard any early data channels buffered before the upgrade failed
+    muxerFactory.close()
     handshakeDataChannel.close()
     peerConnection.close()
 

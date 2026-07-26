@@ -23,6 +23,7 @@ export interface IncomingStreamOptions extends AbortOptions {
 export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDialEvents> {
   rtcConfiguration?: RTCConfiguration
   dataChannel?: DataChannelOptions
+  maxEarlyStreams?: number
   multiaddr: Multiaddr
   connectionManager: ConnectionManager
   transportManager: TransportManager
@@ -32,7 +33,7 @@ export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDia
   logger: ComponentLogger
 }
 
-export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
+export async function initiateConnection ({ rtcConfiguration, dataChannel, maxEarlyStreams, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   const { circuitAddress, targetPeer } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
@@ -83,7 +84,10 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   const muxerFactory = new DataChannelMuxerFactory({
     // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
-    dataChannelOptions: dataChannel
+    dataChannelOptions: dataChannel,
+    maxEarlyStreams,
+    metrics: metrics?.dialerEvents,
+    log
   })
 
   try {
@@ -216,6 +220,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   } catch (err: any) {
     log.error('outgoing signaling error - %e', err)
 
+    muxerFactory.close()
     peerConnection.close()
     stream.abort(err)
     throw err

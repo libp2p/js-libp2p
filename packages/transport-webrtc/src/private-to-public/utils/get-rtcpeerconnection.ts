@@ -7,7 +7,7 @@ import { DataChannelMuxerFactory } from '../../muxer.ts'
 import { isValidUfrag } from '../../util.ts'
 import { generateTransportCertificate } from './generate-certificates.ts'
 import type { DataChannelOptions, TransportCertificate } from '../../index.ts'
-import type { CounterGroup } from '@libp2p/interface'
+import type { CounterGroup, Logger } from '@libp2p/interface'
 import type { CertificateFingerprint } from 'node-datachannel'
 
 const crypto = new Crypto()
@@ -100,7 +100,9 @@ export interface CreateDialerRTCPeerConnectionOptions {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   certificate?: TransportCertificate
   events?: CounterGroup
+  log?: Logger
   dataChannel?: DataChannelOptions
+  maxEarlyStreams?: number
 }
 
 export async function createDialerRTCPeerConnection (role: 'client', ufrag: string, options?: CreateDialerRTCPeerConnectionOptions): Promise<{ peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }>
@@ -141,7 +143,9 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
     // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     metrics: options.events,
-    dataChannelOptions: options.dataChannel
+    log: options.log,
+    dataChannelOptions: options.dataChannel,
+    maxEarlyStreams: options.maxEarlyStreams
   })
 
   return {
