@@ -52,7 +52,7 @@ describe('muxer', () => {
 
 /**
  * Minimal fake RTCDataChannel that records whether it was closed and can
- * synthesise incoming `message` events of a given size.
+ * generate incoming `message` events of a given size.
  */
 interface FakeDataChannel {
   label: string

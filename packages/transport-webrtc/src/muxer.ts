@@ -129,7 +129,7 @@ export class DataChannelMuxerFactory implements StreamMuxerFactory {
     channel.onmessage = (messageEvent) => {
       const { data } = messageEvent
 
-      // text frames arrive as strings despite binaryType - unsizeable, so reject
+      // text frames arrive as strings despite binaryType - can't size them, reject
       if (!(data instanceof ArrayBuffer)) {
         this.closeEarlyDataChannel(early, 'invalid_message')
         return
