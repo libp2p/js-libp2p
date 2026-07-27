@@ -112,7 +112,15 @@ describe('PartialMessageState', () => {
     state.updateMetadata(makeGroupID(2), 'peer1', new Uint8Array([0b0101]))
 
     const gossipGroups = state.getGroupsForGossip()
-    expect(gossipGroups.size).to.equal(2)
+    expect(gossipGroups).to.have.length(2)
+
+    // groupIDs come back as bytes, not as the internal hex key, so the caller
+    // does not have to parse them back.
+    expect(gossipGroups.map(g => g.groupID)).to.deep.equal([makeGroupID(1), makeGroupID(2)])
+    expect(gossipGroups.map(g => g.metadata)).to.deep.equal([
+      new Uint8Array([0b1010]),
+      new Uint8Array([0b0101])
+    ])
   })
 
   it('should clear all state', () => {

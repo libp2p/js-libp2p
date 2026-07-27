@@ -277,6 +277,17 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
    * @default 120000
    */
   partialMessagesGroupTTLMs?: number
+
+  /**
+   * Maximum size in bytes of a received `partsMetadata`. Larger values are
+   * rejected without updating any state.
+   *
+   * The encoding is application defined, so applications using something
+   * bulkier than a bitmap may need to raise this.
+   *
+   * @default 1024
+   */
+  partialMessagesMaxMetadataSize?: number
 }
 
 export interface GossipsubMessage {

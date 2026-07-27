@@ -18,6 +18,30 @@ export enum MessageSource {
   publish = 'publish'
 }
 
+/** How a partial message was sent, for the sent-partials metric */
+export enum PartialSendKind {
+  /** Carried encoded partialMessage data, to a peer that requested partials */
+  data = 'data',
+  /** Carried partsMetadata only, to a peer that supports but did not request */
+  metadata = 'metadata',
+  /** Carried partsMetadata only, emitted as heartbeat gossip */
+  gossip = 'gossip'
+}
+
+/** Why an inbound partial message was dropped before reaching the application */
+export enum PartialRejectReason {
+  /** topicID or groupID missing */
+  incomplete = 'incomplete',
+  /** partsMetadata exceeded the configured cap */
+  metadataTooLarge = 'metadata_too_large',
+  /** partialMessage exceeded the configured cap */
+  payloadTooLarge = 'payload_too_large',
+  /** We have no partial subscription for the topic */
+  topicNotSubscribed = 'topic_not_subscribed',
+  /** The topic is outside allowedTopics */
+  topicNotAllowed = 'topic_not_allowed'
+}
+
 type NoLabels = Record<string, never>
 type LabelsGeneric = Record<string, string | number>
 type LabelKeys<Labels extends LabelsGeneric> = Extract<keyof Labels, string>
@@ -612,6 +636,36 @@ export function getMetrics (
       name: 'gossipsub_idontwant_rcv_dont_have_msgids_total',
       help: 'Total received IDONTWANT messageIDs that we do not have in mcache'
     }),
+    /* Partial Messages Extension */
+
+    /** Total partial messages sent, by whether they carried encoded data */
+    partialMsgSent: register.gauge<{ kind: PartialSendKind }>({
+      name: 'gossipsub_partial_msg_sent_total',
+      help: 'Total partial messages sent by kind',
+      labelNames: ['kind']
+    }),
+    /** Total partial messages received and forwarded to the application */
+    partialMsgReceived: register.gauge({
+      name: 'gossipsub_partial_msg_received_total',
+      help: 'Total partial messages accepted and dispatched to the application'
+    }),
+    /** Total partial messages rejected, by reason */
+    partialMsgRejected: register.gauge<{ reason: PartialRejectReason }>({
+      name: 'gossipsub_partial_msg_rejected_total',
+      help: 'Total partial messages rejected before dispatch, by reason',
+      labelNames: ['reason']
+    }),
+    /** Currently tracked partial message groups across all topics */
+    partialGroupsTracked: register.gauge({
+      name: 'gossipsub_partial_groups_tracked',
+      help: 'Number of partial message groups currently tracked across all topics'
+    }),
+    /** Total partial message groups dropped after exceeding their TTL */
+    partialGroupsPruned: register.gauge({
+      name: 'gossipsub_partial_groups_pruned_total',
+      help: 'Total partial message groups pruned for exceeding their TTL'
+    }),
+
     iwantPromiseStarted: register.gauge({
       name: 'gossipsub_iwant_promise_sent_total',
       help: 'Total count of started IWANT promises'
@@ -831,6 +885,25 @@ export function getMetrics (
     onIdontwantRcv (idontwant: number, idontwantDonthave: number): void {
       this.idontwantRcvMsgids.inc(idontwant)
       this.idontwantRcvDonthaveMsgids.inc(idontwantDonthave)
+    },
+
+    onPartialMsgSent (kind: PartialSendKind): void {
+      this.partialMsgSent.inc({ kind }, 1)
+    },
+
+    onPartialMsgReceived (): void {
+      this.partialMsgReceived.inc(1)
+    },
+
+    onPartialMsgRejected (reason: PartialRejectReason): void {
+      this.partialMsgRejected.inc({ reason }, 1)
+    },
+
+    onPartialGroupsPruned (pruned: number, tracked: number): void {
+      if (pruned > 0) {
+        this.partialGroupsPruned.inc(pruned)
+      }
+      this.partialGroupsTracked.set(tracked)
     },
 
     onForwardMsg (topicStr: TopicStr, tosendCount: number): void {

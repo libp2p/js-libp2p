@@ -121,6 +121,78 @@ describe('partial messages - gossip and heartbeat', () => {
     }
   })
 
+  it('should sample a subset of eligible peers rather than gossiping to all', () => {
+    // Spec: heartbeat metadata gossip informs "a random subset of non-mesh
+    // topic peers ... similar to full message IHAVE gossip". Previously every
+    // eligible peer received every group every heartbeat.
+    const topic = 'test-topic'
+    const gsA = ctx.nodeA.pubsub as any
+
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    const state = gsA.partialMessageState.get(topic)
+    state.updateMetadata(new Uint8Array([1]), ctx.nodeA.components.peerId.toString(), new Uint8Array([0b1010]))
+
+    // Far more candidates than Dlazy, all of them partial-capable.
+    const peerIds = Array.from({ length: 100 }, (_, i) => `peer-${i}`)
+    for (const peerId of peerIds) {
+      gsA.peerPartialOpts.set(peerId, new Map())
+      gsA.peerPartialOpts.get(peerId).set(topic, {
+        requestsPartial: false,
+        supportsSendingPartial: true
+      } as PartialSubscriptionOpts)
+    }
+
+    const recipients = new Set<string>()
+    gsA.sendRpc = (id: string, rpc: RPC): boolean => {
+      if (rpc.partial != null) {
+        recipients.add(id)
+      }
+      return true
+    }
+
+    gsA.emitPartialGossip(new Map([[topic, new Set(peerIds)]]))
+
+    const expected = Math.max(gsA.opts.Dlazy, gsA.opts.gossipFactor * peerIds.length)
+    expect(recipients.size).to.equal(expected)
+    expect(recipients.size).to.be.lessThan(peerIds.length)
+  })
+
+  it('should gossip to every eligible peer when below the sampling target', () => {
+    const topic = 'test-topic'
+    const bId = ctx.nodeB.components.peerId.toString()
+    const gsA = ctx.nodeA.pubsub as any
+
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    const state = gsA.partialMessageState.get(topic)
+    state.updateMetadata(new Uint8Array([1]), ctx.nodeA.components.peerId.toString(), new Uint8Array([0b1010]))
+
+    gsA.peerPartialOpts.set(bId, new Map())
+    gsA.peerPartialOpts.get(bId).set(topic, {
+      requestsPartial: false,
+      supportsSendingPartial: true
+    } as PartialSubscriptionOpts)
+
+    const recipients = new Set<string>()
+    gsA.sendRpc = (id: string, rpc: RPC): boolean => {
+      if (rpc.partial != null) {
+        recipients.add(id)
+      }
+      return true
+    }
+
+    gsA.emitPartialGossip(new Map([[topic, new Set([bId])]]))
+
+    expect(Array.from(recipients)).to.deep.equal([bId])
+  })
+
   it('should gossip metadata for all tracked groups per topic', async () => {
     const topic = 'test-topic'
     const bId = ctx.nodeB.components.peerId.toString()

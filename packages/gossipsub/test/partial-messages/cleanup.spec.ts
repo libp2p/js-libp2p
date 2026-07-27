@@ -55,6 +55,78 @@ describe('partial messages - cleanup', () => {
     expect(gsB.peerPartialOpts.has(peerAId)).to.be.false()
   })
 
+  it('should clean up partial state when the topic is plainly unsubscribed', () => {
+    // unsubscribe() used to leave partialTopics and the group state in place,
+    // so the node kept dispatching partial messages for a topic it had left,
+    // kept the per-peer metadata resident, and kept gossiping the topic every
+    // heartbeat (emitPartialGossip iterates partialMessageState, not
+    // subscriptions).
+    const topic = 'test-topic'
+    const gsA = ctx.nodeA.pubsub as any
+
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    expect(gsA.partialMessageState.has(topic)).to.be.true()
+    expect(ctx.nodeA.pubsub.partialTopics.has(topic)).to.be.true()
+
+    ctx.nodeA.pubsub.unsubscribe(topic)
+
+    expect(gsA.partialMessageState.has(topic)).to.be.false()
+    expect(ctx.nodeA.pubsub.partialTopics.has(topic)).to.be.false()
+  })
+
+  it('should stop dispatching partial messages after a plain unsubscribe', () => {
+    const topic = 'test-topic'
+    const gsA = ctx.nodeA.pubsub as any
+
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+    ctx.nodeA.pubsub.unsubscribe(topic)
+
+    let eventFired = false
+    ctx.nodeA.pubsub.addEventListener('gossipsub:partial-message', () => {
+      eventFired = true
+    }, { once: true })
+
+    gsA.handleReceivedRpc(ctx.nodeB.components.peerId, {
+      subscriptions: [],
+      messages: [],
+      partial: {
+        topicID: new TextEncoder().encode(topic),
+        groupID: new Uint8Array([1]),
+        partsMetadata: new Uint8Array([0b1010])
+      }
+    })
+
+    expect(eventFired).to.be.false()
+  })
+
+  it('should drop groups left empty once their last peer is removed', () => {
+    const topic = 'test-topic'
+    const peerAId = ctx.nodeA.components.peerId.toString()
+    const gsB = ctx.nodeB.pubsub as any
+
+    ctx.nodeB.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    const state = gsB.partialMessageState.get(topic)
+    // Zero-length metadata leaves nothing merged locally, so once the peer goes
+    // the group is an empty shell and should not be retained.
+    state.updateMetadata(new Uint8Array([1]), peerAId, new Uint8Array([]))
+    expect(state.size).to.equal(1)
+
+    state.removePeer(peerAId)
+
+    expect(state.size).to.equal(0)
+  })
+
   it('should require a fresh extensions handshake after a peer reconnects', () => {
     // sentExtensions is keyed on the outbound stream, not the peer id, so it
     // needs no explicit cleanup: a reconnect brings a new stream object, which

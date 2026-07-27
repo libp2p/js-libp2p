@@ -1,15 +1,30 @@
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { PartsMetadataMerger } from '../types.js'
 import type { PeerIdStr } from '../types.js'
 
 interface GroupState {
+  /** The group's identifier, kept so gossip does not have to re-parse the key */
+  groupID: Uint8Array
   /** Combined local metadata (merged from all received metadata) */
   localMetadata: Uint8Array
   /** Per-peer metadata tracking what each peer has reported */
   peerMetadata: Map<PeerIdStr, Uint8Array>
-  /** Timestamp when this group was first seen */
+  /**
+   * Timestamp when this group was first seen.
+   *
+   * Note this is deliberately distinct from `lastAccessedAt`: TTL pruning ages
+   * a group from creation, so a group cannot be kept alive indefinitely by
+   * traffic, while capacity eviction uses recency so active groups survive.
+   */
   createdAt: number
   /** Timestamp of last access (for LRU eviction) */
   lastAccessedAt: number
+}
+
+/** A group's identifier paired with the metadata to gossip for it */
+export interface GroupGossip {
+  groupID: Uint8Array
+  metadata: Uint8Array
 }
 
 /**
@@ -32,12 +47,7 @@ export class PartialMessageState {
    * Convert a groupID Uint8Array to a string key for the map
    */
   private groupKey (groupID: Uint8Array): string {
-    // Use hex encoding for consistent string keys
-    let key = ''
-    for (let i = 0; i < groupID.length; i++) {
-      key += groupID[i].toString(16).padStart(2, '0')
-    }
-    return key
+    return uint8ArrayToString(groupID, 'base16')
   }
 
   /**
@@ -55,6 +65,7 @@ export class PartialMessageState {
         this.evictOldest()
       }
       group = {
+        groupID,
         localMetadata: new Uint8Array(metadata.length),
         peerMetadata: new Map(),
         createdAt: now,
@@ -90,13 +101,15 @@ export class PartialMessageState {
 
   /**
    * Get all groups that have metadata, for gossip during heartbeat.
-   * Returns groupID (as hex key) => localMetadata pairs.
+   *
+   * Returns the groupID as bytes rather than as the internal hex key, so the
+   * caller does not have to parse it back.
    */
-  getGroupsForGossip (): Map<string, Uint8Array> {
-    const result = new Map<string, Uint8Array>()
-    for (const [key, group] of this.groups) {
+  getGroupsForGossip (): GroupGossip[] {
+    const result: GroupGossip[] = []
+    for (const group of this.groups.values()) {
       if (group.localMetadata.length > 0) {
-        result.set(key, group.localMetadata)
+        result.push({ groupID: group.groupID, metadata: group.localMetadata })
       }
     }
     return result
@@ -111,10 +124,17 @@ export class PartialMessageState {
 
   /**
    * Remove all entries for a peer across all groups.
+   *
+   * Groups left with no peer metadata and nothing merged locally are dropped
+   * too, so a churn of peers cannot accumulate empty group shells.
    */
   removePeer (peerId: PeerIdStr): void {
-    for (const group of this.groups.values()) {
+    for (const [key, group] of this.groups) {
       group.peerMetadata.delete(peerId)
+
+      if (group.peerMetadata.size === 0 && group.localMetadata.length === 0) {
+        this.groups.delete(key)
+      }
     }
   }
 

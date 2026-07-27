@@ -1,5 +1,7 @@
+import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { RPC } from '../../src/message/rpc.js'
+import { createComponents } from '../utils/create-pubsub.js'
 import { setupTwoNodes, teardownTwoNodes } from './utils.js'
 import type { TwoNodeContext } from './utils.js'
 import type { PartialSubscriptionOpts } from '../../src/types.js'
@@ -330,6 +332,35 @@ describe('partial messages - subscription signaling', () => {
     })
 
     expect(gsB.peerPartialOpts.has(aId)).to.be.false()
+  })
+
+  it('should refuse subscribePartial for a topic outside allowedTopics', async () => {
+    // handleReceivedPartial already refuses partials for disallowed topics;
+    // subscribePartial accepted them, so a node could register partial support
+    // for a topic its own allowlist forbids.
+    const restricted = await createComponents({
+      init: { emitSelf: false, allowedTopics: ['allowed-topic'] }
+    })
+
+    try {
+      expect(() => {
+        restricted.pubsub.subscribePartial('disallowed-topic', {
+          requestsPartial: true,
+          supportsSendingPartial: true
+        })
+      }).to.throw(/not in the allowed topic list/)
+
+      expect(restricted.pubsub.partialTopics.has('disallowed-topic')).to.be.false()
+
+      // The allowed topic still works.
+      restricted.pubsub.subscribePartial('allowed-topic', {
+        requestsPartial: true,
+        supportsSendingPartial: true
+      })
+      expect(restricted.pubsub.partialTopics.has('allowed-topic')).to.be.true()
+    } finally {
+      await stop(restricted.pubsub, ...Object.entries(restricted.components))
+    }
   })
 
   it('should keep partial opts isolated between topics for the same peer', async () => {
