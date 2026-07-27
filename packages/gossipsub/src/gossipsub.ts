@@ -1926,17 +1926,20 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     const { topic, groupID, partialMessage, partsMetadata } = partialMsg
 
-    // Update our own state
-    let state = this.partialMessageState.get(topic)
-    if (state == null) {
-      state = new PartialMessageState(
-        this.partsMetadataMerger,
-        this.opts.partialMessagesMaxGroups ?? PartialMessagesMaxGroups,
-        this.opts.partialMessagesGroupTTLMs ?? PartialMessagesGroupTTLMs
-      )
-      this.partialMessageState.set(topic, state)
+    // Update our own state. Eager pushes may carry no metadata, in which case
+    // there is nothing to record locally.
+    if (partsMetadata != null) {
+      let state = this.partialMessageState.get(topic)
+      if (state == null) {
+        state = new PartialMessageState(
+          this.partsMetadataMerger,
+          this.opts.partialMessagesMaxGroups ?? PartialMessagesMaxGroups,
+          this.opts.partialMessagesGroupTTLMs ?? PartialMessagesGroupTTLMs
+        )
+        this.partialMessageState.set(topic, state)
+      }
+      state.updateMetadata(groupID, this.components.peerId.toString(), partsMetadata)
     }
-    state.updateMetadata(groupID, this.components.peerId.toString(), partsMetadata)
 
     const topicIDBytes = this.textEncoder.encode(topic)
 
@@ -1960,8 +1963,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
           partialMessage,
           partsMetadata
         }))
-      } else if (peerOpts.supportsSendingPartial) {
-        // Send metadata only
+      } else if (peerOpts.supportsSendingPartial && partsMetadata != null) {
+        // Send metadata only. With no metadata to send there is nothing this
+        // peer can act on — it did not request data — so skip it entirely
+        // rather than sending a partial carrying only routing fields.
         this.sendRpc(peerId, createGossipRpc([], undefined, {
           topicID: topicIDBytes,
           groupID,
@@ -1976,13 +1981,17 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * Updates state and dispatches event to the application.
    */
   private handleReceivedPartial (from: PeerId, partial: RPC.PartialMessagesExtension): void {
-    if (partial.topicID == null || partial.groupID == null || partial.partsMetadata == null) {
+    // `partsMetadata` is optional on the wire: the spec says an unset value
+    // "carries no information besides that the peer did not send a value", and
+    // eager data pushes carry `partialMessage` with no metadata at all. Only
+    // the routing fields are required.
+    if (partial.topicID == null || partial.groupID == null) {
       this.log('received incomplete partial message from %p, ignoring', from)
       return
     }
 
     // Validate metadata size
-    if (partial.partsMetadata.length > PartialMessagesMaxMetadataSize) {
+    if (partial.partsMetadata != null && partial.partsMetadata.length > PartialMessagesMaxMetadataSize) {
       this.log('received oversized partsMetadata from %p (%d bytes), ignoring', from, partial.partsMetadata.length)
       return
     }
@@ -2005,17 +2014,21 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return
     }
 
-    // Update state
-    let state = this.partialMessageState.get(topic)
-    if (state == null) {
-      state = new PartialMessageState(
-        this.partsMetadataMerger,
-        this.opts.partialMessagesMaxGroups ?? PartialMessagesMaxGroups,
-        this.opts.partialMessagesGroupTTLMs ?? PartialMessagesGroupTTLMs
-      )
-      this.partialMessageState.set(topic, state)
+    // Update state. A metadata-less partial tells us nothing about which parts
+    // the peer holds, so there is nothing to record — but the payload must
+    // still reach the application.
+    if (partial.partsMetadata != null) {
+      let state = this.partialMessageState.get(topic)
+      if (state == null) {
+        state = new PartialMessageState(
+          this.partsMetadataMerger,
+          this.opts.partialMessagesMaxGroups ?? PartialMessagesMaxGroups,
+          this.opts.partialMessagesGroupTTLMs ?? PartialMessagesGroupTTLMs
+        )
+        this.partialMessageState.set(topic, state)
+      }
+      state.updateMetadata(partial.groupID, fromId, partial.partsMetadata)
     }
-    state.updateMetadata(partial.groupID, fromId, partial.partsMetadata)
 
     // Dispatch event to application
     const partialMsg: PartialMessage = {

@@ -58,6 +58,32 @@ describe('partial messages - end to end', () => {
     expect(msg.partsMetadata).to.deep.equal(Uint8Array.from([0b1010]))
   })
 
+  it('delivers eagerly-pushed data that carries no partsMetadata', async () => {
+    // Spec: implementations SHOULD support an application pushing data to a
+    // peer "before it has received its partsMetadata". Verified over the wire
+    // because a metadata-less partial exercises a different encode path.
+    const topic = 'test-topic'
+
+    nodeA.pubsub.subscribePartial(topic, { requestsPartial: true, supportsSendingPartial: true })
+    nodeB.pubsub.subscribePartial(topic, { requestsPartial: true, supportsSendingPartial: true })
+
+    await waitForPartialPeer(nodeA, nodeB, topic)
+
+    const received = pEvent<'gossipsub:partial-message', CustomEvent<PartialMessage>>(
+      nodeB.pubsub, 'gossipsub:partial-message'
+    )
+
+    nodeA.pubsub.publishPartial({
+      topic,
+      groupID: Uint8Array.from([1, 2, 3]),
+      partialMessage: Uint8Array.from([4, 5, 6])
+    })
+
+    const msg = (await received).detail
+    expect(msg.partialMessage).to.deep.equal(Uint8Array.from([4, 5, 6]))
+    expect(msg.partsMetadata).to.be.undefined()
+  })
+
   it('records the sending peer in the receiver PartialMessageState', async () => {
     const topic = 'test-topic'
     const aId = nodeA.components.peerId.toString()

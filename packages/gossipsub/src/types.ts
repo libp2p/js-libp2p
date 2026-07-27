@@ -188,8 +188,14 @@ export interface PartialMessage {
   groupID: Uint8Array
   /** The partial message data (a subset of the full message) */
   partialMessage?: Uint8Array
-  /** Metadata describing which parts are available */
-  partsMetadata: Uint8Array
+  /**
+   * Metadata describing which parts are available.
+   *
+   * Optional, matching the wire format. An unset value carries no information
+   * besides that the peer did not send one — notably the case when data is
+   * pushed eagerly, before any metadata has been exchanged.
+   */
+  partsMetadata?: Uint8Array
 }
 
 /**

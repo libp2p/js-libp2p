@@ -159,7 +159,13 @@ describe('partial messages - handleReceivedPartial', () => {
     expect(eventFired).to.be.false()
   })
 
-  it('should reject partial messages with missing partsMetadata', () => {
+  it('should dispatch eagerly-pushed data that carries no partsMetadata', async () => {
+    // Inverted from "should reject partial messages with missing
+    // partsMetadata", which locked in a spec violation. partsMetadata is
+    // optional on the wire; the spec says an unset value "carries no
+    // information besides that the peer did not send a value", that
+    // implementations MUST forward partials to the application, and that they
+    // SHOULD support eager data pushed before any metadata is exchanged.
     const topic = 'test-topic'
     const gsB = ctx.nodeB.pubsub as any
 
@@ -170,25 +176,53 @@ describe('partial messages - handleReceivedPartial', () => {
 
     const topicIDBytes = new TextEncoder().encode(topic)
 
-    const partialRpc: RPC = {
+    const received = new Promise<PartialMessage>((resolve) => {
+      ctx.nodeB.pubsub.addEventListener('gossipsub:partial-message', (evt: CustomEvent<PartialMessage>) => {
+        resolve(evt.detail)
+      }, { once: true })
+    })
+
+    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
       subscriptions: [],
       messages: [],
       partial: {
         topicID: topicIDBytes,
-        groupID: new Uint8Array([1, 2])
-        // Missing partsMetadata
+        groupID: new Uint8Array([1, 2]),
+        partialMessage: new Uint8Array([4, 5, 6])
+        // No partsMetadata — this is an eager data push
       }
-    }
+    })
 
-    let eventFired = false
-    ctx.nodeB.pubsub.addEventListener('gossipsub:partial-message', () => {
-      eventFired = true
-    }, { once: true })
+    const msg = await received
+    expect(msg.groupID).to.deep.equal(new Uint8Array([1, 2]))
+    expect(msg.partialMessage).to.deep.equal(new Uint8Array([4, 5, 6]))
+    expect(msg.partsMetadata).to.be.undefined()
+  })
 
-    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, partialRpc)
+  it('should not record group state for a partial with no partsMetadata', () => {
+    // Nothing is known about which parts the peer holds, so no per-peer
+    // metadata should be invented for it.
+    const topic = 'test-topic'
+    const gsB = ctx.nodeB.pubsub as any
+    const aId = ctx.nodeA.components.peerId.toString()
 
-    // No event should be dispatched
-    expect(eventFired).to.be.false()
+    ctx.nodeB.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [],
+      messages: [],
+      partial: {
+        topicID: new TextEncoder().encode(topic),
+        groupID: new Uint8Array([1, 2]),
+        partialMessage: new Uint8Array([4, 5, 6])
+      }
+    })
+
+    const state = gsB.partialMessageState.get(topic)
+    expect(state.getPeerMetadata(new Uint8Array([1, 2]), aId)).to.be.undefined()
   })
 
   it('should reject partial messages with oversized partsMetadata', () => {
