@@ -161,10 +161,19 @@ describe('partial messages - gossip and heartbeat', () => {
     expect(sentToB.length).to.equal(2)
   })
 
-  it('should not send IHAVE to peers that request partial messages', () => {
+  it('should not send IHAVE to partial-requesting peers when we support partial for the topic', () => {
     const topic = 'test-topic'
     const bId = ctx.nodeB.components.peerId.toString()
     const gsA = ctx.nodeA.pubsub as any
+
+    // The precondition the spec attaches to this SHOULD NOT: it applies to
+    // "a node that supports partial messages". The previous version of this
+    // test omitted the subscribePartial call, so it asserted the suppression
+    // was correct for a node with no partial support at all.
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
 
     gsA.peerPartialOpts.set(bId, new Map())
     gsA.peerPartialOpts.get(bId).set(topic, {
@@ -182,6 +191,35 @@ describe('partial messages - gossip and heartbeat', () => {
     gsA.doEmitGossip(topic, new Set([bId]), [new Uint8Array([1, 2, 3])])
 
     expect(pushedIHave).to.have.length(0)
+  })
+
+  it('should still send IHAVE to partial-requesting peers when we do not support partial for the topic', () => {
+    const topic = 'test-topic'
+    const bId = ctx.nodeB.components.peerId.toString()
+    const gsA = ctx.nodeA.pubsub as any
+
+    // nodeA never calls subscribePartial, so it has no partial state for the
+    // topic and nothing to send in place of an IHAVE. Suppressing gossip here
+    // would silently cut the peer out of the topic — a regression for every
+    // plain gossipsub node the moment one partial-capable peer appears.
+    expect(ctx.nodeA.pubsub.partialTopics.has(topic)).to.be.false()
+
+    gsA.peerPartialOpts.set(bId, new Map())
+    gsA.peerPartialOpts.get(bId).set(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    } as PartialSubscriptionOpts)
+
+    const pushedIHave: Array<{ peerId: string }> = []
+    const originalPushGossip = gsA.pushGossip.bind(gsA)
+    gsA.pushGossip = (peerId: string, controlIHaveMsgs: unknown) => {
+      pushedIHave.push({ peerId })
+      return originalPushGossip(peerId, controlIHaveMsgs)
+    }
+
+    gsA.doEmitGossip(topic, new Set([bId]), [new Uint8Array([1, 2, 3])])
+
+    expect(pushedIHave.map(p => p.peerId)).to.deep.equal([bId])
   })
 
   it('should prune partial group state during heartbeat execution', async () => {

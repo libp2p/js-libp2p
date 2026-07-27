@@ -2750,9 +2750,21 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.log('too many messages for gossip; will truncate IHAVE list (%d messages)', messageIDs.length)
     }
 
-    const eligiblePeers = Array.from(candidateToGossip).filter((id) => {
-      return this.peerPartialOpts.get(id)?.get(topic)?.requestsPartial !== true
-    })
+    // Spec: "a node that supports partial messages SHOULD NOT send an IHAVE to
+    // a peer that requested partial messages. The node SHOULD send a partial
+    // message instead."
+    //
+    // The precondition matters. peerPartialOpts is recorded for every peer
+    // regardless of our own configuration, so without this gate a node that
+    // never called subscribePartial would suppress IHAVE to partial-requesting
+    // peers while having no partial state to send them instead — cutting them
+    // out of gossip entirely.
+    const suppressForPartialPeers = this.partialTopics.has(topic)
+    const eligiblePeers = suppressForPartialPeers
+      ? Array.from(candidateToGossip).filter((id) => {
+        return this.peerPartialOpts.get(id)?.get(topic)?.requestsPartial !== true
+      })
+      : Array.from(candidateToGossip)
 
     if (eligiblePeers.length === 0) { return }
     let target = this.opts.Dlazy
