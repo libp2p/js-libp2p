@@ -5,9 +5,9 @@ import sinon from 'sinon'
 import { RPC } from '../../src/message/rpc.js'
 import { createComponents } from '../utils/create-pubsub.js'
 import { setupTwoNodes, teardownTwoNodes, waitForTopicPeer } from './utils.js'
+import type { TwoNodeContext } from './utils.js'
 import type { Message } from '../../src/index.js'
 import type { PartialSubscriptionOpts, PartsMetadataMerger } from '../../src/types.js'
-import type { TwoNodeContext } from './utils.js'
 
 describe('partial messages - mixed network and upgrade path', () => {
   let ctx: TwoNodeContext

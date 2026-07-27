@@ -12,7 +12,8 @@ import {
   BACKOFF_SLACK,
   PartialMessagesMaxGroups,
   PartialMessagesGroupTTLMs,
-  PartialMessagesMaxMetadataSize
+  PartialMessagesMaxMetadataSize,
+  PartialMessagesMaxTopicIDSize
 } from './constants.js'
 import { StrictNoSign, StrictSign, TopicValidatorResult } from './index.ts'
 import { defaultDecodeRpcLimits } from './message/decodeRpc.js'
@@ -29,6 +30,8 @@ import {
   ScorePenalty
 
 } from './metrics.js'
+import { BitwiseOrMerger } from './partial/bitwise-or-merger.js'
+import { PartialMessageState } from './partial/partial-message-state.js'
 import {
   PeerScore,
 
@@ -57,8 +60,6 @@ import { multiaddrToIPStr } from './utils/multiaddr.js'
 import { getPublishConfigFromPeerId } from './utils/publishConfig.js'
 import { removeFirstNItemsFromSet, removeItemsFromSet } from './utils/set.js'
 import { SimpleTimeCache } from './utils/time-cache.js'
-import { BitwiseOrMerger } from './partial/bitwise-or-merger.js'
-import { PartialMessageState } from './partial/partial-message-state.js'
 import type { GossipSubComponents, GossipSubEvents, GossipsubMessage, GossipsubOpts, MeshPeer, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.ts'
 import type { DecodeRPCLimits } from './message/decodeRpc.js'
 import type { MessageCacheRecord } from './message-cache.js'
@@ -288,8 +289,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /** Shared TextEncoder for topicID string->bytes conversion */
   private readonly textEncoder = new TextEncoder()
 
-  /** Shared TextDecoder for topicID bytes->string conversion */
-  private readonly textDecoder = new TextDecoder()
+  /**
+   * Shared TextDecoder for topicID bytes->string conversion.
+   *
+   * `fatal` so malformed UTF-8 throws instead of silently becoming U+FFFD,
+   * which would let distinct byte sequences collapse onto the same topic
+   * string. Callers must handle the throw.
+   */
+  private readonly textDecoder = new TextDecoder('utf-8', { fatal: true })
 
   private readonly components: GossipSubComponents
 
@@ -2043,7 +2050,24 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return
     }
 
-    const topic = this.textDecoder.decode(partial.topicID)
+    // topicID is `bytes` on the wire but a string in the API. An oversized or
+    // malformed value is peer-controlled input, so bound it before decoding and
+    // let a decode failure reject the message rather than propagate.
+    if (partial.topicID.length > PartialMessagesMaxTopicIDSize) {
+      this.log('received oversized topicID from %p (%d bytes), ignoring', from, partial.topicID.length)
+      this.metrics?.onPartialMsgRejected(PartialRejectReason.incomplete)
+      return
+    }
+
+    let topic: TopicStr
+    try {
+      topic = this.textDecoder.decode(partial.topicID)
+    } catch {
+      this.log('received partial message with non-UTF-8 topicID from %p, ignoring', from)
+      this.metrics?.onPartialMsgRejected(PartialRejectReason.incomplete)
+      return
+    }
+
     const fromId = from.toString()
 
     // Only process if we're subscribed with partial support for this topic

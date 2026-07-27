@@ -4,7 +4,6 @@ import { RPC } from '../../src/message/rpc.js'
 import { createComponents } from '../utils/create-pubsub.js'
 import { setupTwoNodes, teardownTwoNodes } from './utils.js'
 import type { TwoNodeContext } from './utils.js'
-import type { PartialSubscriptionOpts } from '../../src/types.js'
 
 describe('partial messages - subscription signaling', () => {
   let ctx: TwoNodeContext

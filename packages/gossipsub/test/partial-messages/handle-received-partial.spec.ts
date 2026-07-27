@@ -1,6 +1,6 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
-import { PartialMessagesMaxMetadataSize } from '../../src/constants.js'
+import { PartialMessagesMaxMetadataSize, PartialMessagesMaxTopicIDSize } from '../../src/constants.js'
 import { defaultDecodeRpcLimits } from '../../src/message/decodeRpc.js'
 import { RPC } from '../../src/message/rpc.js'
 import { createComponents } from '../utils/create-pubsub.js'
@@ -305,6 +305,66 @@ describe('partial messages - handleReceivedPartial', () => {
     } finally {
       await stop(limitedNode.pubsub, ...Object.entries(limitedNode.components))
     }
+  })
+
+  it('should reject a partial whose topicID is not valid UTF-8', () => {
+    // topicID is `bytes` on the wire. A non-fatal TextDecoder would map
+    // malformed input to U+FFFD, letting distinct byte sequences collapse onto
+    // the same topic string.
+    const topic = 'test-topic'
+    const gsB = ctx.nodeB.pubsub as any
+
+    ctx.nodeB.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    let eventFired = false
+    ctx.nodeB.pubsub.addEventListener('gossipsub:partial-message', () => {
+      eventFired = true
+    }, { once: true })
+
+    expect(() => {
+      gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+        subscriptions: [],
+        messages: [],
+        partial: {
+          // Lone continuation bytes: never valid UTF-8
+          topicID: new Uint8Array([0xff, 0xfe, 0x80]),
+          groupID: new Uint8Array([1]),
+          partsMetadata: new Uint8Array([0b1010])
+        }
+      })
+    }).to.not.throw()
+
+    expect(eventFired).to.be.false()
+  })
+
+  it('should reject a partial with an oversized topicID', () => {
+    const topic = 'test-topic'
+    const gsB = ctx.nodeB.pubsub as any
+
+    ctx.nodeB.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    let eventFired = false
+    ctx.nodeB.pubsub.addEventListener('gossipsub:partial-message', () => {
+      eventFired = true
+    }, { once: true })
+
+    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [],
+      messages: [],
+      partial: {
+        topicID: new Uint8Array(PartialMessagesMaxTopicIDSize + 1),
+        groupID: new Uint8Array([1]),
+        partsMetadata: new Uint8Array([0b1010])
+      }
+    })
+
+    expect(eventFired).to.be.false()
   })
 
   it('should ignore partial for topic not subscribed with partial support', () => {

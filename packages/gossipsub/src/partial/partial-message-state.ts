@@ -1,6 +1,5 @@
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { PartsMetadataMerger } from '../types.js'
-import type { PeerIdStr } from '../types.js'
+import type { PartsMetadataMerger, PeerIdStr } from '../types.js'
 
 interface GroupState {
   /** The group's identifier, kept so gossip does not have to re-parse the key */

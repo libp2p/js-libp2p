@@ -6,14 +6,13 @@ import { setupTwoNodes, teardownTwoNodes, waitForTopicPeer } from './utils.js'
 import type { TwoNodeContext } from './utils.js'
 
 /**
- * gossipsub v1.3, The Extensions Control Message:
+ * gossipsub v1.3, The Extensions Control Message: "If a peer supports any
+ * extension, the Extensions control message MUST be included in the first
+ * message on the stream. An Extensions control message MUST NOT be sent more
+ * than once."
  *
- *   "If a peer supports any extension, the Extensions control message MUST be
- *    included in the first message on the stream. An Extensions control
- *    message MUST NOT be sent more than once."
- *
- * Both requirements are scoped to the *stream*, which is why the sent-marker
- * is keyed on the outbound stream rather than the peer id.
+ * Both requirements are scoped to the stream, which is why the sent-marker is
+ * keyed on the outbound stream rather than the peer id.
  */
 describe('partial messages - extension handshake', () => {
   let ctx: TwoNodeContext

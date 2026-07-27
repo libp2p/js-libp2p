@@ -285,3 +285,14 @@ export const PartialMessagesGroupTTLMs = 2 * minute
  * @default 1024
  */
 export const PartialMessagesMaxMetadataSize = 1024
+
+/**
+ * Maximum size in bytes of a received `topicID`.
+ *
+ * `topicID` is peer-controlled `bytes` on the wire that gets decoded to a
+ * string, so it is bounded before decoding. Comfortably above any realistic
+ * topic name.
+ *
+ * @default 1024
+ */
+export const PartialMessagesMaxTopicIDSize = 1024
