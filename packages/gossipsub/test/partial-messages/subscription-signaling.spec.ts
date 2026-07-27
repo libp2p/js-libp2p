@@ -292,33 +292,63 @@ describe('partial messages - subscription signaling', () => {
     expect(ctx.nodeA.pubsub.getTopics()).to.include(topic)
   })
 
-  it('should include partial flags in outgoing SubOpts', () => {
-    const topic = 'test-topic'
-    const gsA = ctx.nodeA.pubsub as any
+  // Replaces a test that rebuilt sendSubscriptions' logic inside its own body
+  // and asserted on the copy, never calling the production code. Outgoing
+  // SubOpts flags are covered for real at 'should normalize outgoing SubOpts'
+  // and 'should send updated SubOpts', so this slot now carries the peer-opts
+  // bookkeeping cases that had no coverage at all.
 
-    // Set up partial topic
-    ctx.nodeA.pubsub.partialTopics.set(topic, {
-      requestsPartial: true,
-      supportsSendingPartial: true
+  it('should drop the peer entry entirely once its last topic loses partial opts', async () => {
+    const topicA = 'topic-a'
+    const topicB = 'topic-b'
+    const aId = ctx.nodeA.components.peerId.toString()
+    const gsB = ctx.nodeB.pubsub as any
+
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [
+        { subscribe: true, topic: topicA, requestsPartial: true, supportsSendingPartial: true },
+        { subscribe: true, topic: topicB, requestsPartial: true, supportsSendingPartial: true }
+      ],
+      messages: []
     })
-    gsA.subscriptions.add(topic)
 
-    // Build the SubOpts like sendSubscriptions does
-    const subOpts: RPC.SubOpts = { topic, subscribe: true }
-    const partialOpts = ctx.nodeA.pubsub.partialTopics.get(topic)
-    if (partialOpts != null) {
-      subOpts.requestsPartial = partialOpts.requestsPartial
-      subOpts.supportsSendingPartial = partialOpts.supportsSendingPartial
-    }
+    expect(gsB.peerPartialOpts.get(aId)?.size).to.equal(2)
 
-    // Verify the SubOpts contain partial flags
-    expect(subOpts.requestsPartial).to.be.true()
-    expect(subOpts.supportsSendingPartial).to.be.true()
+    // Dropping one topic leaves the peer entry in place...
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{ subscribe: false, topic: topicA }],
+      messages: []
+    })
 
-    // Verify encoding preserves the flags
-    const encoded = RPC.SubOpts.encode(subOpts)
-    const decoded = RPC.SubOpts.decode(encoded)
-    expect(decoded.requestsPartial).to.equal(true)
-    expect(decoded.supportsSendingPartial).to.equal(true)
+    expect(gsB.peerPartialOpts.get(aId)?.size).to.equal(1)
+
+    // ...and dropping the last one removes the outer map entry rather than
+    // leaving an empty Map behind.
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{ subscribe: false, topic: topicB }],
+      messages: []
+    })
+
+    expect(gsB.peerPartialOpts.has(aId)).to.be.false()
+  })
+
+  it('should keep partial opts isolated between topics for the same peer', async () => {
+    const topicA = 'topic-a'
+    const topicB = 'topic-b'
+    const aId = ctx.nodeA.components.peerId.toString()
+    const gsB = ctx.nodeB.pubsub as any
+
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [
+        { subscribe: true, topic: topicA, requestsPartial: true, supportsSendingPartial: true },
+        { subscribe: true, topic: topicB, requestsPartial: false, supportsSendingPartial: true }
+      ],
+      messages: []
+    })
+
+    const opts = gsB.peerPartialOpts.get(aId)
+    expect(opts?.get(topicA)?.requestsPartial).to.be.true()
+    expect(opts?.get(topicB)?.requestsPartial).to.be.false()
+    expect(opts?.get(topicB)?.supportsSendingPartial).to.be.true()
   })
 })

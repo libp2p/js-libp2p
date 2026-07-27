@@ -255,11 +255,12 @@ describe('partial messages - publishPartial', () => {
     }
     gsA.topics.get(topic).add(bId)
 
-    // Ensure peer is not in mesh for this topic
-    const meshPeers = gsA.mesh.get(topic)
-    if (meshPeers != null) {
-      meshPeers.delete(bId)
-    }
+    // Establish non-mesh membership as an asserted precondition. The previous
+    // version guarded on `if (meshPeers != null)`, and since the mesh was
+    // empty anyway the branch never ran and nothing about mesh membership was
+    // actually established.
+    gsA.mesh.set(topic, new Set())
+    expect(gsA.mesh.get(topic).has(bId)).to.be.false()
 
     gsA.peerPartialOpts.set(bId, new Map())
     gsA.peerPartialOpts.get(bId).set(topic, {

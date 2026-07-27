@@ -1,11 +1,13 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
 import sinon from 'sinon'
 import { RPC } from '../../src/message/rpc.js'
 import { createComponents } from '../utils/create-pubsub.js'
-import { setupTwoNodes, teardownTwoNodes } from './utils.js'
-import type { TwoNodeContext } from './utils.js'
+import { setupTwoNodes, teardownTwoNodes, waitForTopicPeer } from './utils.js'
+import type { Message } from '../../src/index.js'
 import type { PartialSubscriptionOpts, PartsMetadataMerger } from '../../src/types.js'
+import type { TwoNodeContext } from './utils.js'
 
 describe('partial messages - mixed network and upgrade path', () => {
   let ctx: TwoNodeContext
@@ -18,40 +20,32 @@ describe('partial messages - mixed network and upgrade path', () => {
     await teardownTwoNodes(ctx)
   })
 
-  it('should still process full messages when subscribed with partial', () => {
+  it('should still process full messages when subscribed with partial', async () => {
+    // Spec: "if the node is in a mixed network of partial and full messages,
+    // and it requests partial messages, the node MUST support receiving full
+    // messages." nodeA is a plain gossipsub peer with no partial support, so
+    // this is the real mixed-network case rather than two partial nodes.
     const topic = 'test-topic'
-    const gsB = ctx.nodeB.pubsub as any
+    const payload = new TextEncoder().encode('hello world')
 
-    // Subscribe nodeB with partial support
     ctx.nodeB.pubsub.subscribePartial(topic, {
       requestsPartial: true,
       supportsSendingPartial: true
     })
+    ctx.nodeA.pubsub.subscribe(topic)
 
-    // Subscribe nodeA to topic to make it a valid sender
-    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
-      subscriptions: [{ subscribe: true, topic }],
-      messages: []
-    })
+    await waitForTopicPeer(ctx.nodeA, ctx.nodeB, topic)
 
-    // Simulate a regular full message RPC (not partial) from nodeA
-    // This is what happens when a non-partial-supporting peer sends a message
-    const rpc: RPC = {
-      subscriptions: [],
-      messages: [{
-        topic,
-        data: new TextEncoder().encode('hello world'),
-        from: ctx.nodeA.components.peerId.toMultihash().bytes,
-        seqno: new Uint8Array(8)
-      }]
-    }
+    const received = pEvent<'message', CustomEvent<Message>>(ctx.nodeB.pubsub, 'message')
 
-    // Process the full message - should not throw
-    // This verifies that partial support doesn't break full message reception
-    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, rpc)
+    await ctx.nodeA.pubsub.publish(topic, payload)
 
-    // Node should still be functional after processing the full message
-    expect(ctx.nodeB.pubsub.getTopics()).to.include(topic)
+    // Assert the message was actually delivered. The previous version of this
+    // test asserted only that getTopics() still contained the topic, which
+    // holds whether or not the message arrives.
+    const msg = (await received).detail
+    expect(msg.topic).to.equal(topic)
+    expect(msg.data).to.deep.equal(payload)
   })
 
   it('should handle supportsSendingPartial-only subscription correctly', () => {
@@ -77,32 +71,28 @@ describe('partial messages - mixed network and upgrade path', () => {
     expect(peerOpts?.supportsSendingPartial).to.be.true()
   })
 
-  it('should still process full messages when supportsSendingPartial-only is set', () => {
+  it('should still process full messages when supportsSendingPartial-only is set', async () => {
+    // Spec behaviour table: a peer that did not request partial messages
+    // "expects full messages". Step 1 of the documented upgrade path puts
+    // nodes in exactly this state, so full delivery must keep working.
     const topic = 'test-topic'
-    const gsB = ctx.nodeB.pubsub as any
+    const payload = new TextEncoder().encode('full message')
 
     ctx.nodeB.pubsub.subscribePartial(topic, {
       requestsPartial: false,
       supportsSendingPartial: true
     })
+    ctx.nodeA.pubsub.subscribe(topic)
 
-    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
-      subscriptions: [{ subscribe: true, topic }],
-      messages: []
-    })
+    await waitForTopicPeer(ctx.nodeA, ctx.nodeB, topic)
 
-    const rpc: RPC = {
-      subscriptions: [],
-      messages: [{
-        topic,
-        data: new TextEncoder().encode('full message'),
-        from: ctx.nodeA.components.peerId.toMultihash().bytes,
-        seqno: new Uint8Array(8)
-      }]
-    }
+    const received = pEvent<'message', CustomEvent<Message>>(ctx.nodeB.pubsub, 'message')
 
-    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, rpc)
-    expect(ctx.nodeB.pubsub.getTopics()).to.include(topic)
+    await ctx.nodeA.pubsub.publish(topic, payload)
+
+    const msg = (await received).detail
+    expect(msg.topic).to.equal(topic)
+    expect(msg.data).to.deep.equal(payload)
   })
 
   it('should update peer behavior when upgrading from supports-only to requestsPartial', () => {
@@ -198,9 +188,16 @@ describe('partial messages - configuration', () => {
       // The custom merger should have been called
       expect(mergeCallCount).to.be.greaterThan(0)
 
-      // Verify the merger's behavior (returns longer buffer, not bitwise OR)
+      // Assert the merger's *effect*, not just that it was called. Feeding in
+      // a longer buffer must yield that buffer verbatim; a bitwise OR would
+      // instead produce [0b1111, 0b0001].
       const state = gsCustom.partialMessageState.get(topic)
       expect(state).to.not.be.undefined()
+
+      state.updateMetadata(new Uint8Array([1]), 'peer1', new Uint8Array([0b0101, 0b0001]))
+
+      expect(state.getLocalMetadata(new Uint8Array([1])))
+        .to.deep.equal(new Uint8Array([0b0101, 0b0001]))
     } finally {
       await stop(customNode.pubsub, ...Object.entries(customNode.components))
     }

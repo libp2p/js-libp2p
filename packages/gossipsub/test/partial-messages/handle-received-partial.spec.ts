@@ -88,8 +88,25 @@ describe('partial messages - handleReceivedPartial', () => {
     expect(state.getLocalMetadata(new Uint8Array([1, 2]))).to.deep.equal(new Uint8Array([0b1010]))
   })
 
-  it('should reject partial messages with missing topicID', () => {
+  it('should reject partial messages with missing topicID without disturbing existing state', () => {
+    const topic = 'test-topic'
     const gsB = ctx.nodeB.pubsub as any
+
+    // Subscribe first so there is real state to protect. Without this the
+    // assertion passes trivially: partialTopics is empty, so the topic lookup
+    // returns early and the topicID guard is never the reason for rejection.
+    ctx.nodeB.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
+
+    const state = gsB.partialMessageState.get(topic)
+    state.updateMetadata(new Uint8Array([7]), 'peer1', new Uint8Array([0b1111]))
+
+    let eventFired = false
+    ctx.nodeB.pubsub.addEventListener('gossipsub:partial-message', () => {
+      eventFired = true
+    }, { once: true })
 
     const partialRpc: RPC = {
       subscriptions: [],
@@ -104,8 +121,10 @@ describe('partial messages - handleReceivedPartial', () => {
     // Should not throw, just silently return
     gsB.handleReceivedRpc(ctx.nodeA.components.peerId, partialRpc)
 
-    // No state should be created
-    expect(gsB.partialMessageState.size).to.equal(0)
+    expect(eventFired).to.be.false()
+    // The malformed partial must not create a group or corrupt existing state.
+    expect(state.hasGroup(new Uint8Array([1, 2]))).to.be.false()
+    expect(state.getLocalMetadata(new Uint8Array([7]))).to.deep.equal(new Uint8Array([0b1111]))
   })
 
   it('should reject partial messages with missing groupID', () => {
@@ -401,12 +420,11 @@ describe('partial messages - handleReceivedPartial', () => {
       supportsSendingPartial: true
     })
 
-    // Ensure nodeA is NOT in nodeB's mesh for this topic
+    // Establish non-mesh membership as an asserted precondition rather than a
+    // conditional delete that never ran against an empty mesh.
     const aId = ctx.nodeA.components.peerId.toString()
-    const mesh = gsB.mesh.get(topic)
-    if (mesh != null) {
-      mesh.delete(aId)
-    }
+    gsB.mesh.set(topic, new Set())
+    expect(gsB.mesh.get(topic).has(aId)).to.be.false()
 
     const topicIDBytes = new TextEncoder().encode(topic)
 

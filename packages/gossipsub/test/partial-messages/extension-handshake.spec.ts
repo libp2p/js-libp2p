@@ -154,13 +154,26 @@ describe('partial messages - extension handshake', () => {
     outboundStream.push = originalPush
   })
 
-  it('should log peer support when receiving extension handshake', async () => {
+  it('should process the rest of an RPC that carries an extension handshake', async () => {
+    // The previous version asserted `peers.has(aId)`, which is true whether or
+    // not the handshake is handled at all. Assert something the handshake path
+    // could actually break instead: that co-located subscriptions in the same
+    // RPC are still applied.
+    //
+    // Note the receiver does not record the advertised capability anywhere —
+    // it is logged and discarded (F-07). Once that is resolved this test
+    // should also assert the peer is marked as partial-capable.
+    const topic = 'test-topic'
     const gsB = ctx.nodeB.pubsub as any
     const aId = ctx.nodeA.components.peerId.toString()
 
-    // Send an RPC with extension handshake from nodeA
-    gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
-      subscriptions: [],
+    await gsB.handleReceivedRpc(ctx.nodeA.components.peerId, {
+      subscriptions: [{
+        subscribe: true,
+        topic,
+        requestsPartial: true,
+        supportsSendingPartial: true
+      }],
       messages: [],
       control: {
         ihave: [],
@@ -172,9 +185,7 @@ describe('partial messages - extension handshake', () => {
       }
     })
 
-    // The implementation logs "peer %s supports partial messages extension"
-    // We just verify the RPC was processed without error - the logging is internal
-    // The peer should still be tracked (no crash)
-    expect(gsB.peers.has(aId)).to.be.true()
+    expect(ctx.nodeB.pubsub.getSubscribers(topic).map(p => p.toString())).to.include(aId)
+    expect(gsB.peerPartialOpts.get(aId)?.get(topic)?.requestsPartial).to.be.true()
   })
 })

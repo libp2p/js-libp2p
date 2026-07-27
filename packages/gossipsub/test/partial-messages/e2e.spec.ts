@@ -1,8 +1,8 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
-import pWaitFor from 'p-wait-for'
 import { createComponents, connectPubsubNodes } from '../utils/create-pubsub.js'
+import { waitForPartialPeer, waitForTopicPeer } from './utils.js'
 import type { PartialMessage } from '../../src/types.js'
 import type { GossipSubAndComponents } from '../utils/create-pubsub.js'
 
@@ -31,25 +31,6 @@ describe('partial messages - end to end', () => {
     await stop(nodeA.pubsub, ...Object.entries(nodeA.components))
     await stop(nodeB.pubsub, ...Object.entries(nodeB.components))
   })
-
-  /**
-   * Wait until `from` has learned, over the wire, that `to` subscribes to
-   * `topic` and what its partial options are. Both facts are prerequisites
-   * for publishPartial to target the peer, and both arrive via SubOpts.
-   */
-  async function waitForPartialPeer (
-    from: GossipSubAndComponents,
-    to: GossipSubAndComponents,
-    topic: string
-  ): Promise<void> {
-    const gs = from.pubsub as any
-    const toId = to.components.peerId.toString()
-
-    await pWaitFor(() => {
-      return (gs.topics.get(topic)?.has(toId) ?? false) &&
-        gs.peerPartialOpts.get(toId)?.get(topic) != null
-    }, { timeout: 10000 })
-  }
 
   it('delivers a partial message from publishPartial to the remote event', async () => {
     const topic = 'test-topic'
@@ -159,8 +140,7 @@ describe('partial messages - end to end', () => {
     // B subscribes normally — no partial flags in its SubOpts.
     nodeB.pubsub.subscribe(topic)
 
-    const bId = nodeB.components.peerId.toString()
-    await pWaitFor(() => ((nodeA.pubsub as any).topics.get(topic)?.has(bId) ?? false), { timeout: 10000 })
+    await waitForTopicPeer(nodeA, nodeB, topic)
 
     let eventFired = false
     nodeB.pubsub.addEventListener('gossipsub:partial-message', () => { eventFired = true })
