@@ -55,18 +55,29 @@ describe('partial messages - cleanup', () => {
     expect(gsB.peerPartialOpts.has(peerAId)).to.be.false()
   })
 
-  it('should clean up sentExtensions when peer is removed', () => {
-    const peerAId = ctx.nodeA.components.peerId.toString()
-    const gsB = ctx.nodeB.pubsub as any
+  it('should require a fresh extensions handshake after a peer reconnects', () => {
+    // sentExtensions is keyed on the outbound stream, not the peer id, so it
+    // needs no explicit cleanup: a reconnect brings a new stream object, which
+    // is not in the set and therefore handshakes again. This replaces a test
+    // that added a peer-id string to the set directly.
+    const topic = 'test-topic'
+    const bId = ctx.nodeB.components.peerId.toString()
+    const gsA = ctx.nodeA.pubsub as any
 
-    // Manually set sentExtensions
-    gsB.sentExtensions.add(peerAId)
-    expect(gsB.sentExtensions.has(peerAId)).to.be.true()
+    ctx.nodeA.pubsub.subscribePartial(topic, {
+      requestsPartial: true,
+      supportsSendingPartial: true
+    })
 
-    // Directly trigger removePeer
-    gsB.removePeer(ctx.nodeA.components.peerId)
+    const originalStream = gsA.streamsOutbound.get(bId)
+    expect(gsA.sentExtensions.has(originalStream)).to.be.true()
 
-    expect(gsB.sentExtensions.has(peerAId)).to.be.false()
+    gsA.removePeer(ctx.nodeB.components.peerId)
+
+    // A stream created for a later connection is a distinct object, so it is
+    // owed its own handshake.
+    const reconnectedStream = { protocol: originalStream.protocol, push () {}, close: async (): Promise<void> => {} }
+    expect(gsA.shouldSendExtensions(reconnectedStream)).to.be.true()
   })
 
   it('should clean up partialMessageState peer entries when peer is removed', () => {
@@ -108,22 +119,21 @@ describe('partial messages - cleanup', () => {
       requestsPartial: true,
       supportsSendingPartial: true
     })
-    gsA.sentExtensions.add(bId)
 
     // Verify state exists
     expect(ctx.nodeA.pubsub.partialTopics.size).to.be.greaterThan(0)
     expect(gsA.partialMessageState.size).to.be.greaterThan(0)
     expect(gsA.peerPartialOpts.size).to.be.greaterThan(0)
-    expect(gsA.sentExtensions.size).to.be.greaterThan(0)
 
     // Stop the node (including components to avoid resource leaks)
     await stop(ctx.nodeA.pubsub, ...Object.entries(ctx.nodeA.components))
 
-    // All partial state should be cleared
+    // All partial state should be cleared. sentExtensions is not checked: it
+    // is a WeakSet keyed on outbound streams, which are torn down with the
+    // node, so there is no map left holding entries.
     expect(ctx.nodeA.pubsub.partialTopics.size).to.equal(0)
     expect(gsA.partialMessageState.size).to.equal(0)
     expect(gsA.peerPartialOpts.size).to.equal(0)
-    expect(gsA.sentExtensions.size).to.equal(0)
 
     // Re-create nodeA for afterEach cleanup (old components already stopped above)
     ctx.nodeA = await createComponents({

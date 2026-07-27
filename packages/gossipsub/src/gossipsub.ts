@@ -48,7 +48,7 @@ import {
 
 } from './types.js'
 import { buildRawMessage, validateToRawMessage } from './utils/buildRawMessage.js'
-import { createGossipRpc, ensureControl } from './utils/create-gossip-rpc.js'
+import { createGossipRpc, ensureControl, withExtensions } from './utils/create-gossip-rpc.js'
 import { shuffle, messageIdToString } from './utils/index.js'
 import { msgIdFnStrictNoSign, msgIdFnStrictSign } from './utils/msgIdFn.js'
 import { multiaddrToIPStr } from './utils/multiaddr.js'
@@ -270,8 +270,15 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /** What partial opts each peer has signaled per topic */
   private readonly peerPartialOpts = new Map<PeerIdStr, Map<TopicStr, PartialSubscriptionOpts>>()
 
-  /** Peers that have received our extension handshake */
-  private readonly sentExtensions = new Set<PeerIdStr>()
+  /**
+   * Outbound streams that have already carried our extensions handshake.
+   *
+   * Keyed on the stream rather than the peer because gossipsub v1.3 scopes the
+   * handshake to a stream: it must appear in the stream's first message and
+   * must not be repeated on it. A replaced stream is a new object, so it
+   * correctly gets a fresh handshake, and entries disappear with the stream.
+   */
+  private readonly sentExtensions = new WeakSet<OutboundStream>()
 
   /** Configurable merger for parts metadata (default: BitwiseOrMerger) */
   private readonly partsMetadataMerger: PartsMetadataMerger
@@ -638,7 +645,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
     this.partialMessageState.clear()
     this.peerPartialOpts.clear()
-    this.sentExtensions.clear()
+    // sentExtensions is a WeakSet keyed on streams; it empties as the streams
+    // torn down above are collected.
 
     this.log('stopped')
   }
@@ -847,9 +855,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.idontwantCounts.delete(id)
     this.idontwants.delete(id)
 
-    // Remove from partial messages tracking
+    // Remove from partial messages tracking. sentExtensions needs no cleanup:
+    // it is keyed on the outbound stream, which is discarded with the peer, so
+    // a reconnect gets a new stream and a fresh handshake.
     this.peerPartialOpts.delete(id)
-    this.sentExtensions.delete(id)
     for (const state of this.partialMessageState.values()) {
       state.removePeer(id)
     }
@@ -2470,6 +2479,18 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         tosend.delete(id)
         continue
       }
+
+      // A stream still owing an extensions handshake cannot use the shared
+      // pre-encoded bytes, since the handshake must ride its first message.
+      // Fall back to the per-peer path for those; every other peer keeps the
+      // encode-once optimisation.
+      if (this.shouldSendExtensions(outboundStream)) {
+        if (!this.sendRpc(id, rpc)) {
+          tosend.delete(id)
+        }
+        continue
+      }
+
       try {
         outboundStream.pushPrefixed(prefixedData)
       } catch (e) {
@@ -2607,15 +2628,15 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.gossip.delete(id)
     }
 
-    // Extension handshake: on first successful RPC to peer, include partialMessages=true if we have partial topics
-    let shouldMarkExtensionAsSent = false
-    if (this.partialTopics.size > 0 && !this.sentExtensions.has(id)) {
-      const rpcWithControl = ensureControl(rpc)
-      rpcWithControl.control.extensions = { partialMessages: true }
-      shouldMarkExtensionAsSent = true
-    }
+    // Extension handshake. gossipsub v1.3 requires it in the first message on
+    // the stream and forbids sending it more than once, so it is keyed on the
+    // stream and attached to a copy — mutating `rpc` would leak the handshake
+    // onto every other peer that shares the object, e.g. the single RPC that
+    // publish() reuses across all recipients.
+    const shouldSendExtensions = this.shouldSendExtensions(outboundStream)
+    const rpcToSend = shouldSendExtensions ? withExtensions(rpc) : rpc
 
-    const rpcBytes = RPC.encode(rpc)
+    const rpcBytes = RPC.encode(rpcToSend)
     try {
       outboundStream.push(rpcBytes)
     } catch (e) {
@@ -2632,11 +2653,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return false
     }
 
-    if (shouldMarkExtensionAsSent) {
-      this.sentExtensions.add(id)
+    // Only mark once the bytes are actually on the stream, so a failed send
+    // does not leave the peer permanently un-handshaken.
+    if (shouldSendExtensions) {
+      this.sentExtensions.add(outboundStream)
     }
 
-    this.metrics?.onRpcSent(rpc, rpcBytes.length)
+    this.metrics?.onRpcSent(rpcToSend, rpcBytes.length)
 
     if (rpc.control?.graft != null) {
       for (const topic of rpc.control?.graft) {
@@ -2821,6 +2844,17 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.log('Add gossip to %s', id)
     const gossip = this.gossip.get(id) ?? []
     this.gossip.set(id, gossip.concat(controlIHaveMsgs))
+  }
+
+  /**
+   * Whether this stream still owes the peer an extensions handshake.
+   *
+   * gossipsub v1.3: "If a peer supports any extension, the Extensions control
+   * message MUST be included in the first message on the stream. An Extensions
+   * control message MUST NOT be sent more than once."
+   */
+  private shouldSendExtensions (stream: OutboundStream): boolean {
+    return this.partialTopics.size > 0 && !this.sentExtensions.has(stream)
   }
 
   private normalizePartialSubscriptionOpts (opts: PartialSubscriptionOpts): PartialSubscriptionOpts {
