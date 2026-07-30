@@ -17,6 +17,13 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.1.22](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.21...crypto-v5.1.22) (2026-07-30)
+
+
+### Bug Fixes
+
+* **crypto:** reject invalid DER element lengths ([#3587](https://github.com/libp2p/js-libp2p/issues/3587)) ([ef6e185](https://github.com/libp2p/js-libp2p/commit/ef6e1851cb00511a4793a5e68948e0cdad385332))
+
 ## [5.1.21](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.20...crypto-v5.1.21) (2026-07-07)
 
 
