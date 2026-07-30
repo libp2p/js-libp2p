@@ -273,6 +273,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   private readonly maxOutboundStreams?: number
   private readonly runOnLimitedConnection?: boolean
   private readonly allowedTopics: Set<TopicStr> | null
+  private readonly maxTopicBytesPerPeer: number
+  /** Running total of subscribed-topic bytes per peer, to bound the topics map */
+  private readonly peerTopicBytes = new Map<PeerIdStr, number>()
 
   private heartbeatTimer: {
     _intervalId: ReturnType<typeof setInterval> | undefined
@@ -410,6 +413,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.runOnLimitedConnection = options.runOnLimitedConnection
 
     this.allowedTopics = (opts.allowedTopics != null) ? new Set(opts.allowedTopics) : null
+    this.maxTopicBytesPerPeer = opts.maxTopicBytesPerPeer ?? constants.GossipsubMaxTopicBytesPerPeer
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/gossipsub'
@@ -578,6 +582,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.peers.clear()
     this.subscriptions.clear()
     this.topics.clear()
+    this.peerTopicBytes.clear()
 
     // Gossipsub
 
@@ -799,6 +804,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.topics.delete(topic)
       }
     }
+    this.peerTopicBytes.delete(id)
 
     // Remove this peer from the mesh
     for (const [topicStr, peers] of this.mesh) {
@@ -986,7 +992,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
             return
           }
 
-          this.handleReceivedSubscription(from, topic, subscribe)
+          if (!this.handleReceivedSubscription(from, topic, subscribe)) {
+            // over the per-peer topic-byte budget, so ignore this subscription
+            return
+          }
 
           // graft the peer into the mesh now rather than waiting for the next
           // heartbeat, so a message published right after subscribing is not dropped
@@ -1038,28 +1047,49 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /**
    * Handles a subscription change from a peer
    */
-  private handleReceivedSubscription (from: PeerId, topic: TopicStr, subscribe: boolean): void {
+  private handleReceivedSubscription (from: PeerId, topic: TopicStr, subscribe: boolean): boolean {
     this.log('subscription update from %p topic %s', from, topic)
 
+    const fromStr = from.toString()
     let topicSet = this.topics.get(topic)
 
+    // charge each topic its string length plus a fixed per-entry overhead, so
+    // the budget bounds both topic bytes and topic count (a peer cannot occupy
+    // more than roughly budget / overhead entries regardless of topic length)
+    const cost = topic.length + constants.GossipsubTopicEntryOverhead
+
     if (subscribe) {
+      // a repeat SUBSCRIBE to a topic the peer already has is a no-op
+      if (topicSet?.has(fromStr) === true) {
+        return true
+      }
+
+      // bound the memory a single peer may occupy in the topics map
+      const used = this.peerTopicBytes.get(fromStr) ?? 0
+      if (used + cost > this.maxTopicBytesPerPeer) {
+        // over budget, so drop this subscription; the peer keeps what it has
+        this.log('dropping subscription from %p topic %s, over per-peer topic budget', from, topic)
+        return false
+      }
+      this.peerTopicBytes.set(fromStr, used + cost)
+
       if (topicSet == null) {
         topicSet = new Set()
         this.topics.set(topic, topicSet)
       }
 
       // subscribe peer to new topic
-      topicSet.add(from.toString())
-    } else if (topicSet != null) {
-      // unsubscribe from existing topic
-      topicSet.delete(from.toString())
+      topicSet.add(fromStr)
+    } else if (topicSet?.has(fromStr) === true) {
+      // unsubscribe from existing topic and refund its cost
+      topicSet.delete(fromStr)
+      this.peerTopicBytes.set(fromStr, Math.max(0, (this.peerTopicBytes.get(fromStr) ?? 0) - cost))
       if (topicSet.size === 0) {
         this.topics.delete(topic)
       }
     }
 
-    // TODO: rust-libp2p has A LOT more logic here
+    return true
   }
 
   /**

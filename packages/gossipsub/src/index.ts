@@ -198,6 +198,18 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
   allowedTopics?: string[] | Set<string>
 
   /**
+   * A per-peer memory budget for tracking that peer's topic subscriptions. Each
+   * subscribed topic costs its string length plus a fixed per-entry overhead
+   * (~1 KiB, approximating the Map/Set bookkeeping), so this bounds both the
+   * total topic bytes and the number of topics a single peer may occupy in the
+   * topics map (roughly budget / 1 KiB topics). Subscriptions beyond the budget
+   * are ignored; a peer that reaches it silently stops receiving messages for
+   * further topics, so keep this well above any legitimate peer's needs.
+   * (default 1 MiB, ~1000 topics)
+   */
+  maxTopicBytesPerPeer?: number
+
+  /**
    * Limits to bound protobuf decoding
    */
   decodeRpcLimits?: DecodeRPCLimits
