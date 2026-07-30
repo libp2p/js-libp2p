@@ -36,6 +36,19 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.3.2](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.1...utils-v7.3.2) (2026-07-30)
+
+
+### Dependencies
+
+* bump cborg from 5.1.11 to 6.0.0 ([#3586](https://github.com/libp2p/js-libp2p/issues/3586)) ([423335b](https://github.com/libp2p/js-libp2p/commit/423335b45798368f33260c6bd4b4112408991023))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+
 ## [7.3.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.0...utils-v7.3.1) (2026-07-26)
 
 
