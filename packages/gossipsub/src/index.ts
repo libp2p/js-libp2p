@@ -15,6 +15,7 @@ import type {
   MessageStreamDirection
 } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 /**
  * On the producing side:
@@ -395,6 +396,27 @@ export interface GossipSub extends TypedEventTarget<GossipSubEvents> {
    * ```
    */
   publish(topic: string, data?: Uint8Array): Promise<PublishResult>
+
+  /**
+   * Add a peer to the direct peers set at runtime. Direct peers are kept connected
+   * and receive messages for topics they are subscribed to without participating
+   * in mesh peer selection. Addresses are required so gossipsub can dial the peer.
+   */
+  addDirectPeer(peerId: PeerId, addrs: Multiaddr[]): Promise<void>
+
+  /**
+   * Remove a peer from the direct peers set. The existing connection is not
+   * closed; future mesh and fanout participation is governed by normal peer
+   * selection.
+   *
+   * Returns true if the peer was removed, false if it was not a direct peer.
+   */
+  removeDirectPeer(peerId: PeerId | string): boolean
+
+  /**
+   * Return a snapshot of the current direct peers.
+   */
+  getDirectPeers(): PeerId[]
 }
 
 export function gossipsub (
