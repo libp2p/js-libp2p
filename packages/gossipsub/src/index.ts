@@ -1,3 +1,36 @@
+/**
+ * @packageDocumentation
+ *
+ * Gossipsub is an implementation of pubsub based on meshsub and floodsub.
+ *
+ * You can read the specification [here](https://github.com/libp2p/specs/tree/master/pubsub/gossipsub).
+ *
+ * `@libp2p/gossipsub` currently implements [version 1.1](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md) of the spec.
+ *
+ * @example Configuring libp2p to use gossipsub
+ *
+ * ```TypeScript
+ * import { createLibp2p } from 'libp2p'
+ * import { gossipsub } from '@libp2p/gossipsub'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     pubsub: gossipsub()
+ *   }
+ *   //... other options
+ * })
+ * await node.start()
+ *
+ * node.services.pubsub.addEventListener('message', (evt) => {
+ *   console.log(`${evt.detail.topic}:`, new TextDecoder().decode(evt.detail.data))
+ * })
+ *
+ * node.services.pubsub.subscribe('fruit')
+ *
+ * node.services.pubsub.publish('fruit', new TextEncoder().encode('banana'))
+ * ```
+ */
+
 import * as constants from './constants.ts'
 import { GossipSub as GossipSubClass } from './gossipsub.ts'
 import { MessageCache } from './message-cache.ts'

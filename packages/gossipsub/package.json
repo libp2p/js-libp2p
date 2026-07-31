@@ -73,7 +73,7 @@
     "gossip"
   ],
   "author": "Cayman Nava",
-  "license": "Apache-2.0",
+  "license": "Apache-2.0 OR MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
   },
