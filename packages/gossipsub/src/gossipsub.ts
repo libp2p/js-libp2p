@@ -1067,8 +1067,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       // bound the memory a single peer may occupy in the topics map
       const used = this.peerTopicBytes.get(fromStr) ?? 0
       if (used + cost > this.maxTopicBytesPerPeer) {
-        // over budget, so drop this subscription; the peer keeps what it has
-        this.log('dropping subscription from %p topic %s, over per-peer topic budget', from, topic)
+        // over budget, so ignore this subscription; the peer keeps what it has
+        this.log('ignoring subscription from %p topic %s, over per-peer topic budget', from, topic)
         return false
       }
       this.peerTopicBytes.set(fromStr, used + cost)
@@ -1089,6 +1089,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
     }
 
+    // TODO: rust-libp2p has A LOT more logic here
     return true
   }
 
