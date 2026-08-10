@@ -211,6 +211,47 @@ describe('dial', () => {
     }
   })
 
+  it('waits for the socket to close when an outbound upgrade fails', async () => {
+    const server = net.createServer(socket => {
+      socket.on('error', () => {})
+    })
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(0, '127.0.0.1', resolve)
+    })
+
+    const address = server.address()
+    if (address == null || typeof address === 'string') {
+      throw new Error('TCP server did not bind to an IP port')
+    }
+
+    const connectSpy = Sinon.spy(net, 'connect')
+    const upgradeError = new Error('upgrade failed')
+
+    try {
+      const dialPromise = transport.dial(multiaddr(`/ip4/127.0.0.1/tcp/${address.port}`), {
+        upgrader: stubInterface<Upgrader>({
+          upgradeOutbound: Sinon.stub().rejects(upgradeError)
+        }),
+        signal: AbortSignal.timeout(5_000)
+      })
+
+      await expect(dialPromise).to.eventually.be.rejectedWith(upgradeError)
+
+      const socket = connectSpy.returnValues[0]
+      if (socket == null) {
+        throw new Error('TCP transport did not open a socket')
+      }
+
+      expect(socket.closed).to.be.true()
+    } finally {
+      connectSpy.restore()
+      await new Promise<void>(resolve => {
+        server.close(() => { resolve() })
+      })
+    }
+  })
+
   it('dial IPv4', async () => {
     const ma = multiaddr('/ip4/127.0.0.1/tcp/9090')
     const listener = transport.createListener({
@@ -317,6 +358,8 @@ describe('dial', () => {
     // create a Promise that resolves when the upgrade starts
     const upgradeStarted = pDefer()
     const abortedUpgrade = pDefer()
+    const createServerSpy = Sinon.spy(net, 'createServer')
+    let inboundSocket: net.Socket | undefined
 
     // create a listener with the handler
     const listener = transport.createListener({
@@ -336,6 +379,10 @@ describe('dial', () => {
           return new Promise(() => {})
         }
       })
+    })
+    const server = createServerSpy.returnValues[0]
+    server?.once('connection', socket => {
+      inboundSocket = socket
     })
 
     // listen on a multiaddr
@@ -358,5 +405,7 @@ describe('dial', () => {
 
     // should abort the upgrade
     await abortedUpgrade.promise
+    expect(inboundSocket?.closed).to.be.true()
+    createServerSpy.restore()
   })
 })

@@ -217,8 +217,10 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       .catch(async err => {
         this.log.error('inbound connection upgrade failed - %e', err)
         this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
-        this.sockets.delete(socket)
+        const socketClosed = socket.closed ? undefined : pEvent(socket, 'close', { rejectionEvents: [] })
         maConn.abort(err)
+        await socketClosed
+        this.sockets.delete(socket)
       })
   }
 
@@ -281,9 +283,12 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     // synchronously close any open connections - should be done after closing
     // the server socket in case new sockets are opened during the shutdown
     this.sockets.forEach(socket => {
-      if (socket.readable) {
+      if (!socket.closed) {
         events.push(pEvent(socket, 'close', options))
-        socket.destroy()
+
+        if (!socket.destroyed) {
+          socket.destroy()
+        }
       }
     })
 

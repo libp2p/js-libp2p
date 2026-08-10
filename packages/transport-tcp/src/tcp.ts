@@ -30,6 +30,7 @@
 import net from 'net'
 import { AbortError, TimeoutError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { TCP as TCPMatcher } from '@multiformats/multiaddr-matcher'
+import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
@@ -93,7 +94,9 @@ export class TCP implements Transport<TCPDialEvents> {
       })
     } catch (err: any) {
       this.metrics?.errors.increment({ outbound_to_connection: true })
+      const socketClosed = socket.closed ? undefined : pEvent(socket, 'close', { rejectionEvents: [] })
       socket.destroy(err)
+      await socketClosed
       throw err
     }
 
@@ -103,7 +106,9 @@ export class TCP implements Transport<TCPDialEvents> {
     } catch (err: any) {
       this.metrics?.errors.increment({ outbound_upgrade: true })
       this.log.error('error upgrading outbound connection - %e', err)
+      const socketClosed = socket.closed ? undefined : pEvent(socket, 'close', { rejectionEvents: [] })
       maConn.abort(err)
+      await socketClosed
       throw err
     }
   }
