@@ -40,9 +40,11 @@ import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 
 interface PendingDial {
-  socket?: Socket
-  promise: Promise<void>
-  complete(): void
+  readonly done: Promise<void>
+  attach(socket: Socket): void
+  abort(err: Error): void
+  releaseIfUnattached(): void
+  handoff(): void
 }
 
 export class TCP implements Transport<TCPDialEvents>, Startable {
@@ -98,10 +100,10 @@ export class TCP implements Transport<TCPDialEvents>, Startable {
     // Dials register before invoking user callbacks so closing admission makes
     // this a stable set that cannot grow during shutdown.
     const pendingDials = [...this.pendingDials]
-    this.shutdownPromise = Promise.all(pendingDials.map(pendingDial => pendingDial.promise)).then(() => undefined)
+    this.shutdownPromise = Promise.all(pendingDials.map(pendingDial => pendingDial.done)).then(() => undefined)
 
     for (const pendingDial of pendingDials) {
-      pendingDial.socket?.destroy(new AbortError('TCP transport is stopping'))
+      pendingDial.abort(new AbortError('TCP transport is stopping'))
     }
 
     await this.shutdownPromise
@@ -120,51 +122,45 @@ export class TCP implements Transport<TCPDialEvents>, Startable {
     // code that re-enters the transport lifecycle.
     const pendingDial = this.createPendingDial()
 
-    options.keepAlive = options.keepAlive ?? true
-    options.noDelay = options.noDelay ?? true
-    options.allowHalfOpen = options.allowHalfOpen ?? false
-
-    // options.signal destroys the socket before 'connect' event
-    let socket: Socket
-
     try {
-      socket = await this._connect(ma, options, pendingDial)
-    } catch (err) {
-      if (pendingDial.socket == null) {
-        pendingDial.complete()
+      options.keepAlive = options.keepAlive ?? true
+      options.noDelay = options.noDelay ?? true
+      options.allowHalfOpen = options.allowHalfOpen ?? false
+
+      // options.signal destroys the socket before 'connect' event
+      const socket = await this._connect(ma, options, pendingDial)
+
+      let maConn: MultiaddrConnection
+
+      try {
+        maConn = toMultiaddrConnection({
+          socket,
+          inactivityTimeout: this.opts.outboundSocketInactivityTimeout,
+          metrics: this.metrics?.events,
+          direction: 'outbound',
+          remoteAddr: ma,
+          log: this.log.newScope('connection')
+        })
+      } catch (err: any) {
+        this.metrics?.errors.increment({ outbound_to_connection: true })
+        socket.destroy(err)
+        throw err
       }
 
-      throw err
-    }
+      try {
+        this.log('new outbound connection %s', maConn.remoteAddr)
+        const connection = await options.upgrader.upgradeOutbound(maConn, options)
+        pendingDial.handoff()
 
-    let maConn: MultiaddrConnection
-
-    try {
-      maConn = toMultiaddrConnection({
-        socket,
-        inactivityTimeout: this.opts.outboundSocketInactivityTimeout,
-        metrics: this.metrics?.events,
-        direction: 'outbound',
-        remoteAddr: ma,
-        log: this.log.newScope('connection')
-      })
-    } catch (err: any) {
-      this.metrics?.errors.increment({ outbound_to_connection: true })
-      socket.destroy(err)
-      throw err
-    }
-
-    try {
-      this.log('new outbound connection %s', maConn.remoteAddr)
-      const connection = await options.upgrader.upgradeOutbound(maConn, options)
-      pendingDial.complete()
-
-      return connection
-    } catch (err: any) {
-      this.metrics?.errors.increment({ outbound_upgrade: true })
-      this.log.error('error upgrading outbound connection - %e', err)
-      maConn.abort(err)
-      throw err
+        return connection
+      } catch (err: any) {
+        this.metrics?.errors.increment({ outbound_upgrade: true })
+        this.log.error('error upgrading outbound connection - %e', err)
+        maConn.abort(err)
+        throw err
+      }
+    } finally {
+      pendingDial.releaseIfUnattached()
     }
   }
 
@@ -183,8 +179,6 @@ export class TCP implements Transport<TCPDialEvents>, Startable {
 
       this.log('dialing %a with opts %o', ma, cOpts)
       rawSocket = net.connect(cOpts)
-      pendingDial.socket = rawSocket
-      rawSocket.once('close', pendingDial.complete)
 
       const onError = (err: Error): void => {
         this.log.error('dial to %a errored - %e', ma, err)
@@ -236,8 +230,9 @@ export class TCP implements Transport<TCPDialEvents>, Startable {
       rawSocket.on('connect', onConnect)
 
       options.signal.addEventListener('abort', onAbort)
+      pendingDial.attach(rawSocket)
 
-      if (!this.acceptingDials || options.signal.aborted) {
+      if (options.signal.aborted) {
         onAbort()
       }
     })
@@ -248,23 +243,36 @@ export class TCP implements Transport<TCPDialEvents>, Startable {
   }
 
   private createPendingDial (): PendingDial {
-    let resolve = (): void => {}
-    let completed = false
-    const promise = new Promise<void>((_resolve) => {
-      resolve = _resolve
-    })
-    const pendingDial: PendingDial = {
-      promise,
-      complete: () => {
-        if (completed) {
-          return
-        }
+    const { promise: done, resolve } = Promise.withResolvers<void>()
+    let socket: Socket | undefined
+    let abortError: Error | undefined
 
-        completed = true
-        pendingDial.socket?.removeListener('close', pendingDial.complete)
-        this.pendingDials.delete(pendingDial)
-        resolve()
-      }
+    const complete = (): void => {
+      socket?.removeListener('close', complete)
+      this.pendingDials.delete(pendingDial)
+      resolve()
+    }
+
+    const pendingDial: PendingDial = {
+      done,
+      attach: (rawSocket) => {
+        rawSocket.once('close', complete)
+        socket = rawSocket
+
+        if (abortError != null) {
+          socket.destroy(abortError)
+        }
+      },
+      abort: (err) => {
+        abortError = err
+        socket?.destroy(err)
+      },
+      releaseIfUnattached: () => {
+        if (socket == null) {
+          complete()
+        }
+      },
+      handoff: complete
     }
 
     this.pendingDials.add(pendingDial)
