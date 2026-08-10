@@ -376,12 +376,15 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.log('started')
   }
 
+  beforeStop (): void {
+    this.started = false
+  }
+
   /**
    * Stops the Connection Manager
    */
   async stop (): Promise<void> {
-    this.events.removeEventListener('connection:open', this.onConnect)
-    this.events.removeEventListener('connection:close', this.onDisconnect)
+    this.started = false
 
     await stop(
       this.reconnectQueue,
@@ -412,6 +415,9 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     this.log('closing %d connections', tasks.length)
     await Promise.all(tasks)
     this.connections.clear()
+
+    this.events.removeEventListener('connection:open', this.onConnect)
+    this.events.removeEventListener('connection:close', this.onDisconnect)
 
     this.log('stopped')
   }

@@ -39,10 +39,45 @@ describe('dial queue', () => {
     }
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     if (dialer != null) {
-      dialer.stop()
+      await dialer.stop()
     }
+  })
+
+  it('should wait for active dials to finish when stopped', async () => {
+    const dialStarted = pDefer<void>()
+    const dialCleanup = pDefer<void>()
+
+    components.transportManager.dialTransportForMultiaddr.returns(stubInterface<Transport>())
+    components.transportManager.dial.callsFake(async (_ma, options) => {
+      dialStarted.resolve()
+
+      await new Promise<void>(resolve => {
+        options?.signal?.addEventListener('abort', () => { resolve() }, { once: true })
+      })
+      await dialCleanup.promise
+
+      throw new Error('dial aborted')
+    })
+
+    dialer = new DialQueue(components)
+    const dialPromise = dialer.dial(multiaddr('/ip4/127.0.0.1/tcp/1234'))
+    const dialResult = expect(dialPromise).to.eventually.be.rejected()
+
+    await dialStarted.promise
+
+    let stopped = false
+    const stopPromise = dialer.stop().then(() => {
+      stopped = true
+    })
+
+    await Promise.resolve()
+    expect(stopped).to.be.false()
+
+    dialCleanup.resolve()
+    await stopPromise
+    await dialResult
   })
 
   it('should end when a single multiaddr dials succeeds', async () => {

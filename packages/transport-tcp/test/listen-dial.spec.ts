@@ -1,3 +1,4 @@
+import net from 'net'
 import os from 'os'
 import path from 'path'
 import { defaultLogger } from '@libp2p/logger'
@@ -170,6 +171,44 @@ describe('dial', () => {
     transport = tcp()({
       logger: defaultLogger()
     })
+  })
+
+  it('waits for the socket to close when a dial is aborted', async () => {
+    const server = net.createServer()
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(0, '127.0.0.1', resolve)
+    })
+
+    const address = server.address()
+    if (address == null || typeof address === 'string') {
+      throw new Error('TCP server did not bind to an IP port')
+    }
+
+    const connectSpy = Sinon.spy(net, 'connect')
+
+    try {
+      const controller = new AbortController()
+      const dialPromise = transport.dial(multiaddr(`/ip4/127.0.0.1/tcp/${address.port}`), {
+        upgrader,
+        signal: controller.signal
+      })
+      const socket = connectSpy.returnValues[0]
+
+      if (socket == null) {
+        throw new Error('TCP transport did not open a socket')
+      }
+
+      controller.abort()
+
+      await expect(dialPromise).to.eventually.be.rejected()
+      expect(socket.closed).to.be.true()
+    } finally {
+      connectSpy.restore()
+      await new Promise<void>(resolve => {
+        server.close(() => { resolve() })
+      })
+    }
   })
 
   it('dial IPv4', async () => {

@@ -525,4 +525,22 @@ describe('Connection Manager', () => {
 
     expect(connectionManager.getConnections(remotePeer)).to.have.lengthOf(0)
   })
+
+  it('should close connections opened after shutdown starts', async () => {
+    const connectionManager = new DefaultConnectionManager(components)
+    await connectionManager.start()
+
+    const connection = stubInterface<Connection>({
+      remotePeer: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      status: 'open'
+    })
+
+    connectionManager.beforeStop()
+    components.events.safeDispatchEvent('connection:open', { detail: connection })
+
+    await pWaitFor(() => connection.close.called)
+    expect(connectionManager.getConnections()).to.have.lengthOf(0)
+
+    await connectionManager.stop()
+  })
 })

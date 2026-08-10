@@ -81,6 +81,7 @@ export class DialQueue {
   private readonly connections: PeerMap<Connection[]>
   private readonly log: Logger
   private readonly resolvers: Record<string, MultiaddrResolver>
+  private readonly activeDials: Set<Promise<Connection>>
 
   constructor (components: DialQueueComponents, init: DialerInit = {}) {
     this.addressSorter = init.addressSorter
@@ -91,6 +92,7 @@ export class DialQueue {
     this.log = components.logger.forComponent('libp2p:connection-manager:dial-queue')
     this.components = components
     this.resolvers = init.resolvers ?? defaultOptions.resolvers
+    this.activeDials = new Set()
 
     this.shutDownController = new AbortController()
     setMaxListeners(Infinity, this.shutDownController.signal)
@@ -117,9 +119,10 @@ export class DialQueue {
   /**
    * Clears any pending dials
    */
-  stop (): void {
+  async stop (): Promise<void> {
     this.shutDownController.abort()
     this.queue.abort()
+    await Promise.allSettled(this.activeDials)
   }
 
   /**
@@ -199,9 +202,13 @@ export class DialQueue {
       ])
       setMaxListeners(Infinity, signal)
 
+      const dialPromise = this.dialPeer(options, signal)
+      this.activeDials.add(dialPromise)
+
       try {
-        return await this.dialPeer(options, signal)
+        return await dialPromise
       } finally {
+        this.activeDials.delete(dialPromise)
         // clean up abort signals/controllers
         signal.clear()
       }

@@ -175,8 +175,15 @@ export class TCP implements Transport<TCPDialEvents> {
 
       options.signal.addEventListener('abort', onAbort)
     })
-      .catch(err => {
-        rawSocket?.destroy()
+      .catch(async err => {
+        if (rawSocket != null && !rawSocket.closed) {
+          const socketClosed = new Promise<void>(resolve => {
+            rawSocket.once('close', resolve)
+          })
+          rawSocket.destroy()
+          await socketClosed
+        }
+
         throw err
       })
   }
