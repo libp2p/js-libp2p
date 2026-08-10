@@ -28,27 +28,38 @@
  */
 
 import net from 'net'
-import { AbortError, TimeoutError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { AbortError, NotStartedError, TimeoutError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { TCP as TCPMatcher } from '@multiformats/multiaddr-matcher'
 import { CustomProgressEvent } from 'progress-events'
 import { TCPListener } from './listener.ts'
 import { toMultiaddrConnection } from './socket-to-conn.ts'
 import { multiaddrToNetConfig } from './utils.ts'
 import type { TCPComponents, TCPCreateListenerOptions, TCPDialEvents, TCPDialOptions, TCPMetrics, TCPOptions } from './index.ts'
-import type { Logger, Connection, Transport, Listener, MultiaddrConnection } from '@libp2p/interface'
+import type { Logger, Connection, Transport, Listener, MultiaddrConnection, Startable } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 
-export class TCP implements Transport<TCPDialEvents> {
+interface PendingDial {
+  socket?: Socket
+  promise: Promise<void>
+  complete(): void
+}
+
+export class TCP implements Transport<TCPDialEvents>, Startable {
   private readonly opts: TCPOptions
   private readonly metrics?: TCPMetrics
   private readonly components: TCPComponents
   private readonly log: Logger
+  private readonly pendingDials: Set<PendingDial>
+  private acceptingDials: boolean
+  private shutdownPromise?: Promise<void>
 
   constructor (components: TCPComponents, options: TCPOptions = {}) {
     this.log = components.logger.forComponent('libp2p:tcp')
     this.opts = options
     this.components = components
+    this.pendingDials = new Set()
+    this.acceptingDials = true
 
     if (components.metrics != null) {
       this.metrics = {
@@ -72,13 +83,59 @@ export class TCP implements Transport<TCPDialEvents> {
     '@libp2p/transport'
   ]
 
+  start (): void {
+    this.acceptingDials = true
+    this.shutdownPromise = undefined
+  }
+
+  async beforeStop (): Promise<void> {
+    if (this.shutdownPromise != null) {
+      return this.shutdownPromise
+    }
+
+    this.acceptingDials = false
+
+    // Dials register before invoking user callbacks so closing admission makes
+    // this a stable set that cannot grow during shutdown.
+    const pendingDials = [...this.pendingDials]
+    this.shutdownPromise = Promise.all(pendingDials.map(pendingDial => pendingDial.promise)).then(() => undefined)
+
+    for (const pendingDial of pendingDials) {
+      pendingDial.socket?.destroy(new AbortError('TCP transport is stopping'))
+    }
+
+    await this.shutdownPromise
+  }
+
+  async stop (): Promise<void> {
+    await this.beforeStop()
+  }
+
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
+    if (!this.acceptingDials) {
+      throw new NotStartedError('TCP transport is not started')
+    }
+
+    // Register before onProgress or net.connect can invoke user-controlled
+    // code that re-enters the transport lifecycle.
+    const pendingDial = this.createPendingDial()
+
     options.keepAlive = options.keepAlive ?? true
     options.noDelay = options.noDelay ?? true
     options.allowHalfOpen = options.allowHalfOpen ?? false
 
     // options.signal destroys the socket before 'connect' event
-    const socket = await this._connect(ma, options)
+    let socket: Socket
+
+    try {
+      socket = await this._connect(ma, options, pendingDial)
+    } catch (err) {
+      if (pendingDial.socket == null) {
+        pendingDial.complete()
+      }
+
+      throw err
+    }
 
     let maConn: MultiaddrConnection
 
@@ -99,7 +156,10 @@ export class TCP implements Transport<TCPDialEvents> {
 
     try {
       this.log('new outbound connection %s', maConn.remoteAddr)
-      return await options.upgrader.upgradeOutbound(maConn, options)
+      const connection = await options.upgrader.upgradeOutbound(maConn, options)
+      pendingDial.complete()
+
+      return connection
     } catch (err: any) {
       this.metrics?.errors.increment({ outbound_upgrade: true })
       this.log.error('error upgrading outbound connection - %e', err)
@@ -108,7 +168,7 @@ export class TCP implements Transport<TCPDialEvents> {
     }
   }
 
-  async _connect (ma: Multiaddr, options: TCPDialOptions): Promise<Socket> {
+  async _connect (ma: Multiaddr, options: TCPDialOptions, pendingDial: PendingDial): Promise<Socket> {
     options.signal.throwIfAborted()
     options.onProgress?.(new CustomProgressEvent('tcp:open-connection'))
 
@@ -123,6 +183,8 @@ export class TCP implements Transport<TCPDialEvents> {
 
       this.log('dialing %a with opts %o', ma, cOpts)
       rawSocket = net.connect(cOpts)
+      pendingDial.socket = rawSocket
+      rawSocket.once('close', pendingDial.complete)
 
       const onError = (err: Error): void => {
         this.log.error('dial to %a errored - %e', ma, err)
@@ -174,11 +236,40 @@ export class TCP implements Transport<TCPDialEvents> {
       rawSocket.on('connect', onConnect)
 
       options.signal.addEventListener('abort', onAbort)
+
+      if (!this.acceptingDials || options.signal.aborted) {
+        onAbort()
+      }
     })
       .catch(err => {
         rawSocket?.destroy()
         throw err
       })
+  }
+
+  private createPendingDial (): PendingDial {
+    let resolve = (): void => {}
+    let completed = false
+    const promise = new Promise<void>((_resolve) => {
+      resolve = _resolve
+    })
+    const pendingDial: PendingDial = {
+      promise,
+      complete: () => {
+        if (completed) {
+          return
+        }
+
+        completed = true
+        pendingDial.socket?.removeListener('close', pendingDial.complete)
+        this.pendingDials.delete(pendingDial)
+        resolve()
+      }
+    }
+
+    this.pendingDials.add(pendingDial)
+
+    return pendingDial
   }
 
   /**
