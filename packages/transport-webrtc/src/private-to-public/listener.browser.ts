@@ -1,5 +1,5 @@
 import { TypedEventEmitter } from 'main-event'
-import { UnimplementedError } from '../error.js'
+import { UnimplementedError } from '../error.ts'
 import type { PeerId, ListenerEvents, Listener } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'

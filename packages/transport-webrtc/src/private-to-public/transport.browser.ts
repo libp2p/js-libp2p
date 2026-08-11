@@ -3,11 +3,11 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { UnimplementedError } from '../error.ts'
-import { genUfrag } from '../util.js'
-import { connect } from './utils/connect.js'
-import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
-import type { DataChannelOptions } from '../index.js'
-import type { WebRTCDialEvents } from '../private-to-private/transport.js'
+import { genUfrag } from '../util.ts'
+import { connect } from './utils/connect.ts'
+import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.ts'
+import type { DataChannelOptions } from '../index.ts'
+import type { WebRTCDialEvents } from '../private-to-private/transport.ts'
 import type { CreateListenerOptions, Transport, Listener, ComponentLogger, Logger, Connection, CounterGroup, Metrics, PeerId, DialTransportOptions, PrivateKey, Upgrader } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Keychain } from '@libp2p/keychain'
@@ -39,6 +39,14 @@ export interface WebRTCTransportDirectInit {
    * The default configuration used by all created RTCDataChannels
    */
   dataChannel?: DataChannelOptions
+
+  /**
+   * Caps the inbound streams accepted before the connection surfaces them, and
+   * the data channels buffered before the muxer exists (excess are closed).
+   *
+   * @default 10
+   */
+  maxEarlyStreams?: number
 }
 
 export class WebRTCDirectTransport implements Transport {
@@ -92,7 +100,10 @@ export class WebRTCDirectTransport implements Transport {
       muxerFactory
     } = await createDialerRTCPeerConnection('client', ufrag, {
       rtcConfiguration: typeof this.init.rtcConfiguration === 'function' ? await this.init.rtcConfiguration() : this.init.rtcConfiguration ?? {},
-      dataChannel: this.init.dataChannel
+      events: this.metrics?.dialerEvents,
+      log: this.log,
+      dataChannel: this.init.dataChannel,
+      maxEarlyStreams: this.init.maxEarlyStreams
     })
 
     try {

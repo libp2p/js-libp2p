@@ -1,6 +1,6 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
-import { pbkdf2, randomBytes } from '@libp2p/crypto'
+import { pbkdf2 } from '@libp2p/crypto'
 import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
@@ -10,9 +10,9 @@ import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { DEK_INIT } from './constants.ts'
-import { exportPrivateKey } from './utils/export.js'
-import { importPrivateKey } from './utils/import.js'
-import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo } from './index.js'
+import { exportPrivateKey } from './utils/export.ts'
+import { importPrivateKey } from './utils/import.ts'
+import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo } from './index.ts'
 import type { Logger, PrivateKey } from '@libp2p/interface'
 
 const keyPrefix = '/pkcs8/'
@@ -142,7 +142,7 @@ export class Keychain implements KeychainInterface {
     const saltLength = Math.ceil(NIST.minSaltLength / 3) * 3 // no base64 padding
 
     if (options.dek != null) {
-      options.dek.salt = uint8ArrayToString(randomBytes(saltLength), 'base64')
+      options.dek.salt = uint8ArrayToString(crypto.getRandomValues(new Uint8Array(saltLength)), 'base64')
     }
 
     return options

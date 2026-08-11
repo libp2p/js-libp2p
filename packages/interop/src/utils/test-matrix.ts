@@ -1,5 +1,5 @@
-import { keys } from '../resources/keys/index.js'
-import type { DaemonFactory, Encryption, Muxer, NodeType, PeerIdType, SpawnOptions } from '../index.js'
+import { keys } from '../resources/keys/index.ts'
+import type { DaemonFactory, Encryption, Muxer, NodeType, PeerIdType, SpawnOptions } from '../index.ts'
 
 export interface TestFunction {
   (name: string, factory: DaemonFactory, optionsA: SpawnOptions, optionsB: SpawnOptions): void

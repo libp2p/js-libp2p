@@ -4,9 +4,9 @@ import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as validator from '../../src/record/validators.js'
-import * as fixture from '../fixtures/record/go-key-records.js'
-import type { Validators } from '../../src/index.js'
+import * as validator from '../../src/record/validators.ts'
+import * as fixture from '../fixtures/record/go-key-records.ts'
+import type { Validators } from '../../src/index.ts'
 import type { RSAPrivateKey } from '@libp2p/interface'
 
 interface Cases {
@@ -77,6 +77,22 @@ describe('validator', () => {
       }
       await expect(validator.verifyRecord(validators, rec))
         .to.eventually.rejected.with.property('name', 'InvalidParametersError')
+    })
+
+    it('rejects records whose key has no namespace', async () => {
+      const shortKeys = [
+        new Uint8Array([0x01, 0x02, 0x03]),
+        uint8ArrayFromString('foo'),
+        uint8ArrayFromString('/foo'),
+        uint8ArrayFromString('foo/bar'),
+        new Uint8Array()
+      ]
+
+      for (const k of shortKeys) {
+        const rec = new Libp2pRecord(k, uint8ArrayFromString('value'), new Date())
+        await expect(validator.verifyRecord({}, rec), `key ${Array.from(k).join(',')} should be rejected`)
+          .to.eventually.be.rejected.with.property('name', 'InvalidParametersError')
+      }
     })
   })
 

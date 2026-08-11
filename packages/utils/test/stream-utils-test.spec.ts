@@ -7,7 +7,7 @@ import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { streamPair } from '../src/stream-pair.ts'
-import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.js'
+import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.ts'
 
 describe('messageStreamToDuplex', () => {
   it('should source all reads', async () => {
@@ -217,6 +217,36 @@ describe('byte-stream', () => {
 
     expect(readIncoming).to.deep.equal(writtenOutgoing)
   })
+
+  it('should preserve byte order on unwrap when the underlying stream has buffered data', async () => {
+    // Same reorder happens if external code calls stream.push() then unwrap()
+    // synchronously - push defers dispatch via setTimeout.
+    const [outgoing, incoming] = await streamPair()
+
+    const incomingBytes = byteStream(incoming)
+
+    outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    await delay(10)
+
+    // pause so subsequent data sits in stream.readBuffer instead of reaching
+    // the byteStream listener
+    incoming.pause()
+
+    outgoing.send(Uint8Array.from([4, 5, 6, 7]))
+    await delay(10)
+
+    const unwrapped = incomingBytes.unwrap()
+    unwrapped.resume()
+
+    const [read] = await Promise.all([
+      all(unwrapped),
+      outgoing.close()
+    ])
+
+    expect(new Uint8ArrayList(...read).subarray()).to.equalBytes(
+      Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7])
+    )
+  })
 })
 
 describe('stream-pair', () => {
@@ -411,5 +441,65 @@ describe('stream-pair', () => {
 
     await expect(outgoing.onDrain()).to.eventually.be.rejected
       .with.property('name', 'StreamResetError')
+  })
+
+  it('should not throw uncaught error on drain event when stream is closed', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    outgoing.writeStatus = 'closed'
+
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
+  it('should catch StreamStateError from sendData during closing', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+    const outgoingStream = outgoing as typeof outgoing & {
+      sendData(data: Uint8ArrayList): { sentBytes: number, canSendMore: boolean }
+    }
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    const err = new Error('Cannot write to a stream that is closing')
+    err.name = 'StreamStateError'
+    Sinon.stub(outgoingStream, 'sendData').throws(err)
+
+    outgoing.writeStatus = 'closing'
+
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
+  it('should propagate StreamStateError from send() when sendData throws', async () => {
+    const [outgoing] = await streamPair()
+    const outgoingStream = outgoing as typeof outgoing & {
+      sendData(data: Uint8ArrayList): { sentBytes: number, canSendMore: boolean }
+    }
+
+    const err = new Error('Cannot write to a stream that is closing')
+    err.name = 'StreamStateError'
+    Sinon.stub(outgoingStream, 'sendData').throws(err)
+
+    expect(() => {
+      outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    }).to.throw().with.property('name', 'StreamStateError')
+
+    outgoing.abort(new Error('cleanup'))
   })
 })

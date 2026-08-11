@@ -1,11 +1,13 @@
+import { InvalidParametersError } from '@libp2p/interface'
 import { Crypto } from '@peculiar/webcrypto'
 import { PeerConnection } from 'node-datachannel'
 import { RTCPeerConnection } from 'node-datachannel/polyfill'
-import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.js'
+import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.ts'
 import { DataChannelMuxerFactory } from '../../muxer.ts'
-import { generateTransportCertificate } from './generate-certificates.js'
-import type { DataChannelOptions, TransportCertificate } from '../../index.js'
-import type { CounterGroup } from '@libp2p/interface'
+import { isValidUfrag } from '../../util.ts'
+import { generateTransportCertificate } from './generate-certificates.ts'
+import type { DataChannelOptions, TransportCertificate } from '../../index.ts'
+import type { CounterGroup, Logger } from '@libp2p/interface'
 import type { CertificateFingerprint } from 'node-datachannel'
 
 const crypto = new Crypto()
@@ -40,26 +42,33 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
     // have to set ufrag before creating offer
-    if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('offer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
-      })
-    }
+    this.setLocalUfrag('offer')
 
     return super.createOffer()
   }
 
   async createAnswer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
     // have to set ufrag before creating answer
-    if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('answer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
-      })
-    }
+    this.setLocalUfrag('answer')
 
     return super.createAnswer()
+  }
+
+  // this.ufrag is reused as the ICE password; an invalid value aborts the process
+  // inside the native ICE stack, so reject it with a recoverable error first
+  private setLocalUfrag (type: 'offer' | 'answer'): void {
+    if (this.connectionState !== 'new') {
+      return
+    }
+
+    if (!isValidUfrag(this.ufrag)) {
+      throw new InvalidParametersError('ufrag is not a valid ICE credential')
+    }
+
+    this.peerConnection?.setLocalDescription(type, {
+      iceUfrag: this.ufrag,
+      icePwd: this.ufrag
+    })
   }
 
   remoteFingerprint (): CertificateFingerprint {
@@ -91,7 +100,9 @@ export interface CreateDialerRTCPeerConnectionOptions {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   certificate?: TransportCertificate
   events?: CounterGroup
+  log?: Logger
   dataChannel?: DataChannelOptions
+  maxEarlyStreams?: number
 }
 
 export async function createDialerRTCPeerConnection (role: 'client', ufrag: string, options?: CreateDialerRTCPeerConnectionOptions): Promise<{ peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }>
@@ -132,7 +143,9 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
     // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     metrics: options.events,
-    dataChannelOptions: options.dataChannel
+    log: options.log,
+    dataChannelOptions: options.dataChannel,
+    maxEarlyStreams: options.maxEarlyStreams
   })
 
   return {

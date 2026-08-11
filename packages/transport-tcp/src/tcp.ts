@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on the TCP networking stack.
+ * A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on the TCP networking stack.
  *
  * @example
  *
@@ -32,10 +32,10 @@ import { AbortError, TimeoutError, serviceCapabilities, transportSymbol } from '
 import { TCP as TCPMatcher } from '@multiformats/multiaddr-matcher'
 import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
-import { TCPListener } from './listener.js'
-import { toMultiaddrConnection } from './socket-to-conn.js'
-import { multiaddrToNetConfig } from './utils.js'
-import type { TCPComponents, TCPCreateListenerOptions, TCPDialEvents, TCPDialOptions, TCPMetrics, TCPOptions } from './index.js'
+import { TCPListener } from './listener.ts'
+import { toMultiaddrConnection } from './socket-to-conn.ts'
+import { multiaddrToNetConfig } from './utils.ts'
+import type { TCPComponents, TCPCreateListenerOptions, TCPDialEvents, TCPDialOptions, TCPMetrics, TCPOptions } from './index.ts'
 import type { Logger, Connection, Transport, Listener, MultiaddrConnection, Startable } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'

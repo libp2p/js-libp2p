@@ -337,7 +337,7 @@ Adding these strings to your service dependencies will cause starting libp2p to 
 
 | Dependency | Implementations | Notes |
 | -------- | ------- | ------- |
-| `@libp2p/identify` | `@libp2p/identify` | You should declare this a as a dependency if your service uses the [Registrar](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface_internal.Registrar.html) to register a network topology. |
+| `@libp2p/identify` | `@libp2p/identify` | You should declare this a as a dependency if your service uses the [Registrar](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface-internal.Registrar.html) to register a network topology. |
 | `@libp2p/identify-push` | `@libp2p/identify` | |
 | `@libp2p/connection-encryption` | `@chainsafe/libp2p-noise`, `@libp2p/tls`, `@libp2p/plaintext` |  |
 | `@libp2p/stream-multiplexing` | `@chainsafe/libp2p-yamux` | |

@@ -1,6 +1,6 @@
 import { pEvent } from 'p-event'
-import { AbstractMessageStream } from './abstract-message-stream.js'
-import type { MessageStreamInit } from './abstract-message-stream.js'
+import { AbstractMessageStream } from './abstract-message-stream.ts'
+import type { MessageStreamInit } from './abstract-message-stream.ts'
 import type { AbortOptions, Stream } from '@libp2p/interface'
 
 export interface AbstractStreamInit extends MessageStreamInit {

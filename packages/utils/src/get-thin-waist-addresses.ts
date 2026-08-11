@@ -1,5 +1,5 @@
 import os from 'node:os'
-import { isLinkLocalIp } from './link-local-ip.js'
+import { isLinkLocalIp } from './link-local-ip.ts'
 import { getNetConfig } from './multiaddr/get-net-config.ts'
 import { netConfigToMultiaddr } from './multiaddr/utils.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'

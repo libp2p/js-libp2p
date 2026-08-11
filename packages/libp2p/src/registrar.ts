@@ -1,6 +1,6 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { trackedMap } from '@libp2p/utils'
-import { DuplicateProtocolHandlerError, UnhandledProtocolError } from './errors.js'
+import { DuplicateProtocolHandlerError, UnhandledProtocolError } from './errors.ts'
 import type { IdentifyResult, Libp2pEvents, Logger, PeerUpdate, PeerId, PeerStore, Topology, StreamHandler, StreamHandlerRecord, StreamHandlerOptions, AbortOptions, Metrics, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar as RegistrarInterface } from '@libp2p/interface-internal'
 import type { ComponentLogger } from '@libp2p/logger'

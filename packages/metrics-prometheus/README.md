@@ -96,7 +96,7 @@ $ npm i @libp2p/prometheus-metrics
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_prometheus_metrics.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_prometheus-metrics.html>
 
 # License
 

@@ -1,8 +1,8 @@
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
-import { repeatingTask } from '../src/repeating-task.js'
-import type { RepeatingTask } from '../src/repeating-task.js'
+import { repeatingTask } from '../src/repeating-task.ts'
+import type { RepeatingTask } from '../src/repeating-task.ts'
 
 describe('repeating-task', () => {
   let task: RepeatingTask

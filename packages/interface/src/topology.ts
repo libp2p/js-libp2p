@@ -1,5 +1,5 @@
-import type { Connection } from './connection.js'
-import type { PeerId } from './peer-id.js'
+import type { Connection } from './connection.ts'
+import type { PeerId } from './peer-id.ts'
 
 /**
  * A topology filter - this can be used by topologies to ensure they do not

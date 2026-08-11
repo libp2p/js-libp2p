@@ -1,7 +1,7 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
-import { Peer as PeerPB } from '../pb/peer.js'
+import { Peer as PeerPB } from '../pb/peer.ts'
 import type { PeerId, Peer, Tag } from '@libp2p/interface'
 import type { Digest } from 'multiformats/hashes/digest'
 

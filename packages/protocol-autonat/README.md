@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-The AutoNAT service implements the [AutoNAT protocol](https://docs.libp2p.io/concepts/nat/autonat/)
+The AutoNAT service implements the [AutoNAT protocol](https://libp2p.io/docs/autonat/)
 to confirm whether addresses the node is listening on are dialable by remote
 peers.
 

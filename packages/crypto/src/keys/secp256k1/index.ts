@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { secp256k1 as secp } from '@noble/curves/secp256k1.js'
-import { SigningError, VerificationError } from '../../errors.js'
+import { SigningError, VerificationError } from '../../errors.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

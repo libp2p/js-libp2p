@@ -46,6 +46,10 @@ function readLength (buf: Uint8Array, context: Context): number {
     context.offset++
 
     for (let i = 0; i < count; i++, context.offset++) {
+      if (context.offset >= buf.byteLength) {
+        throw new Error('invalid DER element length')
+      }
+
       str += buf[context.offset].toString(16).padStart(2, '0')
     }
 
@@ -53,6 +57,12 @@ function readLength (buf: Uint8Array, context: Context): number {
   } else {
     length = buf[context.offset]
     context.offset++
+  }
+
+  // length can be NaN (indefinite-form 0x80), negative, or larger than the
+  // bytes that remain; reject all three
+  if (!Number.isInteger(length) || length < 0 || length > buf.byteLength - context.offset) {
+    throw new Error('invalid DER element length')
   }
 
   return length

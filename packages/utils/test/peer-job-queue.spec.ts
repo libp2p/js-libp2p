@@ -4,9 +4,9 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
-import { PeerQueue } from '../src/peer-queue.js'
-import type { PeerQueueJobOptions } from '../src/peer-queue.js'
-import type { QueueJobFailure, QueueJobSuccess } from '../src/queue/index.js'
+import { PeerQueue } from '../src/peer-queue.ts'
+import type { PeerQueueJobOptions } from '../src/peer-queue.ts'
+import type { QueueJobFailure, QueueJobSuccess } from '../src/queue/index.ts'
 
 describe('peer queue', () => {
   it('should have jobs', async () => {

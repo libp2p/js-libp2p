@@ -3,9 +3,9 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { CID } from 'multiformats/cid'
-import { Providers } from '../src/providers.js'
-import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.js'
-import type { PeerAndKey } from './utils/create-peer-id.js'
+import { Providers } from '../src/providers.ts'
+import { createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
+import type { PeerAndKey } from './utils/create-peer-id.ts'
 
 describe('providers', () => {
   let peers: PeerAndKey[]

@@ -1,8 +1,8 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
-import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.js'
-import type { GossipSubAndComponents } from './utils/create-pubsub.js'
+import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.ts'
+import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 
 describe('gossip / allowedTopics', () => {
   let nodes: GossipSubAndComponents[]

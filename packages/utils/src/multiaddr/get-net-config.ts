@@ -55,12 +55,10 @@ export interface DNSAddrNetConfig {
 export type NetConfig = IP4NetConfig | IP6NetConfig | DNSNetConfig | DNS4NetConfig | DNS6NetConfig | DNSAddrNetConfig
 
 /**
- * Returns host/port/etc information for multiaddrs, if it is available.
- *
- * It will throw if the passed multiaddr does not start with a network address,
- * e.g. a IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address
+ * Returns host/port/etc information for a multiaddr if it starts with a
+ * network address (IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR), or null otherwise.
  */
-export function getNetConfig (ma: Multiaddr): NetConfig {
+export function tryGetNetConfig (ma: Multiaddr): NetConfig | null {
   const components = ma.getComponents()
   const config: any = {}
   let index = 0
@@ -70,15 +68,15 @@ export function getNetConfig (ma: Multiaddr): NetConfig {
     index++
   }
 
-  if (components[index].name === 'ip4' || components[index].name === 'ip6') {
+  if (components[index]?.name === 'ip4' || components[index]?.name === 'ip6') {
     config.type = components[index].name
     config.host = components[index].value
     index++
-  } else if (components[index].name === 'dns' || components[index].name === 'dns4' || components[index].name === 'dns6') {
+  } else if (components[index]?.name === 'dns' || components[index]?.name === 'dns4' || components[index]?.name === 'dns6') {
     config.type = components[index].name
     config.host = components[index].value
     index++
-  } else if (components[index].name === 'dnsaddr') {
+  } else if (components[index]?.name === 'dnsaddr') {
     config.type = components[index].name
     config.host = `_dnsaddr.${components[index].value}`
     index++
@@ -100,12 +98,26 @@ export function getNetConfig (ma: Multiaddr): NetConfig {
   }
 
   if (config.type == null || config.host == null) {
-    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`)
+    return null
   }
 
   if (components[index]?.name === 'tls' && components[index + 1]?.name === 'sni') {
     config.sni = components[index + 1].value
     index += 2
+  }
+
+  return config
+}
+
+/**
+ * Like `tryGetNetConfig` but throws `InvalidParametersError` when the multiaddr
+ * does not start with a network address.
+ */
+export function getNetConfig (ma: Multiaddr): NetConfig {
+  const config = tryGetNetConfig(ma)
+
+  if (config == null) {
+    throw new InvalidParametersError(`Multiaddr ${ma} was not an IPv4, IPv6, DNS, DNS4, DNS6 or DNSADDR address`)
   }
 
   return config

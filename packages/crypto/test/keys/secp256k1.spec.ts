@@ -4,12 +4,11 @@ import { isPrivateKey, isPublicKey } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { randomBytes } from '../../src/index.js'
-import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
-import { KeyType, PrivateKey, PublicKey } from '../../src/keys/keys.js'
-import { hashAndSign, hashAndVerify } from '../../src/keys/secp256k1/index.js'
-import { unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey, compressSecp256k1PublicKey, computeSecp256k1PublicKey, decompressSecp256k1PublicKey, generateSecp256k1PrivateKey, validateSecp256k1PrivateKey, validateSecp256k1PublicKey } from '../../src/keys/secp256k1/utils.js'
-import fixtures from '../fixtures/go-key-secp256k1.js'
+import { generateKeyPair, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.ts'
+import { KeyType, PrivateKey, PublicKey } from '../../src/keys/keys.ts'
+import { hashAndSign, hashAndVerify } from '../../src/keys/secp256k1/index.ts'
+import { unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey, compressSecp256k1PublicKey, computeSecp256k1PublicKey, decompressSecp256k1PublicKey, generateSecp256k1PrivateKey, validateSecp256k1PrivateKey, validateSecp256k1PublicKey } from '../../src/keys/secp256k1/utils.ts'
+import fixtures from '../fixtures/go-key-secp256k1.ts'
 import type { Secp256k1PrivateKey } from '@libp2p/interface'
 
 describe('secp256k1 keys', () => {
@@ -26,7 +25,7 @@ describe('secp256k1 keys', () => {
   })
 
   it('signs', async () => {
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
     const res = await key.publicKey.verify(text, sig)
     expect(res).to.equal(true)
@@ -34,8 +33,8 @@ describe('secp256k1 keys', () => {
 
   it('signs a list', async () => {
     const text = new Uint8ArrayList(
-      randomBytes(512),
-      randomBytes(512)
+      crypto.getRandomValues(new Uint8Array(512)),
+      crypto.getRandomValues(new Uint8Array(512))
     )
     const sig = await key.sign(text)
 
@@ -51,7 +50,7 @@ describe('secp256k1 keys', () => {
   it('should abort signing', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     await expect((async () => {
       return key.sign(text, {
         signal: controller.signal
@@ -63,7 +62,7 @@ describe('secp256k1 keys', () => {
   it('should abort verifying', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
 
     await expect((async () => {

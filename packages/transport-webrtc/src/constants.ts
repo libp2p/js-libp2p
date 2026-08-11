@@ -1,5 +1,5 @@
 import { encodingLength } from 'uint8-varint'
-import { Message } from './private-to-public/pb/message.js'
+import { Message } from './private-to-public/pb/message.ts'
 
 /**
  * STUN servers help clients discover their own public IPs.
@@ -40,6 +40,37 @@ export const MAX_BUFFERED_AMOUNT = 2 * 1024 * 1024
  * @see https://issues.webrtc.org/issues/40644524
  */
 export const MAX_MESSAGE_SIZE = 16 * 1024
+
+/**
+ * The maximum number of bytes buffered for a single incoming data channel that
+ * arrives before the muxer has been created (`earlyDataChannels` in
+ * `muxer.ts`). A well-behaved remote only puts its multistream-select proposal
+ * on an early channel (well under 1 KB): `newStream` blocks on
+ * multistream-select before the application can write, and WebRTC does not
+ * pre-negotiate the stream protocol. If the `// TODO: pre-negotiate stream
+ * protocol` in `muxer.ts` is ever implemented the application could write
+ * immediately, so this assumption, and therefore this bound, must be revisited.
+ * It is set to one maximum WebRTC message so a single legitimately-sized frame
+ * is never rejected, even though the expected payload is far smaller. Channels
+ * that exceed this are closed.
+ */
+export const MAX_EARLY_DATA_CHANNEL_BYTES = MAX_MESSAGE_SIZE
+
+/**
+ * Default for the `maxEarlyStreams` transport option, which caps both the data
+ * channels buffered before the muxer exists and the early streams the muxer
+ * surfaces on adoption. They are one budget - buffered channels become early
+ * streams on adoption, so a larger channel buffer would abort on hand-off.
+ */
+export const DEFAULT_MAX_EARLY_STREAMS = 10
+
+/**
+ * Max buffered messages per early data channel. A legitimate early channel
+ * carries only the multistream-select proposal (one or two frames), so this
+ * bounds a flood of tiny or empty messages that would otherwise evade the byte
+ * cap by contributing ~0 bytes each.
+ */
+export const MAX_EARLY_DATA_CHANNEL_MESSAGES = 8
 
 /**
  * max protobuf overhead:

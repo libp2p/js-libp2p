@@ -96,6 +96,296 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.34](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.33...webtransport-v6.0.34) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/daemon-client bumped from ^10.0.33 to ^10.0.34
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+    * @libp2p/ping bumped from ^3.1.10 to ^3.1.11
+    * libp2p bumped from ^3.3.7 to ^3.3.8
+
+## [6.0.33](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.32...webtransport-v6.0.33) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.32 to ^10.0.33
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/ping bumped from ^3.1.9 to ^3.1.10
+    * libp2p bumped from ^3.3.6 to ^3.3.7
+
+## [6.0.32](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.31...webtransport-v6.0.32) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.31 to ^10.0.32
+    * @libp2p/ping bumped from ^3.1.8 to ^3.1.9
+    * libp2p bumped from ^3.3.5 to ^3.3.6
+
+## [6.0.31](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.30...webtransport-v6.0.31) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/daemon-client bumped from ^10.0.30 to ^10.0.31
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/ping bumped from ^3.1.7 to ^3.1.8
+    * libp2p bumped from ^3.3.4 to ^3.3.5
+
+## [6.0.30](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.29...webtransport-v6.0.30) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/daemon-client bumped from ^10.0.29 to ^10.0.30
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/ping bumped from ^3.1.6 to ^3.1.7
+    * libp2p bumped from ^3.3.3 to ^3.3.4
+
+## [6.0.29](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.28...webtransport-v6.0.29) (2026-06-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.28 to ^10.0.29
+
+## [6.0.28](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.27...webtransport-v6.0.28) (2026-05-30)
+
+
+### Bug Fixes
+
+* allow dialing WebTransport without PeerId ([#3523](https://github.com/libp2p/js-libp2p/issues/3523)) ([b7c6dc0](https://github.com/libp2p/js-libp2p/commit/b7c6dc0f2db85e5604e5fac889d39504e0adab50))
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/daemon-client bumped from ^10.0.27 to ^10.0.28
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/ping bumped from ^3.1.5 to ^3.1.6
+    * libp2p bumped from ^3.3.2 to ^3.3.3
+
+## [6.0.27](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.26...webtransport-v6.0.27) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.26 to ^10.0.27
+    * libp2p bumped from ^3.3.1 to ^3.3.2
+
+## [6.0.26](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.25...webtransport-v6.0.26) (2026-05-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.25 to ^10.0.26
+
+## [6.0.25](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.24...webtransport-v6.0.25) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.24 to ^10.0.25
+    * @libp2p/ping bumped from ^3.1.4 to ^3.1.5
+    * libp2p bumped from ^3.3.0 to ^3.3.1
+
+## [6.0.24](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.23...webtransport-v6.0.24) (2026-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.23 to ^10.0.24
+
+## [6.0.23](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.22...webtransport-v6.0.23) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/daemon-client bumped from ^10.0.22 to ^10.0.23
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+    * @libp2p/ping bumped from ^3.1.3 to ^3.1.4
+    * libp2p bumped from ^3.2.4 to ^3.3.0
+
+## [6.0.22](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.21...webtransport-v6.0.22) (2026-05-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.21 to ^10.0.22
+    * libp2p bumped from ^3.2.3 to ^3.2.4
+
+## [6.0.21](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.20...webtransport-v6.0.21) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.20 to ^10.0.21
+    * @libp2p/ping bumped from ^3.1.2 to ^3.1.3
+    * libp2p bumped from ^3.2.2 to ^3.2.3
+
+## [6.0.20](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.19...webtransport-v6.0.20) (2026-04-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.19 to ^10.0.20
+
+## [6.0.19](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.18...webtransport-v6.0.19) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/peer-id bumped from ^6.0.7 to ^6.0.8
+    * @libp2p/utils bumped from ^7.0.16 to ^7.0.17
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/daemon-client bumped from ^10.0.18 to ^10.0.19
+    * @libp2p/logger bumped from ^6.2.5 to ^6.2.6
+    * @libp2p/ping bumped from ^3.1.1 to ^3.1.2
+    * libp2p bumped from ^3.2.1 to ^3.2.2
+
+## [6.0.18](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.17...webtransport-v6.0.18) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/peer-id bumped from ^6.0.6 to ^6.0.7
+    * @libp2p/utils bumped from ^7.0.15 to ^7.0.16
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/daemon-client bumped from ^10.0.17 to ^10.0.18
+    * @libp2p/logger bumped from ^6.2.4 to ^6.2.5
+    * @libp2p/ping bumped from ^3.1.0 to ^3.1.1
+    * libp2p bumped from ^3.2.0 to ^3.2.1
+
+## [6.0.17](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.16...webtransport-v6.0.17) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/peer-id bumped from ^6.0.5 to ^6.0.6
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/daemon-client bumped from ^10.0.16 to ^10.0.17
+    * @libp2p/logger bumped from ^6.2.3 to ^6.2.4
+    * @libp2p/ping bumped from ^3.0.14 to ^3.1.0
+    * libp2p bumped from ^3.1.7 to ^3.2.0
+
+## [6.0.16](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.15...webtransport-v6.0.16) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/peer-id bumped from ^6.0.4 to ^6.0.5
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/daemon-client bumped from ^10.0.15 to ^10.0.16
+    * @libp2p/logger bumped from ^6.2.2 to ^6.2.3
+    * @libp2p/ping bumped from ^3.0.13 to ^3.0.14
+    * libp2p bumped from ^3.1.6 to ^3.1.7
+
 ## [6.0.15](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.14...webtransport-v6.0.15) (2026-03-12)
 
 

@@ -1,7 +1,7 @@
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { openTelemetryMetrics } from '../src/index.js'
+import { openTelemetryMetrics } from '../src/index.ts'
 
 describe('opentelemetry-metrics', () => {
   it('should wrap a method', async () => {

@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { createPeerScoreThresholds, validatePeerScoreThresholds } from '../src/score/index.js'
+import { createPeerScoreThresholds, validatePeerScoreThresholds } from '../src/score/index.ts'
 
 describe('PeerScoreThresholds validation', () => {
   it('should throw on invalid PeerScoreThresholds', () => {

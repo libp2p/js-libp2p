@@ -1,5 +1,168 @@
 # Changelog
 
+## [3.1.11](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.10...echo-v3.1.11) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.10 to ^3.1.11
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [3.1.10](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.9...echo-v3.1.10) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [3.1.9](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.8...echo-v3.1.9) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [3.1.8](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.7...echo-v3.1.8) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/interface-internal bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
+## [3.1.7](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.6...echo-v3.1.7) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
+## [3.1.6](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.5...echo-v3.1.6) (2026-05-30)
+
+
+### Bug Fixes
+
+* **echo:** avoid unhandled rejection when the connection closes early ([#3525](https://github.com/libp2p/js-libp2p/issues/3525)) ([977051c](https://github.com/libp2p/js-libp2p/commit/977051c7bb9accc702a5d312cb56934f635cf642))
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+
+## [3.1.5](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.4...echo-v3.1.5) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.3...echo-v3.1.4) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.3 to ^3.1.4
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
+## [3.1.3](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.2...echo-v3.1.3) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.2 to ^3.1.3
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
+## [3.1.2](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.1...echo-v3.1.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/interface-internal bumped from ^3.1.1 to ^3.1.2
+    * @libp2p/utils bumped from ^7.0.16 to ^7.0.17
+
+## [3.1.1](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.0...echo-v3.1.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/interface-internal bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/utils bumped from ^7.0.15 to ^7.0.16
+
+## [3.1.0](https://github.com/libp2p/js-libp2p/compare/echo-v3.0.15...echo-v3.1.0) (2026-04-08)
+
+
+### Features
+
+* add DialTarget type ([#3428](https://github.com/libp2p/js-libp2p/issues/3428)) ([2a3e547](https://github.com/libp2p/js-libp2p/commit/2a3e547380a62dffae31f7b5423dfcf1fc0c7433))
+* add high-level connection and stream progress events ([#3429](https://github.com/libp2p/js-libp2p/issues/3429)) ([709b3fa](https://github.com/libp2p/js-libp2p/commit/709b3fa2e94d99c77d97df2dda39b431f8b92878))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/interface-internal bumped from ^3.0.14 to ^3.1.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+
+## [3.0.15](https://github.com/libp2p/js-libp2p/compare/echo-v3.0.14...echo-v3.0.15) (2026-03-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/interface-internal bumped from ^3.0.13 to ^3.0.14
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+
 ## [3.0.14](https://github.com/libp2p/js-libp2p/compare/echo-v3.0.13...echo-v3.0.14) (2026-03-12)
 
 

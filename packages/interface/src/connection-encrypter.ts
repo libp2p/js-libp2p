@@ -1,4 +1,4 @@
-import type { AbortOptions, StreamMuxerFactory, PeerId, MessageStream } from './index.js'
+import type { AbortOptions, StreamMuxerFactory, PeerId, MessageStream } from './index.ts'
 
 /**
  * If the remote PeerId is known and passed as an option, the securing operation

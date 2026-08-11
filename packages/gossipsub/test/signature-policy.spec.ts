@@ -7,8 +7,8 @@ import {
   createComponents,
   createComponentsArray
 
-} from './utils/create-pubsub.js'
-import type { GossipSubAndComponents } from './utils/create-pubsub.js'
+} from './utils/create-pubsub.ts'
+import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 
 describe('signature policy', () => {
   describe('strict-sign', () => {

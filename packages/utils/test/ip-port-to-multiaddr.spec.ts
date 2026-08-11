@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { ipPortToMultiaddr } from '../src/ip-port-to-multiaddr.js'
+import { ipPortToMultiaddr } from '../src/ip-port-to-multiaddr.ts'
 
 describe('IP and port to Multiaddr', () => {
   it('creates multiaddr from valid IPv4 IP and port', () => {

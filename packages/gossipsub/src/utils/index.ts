@@ -1,3 +1,3 @@
-export * from './shuffle.js'
-export * from './messageIdToString.js'
-export { getPublishConfigFromPeerId } from './publishConfig.js'
+export * from './shuffle.ts'
+export * from './messageIdToString.ts'
+export { getPublishConfigFromPeerId } from './publishConfig.ts'

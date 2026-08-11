@@ -1,7 +1,7 @@
 import { xor as uint8ArrayXor } from 'uint8arrays/xor'
 import { xorCompare as uint8ArrayXorCompare } from 'uint8arrays/xor-compare'
-import { convertPeerId } from './utils.js'
-import type { DisjointPath } from './index.js'
+import { convertPeerId } from './utils.ts'
+import type { DisjointPath } from './index.ts'
 import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
 
 interface PeerDistance {
@@ -94,6 +94,21 @@ export class PeerDistanceList {
     }
 
     this.peerDistances = this.peerDistances.slice(0, this.capacity)
+  }
+
+  /**
+   * True if a peer with this (already-computed) kadId could still enter the
+   * list: under capacity, or strictly closer than the furthest entry.
+   */
+  canAddKadId (kadId: Uint8Array): boolean {
+    if (this.peerDistances.length < this.capacity) {
+      return true
+    }
+
+    const distance = uint8ArrayXor(this.originDhtKey, kadId)
+    const furthest = this.peerDistances[this.peerDistances.length - 1].distance
+
+    return uint8ArrayXorCompare(distance, furthest) === -1
   }
 
   /**

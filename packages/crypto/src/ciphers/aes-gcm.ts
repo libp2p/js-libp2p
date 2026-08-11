@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { CreateAESCipherOptions, AESCipher } from './interface.js'
+import type { CreateAESCipherOptions, AESCipher } from './interface.ts'
 
 export type { AESCipher, CreateAESCipherOptions }
 

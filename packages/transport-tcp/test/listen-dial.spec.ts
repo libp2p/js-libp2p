@@ -9,7 +9,7 @@ import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { tcp } from '../src/index.js'
+import { tcp } from '../src/index.ts'
 import type { Connection, Listener, MultiaddrConnection, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI

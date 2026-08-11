@@ -1,9 +1,9 @@
 import { ListenError } from '@libp2p/interface'
 import { multiaddr } from '@multiformats/multiaddr'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
-import { DEFAULT_RESERVATION_COMPLETION_TIMEOUT } from '../constants.js'
-import { CircuitListen, CircuitSearch } from '../utils.js'
-import type { RelayReservation, ReservationStore } from './reservation-store.js'
+import { DEFAULT_RESERVATION_COMPLETION_TIMEOUT } from '../constants.ts'
+import { CircuitListen, CircuitSearch } from '../utils.ts'
+import type { RelayReservation, ReservationStore } from './reservation-store.ts'
 import type { ComponentLogger, Logger, Listener, ListenerEvents, PeerId } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -71,6 +71,14 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
     } = evt.detail
 
     if (details.type === 'configured') {
+      // listen() applies a configured relay's initial reservation directly.
+      // This handler also fires for that initial event, but this.relay is not
+      // set yet so the guard below skips it. A later refresh fires with
+      // this.relay set, so re-apply it for our relay to pick up a changed address.
+      if (this.relay?.equals(evt.detail.relay) === true) {
+        this.addedRelay(evt.detail)
+      }
+
       return
     }
 
@@ -136,16 +144,28 @@ class CircuitRelayTransportListener extends TypedEventEmitter<ListenerEvents> im
 
     this.relay = reservation.relay
 
+    const previousAddrs = this.listeningAddrs
+
     // add all addresses from the relay reservation
     this.listeningAddrs = reservation.details.reservation.addrs
       .map(buf => multiaddr(buf).encapsulate('/p2p-circuit'))
 
+    // confirm the refreshed addresses first so that failing to withdraw a stale
+    // one below cannot leave us with nothing advertised
     this.listeningAddrs.forEach(ma => {
       // mark as externally dialable
       this.addressManager.confirmObservedAddr(ma, {
         type: 'transport'
       })
     })
+
+    // then withdraw any previously advertised address the refresh no longer
+    // includes, otherwise a changed relay address leaves the stale one advertised
+    previousAddrs
+      .filter(ma => !this.listeningAddrs.some(current => current.equals(ma)))
+      .forEach(ma => {
+        this.addressManager.removeObservedAddr(ma)
+      })
 
     // if that succeeded announce listen addresses change
     queueMicrotask(() => {

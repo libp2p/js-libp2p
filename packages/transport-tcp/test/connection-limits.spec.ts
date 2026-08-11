@@ -5,8 +5,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { tcp } from '../src/index.js'
-import type { TCPListener } from '../src/listener.js'
+import { tcp } from '../src/index.ts'
+import type { TCPListener } from '../src/listener.ts'
 import type { Connection, Upgrader } from '@libp2p/interface'
 
 const buildSocketAssertions = (port: number, closeCallbacks: Array<() => Promise<any> | any>): { assertConnectedSocket(i: number): Promise<net.Socket>, assertRefusedSocket(i: number): Promise<net.Socket> } => {

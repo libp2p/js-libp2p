@@ -1,8 +1,8 @@
 import { expect } from 'aegir/chai'
 import first from 'it-first'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { waitForSubscribed } from './utils.js'
-import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.js'
+import { waitForSubscribed } from './utils.ts'
+import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.ts'
 
 export function hybridTests (factory: DaemonFactory): void {
   const nodeTypes: NodeType[] = ['js', 'go']

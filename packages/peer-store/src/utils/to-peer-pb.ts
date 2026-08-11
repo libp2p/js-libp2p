@@ -2,10 +2,10 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { dedupeFilterAndSortAddresses } from './dedupe-addresses.js'
-import type { AddressFilter } from '../index.js'
-import type { Tag, Peer as PeerPB } from '../pb/peer.js'
-import type { ExistingPeer } from '../store.js'
+import { dedupeFilterAndSortAddresses } from './dedupe-addresses.ts'
+import type { AddressFilter } from '../index.ts'
+import type { Tag, Peer as PeerPB } from '../pb/peer.ts'
+import type { ExistingPeer } from '../store.ts'
 import type { PeerId, Address, PeerData, TagOptions, AbortOptions } from '@libp2p/interface'
 
 export interface ToPBPeerOptions extends AbortOptions {
@@ -18,8 +18,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     throw new InvalidParametersError('Invalid PeerData')
   }
 
-  if (data.publicKey != null && peerId.publicKey != null && !data.publicKey.equals(peerId.publicKey)) {
-    throw new InvalidParametersError('publicKey bytes do not match peer id publicKey bytes')
+  if (data.publicKey != null && !peerId.equals(data.publicKey.toMultihash().bytes)) {
+    throw new InvalidParametersError('publicKey does not match peer id')
   }
 
   const existingPeer = options.existingPeer?.peer
@@ -162,7 +162,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
 
   // add observed addresses to multiaddrs
   output.addresses.forEach(addr => {
-    addr.observed = options.existingPeer?.peerPB.addresses?.find(addr => uint8ArrayEquals(addr.multiaddr, addr.multiaddr))?.observed ?? Date.now()
+    addr.observed = options.existingPeer?.peerPB.addresses?.find(existingAddr => uint8ArrayEquals(existingAddr.multiaddr, addr.multiaddr))?.observed ?? Date.now()
   })
 
   // Ed25519 and secp256k1 have their public key embedded in them so no need to duplicate it

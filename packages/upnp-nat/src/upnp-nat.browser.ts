@@ -1,5 +1,5 @@
 import { serviceCapabilities, serviceDependencies } from '@libp2p/interface'
-import type { UPnPNATClient, UPnPNAT as UPnPNATInterface } from './index.js'
+import type { UPnPNATClient, UPnPNAT as UPnPNATInterface } from './index.ts'
 
 export class UPnPNAT implements UPnPNATInterface {
   public portMappingClient: UPnPNATClient

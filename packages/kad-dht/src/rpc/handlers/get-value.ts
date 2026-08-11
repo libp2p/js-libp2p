@@ -3,12 +3,12 @@ import { InvalidMessageError, NotFoundError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import {
   PROVIDERS_VALIDITY
-} from '../../constants.js'
-import { MessageType } from '../../message/dht.js'
-import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.js'
-import type { Message } from '../../message/dht.js'
-import type { PeerRouting } from '../../peer-routing/index.js'
-import type { DHTMessageHandler } from '../index.js'
+} from '../../constants.ts'
+import { MessageType } from '../../message/dht.ts'
+import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.ts'
+import type { Message } from '../../message/dht.ts'
+import type { PeerRouting } from '../../peer-routing/index.ts'
+import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId, PeerStore } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 

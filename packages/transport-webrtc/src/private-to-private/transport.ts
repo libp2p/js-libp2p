@@ -3,16 +3,16 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { WebRTC } from '@multiformats/multiaddr-matcher'
 import { setMaxListeners } from 'main-event'
-import { SIGNALING_PROTOCOL } from '../constants.js'
-import { DataChannelMuxerFactory } from '../muxer.js'
+import { SIGNALING_PROTOCOL } from '../constants.ts'
+import { DataChannelMuxerFactory } from '../muxer.ts'
 import { toMultiaddrConnection } from '../rtcpeerconnection-to-conn.ts'
-import { getRtcConfiguration } from '../util.js'
-import { RTCPeerConnection } from '../webrtc/index.js'
-import { initiateConnection } from './initiate-connection.js'
-import { WebRTCPeerListener } from './listener.js'
-import { handleIncomingStream } from './signaling-stream-handler.js'
+import { getRtcConfiguration } from '../util.ts'
+import { RTCPeerConnection } from '../webrtc/index.ts'
+import { initiateConnection } from './initiate-connection.ts'
+import { WebRTCPeerListener } from './listener.ts'
+import { handleIncomingStream } from './signaling-stream-handler.ts'
 import { getRemotePeer } from './util.ts'
-import type { DataChannelOptions } from '../index.js'
+import type { DataChannelOptions } from '../index.ts'
 import type { OutboundConnectionUpgradeEvents, CreateListenerOptions, DialTransportOptions, Transport, Listener, Upgrader, ComponentLogger, Logger, Connection, PeerId, CounterGroup, Metrics, Startable, OpenConnectionProgressEvents, Libp2pEvents, MultiaddrConnection, Stream } from '@libp2p/interface'
 import type { Registrar, ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -31,6 +31,14 @@ export interface WebRTCTransportInit {
    * Any options here will be applied to any RTCDataChannels that are opened.
    */
   dataChannel?: DataChannelOptions
+
+  /**
+   * Caps the inbound streams accepted before the connection surfaces them, and
+   * the data channels buffered before the muxer exists (excess are closed).
+   *
+   * @default 10
+   */
+  maxEarlyStreams?: number
 }
 
 export interface WebRTCTransportComponents {
@@ -163,11 +171,13 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     const { remoteAddress, peerConnection, muxerFactory } = await initiateConnection({
       rtcConfiguration: await getRtcConfiguration(this.init.rtcConfiguration),
       dataChannel: this.init.dataChannel,
+      maxEarlyStreams: this.init.maxEarlyStreams,
       multiaddr: ma,
       dataChannelOptions: this.init.dataChannel,
       signal: options.signal,
       connectionManager: this.components.connectionManager,
       transportManager: this.components.transportManager,
+      metrics: this.metrics,
       log: this.log,
       logger: this.components.logger,
       onProgress: options.onProgress
@@ -181,14 +191,24 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
       log: this.components.logger.forComponent('libp2p:webrtc:connection')
     })
 
-    const connection = await options.upgrader.upgradeOutbound(webRTCConn, {
-      skipProtection: true,
-      skipEncryption: true,
-      remotePeer: getRemotePeer(ma),
-      muxerFactory,
-      onProgress: options.onProgress,
-      signal: options.signal
-    })
+    let connection: Connection
+
+    try {
+      connection = await options.upgrader.upgradeOutbound(webRTCConn, {
+        skipProtection: true,
+        skipEncryption: true,
+        remotePeer: getRemotePeer(ma),
+        muxerFactory,
+        onProgress: options.onProgress,
+        signal: options.signal
+      })
+    } catch (err) {
+      // discard any early data channels buffered before the upgrade failed and
+      // close the peer connection
+      muxerFactory.close()
+      peerConnection.close()
+      throw err
+    }
 
     // close the connection on shut down
     this._closeOnShutdown(peerConnection, webRTCConn)
@@ -213,7 +233,10 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     const muxerFactory = new DataChannelMuxerFactory({
       // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
       peerConnection,
-      dataChannelOptions: this.init.dataChannel
+      dataChannelOptions: this.init.dataChannel,
+      maxEarlyStreams: this.init.maxEarlyStreams,
+      metrics: this.metrics?.listenerEvents,
+      log: this.log
     })
 
     try {
@@ -251,6 +274,7 @@ export class WebRTCTransport implements Transport<WebRTCDialEvents>, Startable {
     } catch (err: any) {
       this.log.error('incoming signaling error - %e', err)
 
+      muxerFactory.close()
       peerConnection.close()
       stream.abort(err)
       throw err

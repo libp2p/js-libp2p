@@ -4,7 +4,7 @@ import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { plaintext } from '../src/index.js'
+import { plaintext } from '../src/index.ts'
 import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
 describe('plaintext', () => {

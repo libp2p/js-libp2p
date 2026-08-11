@@ -14,19 +14,19 @@
  * ```
  */
 
-import type { Connection, NewStreamOptions } from './connection.js'
-import type { ContentRouting } from './content-routing.js'
-import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.js'
-import type { Metrics } from './metrics.js'
-import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id.js'
-import type { PeerInfo } from './peer-info.js'
-import type { PeerRouting } from './peer-routing.js'
-import type { Address, Peer, PeerStore } from './peer-store.js'
-import type { Startable } from './startable.js'
-import type { StreamHandler, StreamHandlerOptions, StreamMiddleware } from './stream-handler.js'
-import type { Stream } from './stream.js'
-import type { Topology } from './topology.js'
-import type { Listener, OutboundConnectionUpgradeEvents } from './transport.js'
+import type { Connection, NewStreamOptions, NewStreamProgressEvents } from './connection.ts'
+import type { ContentRouting } from './content-routing.ts'
+import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.ts'
+import type { Metrics } from './metrics.ts'
+import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id.ts'
+import type { PeerInfo } from './peer-info.ts'
+import type { PeerRouting } from './peer-routing.ts'
+import type { Address, Peer, PeerStore } from './peer-store.ts'
+import type { Startable } from './startable.ts'
+import type { StreamHandler, StreamHandlerOptions, StreamMiddleware } from './stream-handler.ts'
+import type { Stream } from './stream.ts'
+import type { Topology } from './topology.ts'
+import type { Listener, OutboundConnectionUpgradeEvents } from './transport.ts'
 import type { DNS } from '@multiformats/dns'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -54,6 +54,11 @@ export interface SignedPeerRecord {
   addresses: Multiaddr[]
   seq: bigint
 }
+
+/**
+ * Things that libp2p can dial
+ */
+export type DialTarget = PeerId | Multiaddr | Multiaddr[]
 
 /**
  * A certificate that can be used to secure connections
@@ -478,6 +483,8 @@ export type TransportManagerDialProgressEvents =
   ProgressEvent<'transport-manager:selected-transport', string>
 
 export type OpenConnectionProgressEvents =
+  ProgressEvent<'connection:open', DialTarget> |
+  ProgressEvent<'connection:opened', Connection> |
   TransportManagerDialProgressEvents |
   ProgressEvent<'dial-queue:already-connected'> |
   ProgressEvent<'dial-queue:already-in-dial-queue'> |
@@ -486,14 +493,14 @@ export type OpenConnectionProgressEvents =
   ProgressEvent<'dial-queue:calculated-addresses', Address[]> |
   OutboundConnectionUpgradeEvents
 
-export interface DialOptions extends AbortOptions, ProgressOptions {
+export interface DialOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
   /**
    * If true, open a new connection to the remote even if one already exists
    */
   force?: boolean
 }
 
-export interface DialProtocolOptions extends NewStreamOptions {
+export interface DialProtocolOptions extends Omit<DialOptions, 'onProgress'>, Omit<NewStreamOptions, 'onProgress'>, ProgressOptions<OpenConnectionProgressEvents | NewStreamProgressEvents> {
 
 }
 
@@ -678,7 +685,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * await conn.close()
    * ```
    */
-  dial(peer: PeerId | Multiaddr | Multiaddr[], options?: DialOptions): Promise<Connection>
+  dial(peer: DialTarget, options?: DialOptions): Promise<Connection>
 
   /**
    * Dials to the provided peer and tries to handshake with the given protocols in order.
@@ -696,7 +703,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * pipe([1, 2, 3], stream, consume)
    * ```
    */
-  dialProtocol(peer: PeerId | Multiaddr | Multiaddr[], protocols: string | string[], options?: DialProtocolOptions): Promise<Stream>
+  dialProtocol(peer: DialTarget, protocols: string | string[], options?: DialProtocolOptions): Promise<Stream>
 
   /**
    * Attempts to gracefully close an open connection to the given peer. If the
@@ -940,28 +947,28 @@ export const serviceCapabilities = Symbol.for('@libp2p/service-capabilities')
  */
 export const serviceDependencies = Symbol.for('@libp2p/service-dependencies')
 
-export * from './connection.js'
-export * from './connection-encrypter.js'
-export * from './connection-gater.js'
-export * from './connection-protector.js'
-export * from './content-routing.js'
-export * from './errors.js'
-export * from './events.js'
-export * from './keys.js'
-export * from './message-stream.js'
-export * from './metrics.js'
-export * from './multiaddr-connection.js'
-export * from './peer-discovery.js'
-export * from './peer-id.js'
-export * from './peer-info.js'
-export * from './peer-routing.js'
-export * from './peer-store.js'
-export * from './record.js'
-export * from './startable.js'
-export * from './stream-handler.js'
-export * from './stream-muxer.js'
-export * from './stream.js'
-export * from './topology.js'
-export * from './transport.js'
+export * from './connection.ts'
+export * from './connection-encrypter.ts'
+export * from './connection-gater.ts'
+export * from './connection-protector.ts'
+export * from './content-routing.ts'
+export * from './errors.ts'
+export * from './events.ts'
+export * from './keys.ts'
+export * from './message-stream.ts'
+export * from './metrics.ts'
+export * from './multiaddr-connection.ts'
+export * from './peer-discovery.ts'
+export * from './peer-id.ts'
+export * from './peer-info.ts'
+export * from './peer-routing.ts'
+export * from './peer-store.ts'
+export * from './record.ts'
+export * from './startable.ts'
+export * from './stream-handler.ts'
+export * from './stream-muxer.ts'
+export * from './stream.ts'
+export * from './topology.ts'
+export * from './transport.ts'
 
 export * from 'main-event'

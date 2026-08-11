@@ -1,7 +1,7 @@
 import { AbstractStreamMuxer } from '@libp2p/utils'
-import { webtransportBiDiStreamToStream } from './stream.js'
+import { webtransportBiDiStreamToStream } from './stream.ts'
 import type { WebTransportStream } from './stream.ts'
-import type WebTransport from './webtransport.js'
+import type WebTransport from './webtransport.ts'
 import type { CreateStreamOptions, MultiaddrConnection, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 const PROTOCOL = '/webtransport'

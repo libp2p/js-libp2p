@@ -2,7 +2,7 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as crypto from '../../src/index.js'
+import * as crypto from '../../src/index.ts'
 
 const hashes = ['SHA1', 'SHA256', 'SHA512'] as ['SHA1', 'SHA256', 'SHA512']
 

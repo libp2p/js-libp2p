@@ -1,9 +1,9 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import * as utils from '../src/utils.js'
-import type { PubSubRPCMessage } from '../src/floodsub.js'
-import type { Message } from '../src/index.js'
+import * as utils from '../src/utils.ts'
+import type { PubSubRPCMessage } from '../src/floodsub.ts'
+import type { Message } from '../src/index.ts'
 
 describe('utils', () => {
   it('randomSeqno', () => {

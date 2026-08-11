@@ -1,7 +1,7 @@
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toRpcMessage } from './utils.js'
+import { toRpcMessage } from './utils.ts'
 import type { PubSubRPCMessage } from './floodsub.ts'
 import type { SignedMessage } from './index.ts'
 import type { PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
@@ -80,12 +80,16 @@ export function messagePublicKey (message: SignedMessage): PublicKey {
     throw new Error('Could not get the public key from the originator id')
   }
 
-  if (message.key != null) {
-    return message.key
-  }
-
+  // an Ed25519/secp256k1 peer id embeds its own public key, so a key recovered
+  // from `from` is provably the author's; trust it over the supplied message.key
   if (message.from.publicKey != null) {
     return message.from.publicKey
+  }
+
+  // otherwise the supplied key must derive to the from peer id, else a message
+  // could be signed by one key while claiming a different author
+  if (message.key != null && message.from.equals(message.key.toMultihash().bytes)) {
+    return message.key
   }
 
   // We couldn't validate pubkey is from the originator, error

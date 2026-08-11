@@ -55,7 +55,7 @@
  * ```
  */
 
-import { DefaultDCUtRService } from './dcutr.js'
+import { DefaultDCUtRService } from './dcutr.ts'
 import type { ComponentLogger, PeerStore } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 

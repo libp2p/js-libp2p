@@ -1,7 +1,7 @@
 /**
  * @packageDocumentation
  *
- * A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
+ * A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
  *
  * @example
  *
@@ -28,8 +28,8 @@ import { WebSockets as WebSocketsMatcher, WebSocketsSecure } from '@multiformats
 import { multiaddrToUri as toUri } from '@multiformats/multiaddr-to-uri'
 import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
-import { createListener } from './listener.js'
-import { webSocketToMaConn } from './websocket-to-conn.js'
+import { createListener } from './listener.ts'
+import { webSocketToMaConn } from './websocket-to-conn.ts'
 import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'

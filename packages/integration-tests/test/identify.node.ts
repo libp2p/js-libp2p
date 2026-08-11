@@ -7,7 +7,7 @@ import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { createBaseOptions } from './fixtures/base-options.js'
+import { createBaseOptions } from './fixtures/base-options.ts'
 import type { Identify, IdentifyPush } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
 

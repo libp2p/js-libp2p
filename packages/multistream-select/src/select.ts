@@ -1,10 +1,10 @@
 import { UnsupportedProtocolError } from '@libp2p/interface'
 import { lpStream } from '@libp2p/utils'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { MAX_PROTOCOL_LENGTH } from './constants.js'
-import { readString } from './multistream.js'
-import { PROTOCOL_ID } from './index.js'
-import type { MultistreamSelectInit } from './index.js'
+import { MAX_PROTOCOL_LENGTH } from './constants.ts'
+import { PROTOCOL_ID } from './index.ts'
+import { readString } from './multistream.ts'
+import type { MultistreamSelectInit } from './index.ts'
 import type { MessageStream } from '@libp2p/interface'
 
 /**
