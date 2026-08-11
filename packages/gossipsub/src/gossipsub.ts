@@ -2161,6 +2161,15 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // If the message is anonymous or has a random author add it to the published message ids cache.
     this.publishedMessageIds.put(msgIdStr)
 
+    // skip peers that told us they already have the message - with content-derived
+    // message ids a peer may have sent IDONTWANT before we publish the same content
+    for (const id of tosend) {
+      if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+        tosend.delete(id)
+        this.metrics?.onIdontwantSkippedSend('publish')
+      }
+    }
+
     const batchPublish = opts?.batchPublish ?? this.opts.batchPublish
     const rpc = createGossipRpc([rawMsg])
     if (batchPublish) {
