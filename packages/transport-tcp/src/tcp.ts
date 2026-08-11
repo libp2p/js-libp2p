@@ -36,20 +36,22 @@ import { TCPListener } from './listener.js'
 import { toMultiaddrConnection } from './socket-to-conn.js'
 import { multiaddrToNetConfig } from './utils.js'
 import type { TCPComponents, TCPCreateListenerOptions, TCPDialEvents, TCPDialOptions, TCPMetrics, TCPOptions } from './index.js'
-import type { Logger, Connection, Transport, Listener, MultiaddrConnection } from '@libp2p/interface'
+import type { Logger, Connection, Transport, Listener, MultiaddrConnection, Startable } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Socket, IpcSocketConnectOpts, TcpSocketConnectOpts } from 'net'
 
-export class TCP implements Transport<TCPDialEvents> {
+export class TCP implements Transport<TCPDialEvents>, Startable {
   private readonly opts: TCPOptions
   private readonly metrics?: TCPMetrics
   private readonly components: TCPComponents
   private readonly log: Logger
+  private readonly outboundSockets: Set<Socket>
 
   constructor (components: TCPComponents, options: TCPOptions = {}) {
     this.log = components.logger.forComponent('libp2p:tcp')
     this.opts = options
     this.components = components
+    this.outboundSockets = new Set()
 
     if (components.metrics != null) {
       this.metrics = {
@@ -72,6 +74,25 @@ export class TCP implements Transport<TCPDialEvents> {
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/transport'
   ]
+
+  start (): void {}
+
+  stop (): void {}
+
+  async afterStop (): Promise<void> {
+    const socketClosedPromises: Array<Promise<unknown>> = []
+
+    for (const socket of this.outboundSockets) {
+      if (socket.closed) {
+        continue
+      }
+
+      socketClosedPromises.push(pEvent(socket, 'close', { rejectionEvents: [] }))
+      socket.destroy()
+    }
+
+    await Promise.all(socketClosedPromises)
+  }
 
   async dial (ma: Multiaddr, options: TCPDialOptions): Promise<Connection> {
     options.keepAlive = options.keepAlive ?? true
@@ -128,6 +149,10 @@ export class TCP implements Transport<TCPDialEvents> {
 
       this.log('dialing %a with opts %o', ma, cOpts)
       rawSocket = net.connect(cOpts)
+      this.outboundSockets.add(rawSocket)
+      rawSocket.once('close', () => {
+        this.outboundSockets.delete(rawSocket)
+      })
 
       const onError = (err: Error): void => {
         this.log.error('dial to %a errored - %e', ma, err)

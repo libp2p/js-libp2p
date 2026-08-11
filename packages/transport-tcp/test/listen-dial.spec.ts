@@ -1,6 +1,7 @@
 import net from 'net'
 import os from 'os'
 import path from 'path'
+import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -243,6 +244,44 @@ describe('dial', () => {
         throw new Error('TCP transport did not open a socket')
       }
 
+      expect(socket.closed).to.be.true()
+    } finally {
+      connectSpy.restore()
+      await new Promise<void>(resolve => {
+        server.close(() => { resolve() })
+      })
+    }
+  })
+
+  it('waits for established outbound sockets to close when stopped', async () => {
+    const server = net.createServer(socket => {
+      socket.on('error', () => {})
+    })
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(0, '127.0.0.1', resolve)
+    })
+
+    const address = server.address()
+    if (address == null || typeof address === 'string') {
+      throw new Error('TCP server did not bind to an IP port')
+    }
+
+    const connectSpy = Sinon.spy(net, 'connect')
+
+    try {
+      await transport.dial(multiaddr(`/ip4/127.0.0.1/tcp/${address.port}`), {
+        upgrader,
+        signal: AbortSignal.timeout(5_000)
+      })
+
+      const socket = connectSpy.returnValues[0]
+      if (socket == null) {
+        throw new Error('TCP transport did not open a socket')
+      }
+
+      expect(socket.closed).to.be.false()
+      await stop(transport)
       expect(socket.closed).to.be.true()
     } finally {
       connectSpy.restore()
