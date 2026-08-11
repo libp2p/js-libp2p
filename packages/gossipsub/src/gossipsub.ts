@@ -2589,7 +2589,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     onUnsubscribe: boolean
   ): Promise<RPC.ControlPrune> {
     this.score.prune(id, topic)
-    if (this.streamsOutbound.get(id)?.protocol === constants.GossipsubIDv10) {
+    if (!constants.protocolSupportsFeature(this.streamsOutbound.get(id)?.protocol, constants.GossipsubFeature.Backoff)) {
       // Gossipsub v1.0 -- no backoff, the peer won't be able to parse it anyway
       return {
         topicID: topic,
