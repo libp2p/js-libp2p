@@ -250,7 +250,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   private readonly idontwantCounts = new Map<PeerIdStr, number>()
 
   /**
-   * Tracks IDONTWANT messages received by peers and the heartbeat they were received in
+   * Tracks IDONTWANT messages received by peers and the heartbeat they were received in.
+   * Message sends in the forward and publish paths are skipped for peers with an entry
+   * here, per the v1.2 spec.
    *
    * idontwants are stored for `mcacheLength` heartbeats before being pruned,
    * so this map is bounded by peerCount * idontwantMaxMessages * mcacheLength
@@ -2090,6 +2092,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     // forward the message to peers
     tosend.forEach((id) => {
+      // skip peers that told us they already have the message
+      if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+        tosend.delete(id)
+        this.metrics?.onIdontwantSkippedSend('forward')
+        return
+      }
+
       // sendRpc may mutate RPC message on piggyback, create a new message for each peer
       this.sendRpc(id, createGossipRpc([rawMsg]))
     })

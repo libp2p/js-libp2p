@@ -8,12 +8,15 @@ import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { concat } from 'uint8arrays'
+import { concat, equals as uint8ArrayEquals } from 'uint8arrays'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { FloodsubID, GossipsubDhi, GossipsubFeature, GossipsubIDv10, GossipsubIDv11, GossipsubIDv12, GossipsubVersionLadder, protocolSupportsFeature } from '../src/constants.ts'
 import { GossipSub as GossipSubClass } from '../src/gossipsub.ts'
+import { TopicValidatorResult } from '../src/index.ts'
+import { messageIdToString } from '../src/utils/messageIdToString.ts'
 import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
+import type { Message } from '../src/index.ts'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { SinonStubbedInstance } from 'sinon'
@@ -240,6 +243,129 @@ describe('gossip', () => {
     expect(legacyNode.pubsub['idontwants'].size, 'v1.1 peer should not receive IDONTWANT').to.equal(0)
     const v12PeersWithIdontwants = nodes.slice(2).filter((n) => n.pubsub['idontwants'].size > 0)
     expect(v12PeersWithIdontwants, 'v1.2 peers should receive IDONTWANT').to.have.length.greaterThan(0)
+  })
+
+  it('should not forward messages to peers that sent IDONTWANT', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    // use content-derived message ids so ids are known before publishing
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0)
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    // metrics are disabled in tests - install a stub for the metric under test that
+    // ignores every other metric call
+    const onIdontwantSkippedSend = sinon.stub()
+    const noopMetric: any = new Proxy(() => noopMetric, { get: () => noopMetric })
+    ;(nodeA.pubsub as any).metrics = new Proxy({}, {
+      get: (_target, prop) => (prop === 'onIdontwantSkippedSend' ? onIdontwantSkippedSend : noopMetric)
+    })
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      sendRpc: GossipSubClass['sendRpc']
+    }
+    const sendRpcSpy = sinon.spy(pubsubA, 'sendRpc')
+
+    // B tells A it does not want the message before the message is published
+    const refused = uint8ArrayFromString('b-does-not-want-this-message')
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [refused] }])
+
+    const receivedRefused = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, refused)
+    await receivedRefused
+
+    // control: a message B did not refuse is forwarded to B as usual
+    const wanted = uint8ArrayFromString('b-wants-this-message')
+    const receivedWanted = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, wanted)
+    await receivedWanted
+
+    const msgsSentToB = sendRpcSpy.getCalls()
+      .filter((call) => call.args[0] === nodeBId)
+      .flatMap((call) => call.args[1].messages ?? [])
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, refused)), 'must not forward to a peer that sent IDONTWANT').to.be.false()
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, wanted)), 'must forward messages the peer did not refuse').to.be.true()
+    expect(onIdontwantSkippedSend.calledWith('forward'), 'must count the skipped send').to.be.true()
+  })
+
+  it('should not forward to peers whose IDONTWANT arrives during validation', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    // use content-derived message ids so ids are known before publishing
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0)
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      idontwants: Map<string, Map<string, number>>
+      sendRpc: GossipSubClass['sendRpc']
+    }
+    const sendRpcSpy = sinon.spy(pubsubA, 'sendRpc')
+
+    // hold nodeA's validation open until B's IDONTWANT has arrived
+    let resolveValidation: () => void = () => {}
+    const validationGate = new Promise<void>((resolve) => { resolveValidation = resolve })
+    nodeA.pubsub.topicValidators.set(topic, async () => {
+      await validationGate
+      return TopicValidatorResult.Accept
+    })
+
+    // the message is big enough that every receiver broadcasts IDONTWANT for it
+    const idontwantMinDataSize = nodeA.pubsub.opts.idontwantMinDataSize
+    const data = concat([uint8ArrayFromString('validation-race'), new Uint8Array(idontwantMinDataSize)])
+
+    const received = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, data)
+
+    // B received the message from C and broadcast IDONTWANT - wait for A to track it,
+    // then let A's validation finish
+    await pWaitFor(() => pubsubA.idontwants.get(nodeBId)?.has(messageIdToString(data)) === true)
+    resolveValidation()
+    await received
+
+    // control: a small message (no IDONTWANT broadcast) passes validation and is forwarded
+    nodeA.pubsub.topicValidators.delete(topic)
+    const wanted = uint8ArrayFromString('no-idontwant-race')
+    const receivedWanted = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, wanted)
+    await receivedWanted
+
+    const msgsSentToB = sendRpcSpy.getCalls()
+      .filter((call) => call.args[0] === nodeBId)
+      .flatMap((call) => call.args[1].messages ?? [])
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, data)), 'must not forward after IDONTWANT arrived during validation').to.be.false()
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, wanted)), 'must forward messages the peer did not refuse').to.be.true()
   })
 
   it('Should allow publishing to zero peers if flag is passed', async function () {
