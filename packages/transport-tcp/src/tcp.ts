@@ -83,12 +83,11 @@ export class TCP implements Transport<TCPDialEvents>, Startable {
     const socketClosedPromises: Array<Promise<unknown>> = []
 
     for (const socket of this.outboundSockets) {
-      if (socket.closed) {
-        continue
-      }
-
       socketClosedPromises.push(pEvent(socket, 'close', { rejectionEvents: [] }))
-      socket.destroy()
+
+      if (!socket.destroyed) {
+        socket.destroy()
+      }
     }
 
     await Promise.all(socketClosedPromises)

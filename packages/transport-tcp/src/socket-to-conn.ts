@@ -123,6 +123,12 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   sendReset (): void {
+    // Node.js cannot reset a socket while a graceful shutdown request is pending
+    if (this.socket.writableEnded) {
+      this.socket.destroy()
+      return
+    }
+
     this.socket.resetAndDestroy()
   }
 

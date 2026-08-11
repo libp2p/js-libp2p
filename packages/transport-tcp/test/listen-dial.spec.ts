@@ -10,7 +10,7 @@ import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.js'
-import type { Connection, Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { Connection, Listener, MultiaddrConnection, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 
@@ -282,6 +282,118 @@ describe('dial', () => {
 
       expect(socket.closed).to.be.false()
       await stop(transport)
+      expect(socket.closed).to.be.true()
+    } finally {
+      connectSpy.restore()
+      await new Promise<void>(resolve => {
+        server.close(() => { resolve() })
+      })
+    }
+  })
+
+  it('waits for reset outbound sockets to emit close when stopped', async () => {
+    const server = net.createServer(socket => {
+      socket.on('error', () => {})
+    })
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(0, '127.0.0.1', resolve)
+    })
+
+    const address = server.address()
+    if (address == null || typeof address === 'string') {
+      throw new Error('TCP server did not bind to an IP port')
+    }
+
+    const connectSpy = Sinon.spy(net, 'connect')
+    const tcpTransport = tcp()({ logger: defaultLogger() })
+    let maConn: MultiaddrConnection | undefined
+
+    try {
+      await tcpTransport.dial(multiaddr(`/ip4/127.0.0.1/tcp/${address.port}`), {
+        upgrader: stubInterface<Upgrader>({
+          upgradeOutbound: async (connection) => {
+            maConn = connection
+
+            return stubInterface<Connection>({
+              remoteAddr: connection.remoteAddr
+            })
+          }
+        }),
+        signal: AbortSignal.timeout(5_000)
+      })
+
+      const socket = connectSpy.returnValues[0]
+      if (socket == null || maConn == null) {
+        throw new Error('TCP transport did not open a socket')
+      }
+
+      let socketClosed = false
+      socket.once('close', () => {
+        socketClosed = true
+      })
+
+      maConn.abort(new Error('connection aborted'))
+
+      expect(socket.closed).to.be.true()
+      expect(socketClosed).to.be.false()
+
+      await stop(tcpTransport)
+
+      expect(socketClosed).to.be.true()
+    } finally {
+      connectSpy.restore()
+      await new Promise<void>(resolve => {
+        server.close(() => { resolve() })
+      })
+    }
+  })
+
+  it('closes an outbound socket when abort races graceful close', async () => {
+    const server = net.createServer(socket => {
+      socket.on('error', () => {})
+    })
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(0, '127.0.0.1', resolve)
+    })
+
+    const address = server.address()
+    if (address == null || typeof address === 'string') {
+      throw new Error('TCP server did not bind to an IP port')
+    }
+
+    const connectSpy = Sinon.spy(net, 'connect')
+    const tcpTransport = tcp()({ logger: defaultLogger() })
+    let maConn: MultiaddrConnection | undefined
+
+    try {
+      await tcpTransport.dial(multiaddr(`/ip4/127.0.0.1/tcp/${address.port}`), {
+        upgrader: stubInterface<Upgrader>({
+          upgradeOutbound: async (connection) => {
+            maConn = connection
+
+            return stubInterface<Connection>({
+              remoteAddr: connection.remoteAddr
+            })
+          }
+        }),
+        signal: AbortSignal.timeout(5_000)
+      })
+
+      const socket = connectSpy.returnValues[0]
+      if (socket == null || maConn == null) {
+        throw new Error('TCP transport did not open a socket')
+      }
+
+      const closePromise = maConn.close()
+      expect(socket.writableEnded).to.be.true()
+
+      maConn.abort(new Error('connection aborted while closing'))
+
+      await closePromise
+      await stop(tcpTransport)
+
       expect(socket.closed).to.be.true()
     } finally {
       connectSpy.restore()
