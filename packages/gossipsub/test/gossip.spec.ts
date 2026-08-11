@@ -10,7 +10,7 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { concat } from 'uint8arrays'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { GossipsubDhi } from '../src/constants.ts'
+import { FloodsubID, GossipsubDhi, GossipsubFeature, GossipsubIDv10, GossipsubIDv11, GossipsubIDv12, GossipsubVersionLadder, protocolSupportsFeature } from '../src/constants.ts'
 import { GossipSub as GossipSubClass } from '../src/gossipsub.ts'
 import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
@@ -598,5 +598,34 @@ describe('gossip', () => {
     expect(registrar.handle.getCall(0)).to.have.nested.property('args[2].maxOutboundStreams', maxOutboundStreams)
 
     await pubsub.stop()
+  })
+})
+
+describe('protocolSupportsFeature', () => {
+  it('should support IDONTWANT from gossipsub v1.2 onward', () => {
+    expect(protocolSupportsFeature(GossipsubIDv10, GossipsubFeature.IDontWant)).to.be.false()
+    expect(protocolSupportsFeature(GossipsubIDv11, GossipsubFeature.IDontWant)).to.be.false()
+
+    // every ladder entry from v1.2 onward supports IDONTWANT, including versions appended later
+    for (const protocol of GossipsubVersionLadder.slice(GossipsubVersionLadder.indexOf(GossipsubIDv12))) {
+      expect(protocolSupportsFeature(protocol, GossipsubFeature.IDontWant), protocol).to.be.true()
+    }
+  })
+
+  it('should support PRUNE backoff from gossipsub v1.1 onward', () => {
+    expect(protocolSupportsFeature(GossipsubIDv10, GossipsubFeature.Backoff)).to.be.false()
+
+    // every ladder entry from v1.1 onward supports backoff, including versions appended later
+    for (const protocol of GossipsubVersionLadder.slice(GossipsubVersionLadder.indexOf(GossipsubIDv11))) {
+      expect(protocolSupportsFeature(protocol, GossipsubFeature.Backoff), protocol).to.be.true()
+    }
+  })
+
+  it('should support no features for protocols not on the version ladder', () => {
+    for (const feature of Object.values(GossipsubFeature)) {
+      expect(protocolSupportsFeature(FloodsubID, feature), feature).to.be.false()
+      expect(protocolSupportsFeature('/unknown/1.0.0', feature), feature).to.be.false()
+      expect(protocolSupportsFeature(undefined, feature), feature).to.be.false()
+    }
   })
 })
