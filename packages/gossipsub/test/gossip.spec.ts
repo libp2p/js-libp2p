@@ -14,7 +14,7 @@ import { FloodsubID, GossipsubDhi, GossipsubFeature, GossipsubIDv10, GossipsubID
 import { GossipSub as GossipSubClass } from '../src/gossipsub.ts'
 import { TopicValidatorResult } from '../src/index.ts'
 import { messageIdToString } from '../src/utils/messageIdToString.ts'
-import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.ts'
+import { connectAllPubSubNodes, connectPubsubNodes, createComponentsArray } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 import type { GossipsubMessage, Message } from '../src/index.ts'
 import type { PeerStore } from '@libp2p/interface'
@@ -366,6 +366,98 @@ describe('gossip', () => {
       .flatMap((call) => call.args[1].messages ?? [])
     expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, data)), 'must not forward after IDONTWANT arrived during validation').to.be.false()
     expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, wanted)), 'must forward messages the peer did not refuse').to.be.true()
+  })
+
+  it('should not suppress forwarding for ids beyond the idontwant cap', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    const idontwantMaxMessages = 4
+    // use content-derived message ids so ids are known before publishing
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0),
+        idontwantMaxMessages
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      sendRpc: GossipSubClass['sendRpc']
+    }
+    const sendRpcSpy = sinon.spy(pubsubA, 'sendRpc')
+
+    // B sends one more IDONTWANT than the per-heartbeat cap allows - the cap bounds
+    // how much suppression a peer can impose
+    const withinCap = Array.from({ length: idontwantMaxMessages }, (_, i) => uint8ArrayFromString(`within-cap-${i}`))
+    const overCap = uint8ArrayFromString('over-cap-not-tracked')
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [...withinCap, overCap] }])
+
+    // a message whose id fell beyond the cap is still forwarded to B
+    const receivedOverCap = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, overCap)
+    await receivedOverCap
+
+    // a message whose id was tracked within the cap is suppressed
+    const receivedWithinCap = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, withinCap[0])
+    await receivedWithinCap
+
+    const msgsSentToB = sendRpcSpy.getCalls()
+      .filter((call) => call.args[0] === nodeBId)
+      .flatMap((call) => call.args[1].messages ?? [])
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, overCap)), 'ids beyond the cap must not suppress forwarding').to.be.true()
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, withinCap[0])), 'ids within the cap must suppress forwarding').to.be.false()
+  })
+
+  it('should drop tracked idontwants when the peer disconnects', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    const duo = await createComponentsArray({
+      number: 2,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 }
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...duo)
+    const [nodeA, nodeB] = duo
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = duo.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    duo.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(duo)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(duo.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      idontwants: Map<string, Map<string, number>>
+    }
+
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [uint8ArrayFromString('refused-before-disconnect')] }])
+    expect(pubsubA.idontwants.get(nodeBId)?.size).to.equal(1)
+
+    // suppression state must not survive the peer disconnecting
+    await nodeA.components.connectionManager.closeConnections(nodeB.components.peerId)
+    expect(pubsubA.idontwants.has(nodeBId), 'idontwants must be dropped on disconnect').to.be.false()
+
+    // and a reconnected peer starts with a clean slate
+    await connectPubsubNodes(nodeA, nodeB)
+    expect(pubsubA.idontwants.has(nodeBId)).to.be.false()
   })
 
   const batchPublishCases = [false, true]
