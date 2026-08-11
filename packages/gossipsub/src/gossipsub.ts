@@ -2354,11 +2354,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     // don't send IDONTWANT to:
     // - the source
-    // - peers that don't support v1.2
+    // - peers whose negotiated protocol doesn't support IDONTWANT
     const tosend = new Set(ids)
     tosend.delete(source)
     for (const id of tosend) {
-      if (this.streamsOutbound.get(id)?.protocol !== constants.GossipsubIDv12) {
+      if (!constants.protocolSupportsFeature(this.streamsOutbound.get(id)?.protocol, constants.GossipsubFeature.IDontWant)) {
         tosend.delete(id)
       }
     }

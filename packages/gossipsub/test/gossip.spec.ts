@@ -216,6 +216,32 @@ describe('gossip', () => {
     expect(pubsub.idontwants.get(peerId)?.size).to.equal(0)
   })
 
+  it('should not send idontwant to peers on protocols below v1.2', async function () {
+    this.timeout(10e4)
+    // this node only speaks gossipsub v1.1 and so must never receive IDONTWANT
+    const legacyNode = nodes[1]
+    legacyNode.pubsub.protocols = [GossipsubIDv11, GossipsubIDv10]
+
+    const topic = 'Z'
+    const subscriptionPromises = nodes.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    nodes.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(nodes)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(nodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    // publish a message big enough to trigger IDONTWANT on every receiver
+    const idontwantMinDataSize = nodes[0].pubsub.opts.idontwantMinDataSize
+    await nodes[0].pubsub.publish(topic, new Uint8Array(idontwantMinDataSize + 1))
+
+    // wait for the message and the resulting IDONTWANTs to propagate
+    await Promise.all(nodes.slice(1).map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    // v1.2 receivers exchanged IDONTWANTs with each other, the v1.1 peer got none
+    expect(legacyNode.pubsub['idontwants'].size, 'v1.1 peer should not receive IDONTWANT').to.equal(0)
+    const v12PeersWithIdontwants = nodes.slice(2).filter((n) => n.pubsub['idontwants'].size > 0)
+    expect(v12PeersWithIdontwants, 'v1.2 peers should receive IDONTWANT').to.have.length.greaterThan(0)
+  })
+
   it('Should allow publishing to zero peers if flag is passed', async function () {
     this.timeout(10e4)
     const nodeA = nodes[0]
