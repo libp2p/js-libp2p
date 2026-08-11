@@ -123,6 +123,11 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   sendReset (): void {
+    if (this.socket.writableEnded) {
+      this.socket.destroy()
+      return
+    }
+
     this.socket.resetAndDestroy()
   }
 
