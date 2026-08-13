@@ -106,6 +106,13 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.4.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.2...kad-dht-v16.4.3) (2026-08-13)
+
+
+### Bug Fixes
+
+* log datastore key as string ([#3590](https://github.com/libp2p/js-libp2p/issues/3590)) ([47cf9cd](https://github.com/libp2p/js-libp2p/commit/47cf9cdc15a465f84df11f4add0f15110d0c870a))
+
 ## [16.4.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.1...kad-dht-v16.4.2) (2026-07-30)
 
 
