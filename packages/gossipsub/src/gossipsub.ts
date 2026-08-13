@@ -704,6 +704,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.log('send subscriptions to', id)
         this.sendSubscriptions(id, Array.from(this.subscriptions), true)
       }
+
+      // now the outbound stream is up, graft any peer we already know is subscribed
+      // but could not graft when their SUBSCRIBE arrived because the stream was not
+      // ready yet
+      this.graftEstablishedSubscribers(id)
     } catch (e) {
       this.log.error('createOutboundStream error', e)
     }
@@ -2333,6 +2338,38 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     this.addToMesh(id, topic, InclusionReason.Subscribed)
     return true
+  }
+
+  /**
+   * The mirror of graft-on-subscribe, triggered when our outbound stream to a peer
+   * becomes available rather than when their SUBSCRIBE is received.
+   *
+   * graftOnSubscribe can only add a peer to the mesh once we have an outbound stream
+   * to them (the same guard the heartbeat applies). When a peer's SUBSCRIBE is handled
+   * before that stream exists the graft is refused, and the peer would then wait for
+   * the next heartbeat. Grafting here as well means a known subscriber joins the mesh
+   * as soon as both the subscription is known and the stream is up, in whichever order
+   * those happen, without depending on the peer grafting us back.
+   *
+   * rust-libp2p does this more directly, and earlier: it grafts while handling the
+   * SUBSCRIBE and queues the GRAFT into a per-peer send queue that the connection
+   * handler drains once a substream exists (behaviour.rs `send_message`), rather than
+   * requiring an outbound stream up front. js keeps mesh membership tied to a live
+   * outbound stream, so it grafts on stream-open as a second trigger instead.
+   */
+  private graftEstablishedSubscribers (id: PeerIdStr): void {
+    const graftTopics: TopicStr[] = []
+
+    for (const topic of this.subscriptions) {
+      // only peers we already know are subscribed to a topic we belong to
+      if (this.topics.get(topic)?.has(id) === true && this.graftOnSubscribe(id, topic)) {
+        graftTopics.push(topic)
+      }
+    }
+
+    if (graftTopics.length > 0) {
+      this.sendGraft(id, graftTopics)
+    }
   }
 
   /**
