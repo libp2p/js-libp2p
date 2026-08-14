@@ -4,6 +4,8 @@ import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { INVALID_PSK } from '../src/errors.ts'
 import { preSharedKey, generateKey } from '../src/index.ts'
+import type { StreamCloseEvent } from '@libp2p/interface'
+import type xsalsa20 from 'xsalsa20'
 
 const swarmKeyBuffer = new Uint8Array(95)
 const wrongSwarmKeyBuffer = new Uint8Array(95)
@@ -50,6 +52,47 @@ describe('private network', () => {
     ])
 
     expect(output).to.deep.equal([uint8ArrayFromString('hello world'), uint8ArrayFromString('doo dah')])
+  })
+
+  it('should abort the connection when the cipher throws on inbound data', async () => {
+    const [outboundConnection, inboundConnection] = multiaddrConnectionPair({
+      delay: 10
+    })
+
+    const protector = preSharedKey({
+      psk: swarmKeyBuffer
+    })()
+
+    const [outbound, inbound] = await Promise.all([
+      protector.protect(outboundConnection),
+      protector.protect(inboundConnection)
+    ])
+
+    const err = new Error('cipher failed')
+
+    // stub the cipher to throw, as it does when the xsalsa20 wasm memory limit
+    // is reached
+    const cipher: xsalsa20.Xor = {
+      update: () => {
+        throw err
+      },
+      finalize: () => {}
+    }
+
+    // @ts-expect-error inboundXor is a private field
+    inbound.inboundXor = cipher
+
+    outbound.send(uint8ArrayFromString('hello world'))
+
+    const [evt] = await Promise.all([
+      pEvent<'close', StreamCloseEvent>(inbound, 'close'),
+      pEvent(outbound, 'close')
+    ])
+
+    expect(evt.error).to.equal(err)
+    expect(inbound).to.have.property('status', 'aborted')
+    expect(inboundConnection).to.have.property('status', 'aborted')
+    expect(outbound).to.have.property('status', 'reset')
   })
 
   it('should forward drain events from the underlying connection', async () => {
