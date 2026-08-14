@@ -18,7 +18,7 @@
  * ```
  */
 
-import { TLS } from './tls.js'
+import { TLS } from './tls.ts'
 import type { ComponentLogger, ConnectionEncrypter, Metrics, PrivateKey, Upgrader } from '@libp2p/interface'
 
 export const PROTOCOL = '/tls/1.0.0'

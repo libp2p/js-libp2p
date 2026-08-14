@@ -5,8 +5,8 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import random from 'lodash.random'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Message, MessageType } from '../src/message/dht.js'
-import { toPbPeerInfo } from '../src/message/utils.js'
+import { Message, MessageType } from '../src/message/dht.ts'
+import { toPbPeerInfo } from '../src/message/utils.ts'
 
 describe('Message', () => {
   it('serialize & deserialize', async function () {

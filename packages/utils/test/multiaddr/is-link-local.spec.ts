@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { isLinkLocal } from '../../src/multiaddr/is-link-local.js'
+import { isLinkLocal } from '../../src/multiaddr/is-link-local.ts'
 
 describe('multiaddr isLinkLocal', () => {
   it('identifies link-local ip4 multiaddrs', () => {

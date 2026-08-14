@@ -6,13 +6,13 @@ import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import getPort from 'get-port'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import pWaitFor from 'p-wait-for'
-import { connect } from './utils/connect.js'
-import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
-import { stunListener } from './utils/stun-listener.js'
-import type { DataChannelOptions, TransportCertificate } from '../index.js'
-import type { WebRTCDirectTransportCertificateEvents } from './transport.js'
-import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.js'
-import type { StunServer } from './utils/stun-listener.js'
+import { connect } from './utils/connect.ts'
+import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.ts'
+import { stunListener } from './utils/stun-listener.ts'
+import type { DataChannelOptions, TransportCertificate } from '../index.ts'
+import type { WebRTCDirectTransportCertificateEvents } from './transport.ts'
+import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.ts'
+import type { StunServer } from './utils/stun-listener.ts'
 import type { PeerId, ListenerEvents, Listener, Upgrader, ComponentLogger, Logger, CounterGroup, Metrics, PrivateKey } from '@libp2p/interface'
 import type { Keychain } from '@libp2p/keychain'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -34,6 +34,7 @@ export interface WebRTCDirectListenerInit {
   upgrader: Upgrader
   certificate: TransportCertificate
   maxInboundStreams?: number
+  maxEarlyStreams?: number
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
@@ -189,7 +190,9 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       rtcConfiguration: this.init.rtcConfiguration,
       certificate: this.certificate,
       events: this.metrics?.listenerEvents,
-      dataChannel: this.init.dataChannel
+      log: this.log,
+      dataChannel: this.init.dataChannel,
+      maxEarlyStreams: this.init.maxEarlyStreams
     })
     peerConnection = results.peerConnection
 

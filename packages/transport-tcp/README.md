@@ -24,7 +24,7 @@ repo and examine the changes made.
 
 -->
 
-A [libp2p transport](https://docs.libp2p.io/concepts/transports/overview/) based on the TCP networking stack.
+A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on the TCP networking stack.
 
 ## Example
 

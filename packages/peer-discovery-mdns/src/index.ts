@@ -77,8 +77,8 @@
  * ```
  */
 
-import { MulticastDNS } from './mdns.js'
-import type { MulticastDNSInit, MulticastDNSComponents } from './mdns.js'
+import { MulticastDNS } from './mdns.ts'
+import type { MulticastDNSInit, MulticastDNSComponents } from './mdns.ts'
 import type { PeerDiscovery } from '@libp2p/interface'
 
 export type { MulticastDNSInit, MulticastDNSComponents }

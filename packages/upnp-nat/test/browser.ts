@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import { TypedEventEmitter } from 'main-event'
 import { stubInterface } from 'sinon-ts'
 import { isBrowser, isWebWorker } from 'wherearewe'
-import { uPnPNAT } from '../src/index.js'
+import { uPnPNAT } from '../src/index.ts'
 import type { AddressManager } from '@libp2p/interface-internal'
 
 describe('browser non-support', () => {

@@ -4,7 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { pEvent } from 'p-event'
-import { toMultiaddrConnection } from '../src/socket-to-conn.js'
+import { toMultiaddrConnection } from '../src/socket-to-conn.ts'
 import type { Server, ServerOpts, SocketConstructorOpts } from 'node:net'
 
 interface TestOptions {

@@ -1,4 +1,4 @@
-import { generateEphemeralKeyPair } from './ecdh/index.js'
+import { generateEphemeralKeyPair } from './ecdh/index.ts'
 
 /**
  * Generates an ephemeral public key and returns a function that will compute

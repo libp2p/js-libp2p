@@ -5,6 +5,115 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [2.0.20](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.19...simple-metrics-v2.0.20) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+
+## [2.0.19](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.18...simple-metrics-v2.0.19) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+
+## [2.0.18](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.17...simple-metrics-v2.0.18) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+
+## [2.0.17](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.16...simple-metrics-v2.0.17) (2026-06-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+
+## [2.0.16](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.15...simple-metrics-v2.0.16) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+
+## [2.0.15](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.14...simple-metrics-v2.0.15) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+
+## [2.0.14](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.13...simple-metrics-v2.0.14) (2026-04-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/logger bumped from ^6.2.5 to ^6.2.6
+
+## [2.0.13](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.12...simple-metrics-v2.0.13) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/logger bumped from ^6.2.4 to ^6.2.5
+
+## [2.0.12](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.11...simple-metrics-v2.0.12) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/logger bumped from ^6.2.3 to ^6.2.4
+
+## [2.0.11](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.10...simple-metrics-v2.0.11) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/logger bumped from ^6.2.2 to ^6.2.3
+
 ## [2.0.10](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.9...simple-metrics-v2.0.10) (2026-03-04)
 
 

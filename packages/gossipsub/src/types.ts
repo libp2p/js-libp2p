@@ -1,6 +1,6 @@
 import { TopicValidatorResult } from './index.ts'
 import type { Message } from './index.ts'
-import type { RPC } from './message/rpc.js'
+import type { RPC } from './message/rpc.ts'
 import type { PrivateKey, PeerId } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

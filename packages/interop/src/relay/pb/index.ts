@@ -1,5 +1,6 @@
-import { enumeration, encodeMessage, decodeMessage, message } from 'protons-runtime'
-import type { Codec } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message, streamMessage } from 'protons-runtime'
+import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
+import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface HopMessage {
@@ -66,7 +67,7 @@ export namespace HopMessage {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -75,40 +76,151 @@ export namespace HopMessage {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.type = HopMessage.Type.codec().decode(reader)
               break
-            case 2:
-              obj.peer = Peer.codec().decode(reader, reader.uint32())
+            }
+            case 2: {
+              obj.peer = Peer.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.peer
+              })
               break
-            case 3:
-              obj.reservation = Reservation.codec().decode(reader, reader.uint32())
+            }
+            case 3: {
+              obj.reservation = Reservation.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.reservation
+              })
               break
-            case 4:
-              obj.limit = Limit.codec().decode(reader, reader.uint32())
+            }
+            case 4: {
+              obj.limit = Limit.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.limit
+              })
               break
-            case 5:
+            }
+            case 5: {
               obj.status = Status.codec().decode(reader)
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.type`,
+                value: HopMessage.Type.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield * Peer.codec().stream(reader, reader.uint32(), `${prefix}.peer`, {
+                limits: opts.limits?.peer
+              })
+
+              break
+            }
+            case 3: {
+              yield * Reservation.codec().stream(reader, reader.uint32(), `${prefix}.reservation`, {
+                limits: opts.limits?.reservation
+              })
+
+              break
+            }
+            case 4: {
+              yield * Limit.codec().stream(reader, reader.uint32(), `${prefix}.limit`, {
+                limits: opts.limits?.limit
+              })
+
+              break
+            }
+            case 5: {
+              yield {
+                field: `${prefix}.status`,
+                value: Status.codec().decode(reader)
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<HopMessage>): Uint8Array => {
+  export interface HopMessageTypeFieldEvent {
+    field: '$.type'
+    value: HopMessage.Type
+  }
+
+  export interface HopMessagePeerIdFieldEvent {
+    field: '$.peer.id'
+    value: Uint8Array
+  }
+
+  export interface HopMessagePeerAddrsFieldEvent {
+    field: '$.peer.addrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface HopMessageReservationExpireFieldEvent {
+    field: '$.reservation.expire'
+    value: bigint
+  }
+
+  export interface HopMessageReservationAddrsFieldEvent {
+    field: '$.reservation.addrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface HopMessageReservationVoucherFieldEvent {
+    field: '$.reservation.voucher'
+    value: Uint8Array
+  }
+
+  export interface HopMessageLimitDurationFieldEvent {
+    field: '$.limit.duration'
+    value: number
+  }
+
+  export interface HopMessageLimitDataFieldEvent {
+    field: '$.limit.data'
+    value: bigint
+  }
+
+  export interface HopMessageStatusFieldEvent {
+    field: '$.status'
+    value: Status
+  }
+
+  export function encode (obj: Partial<HopMessage>): Uint8Array {
     return encodeMessage(obj, HopMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): HopMessage => {
-    return decodeMessage(buf, HopMessage.codec())
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<HopMessage>): HopMessage {
+    return decodeMessage(buf, HopMessage.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<HopMessage>): Generator<HopMessageTypeFieldEvent | HopMessagePeerIdFieldEvent | HopMessagePeerAddrsFieldEvent | HopMessageReservationExpireFieldEvent | HopMessageReservationAddrsFieldEvent | HopMessageReservationVoucherFieldEvent | HopMessageLimitDurationFieldEvent | HopMessageLimitDataFieldEvent | HopMessageStatusFieldEvent> {
+    return streamMessage(buf, HopMessage.codec(), opts)
   }
 }
 
@@ -168,7 +280,7 @@ export namespace StopMessage {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -177,37 +289,122 @@ export namespace StopMessage {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.type = StopMessage.Type.codec().decode(reader)
               break
-            case 2:
-              obj.peer = Peer.codec().decode(reader, reader.uint32())
+            }
+            case 2: {
+              obj.peer = Peer.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.peer
+              })
               break
-            case 3:
-              obj.limit = Limit.codec().decode(reader, reader.uint32())
+            }
+            case 3: {
+              obj.limit = Limit.codec().decode(reader, reader.uint32(), {
+                limits: opts.limits?.limit
+              })
               break
-            case 4:
+            }
+            case 4: {
               obj.status = Status.codec().decode(reader)
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.type`,
+                value: StopMessage.Type.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield * Peer.codec().stream(reader, reader.uint32(), `${prefix}.peer`, {
+                limits: opts.limits?.peer
+              })
+
+              break
+            }
+            case 3: {
+              yield * Limit.codec().stream(reader, reader.uint32(), `${prefix}.limit`, {
+                limits: opts.limits?.limit
+              })
+
+              break
+            }
+            case 4: {
+              yield {
+                field: `${prefix}.status`,
+                value: Status.codec().decode(reader)
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<StopMessage>): Uint8Array => {
+  export interface StopMessageTypeFieldEvent {
+    field: '$.type'
+    value: StopMessage.Type
+  }
+
+  export interface StopMessagePeerIdFieldEvent {
+    field: '$.peer.id'
+    value: Uint8Array
+  }
+
+  export interface StopMessagePeerAddrsFieldEvent {
+    field: '$.peer.addrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface StopMessageLimitDurationFieldEvent {
+    field: '$.limit.duration'
+    value: number
+  }
+
+  export interface StopMessageLimitDataFieldEvent {
+    field: '$.limit.data'
+    value: bigint
+  }
+
+  export interface StopMessageStatusFieldEvent {
+    field: '$.status'
+    value: Status
+  }
+
+  export function encode (obj: Partial<StopMessage>): Uint8Array {
     return encodeMessage(obj, StopMessage.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): StopMessage => {
-    return decodeMessage(buf, StopMessage.codec())
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<StopMessage>): StopMessage {
+    return decodeMessage(buf, StopMessage.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<StopMessage>): Generator<StopMessageTypeFieldEvent | StopMessagePeerIdFieldEvent | StopMessagePeerAddrsFieldEvent | StopMessageLimitDurationFieldEvent | StopMessageLimitDataFieldEvent | StopMessageStatusFieldEvent> {
+    return streamMessage(buf, StopMessage.codec(), opts)
   }
 }
 
@@ -231,7 +428,7 @@ export namespace Peer {
           w.bytes(obj.id)
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(18)
             w.bytes(value)
@@ -241,9 +438,9 @@ export namespace Peer {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          id: new Uint8Array(0),
+          id: uint8ArrayAlloc(0),
           addrs: []
         }
 
@@ -253,31 +450,92 @@ export namespace Peer {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.id = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.addrs != null && obj.addrs.length === opts.limits.addrs) {
+                throw new MaxLengthError('Decode error - repeated field "addrs" had too many elements')
+              }
+
               obj.addrs.push(reader.bytes())
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const obj = {
+          addrs: 0
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.id`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              if (opts.limits?.addrs != null && obj.addrs === opts.limits.addrs) {
+                throw new MaxLengthError('Streaming decode error - repeated field "addrs" had too many elements')
+              }
+
+              yield {
+                field: `${prefix}.addrs[]`,
+                index: obj.addrs,
+                value: reader.bytes()
+              }
+
+              obj.addrs++
+
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Peer>): Uint8Array => {
+  export interface PeerIdFieldEvent {
+    field: '$.id'
+    value: Uint8Array
+  }
+
+  export interface PeerAddrsFieldEvent {
+    field: '$.addrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<Peer>): Uint8Array {
     return encodeMessage(obj, Peer.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Peer => {
-    return decodeMessage(buf, Peer.codec())
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer>): Peer {
+    return decodeMessage(buf, Peer.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer>): Generator<PeerIdFieldEvent | PeerAddrsFieldEvent> {
+    return streamMessage(buf, Peer.codec(), opts)
   }
 }
 
@@ -302,7 +560,7 @@ export namespace Reservation {
           w.uint64(obj.expire)
         }
 
-        if (obj.addrs != null) {
+        if (obj.addrs != null && obj.addrs.length > 0) {
           for (const value of obj.addrs) {
             w.uint32(18)
             w.bytes(value)
@@ -317,7 +575,7 @@ export namespace Reservation {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
           expire: 0n,
           addrs: []
@@ -329,34 +587,108 @@ export namespace Reservation {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.expire = reader.uint64()
               break
-            case 2:
+            }
+            case 2: {
+              if (opts.limits?.addrs != null && obj.addrs.length === opts.limits.addrs) {
+                throw new MaxLengthError('Decode error - repeated field "addrs" had too many elements')
+              }
+
               obj.addrs.push(reader.bytes())
               break
-            case 3:
+            }
+            case 3: {
               obj.voucher = reader.bytes()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const obj = {
+          addrs: 0
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.expire`,
+                value: reader.uint64()
+              }
+              break
+            }
+            case 2: {
+              if (opts.limits?.addrs != null && obj.addrs === opts.limits.addrs) {
+                throw new MaxLengthError('Streaming decode error - repeated field "addrs" had too many elements')
+              }
+
+              yield {
+                field: `${prefix}.addrs[]`,
+                index: obj.addrs,
+                value: reader.bytes()
+              }
+
+              obj.addrs++
+
+              break
+            }
+            case 3: {
+              yield {
+                field: `${prefix}.voucher`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Reservation>): Uint8Array => {
+  export interface ReservationExpireFieldEvent {
+    field: '$.expire'
+    value: bigint
+  }
+
+  export interface ReservationAddrsFieldEvent {
+    field: '$.addrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface ReservationVoucherFieldEvent {
+    field: '$.voucher'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<Reservation>): Uint8Array {
     return encodeMessage(obj, Reservation.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Reservation => {
-    return decodeMessage(buf, Reservation.codec())
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Reservation>): Reservation {
+    return decodeMessage(buf, Reservation.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Reservation>): Generator<ReservationExpireFieldEvent | ReservationAddrsFieldEvent | ReservationVoucherFieldEvent> {
+    return streamMessage(buf, Reservation.codec(), opts)
   }
 }
 
@@ -388,7 +720,7 @@ export namespace Limit {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {}
 
         const end = length == null ? reader.len : reader.pos + length
@@ -397,31 +729,75 @@ export namespace Limit {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.duration = reader.uint32()
               break
-            case 2:
+            }
+            case 2: {
               obj.data = reader.uint64()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.duration`,
+                value: reader.uint32()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.data`,
+                value: reader.uint64()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Limit>): Uint8Array => {
+  export interface LimitDurationFieldEvent {
+    field: '$.duration'
+    value: number
+  }
+
+  export interface LimitDataFieldEvent {
+    field: '$.data'
+    value: bigint
+  }
+
+  export function encode (obj: Partial<Limit>): Uint8Array {
     return encodeMessage(obj, Limit.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): Limit => {
-    return decodeMessage(buf, Limit.codec())
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Limit>): Limit {
+    return decodeMessage(buf, Limit.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Limit>): Generator<LimitDurationFieldEvent | LimitDataFieldEvent> {
+    return streamMessage(buf, Limit.codec(), opts)
   }
 }
 
@@ -454,6 +830,7 @@ export namespace Status {
     return enumeration<Status>(__StatusValues)
   }
 }
+
 export interface ReservationVoucher {
   relay: Uint8Array
   peer: Uint8Array
@@ -488,10 +865,10 @@ export namespace ReservationVoucher {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length) => {
+      }, (reader, length, opts = {}) => {
         const obj: any = {
-          relay: new Uint8Array(0),
-          peer: new Uint8Array(0),
+          relay: uint8ArrayAlloc(0),
+          peer: uint8ArrayAlloc(0),
           expiration: 0n
         }
 
@@ -501,33 +878,90 @@ export namespace ReservationVoucher {
           const tag = reader.uint32()
 
           switch (tag >>> 3) {
-            case 1:
+            case 1: {
               obj.relay = reader.bytes()
               break
-            case 2:
+            }
+            case 2: {
               obj.peer = reader.bytes()
               break
-            case 3:
+            }
+            case 3: {
               obj.expiration = reader.uint64()
               break
-            default:
+            }
+            default: {
               reader.skipType(tag & 7)
               break
+            }
           }
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.relay`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.peer`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 3: {
+              yield {
+                field: `${prefix}.expiration`,
+                value: reader.uint64()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<ReservationVoucher>): Uint8Array => {
+  export interface ReservationVoucherRelayFieldEvent {
+    field: '$.relay'
+    value: Uint8Array
+  }
+
+  export interface ReservationVoucherPeerFieldEvent {
+    field: '$.peer'
+    value: Uint8Array
+  }
+
+  export interface ReservationVoucherExpirationFieldEvent {
+    field: '$.expiration'
+    value: bigint
+  }
+
+  export function encode (obj: Partial<ReservationVoucher>): Uint8Array {
     return encodeMessage(obj, ReservationVoucher.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList): ReservationVoucher => {
-    return decodeMessage(buf, ReservationVoucher.codec())
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ReservationVoucher>): ReservationVoucher {
+    return decodeMessage(buf, ReservationVoucher.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ReservationVoucher>): Generator<ReservationVoucherRelayFieldEvent | ReservationVoucherPeerFieldEvent | ReservationVoucherExpirationFieldEvent> {
+    return streamMessage(buf, ReservationVoucher.codec(), opts)
   }
 }

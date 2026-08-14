@@ -26,7 +26,7 @@ import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities, P
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { pbStream } from '@libp2p/utils'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { Exchange, KeyType } from './pb/proto.js'
+import { Exchange, KeyType } from './pb/proto.ts'
 import type { ComponentLogger, Logger, ConnectionEncrypter, SecuredConnection, PrivateKey, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
 
 const PROTOCOL = '/plaintext/2.0.0'

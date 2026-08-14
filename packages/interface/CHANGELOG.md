@@ -5,6 +5,57 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.2.5](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.4...interface-v3.2.5) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+
+## [3.2.4](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.3...interface-v3.2.4) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+
+## [3.2.3](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.2...interface-v3.2.3) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+
+## [3.2.2](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.1...interface-v3.2.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+## [3.2.1](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.0...interface-v3.2.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+## [3.2.0](https://github.com/libp2p/js-libp2p/compare/interface-v3.1.1...interface-v3.2.0) (2026-04-08)
+
+
+### Features
+
+* add DialTarget type ([#3428](https://github.com/libp2p/js-libp2p/issues/3428)) ([2a3e547](https://github.com/libp2p/js-libp2p/commit/2a3e547380a62dffae31f7b5423dfcf1fc0c7433))
+* add high-level connection and stream progress events ([#3429](https://github.com/libp2p/js-libp2p/issues/3429)) ([709b3fa](https://github.com/libp2p/js-libp2p/commit/709b3fa2e94d99c77d97df2dda39b431f8b92878))
+
+## [3.1.1](https://github.com/libp2p/js-libp2p/compare/interface-v3.1.0...interface-v3.1.1) (2026-03-27)
+
+
+### Documentation
+
+* repair broken links ([#3411](https://github.com/libp2p/js-libp2p/issues/3411)) ([dd251c5](https://github.com/libp2p/js-libp2p/commit/dd251c5e7986e920919ddcdad8fb6f75b4a9d889))
+
 ## [3.1.0](https://github.com/libp2p/js-libp2p/compare/interface-v3.0.2...interface-v3.1.0) (2025-10-29)
 
 

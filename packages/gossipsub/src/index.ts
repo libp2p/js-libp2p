@@ -1,11 +1,11 @@
-import * as constants from './constants.js'
+import * as constants from './constants.ts'
 import { GossipSub as GossipSubClass } from './gossipsub.ts'
-import { MessageCache } from './message-cache.js'
-import type { GossipsubOptsSpec } from './config.js'
-import type { DecodeRPCLimits } from './message/decodeRpc.js'
-import type { MetricsRegister, TopicStrToLabel } from './metrics.js'
-import type { PeerScoreParams, PeerScoreThresholds } from './score/index.js'
-import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn } from './types.js'
+import { MessageCache } from './message-cache.ts'
+import type { GossipsubOptsSpec } from './config.ts'
+import type { DecodeRPCLimits } from './message/decodeRpc.ts'
+import type { MetricsRegister, TopicStrToLabel } from './metrics.ts'
+import type { PeerScoreParams, PeerScoreThresholds } from './score/index.ts'
+import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToStrFn } from './types.ts'
 import type {
   PeerId, PeerStore,
   ComponentLogger,
@@ -196,6 +196,18 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
    * If provided, only allow topics in this list
    */
   allowedTopics?: string[] | Set<string>
+
+  /**
+   * A per-peer memory budget for tracking that peer's topic subscriptions. Each
+   * subscribed topic costs its string length plus a fixed per-entry overhead
+   * (~1 KiB, approximating the Map/Set bookkeeping), so this bounds both the
+   * total topic bytes and the number of topics a single peer may occupy in the
+   * topics map (roughly budget / 1 KiB topics). Subscriptions beyond the budget
+   * are ignored; a peer that reaches it silently stops receiving messages for
+   * further topics, so keep this well above any legitimate peer's needs.
+   * (default 1 MiB, ~1000 topics)
+   */
+  maxTopicBytesPerPeer?: number
 
   /**
    * Limits to bound protobuf decoding

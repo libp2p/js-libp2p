@@ -1,5 +1,158 @@
 # Changelog
 
+## [3.0.27](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.26...pnet-v3.0.27) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [3.0.26](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.25...pnet-v3.0.26) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [3.0.25](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.24...pnet-v3.0.25) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [3.0.24](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.23...pnet-v3.0.24) (2026-07-07)
+
+
+### Bug Fixes
+
+* **pnet:** forward drain events from the underlying connection ([#3552](https://github.com/libp2p/js-libp2p/issues/3552)) ([dd084c0](https://github.com/libp2p/js-libp2p/commit/dd084c0b267a85ad5db0e05ec1fa83f02fb525f5))
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
+## [3.0.23](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.22...pnet-v3.0.23) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
+## [3.0.22](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.21...pnet-v3.0.22) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+
+## [3.0.21](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.20...pnet-v3.0.21) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
+## [3.0.20](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.19...pnet-v3.0.20) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
+## [3.0.19](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.18...pnet-v3.0.19) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
+## [3.0.18](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.17...pnet-v3.0.18) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.16 to ^5.1.17
+    * @libp2p/interface bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/utils bumped from ^7.0.16 to ^7.0.17
+
+## [3.0.17](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.16...pnet-v3.0.17) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.15 to ^5.1.16
+    * @libp2p/interface bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/utils bumped from ^7.0.15 to ^7.0.16
+
+## [3.0.16](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.15...pnet-v3.0.16) (2026-04-08)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.14 to ^5.1.15
+    * @libp2p/interface bumped from ^3.1.1 to ^3.2.0
+    * @libp2p/utils bumped from ^7.0.14 to ^7.0.15
+
+## [3.0.15](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.14...pnet-v3.0.15) (2026-03-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.13 to ^5.1.14
+    * @libp2p/interface bumped from ^3.1.0 to ^3.1.1
+    * @libp2p/utils bumped from ^7.0.13 to ^7.0.14
+
 ## [3.0.14](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.13...pnet-v3.0.14) (2026-03-12)
 
 

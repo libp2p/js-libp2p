@@ -42,6 +42,11 @@ const node = await createLibp2p({
     autoNAT: autoNATv2()
   }
 })
+
+// observe per-address reachability changes as they are probed
+node.services.autoNAT.addEventListener('address:reachable', (evt) => {
+  console.info(evt.detail.addr, 'is externally dialable')
+})
 ```
 
 # Install
@@ -60,7 +65,7 @@ Loading this module through a script tag will make its exports available as `Lib
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_autonat_v2.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_autonat-v2.html>
 
 # License
 

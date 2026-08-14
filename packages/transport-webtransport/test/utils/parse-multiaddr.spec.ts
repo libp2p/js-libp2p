@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { base64url } from 'multiformats/bases/base64'
-import { parseMultiaddr } from '../../src/utils/parse-multiaddr.js'
+import { parseMultiaddr } from '../../src/utils/parse-multiaddr.ts'
 
 describe('parse multiaddr', () => {
   describe('valid addresses', () => {
@@ -50,6 +50,20 @@ describe('parse multiaddr', () => {
       expect(url).to.equal('https://[::1]:4001')
       expect(certhashes.map(hash => base64url.encode(hash.bytes))).to.deep.equal(certHashes)
       expect(remotePeer?.toString()).to.equal(targetPeer)
+    })
+
+    it('parses address without a peer id', () => {
+      const certHashes = [
+        'uEiCvU3clCu16U6Xjh9dzH7yKE2bkGftZw404nYMR6ZXIyg',
+        'uEiB8ZfHAe_lEBtxio0KQwmE8mFEesh3p_7-Ac5oOU7HhOw'
+      ]
+
+      const ma = multiaddr(`/ip4/154.38.162.255/udp/4001/quic-v1/webtransport/${certHashes.map(c => `certhash/${c}`).join('/')}`)
+      const { url, certhashes, remotePeer } = parseMultiaddr(ma)
+
+      expect(url).to.equal('https://154.38.162.255:4001')
+      expect(certhashes.map(hash => base64url.encode(hash.bytes))).to.deep.equal(certHashes)
+      expect(remotePeer).to.be.undefined()
     })
   })
 

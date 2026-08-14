@@ -3,7 +3,7 @@
 
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -11,8 +11,8 @@ import { TypedEventEmitter } from 'main-event'
 import pDefer from 'p-defer'
 import { pEvent } from 'p-event'
 import sinon from 'sinon'
-import { persistentPeerStore } from '../src/index.js'
-import { Peer as PeerPB } from '../src/pb/peer.js'
+import { persistentPeerStore } from '../src/index.ts'
+import { Peer as PeerPB } from '../src/pb/peer.ts'
 import type { Libp2pEvents, PeerId, PeerStore, PeerData, PeerUpdate } from '@libp2p/interface'
 import type { TypedEventTarget } from 'main-event'
 
@@ -161,7 +161,18 @@ describe('save', () => {
 
     await expect(peerStore.save(edKey, {
       publicKey: peerId.publicKey
-    })).to.eventually.be.rejectedWith(/bytes do not match/)
+    })).to.eventually.be.rejectedWith(/does not match peer id/)
+  })
+
+  it('should not set a public key that does not match an RSA peer id', async () => {
+    const rsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
+    // an RSA id resolved from its multihash has no embedded public key
+    const rsaPeerWithoutPublicKey = peerIdFromMultihash(rsaPeer.toMultihash())
+    const wrongKey = await generateKeyPair('Ed25519')
+
+    await expect(peerStore.save(rsaPeerWithoutPublicKey, {
+      publicKey: wrongKey.publicKey
+    })).to.eventually.be.rejectedWith(/does not match peer id/)
   })
 
   it('should not store a public key if already stored', async () => {

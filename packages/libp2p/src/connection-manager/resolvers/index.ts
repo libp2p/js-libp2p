@@ -56,4 +56,4 @@ export async function resolveMultiaddr (address: Multiaddr, resolvers: Record<st
   return output
 }
 
-export { dnsaddrResolver } from './dnsaddr.js'
+export { dnsaddrResolver } from './dnsaddr.ts'

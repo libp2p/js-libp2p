@@ -2,7 +2,7 @@ import { KEEP_ALIVE } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import { createLibp2p } from 'libp2p'
 import pWaitFor from 'p-wait-for'
-import { createBaseOptions } from './fixtures/base-options.js'
+import { createBaseOptions } from './fixtures/base-options.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('peers', () => {

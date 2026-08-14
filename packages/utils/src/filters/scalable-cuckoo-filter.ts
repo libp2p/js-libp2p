@@ -1,10 +1,10 @@
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { CuckooFilter, optimize } from './cuckoo-filter.js'
-import { fnv1a } from './hashes.js'
-import { getRandomInt } from './utils.js'
-import type { CuckooFilterInit } from './cuckoo-filter.js'
-import type { Hash } from './hashes.js'
-import type { Filter } from './index.js'
+import { CuckooFilter, optimize } from './cuckoo-filter.ts'
+import { fnv1a } from './hashes.ts'
+import { getRandomInt } from './utils.ts'
+import type { CuckooFilterInit } from './cuckoo-filter.ts'
+import type { Hash } from './hashes.ts'
+import type { Filter } from './index.ts'
 
 export interface ScalableCuckooFilterInit extends CuckooFilterInit {
   /**

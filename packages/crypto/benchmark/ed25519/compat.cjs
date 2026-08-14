@@ -21,7 +21,6 @@ const { fromString } = require('uint8arrays/from-string')
 
 const native = require('ed25519')
 const noble = require('@noble/ed25519')
-const { randomBytes } = noble.utils
 const { subtle } = require('crypto').webcrypto
 require('node-forge/lib/ed25519')
 const stable = require('@stablelib/ed25519')
@@ -61,7 +60,7 @@ const implementations = [{
   name: 'node-forge/ed25519',
   before: () => {},
   generateKeyPair: async () => {
-    const seed = randomBytes(32)
+    const seed = crypto.getRandomValues(new Uint8Array(32))
     const key = await forge.pki.ed25519.generateKeyPair({ seed })
 
     return {
@@ -100,7 +99,7 @@ const implementations = [{
 }, {
   name: 'native Ed25519',
   generateKeyPair: async () => {
-    const seed = randomBytes(32)
+    const seed = crypto.getRandomValues(new Uint8Array(32))
     const key = native.MakeKeypair(seed)
 
     return {

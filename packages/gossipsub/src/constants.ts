@@ -215,6 +215,11 @@ export const GossipsubMaxIHaveLength = 5000
 export const GossipsubMaxIHaveMessages = 10
 
 /**
+ * GossipsubMaxIWantMessages is the maximum number of IWANT messages to accept from a peer within a heartbeat.
+ */
+export const GossipsubMaxIWantMessages = 10
+
+/**
  * Time to wait for a message requested through IWANT following an IHAVE advertisement.
  * If the message is not received within this window, a broken promise is declared and
  * the router may apply bahavioural penalties.
@@ -259,3 +264,18 @@ export const BACKOFF_SLACK = 1
 
 export const GossipsubIdontwantMinDataSize = 512
 export const GossipsubIdontwantMaxMessages = 512
+
+/**
+ * The default per-peer memory budget for tracking a peer's topic subscriptions,
+ * bounding per-peer memory in the topics map. Each topic costs its string
+ * length plus GossipsubTopicEntryOverhead, so this bounds topic count as well
+ * as bytes (~1000 topics at the 1 MiB default).
+ */
+export const GossipsubMaxTopicBytesPerPeer = 1024 * 1024
+
+/**
+ * Approximate fixed heap cost of one topics-map entry (the Map slot, the Set,
+ * and the subscriber's peer id), charged per subscription on top of the topic
+ * string length so the per-peer budget bounds topic count as well as bytes.
+ */
+export const GossipsubTopicEntryOverhead = 1024

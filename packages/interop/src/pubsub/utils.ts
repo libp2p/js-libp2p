@@ -1,6 +1,6 @@
 import delay from 'delay'
 import pWaitFor from 'p-wait-for'
-import type { Daemon } from '../index.js'
+import type { Daemon } from '../index.ts'
 
 /**
  * Wait for daemon a to see daemon b in it's subscriber list

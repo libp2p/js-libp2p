@@ -27,7 +27,7 @@ Each [interface](https://npmjs.org/packages/@libp2p/interfaces) has its document
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p/modules/_libp2p_interface_compliance_tests.html>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_interface-compliance-tests.html>
 
 # License
 

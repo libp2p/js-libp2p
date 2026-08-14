@@ -4,10 +4,10 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { debounce, createScalableCuckooFilter, isPrivateIp, getNetConfig, isNetworkAddress, isLoopback } from '@libp2p/utils'
 import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { QUIC_V1, TCP, WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
-import { DNSMappings } from './dns-mappings.js'
-import { IPMappings } from './ip-mappings.js'
-import { ObservedAddresses } from './observed-addresses.js'
-import { TransportAddresses } from './transport-addresses.js'
+import { DNSMappings } from './dns-mappings.ts'
+import { IPMappings } from './ip-mappings.ts'
+import { ObservedAddresses } from './observed-addresses.ts'
+import { TransportAddresses } from './transport-addresses.ts'
 import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Metrics } from '@libp2p/interface'
 import type { AddressManager as AddressManagerInterface, TransportManager, NodeAddress, ConfirmAddressOptions } from '@libp2p/interface-internal'
 import type { Filter } from '@libp2p/utils'
@@ -312,12 +312,12 @@ export class AddressManager implements AddressManagerInterface {
   removeObservedAddr (addr: Multiaddr, options?: ConfirmAddressOptions): void {
     addr = stripPeerId(addr, this.components.peerId)
 
-    let startingConfidence = false
+    let startingConfidence = true
 
     if (this.observed.has(addr)) {
       const observedStartingConfidence = this.observed.remove(addr)
 
-      if (!observedStartingConfidence && startingConfidence) {
+      if (observedStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }
@@ -325,7 +325,7 @@ export class AddressManager implements AddressManagerInterface {
     if (this.transportAddresses.has(addr)) {
       const transportStartingConfidence = this.transportAddresses.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
 
-      if (!transportStartingConfidence && startingConfidence) {
+      if (transportStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }
@@ -333,7 +333,7 @@ export class AddressManager implements AddressManagerInterface {
     if (this.dnsMappings.has(addr)) {
       const dnsMappingStartingConfidence = this.dnsMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
 
-      if (!dnsMappingStartingConfidence && startingConfidence) {
+      if (dnsMappingStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }
@@ -341,13 +341,13 @@ export class AddressManager implements AddressManagerInterface {
     if (this.ipMappings.has(addr)) {
       const ipMappingStartingConfidence = this.ipMappings.unconfirm(addr, options?.ttl ?? this.addressVerificationRetry)
 
-      if (!ipMappingStartingConfidence && startingConfidence) {
+      if (ipMappingStartingConfidence && startingConfidence) {
         startingConfidence = false
       }
     }
 
     // only trigger the 'self:peer:update' event if our confidence in an address has changed
-    if (startingConfidence) {
+    if (!startingConfidence) {
       this._updatePeerStoreAddresses()
     }
   }

@@ -1,6 +1,6 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
-import { createLibp2p } from '../../src/index.js'
+import { createLibp2p } from '../../src/index.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('status', () => {

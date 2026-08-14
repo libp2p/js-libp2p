@@ -2,15 +2,15 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import { AdaptiveTimeout, pbStream } from '@libp2p/utils'
 import { TypedEventEmitter } from 'main-event'
-import { Message } from './message/dht.js'
-import { fromPbPeerInfo } from './message/utils.js'
+import { Message } from './message/dht.ts'
+import { fromPbPeerInfo } from './message/utils.ts'
 import {
   sendQueryEvent,
   peerResponseEvent,
   queryErrorEvent,
   dialPeerEvent
-} from './query/events.js'
-import type { DisjointPath, KadDHTComponents, QueryEvent } from './index.js'
+} from './query/events.ts'
+import type { DisjointPath, KadDHTComponents, QueryEvent } from './index.ts'
 import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, CounterGroup } from '@libp2p/interface'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 

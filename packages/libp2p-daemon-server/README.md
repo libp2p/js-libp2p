@@ -36,7 +36,7 @@ await server.start()
 
 # API Docs
 
-- <https://libp2p.github.io/js-libp2p-daemon/modules/_libp2p_daemon_server.html>
+- <https://libp2p.github.io/js-libp2p-daemon/modules/_libp2p_daemon-server.html>
 
 # License
 

@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
-import { trackedMap } from '../src/tracked-map.js'
+import { trackedMap } from '../src/tracked-map.ts'
 import type { Metric, Metrics } from '@libp2p/interface'
 import type { SinonStubbedInstance } from 'sinon'
 

@@ -1,8 +1,8 @@
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { allocUnsafe } from 'uint8arrays/alloc'
-import { MessageTypes } from './message-types.js'
-import type { Message } from './message-types.js'
+import { MessageTypes } from './message-types.ts'
+import type { Message } from './message-types.ts'
 
 const POOL_SIZE = 10 * 1024
 

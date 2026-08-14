@@ -2,7 +2,7 @@ import * as Digest from 'multiformats/hashes/digest'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { concat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import * as sdp from './sdp.js'
+import * as sdp from './sdp.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 const PREFIX = uint8arrayFromString('libp2p-webrtc-noise:')

@@ -15,7 +15,7 @@ import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { setGlobalDispatcher, Agent } from 'undici'
-import { webSockets } from '../src/index.js'
+import { webSockets } from '../src/index.ts'
 import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 

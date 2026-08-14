@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, enumeration, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, message, streamMessage } from 'protons-runtime'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -21,6 +21,7 @@ export namespace KeyType {
     return enumeration<KeyType>(__KeyTypeValues)
   }
 }
+
 export interface PublicKey {
   Type?: KeyType
   Data?: Uint8Array
@@ -74,18 +75,59 @@ export namespace PublicKey {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.Type`,
+                value: KeyType.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.Data`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<PublicKey>): Uint8Array => {
+  export interface PublicKeyTypeFieldEvent {
+    field: '$.Type'
+    value: KeyType
+  }
+
+  export interface PublicKeyDataFieldEvent {
+    field: '$.Data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<PublicKey>): Uint8Array {
     return encodeMessage(obj, PublicKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): PublicKey {
     return decodeMessage(buf, PublicKey.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PublicKey>): Generator<PublicKeyTypeFieldEvent | PublicKeyDataFieldEvent> {
+    return streamMessage(buf, PublicKey.codec(), opts)
   }
 }
 
@@ -142,17 +184,58 @@ export namespace PrivateKey {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.Type`,
+                value: KeyType.codec().decode(reader)
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.Data`,
+                value: reader.bytes()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<PrivateKey>): Uint8Array => {
+  export interface PrivateKeyTypeFieldEvent {
+    field: '$.Type'
+    value: KeyType
+  }
+
+  export interface PrivateKeyDataFieldEvent {
+    field: '$.Data'
+    value: Uint8Array
+  }
+
+  export function encode (obj: Partial<PrivateKey>): Uint8Array {
     return encodeMessage(obj, PrivateKey.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PrivateKey>): PrivateKey => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PrivateKey>): PrivateKey {
     return decodeMessage(buf, PrivateKey.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PrivateKey>): Generator<PrivateKeyTypeFieldEvent | PrivateKeyDataFieldEvent> {
+    return streamMessage(buf, PrivateKey.codec(), opts)
   }
 }

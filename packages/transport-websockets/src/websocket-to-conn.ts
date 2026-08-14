@@ -1,6 +1,7 @@
 import { AbstractMultiaddrConnection, repeatingTask } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { AbstractMultiaddrConnectionInit, RepeatingTask, SendResult } from '@libp2p/utils'
 
@@ -59,7 +60,7 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 
   sendData (data: Uint8ArrayList): SendResult {
     for (const buf of data) {
-      this.websocket.send(buf)
+      this.websocket.send(withArrayBuffer(buf))
     }
 
     const canSendMore = this.websocket.bufferedAmount < this.maxBufferedAmount

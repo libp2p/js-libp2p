@@ -1,5 +1,5 @@
-import { Queue } from './queue/index.js'
-import type { Job } from './queue/job.js'
+import { Queue } from './queue/index.ts'
+import type { Job } from './queue/job.ts'
 import type { AbortOptions, PeerId } from '@libp2p/interface'
 
 export interface PeerQueueJobOptions extends AbortOptions {

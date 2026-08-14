@@ -8,8 +8,8 @@ import { isPeerId } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
-import { PersistentStore } from './store.js'
-import type { PeerUpdate } from './store.js'
+import { PersistentStore } from './store.ts'
+import type { PeerUpdate } from './store.ts'
 import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions, Metrics } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
@@ -183,6 +183,12 @@ class PersistentPeerStore implements PeerStore {
     }
 
     const peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+
+    if (!peerRecord.peerId.equals(peerId)) {
+      this.log('signing key did not match peer id in the peer record - signer: %p record: %p', peerId, peerRecord.peerId)
+      return false
+    }
+
     let peer: Peer | undefined
 
     try {

@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, enumeration, MaxLengthError, message, streamMessage } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -86,18 +86,95 @@ export namespace Record {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.key`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.value`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 3: {
+              yield {
+                field: `${prefix}.author`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 4: {
+              yield {
+                field: `${prefix}.signature`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 5: {
+              yield {
+                field: `${prefix}.timeReceived`,
+                value: reader.string()
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Record>): Uint8Array => {
+  export interface RecordKeyFieldEvent {
+    field: '$.key'
+    value: Uint8Array
+  }
+
+  export interface RecordValueFieldEvent {
+    field: '$.value'
+    value: Uint8Array
+  }
+
+  export interface RecordAuthorFieldEvent {
+    field: '$.author'
+    value: Uint8Array
+  }
+
+  export interface RecordSignatureFieldEvent {
+    field: '$.signature'
+    value: Uint8Array
+  }
+
+  export interface RecordTimeReceivedFieldEvent {
+    field: '$.timeReceived'
+    value: string
+  }
+
+  export function encode (obj: Partial<Record>): Uint8Array {
     return encodeMessage(obj, Record.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Record => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Record {
     return decodeMessage(buf, Record.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Record>): Generator<RecordKeyFieldEvent | RecordValueFieldEvent | RecordAuthorFieldEvent | RecordSignatureFieldEvent | RecordTimeReceivedFieldEvent> {
+    return streamMessage(buf, Record.codec(), opts)
   }
 }
 
@@ -124,6 +201,7 @@ export namespace MessageType {
     return enumeration<MessageType>(__MessageTypeValues)
   }
 }
+
 export enum ConnectionType {
   NOT_CONNECTED = 'NOT_CONNECTED',
   CONNECTED = 'CONNECTED',
@@ -143,6 +221,7 @@ export namespace ConnectionType {
     return enumeration<ConnectionType>(__ConnectionTypeValues)
   }
 }
+
 export interface PeerInfo {
   id: Uint8Array
   multiaddrs: Uint8Array[]
@@ -164,7 +243,7 @@ export namespace PeerInfo {
           w.bytes(obj.id)
         }
 
-        if (obj.multiaddrs != null) {
+        if (obj.multiaddrs != null && obj.multiaddrs.length > 0) {
           for (const value of obj.multiaddrs) {
             w.uint32(18)
             w.bytes(value)
@@ -197,7 +276,7 @@ export namespace PeerInfo {
             }
             case 2: {
               if (opts.limits?.multiaddrs != null && obj.multiaddrs.length === opts.limits.multiaddrs) {
-                throw new MaxLengthError('Decode error - map field "multiaddrs" had too many elements')
+                throw new MaxLengthError('Decode error - repeated field "multiaddrs" had too many elements')
               }
 
               obj.multiaddrs.push(reader.bytes())
@@ -215,18 +294,84 @@ export namespace PeerInfo {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const obj = {
+          multiaddrs: 0
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.id`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              if (opts.limits?.multiaddrs != null && obj.multiaddrs === opts.limits.multiaddrs) {
+                throw new MaxLengthError('Streaming decode error - repeated field "multiaddrs" had too many elements')
+              }
+
+              yield {
+                field: `${prefix}.multiaddrs[]`,
+                index: obj.multiaddrs,
+                value: reader.bytes()
+              }
+
+              obj.multiaddrs++
+
+              break
+            }
+            case 3: {
+              yield {
+                field: `${prefix}.connection`,
+                value: ConnectionType.codec().decode(reader)
+              }
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<PeerInfo>): Uint8Array => {
+  export interface PeerInfoIdFieldEvent {
+    field: '$.id'
+    value: Uint8Array
+  }
+
+  export interface PeerInfoMultiaddrsFieldEvent {
+    field: '$.multiaddrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface PeerInfoConnectionFieldEvent {
+    field: '$.connection'
+    value: ConnectionType
+  }
+
+  export function encode (obj: Partial<PeerInfo>): Uint8Array {
     return encodeMessage(obj, PeerInfo.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PeerInfo>): PeerInfo => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PeerInfo>): PeerInfo {
     return decodeMessage(buf, PeerInfo.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<PeerInfo>): Generator<PeerInfoIdFieldEvent | PeerInfoMultiaddrsFieldEvent | PeerInfoConnectionFieldEvent> {
+    return streamMessage(buf, PeerInfo.codec(), opts)
   }
 }
 
@@ -269,14 +414,14 @@ export namespace Message {
           w.bytes(obj.record)
         }
 
-        if (obj.closer != null) {
+        if (obj.closer != null && obj.closer.length > 0) {
           for (const value of obj.closer) {
             w.uint32(66)
             PeerInfo.codec().encode(value, w)
           }
         }
 
-        if (obj.providers != null) {
+        if (obj.providers != null && obj.providers.length > 0) {
           for (const value of obj.providers) {
             w.uint32(74)
             PeerInfo.codec().encode(value, w)
@@ -317,7 +462,7 @@ export namespace Message {
             }
             case 8: {
               if (opts.limits?.closer != null && obj.closer.length === opts.limits.closer) {
-                throw new MaxLengthError('Decode error - map field "closer" had too many elements')
+                throw new MaxLengthError('Decode error - repeated field "closer" had too many elements')
               }
 
               obj.closer.push(PeerInfo.codec().decode(reader, reader.uint32(), {
@@ -327,7 +472,7 @@ export namespace Message {
             }
             case 9: {
               if (opts.limits?.providers != null && obj.providers.length === opts.limits.providers) {
-                throw new MaxLengthError('Decode error - map field "providers" had too many elements')
+                throw new MaxLengthError('Decode error - repeated field "providers" had too many elements')
               }
 
               obj.providers.push(PeerInfo.codec().decode(reader, reader.uint32(), {
@@ -343,17 +488,159 @@ export namespace Message {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const obj = {
+          closer: 0,
+          providers: 0
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.type`,
+                value: MessageType.codec().decode(reader)
+              }
+              break
+            }
+            case 10: {
+              yield {
+                field: `${prefix}.clusterLevel`,
+                value: reader.int32()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.key`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 3: {
+              yield {
+                field: `${prefix}.record`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 8: {
+              if (opts.limits?.closer != null && obj.closer === opts.limits.closer) {
+                throw new MaxLengthError('Streaming decode error - repeated field "closer" had too many elements')
+              }
+
+              for (const evt of PeerInfo.codec().stream(reader, reader.uint32(), `${prefix}.closer[]`, {
+                limits: opts.limits?.closer$
+              })) {
+                yield {
+                  ...evt,
+                  index: obj.closer
+                }
+              }
+
+              obj.closer++
+
+              break
+            }
+            case 9: {
+              if (opts.limits?.providers != null && obj.providers === opts.limits.providers) {
+                throw new MaxLengthError('Streaming decode error - repeated field "providers" had too many elements')
+              }
+
+              for (const evt of PeerInfo.codec().stream(reader, reader.uint32(), `${prefix}.providers[]`, {
+                limits: opts.limits?.providers$
+              })) {
+                yield {
+                  ...evt,
+                  index: obj.providers
+                }
+              }
+
+              obj.providers++
+
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<Message>): Uint8Array => {
+  export interface MessageTypeFieldEvent {
+    field: '$.type'
+    value: MessageType
+  }
+
+  export interface MessageClusterLevelFieldEvent {
+    field: '$.clusterLevel'
+    value: number
+  }
+
+  export interface MessageKeyFieldEvent {
+    field: '$.key'
+    value: Uint8Array
+  }
+
+  export interface MessageRecordFieldEvent {
+    field: '$.record'
+    value: Uint8Array
+  }
+
+  export interface MessageCloserIdFieldEvent {
+    field: '$.closer[].id'
+    value: Uint8Array
+    index: number
+  }
+
+  export interface MessageCloserMultiaddrsFieldEvent {
+    field: '$.closer[].multiaddrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface MessageCloserConnectionFieldEvent {
+    field: '$.closer[].connection'
+    value: ConnectionType
+    index: number
+  }
+
+  export interface MessageProvidersIdFieldEvent {
+    field: '$.providers[].id'
+    value: Uint8Array
+    index: number
+  }
+
+  export interface MessageProvidersMultiaddrsFieldEvent {
+    field: '$.providers[].multiaddrs[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface MessageProvidersConnectionFieldEvent {
+    field: '$.providers[].connection'
+    value: ConnectionType
+    index: number
+  }
+
+  export function encode (obj: Partial<Message>): Uint8Array {
     return encodeMessage(obj, Message.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Message => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Message {
     return decodeMessage(buf, Message.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Generator<MessageTypeFieldEvent | MessageClusterLevelFieldEvent | MessageKeyFieldEvent | MessageRecordFieldEvent | MessageCloserIdFieldEvent | MessageCloserMultiaddrsFieldEvent | MessageCloserConnectionFieldEvent | MessageProvidersIdFieldEvent | MessageProvidersMultiaddrsFieldEvent | MessageProvidersConnectionFieldEvent> {
+    return streamMessage(buf, Message.codec(), opts)
   }
 }

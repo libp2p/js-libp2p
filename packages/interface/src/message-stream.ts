@@ -1,4 +1,4 @@
-import type { Logger, StreamCloseEvent, StreamMessageEvent, TypedEventTarget, AbortOptions } from './index.js'
+import type { Logger, StreamCloseEvent, StreamMessageEvent, TypedEventTarget, AbortOptions } from './index.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /**

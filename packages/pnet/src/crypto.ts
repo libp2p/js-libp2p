@@ -2,8 +2,8 @@ import { AbstractMultiaddrConnection } from '@libp2p/utils'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import xsalsa20 from 'xsalsa20'
-import * as Errors from './errors.js'
-import { KEY_LENGTH } from './key-generator.js'
+import * as Errors from './errors.ts'
+import { KEY_LENGTH } from './key-generator.ts'
 import type { AbortOptions, MultiaddrConnection } from '@libp2p/interface'
 import type { MessageStreamInit, SendResult } from '@libp2p/utils'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -41,6 +41,11 @@ export class BoxMessageStream extends AbstractMultiaddrConnection {
           this.onData(this.inboundXor.update(buf))
         }
       }
+    })
+
+    // resume sending when the underlying connection can accept more data
+    this.maConn.addEventListener('drain', () => {
+      this.onMuxerDrain()
     })
 
     this.maConn.addEventListener('close', (evt) => {

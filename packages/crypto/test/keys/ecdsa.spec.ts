@@ -4,14 +4,13 @@ import { expect } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { randomBytes } from '../../src/index.js'
-import { unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from '../../src/keys/ecdsa/utils.js'
-import { privateKeyToCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyFromCryptoKeyPair } from '../../src/keys/index.js'
-import { PrivateKey, PublicKey } from '../../src/keys/keys.js'
-import pbKeys from '../fixtures/ecdsa.js'
-import fixtures from '../fixtures/go-key-ed25519.js'
-import { testGarbage } from '../helpers/test-garbage-error-handling.js'
-import type { Curve } from '../../src/keys/index.js'
+import { unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from '../../src/keys/ecdsa/utils.ts'
+import { privateKeyToCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, publicKeyFromProtobuf, publicKeyFromRaw, privateKeyFromCryptoKeyPair } from '../../src/keys/index.ts'
+import { PrivateKey, PublicKey } from '../../src/keys/keys.ts'
+import pbKeys from '../fixtures/ecdsa.ts'
+import fixtures from '../fixtures/go-key-ed25519.ts'
+import { testGarbage } from '../helpers/test-garbage-error-handling.ts'
+import type { Curve } from '../../src/keys/index.ts'
 import type { ECDSAPrivateKey } from '@libp2p/interface'
 
 const CURVES: Curve[] = ['P-256', 'P-384', 'P-521']
@@ -33,7 +32,7 @@ describe('ECDSA', function () {
   })
 
   it('signs', async () => {
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
     const res = await key.publicKey.verify(text, sig)
     expect(res).to.be.be.true()
@@ -42,7 +41,7 @@ describe('ECDSA', function () {
   it('should abort signing', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     await expect((async () => {
       return key.sign(text, {
         signal: controller.signal
@@ -54,7 +53,7 @@ describe('ECDSA', function () {
   it('should abort verifying', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
 
     await expect((async () => {
@@ -67,8 +66,8 @@ describe('ECDSA', function () {
 
   it('signs a list', async () => {
     const text = new Uint8ArrayList(
-      randomBytes(512),
-      randomBytes(512)
+      crypto.getRandomValues(new Uint8Array(512)),
+      crypto.getRandomValues(new Uint8Array(512))
     )
     const sig = await key.sign(text)
     const sig2 = await key.sign(text.subarray())

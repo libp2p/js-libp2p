@@ -1,5 +1,48 @@
 # Changelog
 
+## [4.0.15](https://github.com/libp2p/js-libp2p/compare/record-v4.0.14...record-v4.0.15) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+
+## [4.0.14](https://github.com/libp2p/js-libp2p/compare/record-v4.0.13...record-v4.0.14) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+
+## [4.0.13](https://github.com/libp2p/js-libp2p/compare/record-v4.0.12...record-v4.0.13) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+
+## [4.0.12](https://github.com/libp2p/js-libp2p/compare/record-v4.0.11...record-v4.0.12) (2026-04-16)
+
+
+### Bug Fixes
+
+* support Node.js type stripping by importing from .ts files ([#3448](https://github.com/libp2p/js-libp2p/issues/3448)) ([8623584](https://github.com/libp2p/js-libp2p/commit/86235842b7aaae7fe1a5fb33f19e1fe5e9c34e3b))
+
+## [4.0.11](https://github.com/libp2p/js-libp2p/compare/record-v4.0.10...record-v4.0.11) (2026-04-14)
+
+
+### Bug Fixes
+
+* support require ([#3449](https://github.com/libp2p/js-libp2p/issues/3449)) ([f21efd1](https://github.com/libp2p/js-libp2p/commit/f21efd121a9d3755f28049541c1b0758e3498683))
+
+## [4.0.10](https://github.com/libp2p/js-libp2p/compare/record-v4.0.9...record-v4.0.10) (2026-03-27)
+
+
+### Dependencies
+
+* update protons to 8.x.x and protons-runtime to 6.x.x ([#3421](https://github.com/libp2p/js-libp2p/issues/3421)) ([1c3b617](https://github.com/libp2p/js-libp2p/commit/1c3b6177735c97ede56783560738eb54b4038e1a))
+
 ## [4.0.9](https://github.com/libp2p/js-libp2p/compare/record-v4.0.8...record-v4.0.9) (2026-01-16)
 
 

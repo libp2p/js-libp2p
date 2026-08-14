@@ -1,4 +1,4 @@
-import type { PeerLoggerOptions } from './index.js'
+import type { PeerLoggerOptions } from './index.ts'
 import type { PeerId } from '@libp2p/interface'
 
 export function truncatePeerId (peerId: PeerId, options: PeerLoggerOptions = {}): string {

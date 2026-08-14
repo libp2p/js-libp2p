@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { isGlobalUnicastIp } from '../src/global-unicast-ip.js'
+import { isGlobalUnicastIp } from '../src/global-unicast-ip.ts'
 
 describe('isGlobalUnicastIp', () => {
   it('identifies ip4 multiaddrs as non-global unicast', () => {

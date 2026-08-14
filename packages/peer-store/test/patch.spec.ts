@@ -9,7 +9,7 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
-import { persistentPeerStore } from '../src/index.js'
+import { persistentPeerStore } from '../src/index.ts'
 import type { Libp2pEvents, PeerId, PeerStore, PeerData } from '@libp2p/interface'
 import type { TypedEventTarget } from 'main-event'
 

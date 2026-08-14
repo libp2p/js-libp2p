@@ -1,15 +1,15 @@
 import { pbStream } from '@libp2p/utils'
 import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
-import { SIGNALING_PROTOCOL } from '../constants.js'
-import { SDPHandshakeFailedError } from '../error.js'
-import { DataChannelMuxerFactory } from '../muxer.js'
-import { RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.js'
-import { Message } from './pb/message.js'
-import { splitAddr } from './transport.js'
-import { readCandidatesUntilConnected } from './util.js'
-import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.js'
-import type { DataChannelOptions } from '../index.js'
+import { SIGNALING_PROTOCOL } from '../constants.ts'
+import { SDPHandshakeFailedError } from '../error.ts'
+import { DataChannelMuxerFactory } from '../muxer.ts'
+import { RTCPeerConnection, RTCSessionDescription } from '../webrtc/index.ts'
+import { Message } from './pb/message.ts'
+import { splitAddr } from './transport.ts'
+import { readCandidatesUntilConnected } from './util.ts'
+import type { WebRTCDialEvents, WebRTCTransportMetrics } from './transport.ts'
+import type { DataChannelOptions } from '../index.ts'
 import type { LoggerOptions, Connection, ComponentLogger, AbortOptions } from '@libp2p/interface'
 import type { ConnectionManager, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -23,6 +23,7 @@ export interface IncomingStreamOptions extends AbortOptions {
 export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDialEvents> {
   rtcConfiguration?: RTCConfiguration
   dataChannel?: DataChannelOptions
+  maxEarlyStreams?: number
   multiaddr: Multiaddr
   connectionManager: ConnectionManager
   transportManager: TransportManager
@@ -32,7 +33,7 @@ export interface ConnectOptions extends LoggerOptions, ProgressOptions<WebRTCDia
   logger: ComponentLogger
 }
 
-export async function initiateConnection ({ rtcConfiguration, dataChannel, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
+export async function initiateConnection ({ rtcConfiguration, dataChannel, maxEarlyStreams, signal, metrics, multiaddr: ma, connectionManager, transportManager, log, logger, onProgress }: ConnectOptions): Promise<{ remoteAddress: Multiaddr, peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }> {
   const { circuitAddress, targetPeer } = splitAddr(ma)
 
   metrics?.dialerEvents.increment({ open: true })
@@ -83,7 +84,10 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   const muxerFactory = new DataChannelMuxerFactory({
     // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
-    dataChannelOptions: dataChannel
+    dataChannelOptions: dataChannel,
+    maxEarlyStreams,
+    metrics: metrics?.dialerEvents,
+    log
   })
 
   try {
@@ -216,6 +220,7 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, signa
   } catch (err: any) {
     log.error('outgoing signaling error - %e', err)
 
+    muxerFactory.close()
     peerConnection.close()
     stream.abort(err)
     throw err

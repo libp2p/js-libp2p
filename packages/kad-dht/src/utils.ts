@@ -10,7 +10,7 @@ import * as varint from 'uint8-varint'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Operation, OperationMetrics } from './kad-dht.js'
+import type { Operation, OperationMetrics } from './kad-dht.ts'
 import type { AbortOptions, PeerId, PeerInfo } from '@libp2p/interface'
 
 // const IPNS_PREFIX = uint8ArrayFromString('/ipns/')

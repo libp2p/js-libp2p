@@ -1,5 +1,5 @@
-import type { RPC } from './message/rpc.js'
-import type { MessageId, MsgIdStr, PeerIdStr, TopicStr, MsgIdToStrFn } from './types.js'
+import type { RPC } from './message/rpc.ts'
+import type { MessageId, MsgIdStr, PeerIdStr, TopicStr, MsgIdToStrFn } from './types.ts'
 
 export type CacheEntry = MessageId & {
   topic: TopicStr

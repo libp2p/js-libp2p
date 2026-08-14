@@ -1,6 +1,6 @@
 import { Summary as PromSummary } from 'prom-client'
-import { normalizeString } from './utils.js'
-import type { PrometheusCalculatedSummaryOptions } from './index.js'
+import { normalizeString } from './utils.ts'
+import type { PrometheusCalculatedSummaryOptions } from './index.ts'
 import type { SummaryGroup, StopTimer } from '@libp2p/interface'
 import type { CollectFunction } from 'prom-client'
 

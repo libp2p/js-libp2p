@@ -1,4 +1,4 @@
-import { PeerMap } from './map.js'
+import { PeerMap } from './map.ts'
 import type { Metric, Metrics, PeerId } from '@libp2p/interface'
 
 export interface TrackedPeerMapInit {

@@ -5,7 +5,7 @@ on:
       - main
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 env:
   CACHE_DIRS: |
@@ -14,12 +14,11 @@ env:
     ./doc/node_modules
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
@@ -30,8 +29,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
@@ -40,6 +39,7 @@ jobs:
       - run: npm run --if-present lint
       - run: npm run --if-present dep-check
       - run: npm run --if-present docs:no-publish
+      - run: git diff --exit-code
       - run: npm run --if-present doc-check
       - run: npm run --if-present spell-check
 
@@ -48,19 +48,22 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        # macos-latest migrated from macos-15 to macos-26 in June 2026
+        # (actions/runner-images#14167), which stalls the go-libp2p p2pd binary
+        # download during install. Pin to macos-15 until that is resolved.
+        os: [windows-latest, ubuntu-latest, macos-15]
         node: [lts/*]
-      fail-fast: true
+      fail-fast: false
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:node
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: node
           files: .coverage/*,packages/*/.coverage/*
@@ -70,15 +73,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: chrome
           files: .coverage/*,packages/*/.coverage/*
@@ -88,15 +91,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:chrome-webworker
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: chrome-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -106,15 +109,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: firefox
           files: .coverage/*,packages/*/.coverage/*
@@ -124,15 +127,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npm run --if-present test:firefox-webworker
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: firefox-webworker
           files: .coverage/*,packages/*/.coverage/*
@@ -142,8 +145,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
@@ -155,7 +158,7 @@ jobs:
           sudo apt-get update
       - run: npx playwright install-deps
       - run: npm run --if-present test:webkit
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: webkit
           files: .coverage/*,packages/*/.coverage/*
@@ -165,15 +168,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-main
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: electron-main
           files: .coverage/*,packages/*/.coverage/*
@@ -183,15 +186,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
       - run: npx xvfb-maybe npm run --if-present test:electron-renderer
-      - uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           flags: electron-renderer
           files: .coverage/*,packages/*/.coverage/*
@@ -201,8 +204,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
       - uses: ipfs/aegir/actions/cache-node-modules@main
@@ -218,8 +221,8 @@ jobs:
   #       uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
   #       with:
   #         tool-cache: true
-  #     - uses: actions/checkout@v6
-  #     - uses: actions/setup-node@v6
+  #     - uses: actions/checkout@v7
+  #     - uses: actions/setup-node@v7
   #       with:
   #         node-version: lts/*
   #     - uses: ipfs/aegir/actions/cache-node-modules@main
@@ -247,16 +250,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [
-      test-node,
-      test-chrome,
-      test-chrome-webworker,
-      test-firefox,
-      test-firefox-webworker,
-      test-electron-main,
-      test-electron-renderer,
-      test-interop
-      # transport-interop
-    ]
+        test-node,
+        test-chrome,
+        test-chrome-webworker,
+        test-firefox,
+        test-firefox-webworker,
+        test-electron-main,
+        test-electron-renderer,
+        test-interop,
+        # transport-interop
+      ]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: write
@@ -272,13 +275,13 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE }}
           manifest-file: .release-please-manifest.json
           config-file: .release-please.json
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
@@ -297,8 +300,8 @@ jobs:
       - if: ${{ steps.release.outputs.releases_created != 'true' }}
         name: Run release rc
         run: |
-            git update-index --assume-unchanged packages/libp2p/src/version.ts
-            npm run --if-present release:rc
+          git update-index --assume-unchanged packages/libp2p/src/version.ts
+          npm run --if-present release:rc
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

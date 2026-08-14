@@ -3,7 +3,7 @@ import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import client from 'prom-client'
-import { prometheusMetrics } from '../src/index.js'
+import { prometheusMetrics } from '../src/index.ts'
 
 describe('streams', () => {
   it('should track bytes sent over outbound connections', async () => {

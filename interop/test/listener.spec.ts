@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { multiaddr } from '@multiformats/multiaddr'
-import { getLibp2p } from './fixtures/get-libp2p.js'
-import { redisProxy } from './fixtures/redis-proxy.js'
+import { getLibp2p } from './fixtures/get-libp2p.ts'
+import { redisProxy } from './fixtures/redis-proxy.ts'
 import type { Libp2p } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
 import type { Multiaddr } from '@multiformats/multiaddr'

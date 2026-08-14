@@ -2,7 +2,7 @@ import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
-import { simpleMetrics } from '../src/index.js'
+import { simpleMetrics } from '../src/index.ts'
 import type { Metrics } from '@libp2p/interface'
 
 describe('simple-metrics', () => {

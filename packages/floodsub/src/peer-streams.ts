@@ -1,6 +1,7 @@
 import { pbStream } from '@libp2p/utils'
 import { TypedEventEmitter } from 'main-event'
 import { RPC } from './message/rpc.ts'
+import type { RPCDecodeLimits } from './decodeRpc.ts'
 import type { PubSubRPC } from './floodsub.ts'
 import type { PeerStreamsEvents } from './index.ts'
 import type { Stream, PeerId } from '@libp2p/interface'
@@ -38,7 +39,7 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamsEvents> {
     this.shutDownController = new AbortController()
   }
 
-  attachInboundStream (stream: Stream, streamOpts?: Partial<ProtobufStreamOpts>): void {
+  attachInboundStream (stream: Stream, streamOpts?: Partial<ProtobufStreamOpts>, decodeRpcLimits?: RPCDecodeLimits): void {
     this.inboundPb = pbStream(stream, streamOpts).pb(RPC)
 
     Promise.resolve().then(async () => {
@@ -48,7 +49,8 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamsEvents> {
         }
 
         const message = await this.inboundPb.read({
-          signal: this.shutDownController.signal
+          signal: this.shutDownController.signal,
+          limits: decodeRpcLimits
         })
 
         this.safeDispatchEvent('message', {
@@ -57,7 +59,11 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamsEvents> {
       }
     })
       .catch(err => {
+        // the inbound stream errored (e.g. a frame exceeded the decode limits):
+        // reset it and close the peer so floodsub removes it instead of leaving
+        // a half-open peer with a dead inbound stream
         this.inboundPb?.unwrap().unwrap().abort(err)
+        this.close()
       })
   }
 

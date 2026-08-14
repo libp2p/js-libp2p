@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { isLoopback } from '../../src/multiaddr/is-loopback.js'
+import { isLoopback } from '../../src/multiaddr/is-loopback.ts'
 
 describe('multiaddr isLoopback', () => {
   it('identifies loopback ip4 multiaddrs', () => {

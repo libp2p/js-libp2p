@@ -4,17 +4,17 @@ import { encode } from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import * as Digest from 'multiformats/hashes/digest'
-import * as constants from './constants.js'
+import * as constants from './constants.ts'
 import {
   ACCEPT_FROM_WHITELIST_DURATION_MS,
   ACCEPT_FROM_WHITELIST_MAX_MESSAGES,
   ACCEPT_FROM_WHITELIST_THRESHOLD_SCORE,
   BACKOFF_SLACK
-} from './constants.js'
+} from './constants.ts'
 import { StrictNoSign, StrictSign, TopicValidatorResult } from './index.ts'
-import { defaultDecodeRpcLimits } from './message/decodeRpc.js'
-import { RPC } from './message/rpc.js'
-import { MessageCache } from './message-cache.js'
+import { defaultDecodeRpcLimits } from './message/decodeRpc.ts'
+import { RPC } from './message/rpc.ts'
+import { MessageCache } from './message-cache.ts'
 import {
   ChurnReason,
   getMetrics,
@@ -23,17 +23,17 @@ import {
 
   ScorePenalty
 
-} from './metrics.js'
+} from './metrics.ts'
 import {
   PeerScore,
 
   createPeerScoreParams,
   createPeerScoreThresholds
 
-} from './score/index.js'
-import { computeAllPeersScoreWeights } from './score/scoreMetrics.js'
-import { InboundStream, OutboundStream } from './stream.js'
-import { IWantTracer } from './tracer.js'
+} from './score/index.ts'
+import { computeAllPeersScoreWeights } from './score/scoreMetrics.ts'
+import { InboundStream, OutboundStream } from './stream.ts'
+import { IWantTracer } from './tracer.ts'
 import {
 
   ValidateError,
@@ -43,21 +43,21 @@ import {
 
   rejectReasonFromAcceptance
 
-} from './types.js'
-import { buildRawMessage, validateToRawMessage } from './utils/buildRawMessage.js'
-import { createGossipRpc, ensureControl } from './utils/create-gossip-rpc.js'
-import { shuffle, messageIdToString } from './utils/index.js'
-import { msgIdFnStrictNoSign, msgIdFnStrictSign } from './utils/msgIdFn.js'
-import { multiaddrToIPStr } from './utils/multiaddr.js'
-import { getPublishConfigFromPeerId } from './utils/publishConfig.js'
-import { removeFirstNItemsFromSet, removeItemsFromSet } from './utils/set.js'
-import { SimpleTimeCache } from './utils/time-cache.js'
+} from './types.ts'
+import { buildRawMessage, validateToRawMessage } from './utils/buildRawMessage.ts'
+import { createGossipRpc, ensureControl } from './utils/create-gossip-rpc.ts'
+import { shuffle, messageIdToString } from './utils/index.ts'
+import { msgIdFnStrictNoSign, msgIdFnStrictSign } from './utils/msgIdFn.ts'
+import { multiaddrToIPStr } from './utils/multiaddr.ts'
+import { getPublishConfigFromPeerId } from './utils/publishConfig.ts'
+import { removeFirstNItemsFromSet, removeItemsFromSet } from './utils/set.ts'
+import { SimpleTimeCache } from './utils/time-cache.ts'
 import type { GossipSubComponents, GossipSubEvents, GossipsubMessage, GossipsubOpts, MeshPeer, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.ts'
-import type { DecodeRPCLimits } from './message/decodeRpc.js'
-import type { MessageCacheRecord } from './message-cache.js'
-import type { Metrics, ToSendGroupCount } from './metrics.js'
-import type { PeerScoreParams, PeerScoreThresholds, PeerScoreStatsDump } from './score/index.js'
-import type { MsgIdFn, PublishConfig, TopicStr, MsgIdStr, PeerIdStr, RejectReasonObj, FastMsgIdFn, DataTransform, MsgIdToStrFn, MessageId, PublishOpts } from './types.js'
+import type { DecodeRPCLimits } from './message/decodeRpc.ts'
+import type { MessageCacheRecord } from './message-cache.ts'
+import type { Metrics, ToSendGroupCount } from './metrics.ts'
+import type { PeerScoreParams, PeerScoreThresholds, PeerScoreStatsDump } from './score/index.ts'
+import type { MsgIdFn, PublishConfig, TopicStr, MsgIdStr, PeerIdStr, RejectReasonObj, FastMsgIdFn, DataTransform, MsgIdToStrFn, MessageId, PublishOpts } from './types.ts'
 import type {
   Connection, Stream, PeerId, Peer,
   Logger,
@@ -183,6 +183,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /** Number of messages we have asked from peer in the last heartbeat */
   private readonly iasked = new Map<PeerIdStr, number>()
 
+  /** Number of IWANT messages we have received from peer in the last heartbeat */
+  private readonly iwantCounts = new Map<PeerIdStr, number>()
+
   /** Prune backoff map */
   private readonly backoff = new Map<TopicStr, Map<PeerIdStr, number>>()
 
@@ -270,6 +273,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   private readonly maxOutboundStreams?: number
   private readonly runOnLimitedConnection?: boolean
   private readonly allowedTopics: Set<TopicStr> | null
+  private readonly maxTopicBytesPerPeer: number
+  /** Running total of subscribed-topic bytes per peer, to bound the topics map */
+  private readonly peerTopicBytes = new Map<PeerIdStr, number>()
 
   private heartbeatTimer: {
     _intervalId: ReturnType<typeof setInterval> | undefined
@@ -407,9 +413,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.runOnLimitedConnection = options.runOnLimitedConnection
 
     this.allowedTopics = (opts.allowedTopics != null) ? new Set(opts.allowedTopics) : null
+    this.maxTopicBytesPerPeer = opts.maxTopicBytesPerPeer ?? constants.GossipsubMaxTopicBytesPerPeer
   }
 
-  readonly [Symbol.toStringTag] = '@chainsafe/libp2p-gossipsub'
+  readonly [Symbol.toStringTag] = '@libp2p/gossipsub'
 
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/pubsub'
@@ -574,6 +581,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     this.peers.clear()
     this.subscriptions.clear()
+    this.topics.clear()
+    this.peerTopicBytes.clear()
 
     // Gossipsub
 
@@ -591,6 +600,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.control.clear()
     this.peerhave.clear()
     this.iasked.clear()
+    this.iwantCounts.clear()
     this.backoff.clear()
     this.outbound.clear()
     this.gossipTracer.clear()
@@ -667,10 +677,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
 
     try {
+      const rawStream = await connection.newStream(this.protocols, {
+        runOnLimitedConnection: this.runOnLimitedConnection
+      })
       const stream = new OutboundStream(
-        await connection.newStream(this.protocols, {
-          runOnLimitedConnection: this.runOnLimitedConnection
-        }),
+        rawStream,
         (e) => { this.log.error('outbound pipe error', e) },
         { maxBufferSize: this.opts.maxOutboundBufferSize }
       )
@@ -684,6 +695,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.floodsubPeers.add(id)
       }
       this.metrics?.peersPerProtocol.inc({ protocol }, 1)
+
+      rawStream.addEventListener('close', () => {
+        if (this.streamsOutbound.get(id) === stream) {
+          this.streamsOutbound.delete(id)
+          this.floodsubPeers.delete(id)
+          this.metrics?.peersPerProtocol.inc({ protocol }, -1)
+        }
+      }, { once: true })
 
       // Immediately send own subscriptions via the newly attached stream
       if (this.subscriptions.size > 0) {
@@ -779,9 +798,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.streamsInbound.delete(id)
 
     // remove peer from topics map
-    for (const peers of this.topics.values()) {
+    for (const [topic, peers] of this.topics) {
       peers.delete(id)
+      if (peers.size === 0) {
+        this.topics.delete(topic)
+      }
     }
+    this.peerTopicBytes.delete(id)
 
     // Remove this peer from the mesh
     for (const [topicStr, peers] of this.mesh) {
@@ -847,6 +870,29 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   // MESSAGE METHODS
 
   /**
+   * Decode an inbound RPC, enforcing this.decodeRpcLimits.
+   */
+  private decodeRpc (rpcBytes: Uint8Array | Uint8ArrayList): RPC {
+    return RPC.decode(rpcBytes, {
+      limits: {
+        subscriptions: this.decodeRpcLimits.maxSubscriptions,
+        messages: this.decodeRpcLimits.maxMessages,
+        control: {
+          ihave: this.decodeRpcLimits.maxControlMessages,
+          ihave$: { messageIDs: this.decodeRpcLimits.maxIhaveMessageIDs },
+          iwant: this.decodeRpcLimits.maxControlMessages,
+          iwant$: { messageIDs: this.decodeRpcLimits.maxIwantMessageIDs },
+          graft: this.decodeRpcLimits.maxControlMessages,
+          prune: this.decodeRpcLimits.maxControlMessages,
+          prune$: { peers: this.decodeRpcLimits.maxPeerInfos },
+          idontwant: this.decodeRpcLimits.maxControlMessages,
+          idontwant$: { messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs }
+        }
+      }
+    })
+  }
+
+  /**
    * Responsible for processing each RPC message received by other peers.
    */
   private async pipePeerReadStream (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>): Promise<void> {
@@ -858,25 +904,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
             const rpcBytes = data.subarray()
             // Note: This function may throw, it must be wrapped in a try {} catch {} to prevent closing the stream.
             // TODO: What should we do if the entire RPC is invalid?
-            const rpc = RPC.decode(rpcBytes, {
-              limits: {
-                subscriptions: this.decodeRpcLimits.maxSubscriptions,
-                messages: this.decodeRpcLimits.maxMessages,
-                control$: {
-                  ihave: this.decodeRpcLimits.maxIhaveMessageIDs,
-                  iwant: this.decodeRpcLimits.maxIwantMessageIDs,
-                  graft: this.decodeRpcLimits.maxControlMessages,
-                  prune: this.decodeRpcLimits.maxControlMessages,
-                  prune$: {
-                    peers: this.decodeRpcLimits.maxPeerInfos
-                  },
-                  idontwant: this.decodeRpcLimits.maxControlMessages,
-                  idontwant$: {
-                    messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs
-                  }
-                }
-              }
-            })
+            const rpc = this.decodeRpc(rpcBytes)
 
             this.metrics?.onRpcRecv(rpc, rpcBytes.length)
 
@@ -950,6 +978,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       // update peer subscriptions
 
       const subscriptions: Array<{ topic: TopicStr, subscribe: boolean }> = []
+      const fromStr = from.toString()
+      const graftTopics: TopicStr[] = []
 
       rpc.subscriptions.forEach((subOpt) => {
         const topic = subOpt.topic
@@ -962,11 +992,25 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
             return
           }
 
-          this.handleReceivedSubscription(from, topic, subscribe)
+          if (!this.handleReceivedSubscription(from, topic, subscribe)) {
+            // over the per-peer topic-byte budget, so ignore this subscription
+            return
+          }
+
+          // graft the peer into the mesh now rather than waiting for the next
+          // heartbeat, so a message published right after subscribing is not dropped
+          if (subscribe && this.graftOnSubscribe(fromStr, topic)) {
+            graftTopics.push(topic)
+          }
 
           subscriptions.push({ topic, subscribe })
         }
       })
+
+      // send one batched GRAFT covering every topic grafted while handling this RPC
+      if (graftTopics.length > 0) {
+        this.sendGraft(fromStr, graftTopics)
+      }
 
       this.safeDispatchEvent<SubscriptionChangeData>('subscription-change', {
         detail: { peerId: from, subscriptions }
@@ -1003,24 +1047,50 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /**
    * Handles a subscription change from a peer
    */
-  private handleReceivedSubscription (from: PeerId, topic: TopicStr, subscribe: boolean): void {
+  private handleReceivedSubscription (from: PeerId, topic: TopicStr, subscribe: boolean): boolean {
     this.log('subscription update from %p topic %s', from, topic)
 
+    const fromStr = from.toString()
     let topicSet = this.topics.get(topic)
-    if (topicSet == null) {
-      topicSet = new Set()
-      this.topics.set(topic, topicSet)
-    }
+
+    // charge each topic its string length plus a fixed per-entry overhead, so
+    // the budget bounds both topic bytes and topic count (a peer cannot occupy
+    // more than roughly budget / overhead entries regardless of topic length)
+    const cost = topic.length + constants.GossipsubTopicEntryOverhead
 
     if (subscribe) {
+      // a repeat SUBSCRIBE to a topic the peer already has is a no-op
+      if (topicSet?.has(fromStr) === true) {
+        return true
+      }
+
+      // bound the memory a single peer may occupy in the topics map
+      const used = this.peerTopicBytes.get(fromStr) ?? 0
+      if (used + cost > this.maxTopicBytesPerPeer) {
+        // over budget, so ignore this subscription; the peer keeps what it has
+        this.log('ignoring subscription from %p topic %s, over per-peer topic budget', from, topic)
+        return false
+      }
+      this.peerTopicBytes.set(fromStr, used + cost)
+
+      if (topicSet == null) {
+        topicSet = new Set()
+        this.topics.set(topic, topicSet)
+      }
+
       // subscribe peer to new topic
-      topicSet.add(from.toString())
-    } else {
-      // unsubscribe from existing topic
-      topicSet.delete(from.toString())
+      topicSet.add(fromStr)
+    } else if (topicSet?.has(fromStr) === true) {
+      // unsubscribe from existing topic and refund its cost
+      topicSet.delete(fromStr)
+      this.peerTopicBytes.set(fromStr, Math.max(0, (this.peerTopicBytes.get(fromStr) ?? 0) - cost))
+      if (topicSet.size === 0) {
+        this.topics.delete(topic)
+      }
     }
 
     // TODO: rust-libp2p has A LOT more logic here
+    return true
   }
 
   /**
@@ -1308,23 +1378,32 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // string msgId => msgId
     const iwant = new Map<MsgIdStr, Uint8Array>()
 
-    ihave.forEach(({ topicID, messageIDs }) => {
+    // Cap the message ids we examine per call at GossipsubMaxIHaveLength
+    let processed = 0
+    // eslint-disable-next-line no-labels
+    out: for (const { topicID, messageIDs } of ihave) {
       if (topicID == null || (messageIDs == null) || !this.mesh.has(topicID)) {
-        return
+        continue
       }
 
       let idonthave = 0
 
-      messageIDs.forEach((msgId) => {
+      for (const msgId of messageIDs) {
+        if (processed >= constants.GossipsubMaxIHaveLength) {
+          // eslint-disable-next-line no-labels
+          break out
+        }
+        processed++
+
         const msgIdStr = this.msgIdToStrFn(msgId)
         if (!this.seenCache.has(msgIdStr)) {
           iwant.set(msgIdStr, msgId)
           idonthave++
         }
-      })
+      }
 
       this.metrics?.onIhaveRcv(topicID, messageIDs.length, idonthave)
-    })
+    }
 
     if (iwant.size === 0) {
       return []
@@ -1370,29 +1449,49 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return []
     }
 
+    // IWANT flood protection
+    const iwantCount = (this.iwantCounts.get(id) ?? 0) + 1
+    this.iwantCounts.set(id, iwantCount)
+    if (iwantCount > constants.GossipsubMaxIWantMessages) {
+      this.log('IWANT: peer %s has requested too many times within this heartbeat interval; ignoring', id)
+      return []
+    }
+
     const ihave = new Map<MsgIdStr, RPC.Message>()
     const iwantByTopic = new Map<TopicStr, number>()
     let iwantDonthave = 0
 
-    iwant.forEach(({ messageIDs }) => {
-      messageIDs?.forEach((msgId) => {
+    // Cap the message ids we examine per call at GossipsubMaxIHaveLength
+    let processed = 0
+    // eslint-disable-next-line no-labels
+    out: for (const { messageIDs } of iwant) {
+      if (messageIDs == null) {
+        continue
+      }
+      for (const msgId of messageIDs) {
+        if (processed >= constants.GossipsubMaxIHaveLength) {
+          // eslint-disable-next-line no-labels
+          break out
+        }
+        processed++
+
         const msgIdStr = this.msgIdToStrFn(msgId)
         const entry = this.mcache.getWithIWantCount(msgIdStr, id)
         if (entry == null) {
           iwantDonthave++
-          return
+          continue
         }
 
         iwantByTopic.set(entry.msg.topic, 1 + (iwantByTopic.get(entry.msg.topic) ?? 0))
 
         if (entry.count > constants.GossipsubGossipRetransmission) {
           this.log('IWANT: Peer %s has asked for message %s too many times: ignoring request', id, msgId)
-          return
+          continue
         }
 
         ihave.set(msgIdStr, entry.msg)
-      })
-    })
+      }
+    }
 
     this.metrics?.onIwantRcv(iwantByTopic, iwantDonthave)
 
@@ -1484,10 +1583,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         // valid graft
       } else {
         this.log('GRAFT: Add mesh link from %s in %s', id, topicID)
-        this.score.graft(id, topicID)
-        peersInMesh.add(id)
-
-        this.metrics?.onAddToMesh(topicID, InclusionReason.Subscribed, 1)
+        this.addToMesh(id, topicID, InclusionReason.Subscribed)
       }
 
       this.safeDispatchEvent<MeshPeer>('gossipsub:graft', { detail: { peerId: id, topic: topicID, direction: 'inbound' } })
@@ -1822,7 +1918,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     toAdd.forEach((id) => {
       this.log('JOIN: Add mesh link to %s in %s', id, topic)
-      this.sendGraft(id, topic)
+      this.sendGraft(id, [topic])
 
       // rust-libp2p
       // - peer_score.graft()
@@ -2221,14 +2317,53 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /**
    * Sends a GRAFT message to a peer
    */
-  private sendGraft (id: PeerIdStr, topic: string): void {
-    const graft = [
-      {
-        topicID: topic
-      }
-    ]
+  private sendGraft (id: PeerIdStr, topics: string[]): void {
+    const graft = topics.map((topicID) => ({ topicID }))
     const out = createGossipRpc([], { graft })
     this.sendRpc(id, out)
+  }
+
+  /**
+   * Add a peer to a topic mesh, updating peer score, mesh membership and metrics.
+   * Sending the GRAFT is left to the caller: the heartbeat and graft-on-subscribe
+   * send one, which dispatches the outbound gossipsub:graft event via sendRpc,
+   * while the inbound GRAFT handler sends none and dispatches its own event.
+   */
+  private addToMesh (id: PeerIdStr, topic: TopicStr, reason: InclusionReason): void {
+    this.score.graft(id, topic)
+    this.mesh.get(topic)?.add(id)
+    this.metrics?.onAddToMesh(topic, reason, 1)
+  }
+
+  /**
+   * When a peer subscribes to a topic we are meshed on, graft it into the mesh
+   * immediately if there is room, instead of waiting for the next heartbeat.
+   * Without this, a message published before the mesh has formed is forwarded to
+   * nobody and silently dropped. Returns true if the peer was grafted, so the
+   * caller can send one batched GRAFT for every topic grafted from an RPC.
+   */
+  private graftOnSubscribe (id: PeerIdStr, topic: TopicStr): boolean {
+    const mesh = this.mesh.get(topic)
+
+    // only fill a mesh we belong to, and only while it is below the low-water mark
+    if (mesh == null || mesh.has(id) || mesh.size >= this.opts.Dlo) {
+      return false
+    }
+
+    // require an outbound stream on one of our protocols, the same check the
+    // heartbeat applies when selecting mesh peers
+    const peerStreams = this.streamsOutbound.get(id)
+    if (peerStreams == null || !this.protocols.includes(peerStreams.protocol)) {
+      return false
+    }
+
+    // do not graft direct peers, negatively scored peers or backed off peers
+    if (this.direct.has(id) || this.score.score(id) < 0 || (this.backoff.get(topic)?.has(id) ?? false)) {
+      return false
+    }
+
+    this.addToMesh(id, topic, InclusionReason.Subscribed)
+    return true
   }
 
   /**
@@ -2607,6 +2742,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.peerhave.clear()
     this.metrics?.cacheSize.set({ cache: 'iasked' }, this.iasked.size)
     this.iasked.clear()
+    this.iwantCounts.clear()
 
     // apply IWANT request penalties
     this.applyIwantPenalties()
@@ -2696,13 +2832,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
       const graftPeer = (id: PeerIdStr, reason: InclusionReason): void => {
         this.log('HEARTBEAT: Add mesh link to %s in %s', id, topic)
-        // update peer score
-        this.score.graft(id, topic)
-        // add peer to mesh
-        peers.add(id)
+        this.addToMesh(id, topic, reason)
         // when we add a new mesh peer, we don't want to gossip messages to it
         peersToGossip.delete(id)
-        this.metrics?.onAddToMesh(topic, reason, 1)
         // add to tograft
         const topics = tograft.get(id)
         if (topics == null) {

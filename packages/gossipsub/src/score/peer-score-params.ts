@@ -1,4 +1,4 @@
-import { InvalidPeerScoreParamsError } from '../errors.js'
+import { InvalidPeerScoreParamsError } from '../errors.ts'
 
 // This file defines PeerScoreParams and TopicScoreParams interfaces
 // as well as constructors, default constructors, and validation functions

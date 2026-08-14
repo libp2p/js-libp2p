@@ -8,10 +8,10 @@
  * To enable the Web Crypto API and allow `@libp2p/crypto` to work fully, please serve your page over HTTPS.
  */
 
-import * as hmac from './hmac/index.js'
-import * as keys from './keys/index.js'
-import pbkdf2 from './pbkdf2.js'
-import randomBytes from './random-bytes.js'
+import * as hmac from './hmac/index.ts'
+import * as keys from './keys/index.ts'
+import pbkdf2 from './pbkdf2.ts'
+import randomBytes from './random-bytes.ts'
 
 export { hmac }
 export { keys }
