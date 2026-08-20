@@ -1,10 +1,15 @@
 import { createServer, Socket } from 'net'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { pEvent } from 'p-event'
 import { toMultiaddrConnection } from '../src/socket-to-conn.ts'
+import { multiaddrToNetConfig } from '../src/utils.ts'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server, ServerOpts, SocketConstructorOpts } from 'node:net'
 
 interface TestOptions {
@@ -42,6 +47,50 @@ async function setup (opts?: TestOptions): Promise<TestFixture> {
     server,
     serverSocket,
     clientSocket: client
+  }
+}
+
+async function setupUnix (): Promise<TestFixture & { listenAddr: Multiaddr, cleanup(): void }> {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'libp2p-tcp-test-'))
+  const listenAddr = multiaddr(`/unix/${encodeURIComponent(path.join(dir, 'test.sock'))}`)
+  const cleanup = (): void => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+
+  // on Windows a unix multiaddr binds a named pipe rather than a filesystem
+  // path, so go through the same mapping the listener uses
+  const config = multiaddrToNetConfig(listenAddr)
+
+  if (!('path' in config) || typeof config.path !== 'string') {
+    cleanup()
+    throw new Error('Expected a unix socket path')
+  }
+
+  try {
+    const server = createServer()
+    server.listen(config.path)
+    await pEvent(server, 'listening', { rejectionEvents: ['error'] })
+
+    const client = new Socket()
+    client.connect(config.path)
+
+    const [
+      serverSocket
+    ] = await Promise.all([
+      pEvent<'connection', Socket>(server, 'connection', { rejectionEvents: ['error'] }),
+      pEvent(client, 'connect', { rejectionEvents: ['error'] })
+    ])
+
+    return {
+      server,
+      serverSocket,
+      clientSocket: client,
+      listenAddr,
+      cleanup
+    }
+  } catch (err) {
+    cleanup()
+    throw err
   }
 }
 
@@ -508,5 +557,65 @@ describe('socket-to-conn', () => {
 
     // server socket is destroyed
     expect(serverSocket.destroyed).to.be.true()
+  })
+
+  it('should destroy a unix socket when the MultiaddrConnection is aborted', async () => {
+    let listenAddr: Multiaddr
+    let cleanup: () => void
+    ({ server, clientSocket, serverSocket, listenAddr, cleanup } = await setupUnix())
+
+    try {
+      // the shape the listener creates
+      const maConn = toMultiaddrConnection({
+        socket: serverSocket,
+        direction: 'inbound',
+        localAddr: listenAddr,
+        log: defaultLogger().forComponent('libp2p:test-maconn')
+      })
+
+      const socketClosed = pEvent(serverSocket, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      maConn.abort(new Error('Oh no!'))
+
+      // resetAndDestroy() would throw ERR_INVALID_HANDLE_TYPE on the Pipe
+      // handle and abort() would swallow it, leaving the socket open
+      expect(serverSocket.destroyed).to.be.true()
+
+      await socketClosed
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('should destroy an outbound unix socket when the MultiaddrConnection is aborted', async () => {
+    let listenAddr: Multiaddr
+    let cleanup: () => void
+    ({ server, clientSocket, serverSocket, listenAddr, cleanup } = await setupUnix())
+
+    try {
+      // the shape the dialler creates - remoteAddr is passed directly instead
+      // of being derived from localAddr, which is the other half of the
+      // Unix.matches() discriminator
+      const maConn = toMultiaddrConnection({
+        socket: clientSocket,
+        direction: 'outbound',
+        remoteAddr: listenAddr,
+        log: defaultLogger().forComponent('libp2p:test-maconn')
+      })
+
+      const socketClosed = pEvent(clientSocket, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      maConn.abort(new Error('Oh no!'))
+
+      expect(clientSocket.destroyed).to.be.true()
+
+      await socketClosed
+    } finally {
+      cleanup()
+    }
   })
 })
