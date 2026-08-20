@@ -218,7 +218,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     try {
       this.sendReset(err)
     } catch (err: any) {
-      this.log('failed to send reset to remote - %e', err)
+      this.log.error('failed to send reset to remote - %e', err)
     }
 
     this.dispatchEvent(new StreamAbortEvent(err))

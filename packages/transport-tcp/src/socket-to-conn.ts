@@ -133,6 +133,15 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       return
     }
 
+    // resetAndDestroy() throws ERR_INVALID_HANDLE_TYPE for unix sockets because
+    // their handle is a Pipe and not a TCP handle. there is no RST at AF_UNIX
+    // so the peer sees a clean EOF rather than a reset
+    // https://nodejs.org/api/net.html#socketresetanddestroy
+    if (Unix.matches(this.remoteAddr)) {
+      this.socket.destroy()
+      return
+    }
+
     this.socket.resetAndDestroy()
   }
 
