@@ -4,6 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { pEvent } from 'p-event'
+import Sinon from 'sinon'
 import { toMultiaddrConnection } from '../src/socket-to-conn.ts'
 import type { Server, ServerOpts, SocketConstructorOpts } from 'node:net'
 
@@ -51,6 +52,8 @@ describe('socket-to-conn', () => {
   let serverSocket: Socket
 
   afterEach(async () => {
+    Sinon.restore()
+
     if (serverSocket != null) {
       serverSocket.destroy()
     }
@@ -507,6 +510,83 @@ describe('socket-to-conn', () => {
     expect(serverSocket.writable).to.be.false()
 
     // server socket is destroyed
+    expect(serverSocket.destroyed).to.be.true()
+  })
+
+  it('should close the socket when a reset races graceful shutdown', async () => {
+    ({ server, clientSocket, serverSocket } = await setup())
+
+    clientSocket.once('error', () => {})
+
+    // resetting a socket whose shutdown is already in flight fails with EINVAL
+    const socketErrors: Error[] = []
+    serverSocket.on('error', err => {
+      socketErrors.push(err)
+    })
+
+    const resetSpy = Sinon.spy(serverSocket, 'resetAndDestroy')
+
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
+    })
+    expect(inboundMaConn).to.have.property('status', 'open')
+
+    // resolves only on 'close', so it stays true to the test name even if the
+    // socket also errors
+    const serverClosed = pEvent(serverSocket, 'close', {
+      rejectionEvents: [],
+      signal: AbortSignal.timeout(5_000)
+    })
+    // sinks, so an assertion failing before the awaits below cannot turn these
+    // into unhandled rejections. awaiting them still rejects
+    serverClosed.catch(() => {})
+
+    // nothing has been written, so close() reaches sendClose() -> destroySoon()
+    // synchronously and puts a shutdown request in flight
+    const closePromise = inboundMaConn.close()
+    closePromise.catch(() => {})
+    expect(serverSocket.writableEnded).to.be.true()
+    expect(serverSocket.destroyed).to.be.false()
+
+    inboundMaConn.abort(new Error('close timed out'))
+
+    // the guard has to destroy the socket here. waiting only for 'close' would
+    // also pass if sendReset() did nothing, because destroySoon() closes the
+    // socket a tick later anyway
+    expect(resetSpy.called).to.be.false()
+    expect(serverSocket.destroyed).to.be.true()
+
+    // must stay above the awaits below, it is the fastest and clearest failure
+    expect(socketErrors).to.be.empty()
+
+    // without the guard the socket never emits 'close' and the handle is leaked
+    await expect(serverClosed).to.eventually.be.fulfilled()
+    await expect(closePromise).to.eventually.be.fulfilled()
+  })
+
+  it('should still reset a socket aborted before graceful close starts', async () => {
+    ({ server, clientSocket, serverSocket } = await setup())
+
+    clientSocket.once('error', () => {})
+
+    const resetSpy = Sinon.spy(serverSocket, 'resetAndDestroy')
+
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
+    })
+
+    // the writable end is still open, so the reset path must be used
+    expect(serverSocket.writableEnded).to.be.false()
+
+    inboundMaConn.abort(new Error('Not interested'))
+
+    // assert the reset landed, not just that the method was reached. abort()
+    // swallows a failing resetAndDestroy() and would leave the socket open
+    expect(resetSpy).to.have.property('callCount', 1)
     expect(serverSocket.destroyed).to.be.true()
   })
 })

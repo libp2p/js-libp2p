@@ -123,6 +123,16 @@ class TCPSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   sendReset (): void {
+    if (this.socket.writableEnded) {
+      // socket.end() starts the graceful shutdown path, which uses uv_shutdown().
+      // resetAndDestroy() calls uv_tcp_close_reset(), which cannot be mixed with
+      // uv_shutdown(), so use destroy() after writable end has started.
+      // https://docs.libuv.org/en/v1.x/stream.html#c.uv_shutdown
+      // https://docs.libuv.org/en/v1.x/tcp.html#c.uv_tcp_close_reset
+      this.socket.destroy()
+      return
+    }
+
     this.socket.resetAndDestroy()
   }
 
