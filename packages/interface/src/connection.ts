@@ -96,7 +96,7 @@ export interface NewStreamOptions extends AbortOptions, ProgressOptions<NewStrea
  * multiplexed, depending on the configuration of the nodes
  * between which the connection is made.
  */
-export interface Connection extends TypedEventTarget<Omit<MessageStreamEvents, 'drain' | 'message'>> {
+export interface Connection extends TypedEventTarget<Omit<MessageStreamEvents, 'drain' | 'message' | 'end'>> {
   /**
    * The unique identifier for this connection
    */
