@@ -1,5 +1,4 @@
 import 'reflect-metadata'
-import net from 'node:net'
 import { Duplex } from 'node:stream'
 import tls from 'node:tls'
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
@@ -267,7 +266,9 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
 }
 
 class EncryptedMultiaddrConnection extends AbstractMessageStream {
-  private socket: net.Socket
+  private socket: tls.TLSSocket
+  private stream: MessageStream
+  private closing?: Promise<void>
 
   /**
    * @param stream - The maConn that encrypted data is transferred over
@@ -282,6 +283,13 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
     })
 
     this.socket = socket
+    this.stream = stream
+
+    // the socket closed before this stream was created, so there is nothing
+    // left to tear down
+    if (socket.closed) {
+      this.closing = Promise.resolve()
+    }
 
     // accept decrypted data
     this.socket.on('data', (buf) => {
@@ -291,7 +299,7 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
       stream.abort(err)
     })
     this.socket.on('close', () => {
-      stream.close()
+      this.closing = stream.close()
         .catch(err => {
           stream.abort(err)
         })
@@ -302,16 +310,35 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
       this.safeDispatchEvent('drain')
     })
 
-    stream.addEventListener('close', () => {
+    stream.addEventListener('close', (evt) => {
       socket.destroy()
-      this.onTransportClosed()
+
+      // mirror the transport's close reason, otherwise a local failure, a
+      // remote reset and a clean close all reach the application as a clean
+      // close
+      if (evt.error != null) {
+        if (evt.local) {
+          this.abort(evt.error)
+        } else {
+          this.onRemoteReset()
+        }
+      } else {
+        this.onTransportClosed()
+      }
     })
   }
 
   async close (options?: AbortOptions): Promise<void> {
-    this.socket.destroySoon()
+    // the socket only emits 'close' once, so if it has already been emitted
+    // wait for the teardown it started instead of for the event itself
+    if (this.closing == null) {
+      this.socket.destroySoon()
 
-    await pEvent(this.socket, 'close', options)
+      await pEvent(this.socket, 'close', options)
+    }
+
+    // the socket closing does not mean the transport has finished closing
+    await this.closing
   }
 
   sendPause (): void {
@@ -322,13 +349,15 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
     this.socket.resume()
   }
 
-  async sendClose (options?: AbortOptions): Promise<void> {
-    this.socket.destroySoon()
-    options?.signal?.throwIfAborted()
-  }
+  sendReset (err: Error): void {
+    // a TLSSocket's handle is a TLSWrap and not a TCP handle, so
+    // resetAndDestroy() throws ERR_INVALID_HANDLE_TYPE here
+    // https://nodejs.org/api/net.html#socketresetanddestroy
+    this.socket.destroy()
 
-  sendReset (): void {
-    this.socket.resetAndDestroy()
+    // destroying the socket only closes the transport gracefully, so reset the
+    // transport too
+    this.stream.abort(err)
   }
 
   sendData (data: Uint8ArrayList): SendResult {

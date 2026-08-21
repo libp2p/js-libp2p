@@ -36,12 +36,19 @@ export class BoxMessageStream extends AbstractMultiaddrConnection {
     this.maConn.addEventListener('message', (evt) => {
       const data = evt.data
 
-      if (data instanceof Uint8Array) {
-        this.onData(this.xorWindowed(this.inboundXor, data))
-      } else {
-        for (const buf of data) {
-          this.onData(this.xorWindowed(this.inboundXor, buf))
+      try {
+        if (data instanceof Uint8Array) {
+          this.onData(this.xorWindowed(this.inboundXor, data))
+        } else {
+          for (const buf of data) {
+            this.onData(this.xorWindowed(this.inboundXor, buf))
+          }
         }
+      } catch (err: any) {
+        // any bytes we fail to process leave the cipher permanently out of
+        // step with the remote so tear the connection down
+        this.log.error('error decrypting inbound data - %e', err)
+        this.abort(err)
       }
     })
 

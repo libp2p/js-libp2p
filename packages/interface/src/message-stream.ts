@@ -50,8 +50,8 @@ export interface MessageStreamEvents {
   drain: Event
 
   /**
-   * The underlying resource is closed - no further events will be emitted and
-   * the stream cannot be used to send or receive any more data.
+   * The underlying resource is closed and the stream cannot be used to send any
+   * more data.
    *
    * When the `.error` field is set, the `local` property of the event will be
    * `true` value if the `.abort` was invoked, otherwise it means a remote error
@@ -63,11 +63,24 @@ export interface MessageStreamEvents {
    * Where the stream implementation supports half-closing, it may emit this
    * event when the remote end of the stream closes it's writable end.
    *
-   * After this event is received no further 'message' events will be emitted
-   * though the stream can still be written to, if it has not been closed at
-   * this end.
+   * The stream can still be written to, if it has not been closed at this end.
    */
   remoteCloseWrite: Event
+
+  /**
+   * No more data from the remote will be delivered, so resources tied to
+   * reading can be released.
+   *
+   * Emitted at most once, when the read buffer empties after the remote closes
+   * their writable end, or when `.abort` or `Stream.closeRead` close the
+   * readable end, discarding anything unread. Consumers that may attach after
+   * it has fired should read `readableEnded` rather than wait for it.
+   *
+   * Unread data defers it, so a stream with no 'message' listener, or one left
+   * paused, may close without ever emitting it. Use 'close' as the
+   * unconditional signal that a stream is finished.
+   */
+  end: Event
 
   /**
    * The outgoing write queue emptied - there are no more bytes queued for
@@ -133,6 +146,16 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
    * again to resume sending.
    */
   writableNeedsDrain: boolean
+
+  /**
+   * True once 'end' has been emitted. Read this instead of waiting for the
+   * event, which fires only once and may already have passed.
+   *
+   * It does not mean the readable end is closed, or that the read buffer is
+   * empty. Where the readable end is still open, data can be pushed back
+   * after 'end', for example by unwrapping a byte stream that read ahead.
+   */
+  readonly readableEnded: boolean
 
   /**
    * Returns the number of bytes that are queued to be read

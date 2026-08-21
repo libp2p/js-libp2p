@@ -16,7 +16,7 @@ export class StreamMessageEvent extends Event {
 
 /**
  * An event dispatched when the stream is closed. The `error` property can be
- * inspected to discover if the closing was graceful or not, and the `remote`
+ * inspected to discover if the closing was graceful or not, and the `local`
  * property shows which end of the stream initiated the closure
  */
 export class StreamCloseEvent extends Event {

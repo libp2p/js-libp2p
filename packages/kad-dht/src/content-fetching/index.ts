@@ -73,10 +73,10 @@ export class ContentFetching {
 
     const dsKey = bufferToRecordKey(this.datastorePrefix, key)
 
-    this.log('fetching record for key %k', dsKey)
+    this.log('fetching record for key %s', dsKey)
 
     const raw = await this.components.datastore.get(dsKey, options)
-    this.log('found %k in local datastore', dsKey)
+    this.log('found %s in local datastore', dsKey)
 
     const rec = Libp2pRecord.deserialize(raw)
 

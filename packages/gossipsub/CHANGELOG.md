@@ -1,5 +1,16 @@
 # Changelog
 
+## [17.0.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.1.1...gossipsub-v17.0.0) (2026-08-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **gossipsub:** gossipsub now caps the memory a single remote peer may occupy in the topics map via maxTopicBytesPerPeer (default 1 MiB, ~1000 topics per peer). Subscriptions beyond a peer's budget are ignored; raise the option to restore the previous unbounded behaviour.
+
+### Bug Fixes
+
+* **gossipsub:** bound subscribed topic bytes per peer ([#3593](https://github.com/libp2p/js-libp2p/issues/3593)) ([d553417](https://github.com/libp2p/js-libp2p/commit/d5534174d8b7d23ac1bd45a7e738664fbfb0cf4c))
+
 ## [16.1.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.1.0...gossipsub-v16.1.1) (2026-07-30)
 
 
