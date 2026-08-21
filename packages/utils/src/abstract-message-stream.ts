@@ -539,8 +539,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   /**
-   * Emit 'end' if nothing is buffered and no more data can arrive. Only the
-   * first call has any effect
+   * Emit 'end' if nothing is buffered and no more data will be delivered.
+   * Emits at most once
    */
   protected maybeDispatchEnd (): void {
     if (this.#readableEnded || this.readBuffer.byteLength > 0) {

@@ -68,8 +68,8 @@ export interface MessageStreamEvents {
   remoteCloseWrite: Event
 
   /**
-   * The remote will send no more data and everything it sent has been read, so
-   * resources tied to reading can be released.
+   * No more data from the remote will be delivered, so resources tied to
+   * reading can be released.
    *
    * Emitted at most once, when the read buffer empties after the remote closes
    * their writable end, or when `.abort` or `Stream.closeRead` close the
@@ -149,12 +149,11 @@ export interface MessageStream<Timeline extends MessageStreamTimeline = MessageS
 
   /**
    * True once 'end' has been emitted. Read this instead of waiting for the
-   * event, which fires only once and may already have passed. It is never set
-   * if a stream closes with data left unread.
+   * event, which fires only once and may already have passed.
    *
    * It does not mean the readable end is closed, or that the read buffer is
-   * empty: data can be pushed back after 'end', for example by unwrapping a
-   * byte stream that read ahead.
+   * empty. Where the readable end is still open, data can be pushed back
+   * after 'end', for example by unwrapping a byte stream that read ahead.
    */
   readonly readableEnded: boolean
 
