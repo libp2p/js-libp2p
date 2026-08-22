@@ -5,6 +5,16 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [2.0.21](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.20...simple-metrics-v2.0.21) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+
 ## [2.0.20](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.19...simple-metrics-v2.0.20) (2026-07-30)
 
 
