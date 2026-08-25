@@ -36,6 +36,29 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.2...utils-v7.4.0) (2026-08-22)
+
+
+### Features
+
+* emit an end event when the readable end closes ([#3608](https://github.com/libp2p/js-libp2p/issues/3608)) ([0967e75](https://github.com/libp2p/js-libp2p/commit/0967e75f56efcdc661ed9c8adcdae8f74ad781fc))
+
+
+### Bug Fixes
+
+* destroy sockets that resetAndDestroy() cannot reset ([#3607](https://github.com/libp2p/js-libp2p/issues/3607)) ([8786aa8](https://github.com/libp2p/js-libp2p/commit/8786aa8d011b1b2c0bfbb46db45a777d5e0e3172))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+
 ## [7.3.2](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.1...utils-v7.3.2) (2026-07-30)
 
 

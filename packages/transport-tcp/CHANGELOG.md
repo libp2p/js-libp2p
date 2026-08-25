@@ -89,6 +89,24 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.0.27](https://github.com/libp2p/js-libp2p/compare/tcp-v11.0.26...tcp-v11.0.27) (2026-08-22)
+
+
+### Bug Fixes
+
+* destroy sockets that resetAndDestroy() cannot reset ([#3607](https://github.com/libp2p/js-libp2p/issues/3607)) ([8786aa8](https://github.com/libp2p/js-libp2p/commit/8786aa8d011b1b2c0bfbb46db45a777d5e0e3172))
+* **tcp:** close socket when reset races shutdown ([#3597](https://github.com/libp2p/js-libp2p/issues/3597)) ([55d7a53](https://github.com/libp2p/js-libp2p/commit/55d7a539a15b9199066a20a7285fed30627a59ae))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+
 ## [11.0.26](https://github.com/libp2p/js-libp2p/compare/tcp-v11.0.25...tcp-v11.0.26) (2026-07-30)
 
 

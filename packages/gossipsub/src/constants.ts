@@ -314,3 +314,18 @@ export const BACKOFF_SLACK = 1
 
 export const GossipsubIdontwantMinDataSize = 512
 export const GossipsubIdontwantMaxMessages = 512
+
+/**
+ * The default per-peer memory budget for tracking a peer's topic subscriptions,
+ * bounding per-peer memory in the topics map. Each topic costs its string
+ * length plus GossipsubTopicEntryOverhead, so this bounds topic count as well
+ * as bytes (~1000 topics at the 1 MiB default).
+ */
+export const GossipsubMaxTopicBytesPerPeer = 1024 * 1024
+
+/**
+ * Approximate fixed heap cost of one topics-map entry (the Map slot, the Set,
+ * and the subscriber's peer id), charged per subscription on top of the topic
+ * string length so the per-peer budget bounds topic count as well as bytes.
+ */
+export const GossipsubTopicEntryOverhead = 1024

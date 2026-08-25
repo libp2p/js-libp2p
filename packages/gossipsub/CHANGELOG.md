@@ -1,5 +1,33 @@
 # Changelog
 
+## [17.0.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.0.0...gossipsub-v17.0.1) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.28 to ^11.0.29
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+    * @libp2p/peer-store bumped from ^12.0.26 to ^12.0.27
+
+## [17.0.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.1.1...gossipsub-v17.0.0) (2026-08-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **gossipsub:** gossipsub now caps the memory a single remote peer may occupy in the topics map via maxTopicBytesPerPeer (default 1 MiB, ~1000 topics per peer). Subscriptions beyond a peer's budget are ignored; raise the option to restore the previous unbounded behaviour.
+
+### Bug Fixes
+
+* **gossipsub:** bound subscribed topic bytes per peer ([#3593](https://github.com/libp2p/js-libp2p/issues/3593)) ([d553417](https://github.com/libp2p/js-libp2p/commit/d5534174d8b7d23ac1bd45a7e738664fbfb0cf4c))
+
 ## [16.1.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.1.0...gossipsub-v16.1.1) (2026-07-30)
 
 

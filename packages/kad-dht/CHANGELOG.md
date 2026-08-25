@@ -106,6 +106,31 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.4.4](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.3...kad-dht-v16.4.4) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/peer-collections bumped from ^7.0.26 to ^7.0.27
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/ping bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+    * @libp2p/peer-store bumped from ^12.0.26 to ^12.0.27
+
+## [16.4.3](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.2...kad-dht-v16.4.3) (2026-08-13)
+
+
+### Bug Fixes
+
+* log datastore key as string ([#3590](https://github.com/libp2p/js-libp2p/issues/3590)) ([47cf9cd](https://github.com/libp2p/js-libp2p/commit/47cf9cdc15a465f84df11f4add0f15110d0c870a))
+
 ## [16.4.2](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.1...kad-dht-v16.4.2) (2026-07-30)
 
 
