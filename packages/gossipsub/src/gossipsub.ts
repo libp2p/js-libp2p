@@ -18,6 +18,7 @@ import { MessageCache } from './message-cache.ts'
 import {
   ChurnReason,
   getMetrics,
+  IDontWantSkipPath,
   IHaveIgnoreReason,
   InclusionReason,
 
@@ -106,7 +107,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * The signature policy to follow by default
    */
   public readonly globalSignaturePolicy: typeof StrictSign | typeof StrictNoSign
-  public protocols: string[] = [constants.GossipsubIDv12, constants.GossipsubIDv11, constants.GossipsubIDv10]
+  public protocols: string[] = [...constants.GossipsubVersionLadder].reverse()
 
   private publishConfig: PublishConfig | undefined
 
@@ -251,8 +252,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
   /**
    * Tracks IDONTWANT messages received by peers and the heartbeat they were received in.
-   * Message sends in the forward and publish paths are skipped for peers with an entry
-   * here, per the v1.2 spec.
+   * Message sends in the forward (per the v1.2 spec), publish and IWANT response paths
+   * are skipped for peers with an entry here.
    *
    * idontwants are stored for `mcacheLength` heartbeats before being pruned,
    * so this map is bounded by peerCount * idontwantMaxMessages * mcacheLength
@@ -1478,6 +1479,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         processed++
 
         const msgIdStr = this.msgIdToStrFn(msgId)
+
+        // the peer told us it already has this message, so don't serve it back
+        if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+          this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.iwant)
+          continue
+        }
+
         const entry = this.mcache.getWithIWantCount(msgIdStr, id)
         if (entry == null) {
           iwantDonthave++
@@ -2126,7 +2134,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       // skip peers that told us they already have the message
       if (this.idontwants.get(id)?.has(msgIdStr) === true) {
         tosend.delete(id)
-        this.metrics?.onIdontwantSkippedSend('forward')
+        this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.forward)
         return
       }
 
@@ -2197,7 +2205,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     for (const id of tosend) {
       if (this.idontwants.get(id)?.has(msgIdStr) === true) {
         tosend.delete(id)
-        this.metrics?.onIdontwantSkippedSend('publish')
+        this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.publish)
       }
     }
 

@@ -32,7 +32,11 @@ export const GossipsubIDv12 = '/meshsub/1.2.0'
  *
  * New protocol versions must be appended to the end of this list.
  */
-export const GossipsubVersionLadder: string[] = [GossipsubIDv10, GossipsubIDv11, GossipsubIDv12]
+const versionLadder = [GossipsubIDv10, GossipsubIDv11, GossipsubIDv12] as const
+
+export type GossipsubVersion = (typeof versionLadder)[number]
+
+export const GossipsubVersionLadder: readonly string[] = versionLadder
 
 /**
  * Gossipsub protocol features that are only available from a minimum protocol version
@@ -50,7 +54,7 @@ export enum GossipsubFeature {
   IDontWant = 'IDontWant'
 }
 
-const featureMinimumProtocol: Record<GossipsubFeature, string> = {
+const featureMinimumProtocol: Record<GossipsubFeature, GossipsubVersion> = {
   [GossipsubFeature.Backoff]: GossipsubIDv11,
   [GossipsubFeature.IDontWant]: GossipsubIDv12
 }
