@@ -8,15 +8,59 @@ import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { concat } from 'uint8arrays'
+import { concat, equals as uint8ArrayEquals } from 'uint8arrays'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { GossipsubDhi } from '../src/constants.ts'
+import { FloodsubID, GossipsubDhi, GossipsubFeature, GossipsubIDv10, GossipsubIDv11, GossipsubIDv12, GossipsubVersionLadder, protocolSupportsFeature } from '../src/constants.ts'
 import { GossipSub as GossipSubClass } from '../src/gossipsub.ts'
-import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.ts'
+import { TopicValidatorResult } from '../src/index.ts'
+import { messageIdToString } from '../src/utils/messageIdToString.ts'
+import { connectAllPubSubNodes, connectPubsubNodes, createComponentsArray } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
+import type { Message } from '../src/index.ts'
+import type { MetricsRegister } from '../src/metrics.ts'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { SinonStubbedInstance } from 'sinon'
+
+interface RecordedIncrement {
+  labels?: Record<string, string | number>
+  value: number
+}
+
+/**
+ * A real `MetricsRegister` that records gauge increments per metric name.
+ */
+function createRecordingMetricsRegister (): { register: MetricsRegister, increments: Map<string, RecordedIncrement[]> } {
+  const increments = new Map<string, RecordedIncrement[]>()
+
+  const record = (name: string, labels: Record<string, string | number> | undefined, value: number): void => {
+    const entries = increments.get(name) ?? []
+    entries.push({ labels, value })
+    increments.set(name, entries)
+  }
+
+  const register = {
+    gauge: (config: { name: string }): any => ({
+      inc: (a?: any, b?: any): void => {
+        if (typeof a === 'object' && a !== null) {
+          record(config.name, a, b ?? 1)
+        } else {
+          record(config.name, undefined, a ?? 1)
+        }
+      },
+      set: (): void => {},
+      addCollect: (): void => {}
+    }),
+    histogram: (): any => ({
+      startTimer: () => () => {},
+      observe: (): void => {},
+      reset: (): void => {}
+    }),
+    avgMinMax: (): any => ({ set: (): void => {} })
+  } as unknown as MetricsRegister
+
+  return { register, increments }
+}
 
 describe('gossip', () => {
   let nodes: GossipSubAndComponents[]
@@ -39,6 +83,7 @@ describe('gossip', () => {
   })
 
   afterEach(async () => {
+    sinon.restore()
     await stop(...nodes.reduce<any[]>((acc, curr) => acc.concat(curr.pubsub, ...Object.entries(curr.components)), []))
   })
 
@@ -214,6 +259,354 @@ describe('gossip', () => {
 
     await nodeA.pubsub.heartbeat()
     expect(pubsub.idontwants.get(peerId)?.size).to.equal(0)
+  })
+
+  it('should not send idontwant to peers on protocols below v1.2', async function () {
+    this.timeout(10e4)
+    // this node only speaks gossipsub v1.1 and so must never receive IDONTWANT
+    const legacyNode = nodes[1]
+    legacyNode.pubsub.protocols = [GossipsubIDv11, GossipsubIDv10]
+
+    const topic = 'Z'
+    const subscriptionPromises = nodes.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    nodes.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(nodes)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(nodes.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    // publish a message big enough to trigger IDONTWANT on every receiver
+    const idontwantMinDataSize = nodes[0].pubsub.opts.idontwantMinDataSize
+    await nodes[0].pubsub.publish(topic, new Uint8Array(idontwantMinDataSize + 1))
+
+    // wait for the message and the resulting IDONTWANTs to propagate
+    await Promise.all(nodes.slice(1).map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const legacyNodeId = legacyNode.components.peerId.toString()
+    const peersMeshedWithLegacyNode = nodes.filter((n) => n.pubsub.mesh.get(topic)?.has(legacyNodeId) === true)
+    expect(peersMeshedWithLegacyNode, 'v1.1 peer must be in some peer\'s mesh for this test to mean anything').to.have.length.greaterThan(0)
+
+    // v1.2 receivers exchanged IDONTWANTs with each other, the v1.1 peer got none
+    expect(legacyNode.pubsub['idontwants'].size, 'v1.1 peer should not receive IDONTWANT').to.equal(0)
+    const v12PeersWithIdontwants = nodes.slice(2).filter((n) => n.pubsub['idontwants'].size > 0)
+    expect(v12PeersWithIdontwants, 'v1.2 peers should receive IDONTWANT').to.have.length.greaterThan(0)
+  })
+
+  it('should not forward messages to peers that sent IDONTWANT', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    // use content-derived message ids so ids are known before publishing
+    const { register, increments } = createRecordingMetricsRegister()
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0),
+        metricsRegister: register,
+        metricsTopicStrToLabel: new Map([[topic, topic]])
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      sendRpc: GossipSubClass['sendRpc']
+    }
+    const sendRpcSpy = sinon.spy(pubsubA, 'sendRpc')
+
+    // B tells A it does not want the message before the message is published
+    const refused = uint8ArrayFromString('b-does-not-want-this-message')
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [refused] }])
+
+    const receivedRefused = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, refused)
+    await receivedRefused
+
+    // control: a message B did not refuse is forwarded to B as usual
+    const wanted = uint8ArrayFromString('b-wants-this-message')
+    const receivedWanted = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, wanted)
+    await receivedWanted
+
+    const msgsSentToB = sendRpcSpy.getCalls()
+      .filter((call) => call.args[0] === nodeBId)
+      .flatMap((call) => call.args[1].messages ?? [])
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, refused)), 'must not forward to a peer that sent IDONTWANT').to.be.false()
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, wanted)), 'must forward messages the peer did not refuse').to.be.true()
+    const skipped = increments.get('gossipsub_idontwant_skipped_sends_total') ?? []
+    expect(skipped.map((entry) => entry.labels?.on), 'skip must be counted under the forward label').to.deep.equal(['forward'])
+  })
+
+  it('should not forward to peers whose IDONTWANT arrives during validation', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    // use content-derived message ids so ids are known before publishing
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0)
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      idontwants: Map<string, Map<string, number>>
+      sendRpc: GossipSubClass['sendRpc']
+    }
+    const sendRpcSpy = sinon.spy(pubsubA, 'sendRpc')
+
+    // hold nodeA's validation open until B's IDONTWANT has arrived
+    let resolveValidation: () => void = () => {}
+    const validationGate = new Promise<void>((resolve) => { resolveValidation = resolve })
+    nodeA.pubsub.topicValidators.set(topic, async () => {
+      await validationGate
+      return TopicValidatorResult.Accept
+    })
+
+    // the message is big enough that every receiver broadcasts IDONTWANT for it
+    const idontwantMinDataSize = nodeA.pubsub.opts.idontwantMinDataSize
+    const data = concat([uint8ArrayFromString('validation-race'), new Uint8Array(idontwantMinDataSize)])
+
+    const received = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, data)
+
+    // B received the message from C and broadcast IDONTWANT - wait for A to track it,
+    // then let A's validation finish
+    await pWaitFor(() => pubsubA.idontwants.get(nodeBId)?.has(messageIdToString(data)) === true, { timeout: 10000 })
+    resolveValidation()
+    await received
+
+    // control: a small message (no IDONTWANT broadcast) passes validation and is forwarded
+    nodeA.pubsub.topicValidators.delete(topic)
+    const wanted = uint8ArrayFromString('no-idontwant-race')
+    const receivedWanted = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, wanted)
+    await receivedWanted
+
+    const msgsSentToB = sendRpcSpy.getCalls()
+      .filter((call) => call.args[0] === nodeBId)
+      .flatMap((call) => call.args[1].messages ?? [])
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, data)), 'must not forward after IDONTWANT arrived during validation').to.be.false()
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, wanted)), 'must forward messages the peer did not refuse').to.be.true()
+  })
+
+  it('should not suppress forwarding for ids beyond the idontwant cap', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    const idontwantMaxMessages = 4
+    // use content-derived message ids so ids are known before publishing
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0),
+        idontwantMaxMessages
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      sendRpc: GossipSubClass['sendRpc']
+    }
+    const sendRpcSpy = sinon.spy(pubsubA, 'sendRpc')
+
+    // B sends one more IDONTWANT than the per-heartbeat cap allows - the cap bounds
+    // how much suppression a peer can impose
+    const withinCap = Array.from({ length: idontwantMaxMessages }, (_, i) => uint8ArrayFromString(`within-cap-${i}`))
+    const overCap = uint8ArrayFromString('over-cap-not-tracked')
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [...withinCap, overCap] }])
+
+    // a message whose id fell beyond the cap is still forwarded to B
+    const receivedOverCap = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, overCap)
+    await receivedOverCap
+
+    // a message whose id was tracked within the cap is suppressed
+    const receivedWithinCap = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, withinCap[0])
+    await receivedWithinCap
+
+    const msgsSentToB = sendRpcSpy.getCalls()
+      .filter((call) => call.args[0] === nodeBId)
+      .flatMap((call) => call.args[1].messages ?? [])
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, overCap)), 'ids beyond the cap must not suppress forwarding').to.be.true()
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, withinCap[0])), 'ids within the cap must suppress forwarding').to.be.false()
+  })
+
+  it('should drop tracked idontwants when the peer disconnects', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    const duo = await createComponentsArray({
+      number: 2,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 }
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...duo)
+    const [nodeA, nodeB] = duo
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = duo.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    duo.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(duo)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(duo.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      idontwants: Map<string, Map<string, number>>
+    }
+
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [uint8ArrayFromString('refused-before-disconnect')] }])
+    expect(pubsubA.idontwants.get(nodeBId)?.size).to.equal(1)
+
+    // suppression state must not survive the peer disconnecting
+    await nodeA.components.connectionManager.closeConnections(nodeB.components.peerId)
+    expect(pubsubA.idontwants.has(nodeBId), 'idontwants must be dropped on disconnect').to.be.false()
+
+    // and a reconnected peer starts with a clean slate
+    await connectPubsubNodes(nodeA, nodeB)
+    expect(pubsubA.idontwants.has(nodeBId)).to.be.false()
+  })
+
+  it('should forward to a peer again once its IDONTWANT has been pruned', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    // use content-derived message ids so ids are known before publishing
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0)
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      idontwants: Map<string, Map<string, number>>
+      sendRpc: GossipSubClass['sendRpc']
+    }
+    const sendRpcSpy = sinon.spy(pubsubA, 'sendRpc')
+
+    const refused = uint8ArrayFromString('b-refused-this-then-forgot')
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [refused] }])
+    expect(pubsubA.idontwants.get(nodeBId)?.size, 'IDONTWANT should be tracked').to.equal(1)
+
+    // let the entry age out
+    const mcacheLength = nodeA.pubsub.opts.mcacheLength
+    for (let i = 0; i < mcacheLength; i++) {
+      await nodeA.pubsub.heartbeat()
+    }
+    expect(pubsubA.idontwants.get(nodeBId)?.size, 'IDONTWANT should have been pruned').to.equal(0)
+
+    // A now has no reason to suppress, so the same content must reach B from A
+    const received = pEvent(nodeA.pubsub, 'gossipsub:message')
+    await nodeC.pubsub.publish(topic, refused)
+    await received
+
+    const msgsSentToB = sendRpcSpy.getCalls()
+      .filter((call) => call.args[0] === nodeBId)
+      .flatMap((call) => call.args[1].messages ?? [])
+    expect(msgsSentToB.some((msg) => msg.data != null && uint8ArrayEquals(msg.data, refused)), 'forwarding must resume once the IDONTWANT is pruned').to.be.true()
+  })
+
+  it('should not serve IWANT requests for messages the peer sent IDONTWANT for', async function () {
+    this.timeout(10e4)
+    const topic = 'Z'
+    const { register, increments } = createRecordingMetricsRegister()
+    // use content-derived message ids so ids are known before publishing
+    const trio = await createComponentsArray({
+      number: 3,
+      connected: false,
+      init: {
+        scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
+        msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0),
+        metricsRegister: register,
+        metricsTopicStrToLabel: new Map([[topic, topic]])
+      }
+    })
+    // ensure the nodes are stopped in afterEach
+    nodes.push(...trio)
+    const [nodeA, nodeB, nodeC] = trio
+    const nodeBId = nodeB.components.peerId.toString()
+
+    const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
+    trio.forEach((n) => { n.pubsub.subscribe(topic) })
+    await connectAllPubSubNodes(trio)
+    await Promise.all(subscriptionPromises)
+    await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
+
+    const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
+      handleIdontwant: GossipSubClass['handleIdontwant']
+      handleIWant: GossipSubClass['handleIWant']
+    }
+
+    // get both messages into A's mcache by publishing them from C
+    const refused = uint8ArrayFromString('b-refused-but-then-asked-for-it')
+    const wanted = uint8ArrayFromString('b-never-refused-this')
+    for (const data of [refused, wanted]) {
+      const received = pEvent(nodeA.pubsub, 'gossipsub:message')
+      await nodeC.pubsub.publish(topic, data)
+      await received
+    }
+
+    pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [refused] }])
+
+    // control first: A will serve an IWANT for content B never refused, which proves the
+    // mcache lookup and the score gate are not what makes the assertion below pass
+    const servedWanted = pubsubA.handleIWant(nodeBId, [{ messageIDs: [wanted] }])
+    expect(servedWanted, 'A should serve an IWANT for content B did not refuse').to.have.length(1)
+    expect(servedWanted[0].data != null && uint8ArrayEquals(servedWanted[0].data, wanted)).to.be.true()
+
+    const servedRefused = pubsubA.handleIWant(nodeBId, [{ messageIDs: [refused] }])
+    expect(servedRefused, 'A must not serve an IWANT for content B sent IDONTWANT for').to.have.length(0)
+
+    const skipped = increments.get('gossipsub_idontwant_skipped_sends_total') ?? []
+    expect(skipped.map((entry) => entry.labels?.on), 'refused IWANT must be counted under the iwant label').to.deep.equal(['iwant'])
   })
 
   it('Should allow publishing to zero peers if flag is passed', async function () {
@@ -598,5 +991,34 @@ describe('gossip', () => {
     expect(registrar.handle.getCall(0)).to.have.nested.property('args[2].maxOutboundStreams', maxOutboundStreams)
 
     await pubsub.stop()
+  })
+})
+
+describe('protocolSupportsFeature', () => {
+  it('should support IDONTWANT from gossipsub v1.2 onward', () => {
+    expect(protocolSupportsFeature(GossipsubIDv10, GossipsubFeature.IDontWant)).to.be.false()
+    expect(protocolSupportsFeature(GossipsubIDv11, GossipsubFeature.IDontWant)).to.be.false()
+
+    // every ladder entry from v1.2 onward supports IDONTWANT, including versions appended later
+    for (const protocol of GossipsubVersionLadder.slice(GossipsubVersionLadder.indexOf(GossipsubIDv12))) {
+      expect(protocolSupportsFeature(protocol, GossipsubFeature.IDontWant), protocol).to.be.true()
+    }
+  })
+
+  it('should support PRUNE backoff from gossipsub v1.1 onward', () => {
+    expect(protocolSupportsFeature(GossipsubIDv10, GossipsubFeature.Backoff)).to.be.false()
+
+    // every ladder entry from v1.1 onward supports backoff, including versions appended later
+    for (const protocol of GossipsubVersionLadder.slice(GossipsubVersionLadder.indexOf(GossipsubIDv11))) {
+      expect(protocolSupportsFeature(protocol, GossipsubFeature.Backoff), protocol).to.be.true()
+    }
+  })
+
+  it('should support no features for protocols not on the version ladder', () => {
+    for (const feature of Object.values(GossipsubFeature)) {
+      expect(protocolSupportsFeature(FloodsubID, feature), feature).to.be.false()
+      expect(protocolSupportsFeature('/unknown/1.0.0', feature), feature).to.be.false()
+      expect(protocolSupportsFeature(undefined, feature), feature).to.be.false()
+    }
   })
 })

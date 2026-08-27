@@ -18,6 +18,7 @@ import { MessageCache } from './message-cache.ts'
 import {
   ChurnReason,
   getMetrics,
+  IDontWantSkipPath,
   IHaveIgnoreReason,
   InclusionReason,
 
@@ -106,7 +107,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * The signature policy to follow by default
    */
   public readonly globalSignaturePolicy: typeof StrictSign | typeof StrictNoSign
-  public protocols: string[] = [constants.GossipsubIDv12, constants.GossipsubIDv11, constants.GossipsubIDv10]
+  public protocols: string[] = [...constants.GossipsubVersionLadder].reverse()
 
   private publishConfig: PublishConfig | undefined
 
@@ -250,7 +251,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   private readonly idontwantCounts = new Map<PeerIdStr, number>()
 
   /**
-   * Tracks IDONTWANT messages received by peers and the heartbeat they were received in
+   * Tracks IDONTWANT messages received by peers and the heartbeat they were received in.
+   * Message sends in the forward (per the v1.2 spec) and IWANT response paths are
+   * skipped for peers with an entry here.
    *
    * idontwants are stored for `mcacheLength` heartbeats before being pruned,
    * so this map is bounded by peerCount * idontwantMaxMessages * mcacheLength
@@ -1476,9 +1479,15 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         processed++
 
         const msgIdStr = this.msgIdToStrFn(msgId)
+
         const entry = this.mcache.getWithIWantCount(msgIdStr, id)
         if (entry == null) {
           iwantDonthave++
+          continue
+        }
+
+        if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+          this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.iwant)
           continue
         }
 
@@ -2122,6 +2131,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     // forward the message to peers
     tosend.forEach((id) => {
+      // skip peers that told us they already have the message
+      if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+        tosend.delete(id)
+        this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.forward)
+        return
+      }
+
       // sendRpc may mutate RPC message on piggyback, create a new message for each peer
       this.sendRpc(id, createGossipRpc([rawMsg]))
     })
@@ -2386,11 +2402,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     // don't send IDONTWANT to:
     // - the source
-    // - peers that don't support v1.2
+    // - peers whose negotiated protocol doesn't support IDONTWANT
     const tosend = new Set(ids)
     tosend.delete(source)
     for (const id of tosend) {
-      if (this.streamsOutbound.get(id)?.protocol !== constants.GossipsubIDv12) {
+      if (!constants.protocolSupportsFeature(this.streamsOutbound.get(id)?.protocol, constants.GossipsubFeature.IDontWant)) {
         tosend.delete(id)
       }
     }
@@ -2621,7 +2637,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     onUnsubscribe: boolean
   ): Promise<RPC.ControlPrune> {
     this.score.prune(id, topic)
-    if (this.streamsOutbound.get(id)?.protocol === constants.GossipsubIDv10) {
+    if (!constants.protocolSupportsFeature(this.streamsOutbound.get(id)?.protocol, constants.GossipsubFeature.Backoff)) {
       // Gossipsub v1.0 -- no backoff, the peer won't be able to parse it anyway
       return {
         topicID: topic,

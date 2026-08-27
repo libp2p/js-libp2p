@@ -25,6 +25,60 @@ export const GossipsubIDv11 = '/meshsub/1.1.0'
  */
 export const GossipsubIDv12 = '/meshsub/1.2.0'
 
+/**
+ * An ordered ladder of gossipsub protocol IDs, oldest to newest. Each version is a
+ * superset of the one before it, so a protocol's position on the ladder determines
+ * which features it supports - see `protocolSupportsFeature`.
+ *
+ * New protocol versions must be appended to the end of this list.
+ */
+const versionLadder = [GossipsubIDv10, GossipsubIDv11, GossipsubIDv12] as const
+
+export type GossipsubVersion = (typeof versionLadder)[number]
+
+export const GossipsubVersionLadder: readonly string[] = versionLadder
+
+/**
+ * Gossipsub protocol features that are only available from a minimum protocol version
+ * onward. Used with `protocolSupportsFeature` to gate version-dependent behavior on the
+ * protocol negotiated with a peer, instead of comparing protocol IDs for equality.
+ */
+export enum GossipsubFeature {
+  /**
+   * PRUNE messages carry backoff and peer exchange info (gossipsub v1.1+)
+   */
+  Backoff = 'Backoff',
+  /**
+   * IDONTWANT control messages (gossipsub v1.2+)
+   */
+  IDontWant = 'IDontWant'
+}
+
+const featureMinimumProtocol: Record<GossipsubFeature, GossipsubVersion> = {
+  [GossipsubFeature.Backoff]: GossipsubIDv11,
+  [GossipsubFeature.IDontWant]: GossipsubIDv12
+}
+
+/**
+ * Returns true when `protocol` is a gossipsub version that supports `feature` - that is,
+ * when it sits at or above the feature's minimum version on the `GossipsubVersionLadder`.
+ *
+ * Protocols not on the ladder (floodsub, unknown protocols) support no features.
+ */
+export function protocolSupportsFeature (protocol: string | undefined, feature: GossipsubFeature): boolean {
+  if (protocol == null) {
+    return false
+  }
+
+  const protocolIndex = GossipsubVersionLadder.indexOf(protocol)
+
+  if (protocolIndex === -1) {
+    return false
+  }
+
+  return protocolIndex >= GossipsubVersionLadder.indexOf(featureMinimumProtocol[feature])
+}
+
 // Overlay parameters
 
 /**
