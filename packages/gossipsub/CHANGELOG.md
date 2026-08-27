@@ -1,5 +1,13 @@
 # Changelog
 
+## [17.1.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.0.1...gossipsub-v17.1.0) (2026-08-27)
+
+
+### Features
+
+* enforce idontwant ([#3595](https://github.com/libp2p/js-libp2p/issues/3595)) ([87dca02](https://github.com/libp2p/js-libp2p/commit/87dca02b07f169a41e91f01379eb4ec9a3288856))
+* **gossipsub:** add floodPublish option to PublishOpts ([#3610](https://github.com/libp2p/js-libp2p/issues/3610)) ([4a6c5d1](https://github.com/libp2p/js-libp2p/commit/4a6c5d11af8dcda44bed5a2ec9db5101ab45212d))
+
 ## [17.0.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.0.0...gossipsub-v17.0.1) (2026-08-22)
 
 
