@@ -1480,15 +1480,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
         const msgIdStr = this.msgIdToStrFn(msgId)
 
-        // the peer told us it already has this message, so don't serve it back
-        if (this.idontwants.get(id)?.has(msgIdStr) === true) {
-          this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.iwant)
-          continue
-        }
-
         const entry = this.mcache.getWithIWantCount(msgIdStr, id)
         if (entry == null) {
           iwantDonthave++
+          continue
+        }
+
+        if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+          this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.iwant)
           continue
         }
 
