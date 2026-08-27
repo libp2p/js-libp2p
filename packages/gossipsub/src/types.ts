@@ -85,6 +85,12 @@ export interface PublishOpts {
   ignoreDuplicatePublishError?: boolean
   /** serialize message once and send to all peers without control messages */
   batchPublish?: boolean
+  /**
+   * Flood publish this message to every subscribed peer above the publish threshold,
+   * overriding the global `floodPublish` option for this call only. Preserves a `false`
+   * value, so it can also disable flood publishing per message.
+   */
+  floodPublish?: boolean
 }
 
 export enum PublishConfigType {

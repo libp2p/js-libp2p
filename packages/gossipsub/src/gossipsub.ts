@@ -1993,7 +1993,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     return tosend
   }
 
-  private selectPeersToPublish (topic: TopicStr): {
+  private selectPeersToPublish (topic: TopicStr, floodPublish?: boolean): {
     tosend: Set<PeerIdStr>
     tosendCount: ToSendGroupCount
   } {
@@ -2009,7 +2009,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     if (peersInTopic != null) {
       // flood-publish behavior
       // send to direct peers and _all_ peers meeting the publishThreshold
-      if (this.opts.floodPublish) {
+      // per-publish opt takes precedence over the global opt, while preserving a false value
+      if (floodPublish ?? this.opts.floodPublish) {
         peersInTopic.forEach((id) => {
           if (this.direct.has(id)) {
             tosend.add(id)
@@ -2162,7 +2163,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       throw Error('PublishError.Duplicate')
     }
 
-    const { tosend, tosendCount } = this.selectPeersToPublish(topic)
+    const { tosend, tosendCount } = this.selectPeersToPublish(topic, opts?.floodPublish)
     const willSendToSelf = this.opts.emitSelf && this.subscriptions.has(topic)
 
     // Current publish opt takes precedence global opts, while preserving false value
