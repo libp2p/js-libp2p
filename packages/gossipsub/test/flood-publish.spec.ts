@@ -33,7 +33,7 @@ describe('per-publish floodPublish', () => {
   // selectPeersToPublish is private, reach it the same way other specs reach internals
   function selectPeers (gossipsub: GossipSubClass, floodPublish?: boolean): Set<string> {
     // a subscribed peer that is not part of the mesh for the topic
-    ;(gossipsub as any).topics.set(topic, new Set([nonMeshPeer]))
+    (gossipsub as any).topics.set(topic, new Set([nonMeshPeer]))
     return (gossipsub as any).selectPeersToPublish(topic, floodPublish).tosend
   }
 
