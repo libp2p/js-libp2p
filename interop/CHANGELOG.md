@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.38](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.37...transport-interop-libp2p-main-v1.0.38) (2026-08-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/webtransport bumped from ^6.0.36 to ^6.0.37
+
 ## [1.0.37](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.36...transport-interop-libp2p-main-v1.0.37) (2026-08-22)
 
 
