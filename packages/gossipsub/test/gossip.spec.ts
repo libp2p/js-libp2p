@@ -16,7 +16,7 @@ import { TopicValidatorResult } from '../src/index.ts'
 import { messageIdToString } from '../src/utils/messageIdToString.ts'
 import { connectAllPubSubNodes, connectPubsubNodes, createComponentsArray } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
-import type { GossipsubMessage, Message } from '../src/index.ts'
+import type { Message } from '../src/index.ts'
 import type { MetricsRegister } from '../src/metrics.ts'
 import type { PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
@@ -607,70 +607,6 @@ describe('gossip', () => {
 
     const skipped = increments.get('gossipsub_idontwant_skipped_sends_total') ?? []
     expect(skipped.map((entry) => entry.labels?.on), 'refused IWANT must be counted under the iwant label').to.deep.equal(['iwant'])
-  })
-
-  const batchPublishCases = [false, true]
-  batchPublishCases.forEach((batchPublish) => {
-    it(`should not publish to peers that sent IDONTWANT (batchPublish: ${batchPublish})`, async function () {
-      this.timeout(10e4)
-      const topic = 'Z'
-      // use content-derived message ids so a peer can refuse a message before we publish it
-      const { register, increments } = createRecordingMetricsRegister()
-      const trio = await createComponentsArray({
-        number: 3,
-        connected: false,
-        init: {
-          scoreParams: { IPColocationFactorThreshold: GossipsubDhi + 3 },
-          msgIdFn: (msg: Message) => msg.data ?? new Uint8Array(0),
-          batchPublish,
-          metricsRegister: register,
-          metricsTopicStrToLabel: new Map([[topic, topic]])
-        }
-      })
-      // ensure the nodes are stopped in afterEach
-      nodes.push(...trio)
-      const [nodeA, nodeB, nodeC] = trio
-      const nodeAId = nodeA.components.peerId.toString()
-      const nodeBId = nodeB.components.peerId.toString()
-      const nodeCId = nodeC.components.peerId.toString()
-
-      const subscriptionPromises = trio.map(async (n) => pEvent(n.pubsub, 'subscription-change'))
-      trio.forEach((n) => { n.pubsub.subscribe(topic) })
-      await connectAllPubSubNodes(trio)
-      await Promise.all(subscriptionPromises)
-      await Promise.all(trio.map(async (n) => pEvent(n.pubsub, 'gossipsub:heartbeat')))
-
-      const pubsubA = nodeA.pubsub as unknown as Partial<GossipSubClass> & {
-        handleIdontwant: GossipSubClass['handleIdontwant']
-      }
-
-      // B tells A it does not want the message before A publishes that exact content
-      const refused = uint8ArrayFromString(`b-does-not-want-this-publish-${batchPublish}`)
-      pubsubA.handleIdontwant(nodeBId, [{ messageIDs: [refused] }])
-
-      const bReceivedRefused = pEvent<'gossipsub:message', CustomEvent<GossipsubMessage>>(nodeB.pubsub, 'gossipsub:message')
-      const result = await nodeA.pubsub.publish(topic, refused)
-      const recipients = result.recipients.map((p) => p.toString())
-      expect(recipients, 'recipients must not include the peer that sent IDONTWANT').to.not.include(nodeBId)
-      expect(recipients, 'recipients must include peers that did not refuse').to.include(nodeCId)
-
-      // B still learns of the message, but via C's forward, not from the publisher
-      const refusedEvent = await bReceivedRefused
-      expect(refusedEvent.detail.propagationSource.toString()).to.equal(nodeCId)
-
-      // control: content B did not refuse is published to B directly
-      const wanted = uint8ArrayFromString(`b-wants-this-publish-${batchPublish}`)
-      const bReceivedWanted = pEvent<'gossipsub:message', CustomEvent<GossipsubMessage>>(nodeB.pubsub, 'gossipsub:message')
-      const controlResult = await nodeA.pubsub.publish(topic, wanted)
-      expect(controlResult.recipients.map((p) => p.toString())).to.include(nodeBId)
-
-      const wantedEvent = await bReceivedWanted
-      expect(wantedEvent.detail.propagationSource.toString()).to.equal(nodeAId)
-
-      // only nodeA has an IDONTWANT recorded, so the single skip must be its publish skip
-      const skipped = increments.get('gossipsub_idontwant_skipped_sends_total') ?? []
-      expect(skipped.map((entry) => entry.labels?.on), 'publish skip must be counted under the publish label').to.deep.equal(['publish'])
-    })
   })
 
   it('Should allow publishing to zero peers if flag is passed', async function () {

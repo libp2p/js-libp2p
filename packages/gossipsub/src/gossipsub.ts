@@ -252,8 +252,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
   /**
    * Tracks IDONTWANT messages received by peers and the heartbeat they were received in.
-   * Message sends in the forward (per the v1.2 spec), publish and IWANT response paths
-   * are skipped for peers with an entry here.
+   * Message sends in the forward (per the v1.2 spec) and IWANT response paths are
+   * skipped for peers with an entry here.
    *
    * idontwants are stored for `mcacheLength` heartbeats before being pruned,
    * so this map is bounded by peerCount * idontwantMaxMessages * mcacheLength

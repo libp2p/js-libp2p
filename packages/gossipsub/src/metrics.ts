@@ -106,7 +106,6 @@ export enum IHaveIgnoreReason {
 
 export enum IDontWantSkipPath {
   forward = 'forward',
-  publish = 'publish',
   iwant = 'iwant'
 }
 
