@@ -12,9 +12,9 @@
 <li><a href="../modules/_libp2p_gossipsub.types.html">types</a></li>
 <li><a href="" aria-current="page">PublishOpts</a></li></ul>
 <h1>Interface PublishOpts</h1></div>
-<div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">PublishOpts</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#allowpublishtozerotopicpeers">allowPublishToZeroTopicPeers</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#batchpublish">batchPublish</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#ignoreduplicatepublisherror">ignoreDuplicatePublishError</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
+<div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">PublishOpts</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#allowpublishtozerotopicpeers">allowPublishToZeroTopicPeers</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#batchpublish">batchPublish</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#floodpublish">floodPublish</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#ignoreduplicatepublisherror">ignoreDuplicatePublishError</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/c484322727af01112c1f657a35239e910c413c08/packages/gossipsub/src/types.ts#L75">packages/gossipsub/src/types.ts:75</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/822e215c9591237bfef1fe0f6fda627b054f3a2e/packages/gossipsub/src/types.ts#L75">packages/gossipsub/src/types.ts:75</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -24,6 +24,7 @@
 <h3 class="tsd-index-heading tsd-anchor-link" id="properties">Properties<a href="#properties" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-index-list"><a href="#allowpublishtozerotopicpeers" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>allow<wbr/>Publish<wbr/>To<wbr/>Zero<wbr/>Topic<wbr/>Peers?</span></a>
 <a href="#batchpublish" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>batch<wbr/>Publish?</span></a>
+<a href="#floodpublish" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>flood<wbr/>Publish?</span></a>
 <a href="#ignoreduplicatepublisherror" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>ignore<wbr/>Duplicate<wbr/>Publish<wbr/>Error?</span></a>
 </div></section></div></details></section></section>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -39,19 +40,28 @@ with no peers listening on that topic, no other network node will ever
 receive the message.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/c484322727af01112c1f657a35239e910c413c08/packages/gossipsub/src/types.ts#L84">packages/gossipsub/src/types.ts:84</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/822e215c9591237bfef1fe0f6fda627b054f3a2e/packages/gossipsub/src/types.ts#L84">packages/gossipsub/src/types.ts:84</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="batchpublish"><code class="tsd-tag">Optional</code><span>batch<wbr/>Publish</span><a href="#batchpublish" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">batchPublish</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
 <div class="tsd-comment tsd-typography"><p>serialize message once and send to all peers without control messages</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/c484322727af01112c1f657a35239e910c413c08/packages/gossipsub/src/types.ts#L87">packages/gossipsub/src/types.ts:87</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/822e215c9591237bfef1fe0f6fda627b054f3a2e/packages/gossipsub/src/types.ts#L87">packages/gossipsub/src/types.ts:87</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member">
+<h3 class="tsd-anchor-link" id="floodpublish"><code class="tsd-tag">Optional</code><span>flood<wbr/>Publish</span><a href="#floodpublish" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">floodPublish</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
+<div class="tsd-comment tsd-typography"><p>Flood publish this message to every subscribed peer above the publish threshold,
+overriding the global <code>floodPublish</code> option for this call only. Preserves a <code>false</code>
+value, so it can also disable flood publishing per message.</p>
+</div><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/822e215c9591237bfef1fe0f6fda627b054f3a2e/packages/gossipsub/src/types.ts#L93">packages/gossipsub/src/types.ts:93</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="ignoreduplicatepublisherror"><code class="tsd-tag">Optional</code><span>ignore<wbr/>Duplicate<wbr/>Publish<wbr/>Error</span><a href="#ignoreduplicatepublisherror" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">ignoreDuplicatePublishError</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/c484322727af01112c1f657a35239e910c413c08/packages/gossipsub/src/types.ts#L85">packages/gossipsub/src/types.ts:85</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/822e215c9591237bfef1fe0f6fda627b054f3a2e/packages/gossipsub/src/types.ts#L85">packages/gossipsub/src/types.ts:85</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -68,7 +78,7 @@ receive the message.</p>
 <h3>On This Page</h3></summary>
 <div class="tsd-accordion-details">
 <details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Properties</summary>
-<div><a href="#allowpublishtozerotopicpeers"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>allow<wbr/>Publish<wbr/>To<wbr/>Zero<wbr/>Topic<wbr/>Peers</span></a><a href="#batchpublish"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>batch<wbr/>Publish</span></a><a href="#ignoreduplicatepublisherror"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>ignore<wbr/>Duplicate<wbr/>Publish<wbr/>Error</span></a></div></details></div></details></div>
+<div><a href="#allowpublishtozerotopicpeers"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>allow<wbr/>Publish<wbr/>To<wbr/>Zero<wbr/>Topic<wbr/>Peers</span></a><a href="#batchpublish"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>batch<wbr/>Publish</span></a><a href="#floodpublish"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>flood<wbr/>Publish</span></a><a href="#ignoreduplicatepublisherror"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>ignore<wbr/>Duplicate<wbr/>Publish<wbr/>Error</span></a></div></details></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../modules.html">libp2p</a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container">
