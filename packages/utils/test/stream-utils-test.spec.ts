@@ -159,21 +159,26 @@ describe('byte-stream', () => {
     }
     await delay(100)
 
-    // 2048 bytes were written and none were consumed, so the next read must
-    // either produce them or fail. It must not quietly resume mid-stream.
-    const read = await Promise.race([
-      incomingBytes.read().then(buf => ({ ok: true as const, buf })),
-      incomingBytes.read().then(() => ({ ok: true as const, buf: null })).catch(err => ({ ok: false as const, err })),
-      delay(500).then(() => ({ ok: false as const, err: new Error('read never settled') }))
-    ])
+    // 2048 bytes were written and none were consumed, so a read must either
+    // produce them or fail. It must not quietly resume mid-stream.
+    let bytes: number | undefined
+    let error: Error | undefined
 
-    if (read.ok) {
-      // if it resolves, the bytes must be the ones that were sent, starting
-      // from the beginning. a silent discard shows up as a short or shifted read
-      expect(read.buf?.byteLength, 'bytes were discarded without an error').to.equal(2048)
+    try {
+      const buf = await Promise.race([
+        incomingBytes.read(),
+        delay(500).then(async () => { throw new Error('read never settled') })
+      ])
+      bytes = buf?.byteLength
+    } catch (err: any) {
+      error = err
+    }
+
+    if (error != null) {
+      // failing loudly is fine: the caller learns the stream lost data
+      expect(error).to.have.property('message').that.includes('overflow')
     } else {
-      // failing loudly is acceptable: the caller learns the stream is unusable
-      expect(read.err).to.have.property('message').that.includes('overflow')
+      expect(bytes, 'bytes were discarded without an error').to.equal(2048)
     }
 
     outgoing.abort(new Error('cleanup'))
