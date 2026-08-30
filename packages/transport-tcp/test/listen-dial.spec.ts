@@ -1,3 +1,5 @@
+import net from 'node:net'
+import { Worker } from 'node:worker_threads'
 import os from 'os'
 import path from 'path'
 import { defaultLogger } from '@libp2p/logger'
@@ -8,19 +10,19 @@ import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.ts'
-import type { Connection, Listener, Transport, Upgrader } from '@libp2p/interface'
+import type { Connection, Listener, MultiaddrConnection, Startable, Transport, Upgrader } from '@libp2p/interface'
 
 const isCI = process.env.CI
 
 describe('listen', () => {
-  let transport: Transport
+  let transport: Transport & Startable
   let listener: Listener
   let upgrader: Upgrader
 
   beforeEach(() => {
     transport = tcp()({
       logger: defaultLogger()
-    })
+    }) as Transport & Startable
     upgrader = stubInterface<Upgrader>({
       upgradeInbound: Sinon.stub().resolves(),
       upgradeOutbound: async (maConn) => {
@@ -32,6 +34,8 @@ describe('listen', () => {
   })
 
   afterEach(async () => {
+    Sinon.restore()
+
     try {
       if (listener != null) {
         await listener.close()
@@ -154,7 +158,7 @@ describe('listen', () => {
 })
 
 describe('dial', () => {
-  let transport: Transport
+  let transport: Transport & Startable
   let upgrader: Upgrader
 
   beforeEach(async () => {
@@ -169,7 +173,11 @@ describe('dial', () => {
 
     transport = tcp()({
       logger: defaultLogger()
-    })
+    }) as Transport & Startable
+  })
+
+  afterEach(() => {
+    Sinon.restore()
   })
 
   it('dial IPv4', async () => {
@@ -319,5 +327,125 @@ describe('dial', () => {
 
     // should abort the upgrade
     await abortedUpgrade.promise
+  })
+
+  it('should destroy and await outbound sockets when the transport stops', async () => {
+    let outboundMaConn: MultiaddrConnection | undefined
+
+    const listener = transport.createListener({
+      upgrader: stubInterface<Upgrader>({
+        upgradeInbound: Sinon.stub().resolves()
+      })
+    })
+    await listener.listen(multiaddr('/ip4/127.0.0.1/tcp/0'))
+
+    const connection = stubInterface<Connection>()
+    await transport.dial(listener.getAddrs()[0], {
+      upgrader: stubInterface<Upgrader>({
+        async upgradeOutbound (maConn) {
+          outboundMaConn = maConn
+          return connection
+        }
+      }),
+      signal: AbortSignal.timeout(5_000)
+    })
+
+    expect(outboundMaConn).to.have.property('status', 'open')
+
+    await transport.stop()
+
+    expect(outboundMaConn).to.have.property('status', 'closed')
+    await expect(transport.dial(listener.getAddrs()[0], {
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
+    })).to.eventually.be.rejected()
+      .with.property('name', 'NotStartedError')
+
+    await listener.close()
+  })
+
+  it('should abort a pending connect and await the socket close event on stop', async () => {
+    const socket = new net.Socket()
+    Sinon.stub(net, 'connect').returns(socket)
+
+    const dial = transport.dial(multiaddr('/ip4/192.0.2.1/tcp/4001'), {
+      upgrader,
+      signal: AbortSignal.timeout(5_000)
+    })
+
+    await transport.stop()
+
+    expect(socket.closed).to.be.true()
+    await expect(dial).to.eventually.be.rejected()
+      .with.property('name', 'AbortError')
+  })
+
+  it('should leave no TCP handles and allow prompt worker termination after repeated shutdowns', async () => {
+    const tcpModuleUrl = new URL('../src/index.js', import.meta.url).href
+
+    for (let iteration = 0; iteration < 5; iteration++) {
+      const worker = new Worker(`
+        const { parentPort, workerData } = require('node:worker_threads')
+
+        void (async () => {
+          const { tcp } = await import(workerData.tcpModuleUrl)
+          const { defaultLogger } = await import('@libp2p/logger')
+          const transport = tcp()({ logger: defaultLogger() })
+          const upgrader = {
+            async upgradeInbound () {},
+            async upgradeOutbound () { return {} }
+          }
+          const listener = transport.createListener({ upgrader })
+
+          transport.start()
+          await listener.listen((await import('@multiformats/multiaddr')).multiaddr('/ip4/127.0.0.1/tcp/0'))
+
+          await Promise.all(Array.from({ length: 16 }, async () => {
+            await transport.dial(listener.getAddrs()[0], {
+              upgrader,
+              signal: AbortSignal.timeout(5_000)
+            })
+          }))
+
+          await Promise.all([
+            listener.close(),
+            transport.stop()
+          ])
+          await new Promise(resolve => setImmediate(resolve))
+
+          parentPort.postMessage(process.getActiveResourcesInfo().filter(name => name === 'TCPSocketWrap'))
+        })().catch(err => {
+          parentPort.postMessage({ error: err.stack ?? err.message })
+        })
+      `, {
+        eval: true,
+        workerData: { tcpModuleUrl }
+      })
+
+      const resources = await new Promise<unknown>((resolve, reject) => {
+        worker.once('message', resolve)
+        worker.once('error', reject)
+      })
+
+      if (resources != null && typeof resources === 'object' && !Array.isArray(resources) && 'error' in resources) {
+        throw new Error(String(resources.error))
+      }
+
+      expect(resources).to.deep.equal([])
+
+      const terminationTimeout = Promise.withResolvers<void>()
+      const timeout = setTimeout(() => {
+        terminationTimeout.reject(new Error('Worker did not terminate promptly'))
+      }, 1_000)
+
+      try {
+        await Promise.race([
+          worker.terminate(),
+          terminationTimeout.promise
+        ])
+      } finally {
+        clearTimeout(timeout)
+      }
+    }
   })
 })

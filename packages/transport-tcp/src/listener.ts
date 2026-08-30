@@ -179,32 +179,31 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
 
     this.log('new inbound connection %s', maConn.remoteAddr)
     this.sockets.add(socket)
+    socket.once('close', () => {
+      this.sockets.delete(socket)
+
+      if (
+        this.context.closeServerOnMaxConnections != null &&
+        this.sockets.size < this.context.closeServerOnMaxConnections.listenBelow
+      ) {
+        // The most likely case of error is if the port taken by this
+        // application is bound by another process during the time the
+        // server is closed. In that case there's not much we can do.
+        // resume() will be called again every time a connection is
+        // dropped, which acts as an eventual retry mechanism.
+        // onListenError allows the consumer act on this.
+        this.resume().catch(err => {
+          this.log.error('error attempting to listen server once connection count under limit - %e', err)
+          this.context.closeServerOnMaxConnections?.onListenError?.(err as Error)
+        })
+      }
+    })
 
     this.context.upgrader.upgradeInbound(maConn, {
       signal: this.shutdownController.signal
     })
       .then(() => {
         this.log('inbound connection upgraded %s', maConn.remoteAddr)
-
-        socket.once('close', () => {
-          this.sockets.delete(socket)
-
-          if (
-            this.context.closeServerOnMaxConnections != null &&
-            this.sockets.size < this.context.closeServerOnMaxConnections.listenBelow
-          ) {
-            // The most likely case of error is if the port taken by this
-            // application is bound by another process during the time the
-            // server if closed. In that case there's not much we can do.
-            // resume() will be called again every time a connection is
-            // dropped, which acts as an eventual retry mechanism.
-            // onListenError allows the consumer act on this.
-            this.resume().catch(err => {
-              this.log.error('error attempting to listen server once connection count under limit - %e', err)
-              this.context.closeServerOnMaxConnections?.onListenError?.(err as Error)
-            })
-          }
-        })
 
         if (
           this.context.closeServerOnMaxConnections != null &&
@@ -217,7 +216,6 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       .catch(async err => {
         this.log.error('inbound connection upgrade failed - %e', err)
         this.metrics.errors?.increment({ [`${this.addr} inbound_upgrade`]: true })
-        this.sockets.delete(socket)
         maConn.abort(err)
       })
   }
@@ -281,10 +279,15 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
     // synchronously close any open connections - should be done after closing
     // the server socket in case new sockets are opened during the shutdown
     this.sockets.forEach(socket => {
-      if (socket.readable) {
-        events.push(pEvent(socket, 'close', options))
-        socket.destroy()
+      if (socket.closed) {
+        return
       }
+
+      events.push(pEvent(socket, 'close', {
+        ...options,
+        rejectionEvents: []
+      }))
+      socket.destroy()
     })
 
     await Promise.all(events)
