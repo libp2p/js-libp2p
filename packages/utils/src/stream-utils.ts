@@ -1,4 +1,4 @@
-import { StreamMessageEvent, StreamCloseEvent, InvalidParametersError } from '@libp2p/interface'
+import { StreamMessageEvent, StreamCloseEvent, InvalidParametersError, StreamBufferError } from '@libp2p/interface'
 import { pipe as itPipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
@@ -119,18 +119,38 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
 
   let hasBytes: PromiseWithResolvers<void> | undefined
   let unwrapped = false
+  let overflow: StreamBufferError | undefined
 
   if (!isValid(stream)) {
     throw new InvalidParametersError('Argument should be a Stream or a Multiaddr')
   }
 
   const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
+    if (overflow != null) {
+      // the stream is being aborted after a previous overflow, ignore any
+      // more data
+      return
+    }
+
     readBuffer.append(evt.data)
 
     if (readBuffer.byteLength > maxBufferSize) {
       const readBufferSize = readBuffer.byteLength
-      readBuffer.consume(readBuffer.byteLength)
-      hasBytes?.reject(new Error(`Read buffer overflow - ${readBufferSize} > ${maxBufferSize}`))
+      readBuffer.consume(readBufferSize)
+
+      // hasBytes only exists while a read is in flight and is already settled
+      // otherwise, so rejecting it reaches nobody between reads.
+      const err = new StreamBufferError(`Read buffer overflow - ${readBufferSize} > ${maxBufferSize}`)
+      overflow = err
+
+      hasBytes?.reject(err)
+
+      // let the current dispatch finish first
+      queueMicrotask(() => {
+        stream.abort(err)
+      })
+
+      return
     }
 
     hasBytes?.resolve()
@@ -158,6 +178,10 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
     async read (options?: ReadBytesOptions) {
       if (unwrapped === true) {
         throw new UnwrappedError('Stream was unwrapped')
+      }
+
+      if (overflow != null) {
+        throw overflow
       }
 
       if (isEOF(stream)) {
