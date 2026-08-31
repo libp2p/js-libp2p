@@ -6,6 +6,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.1.10](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.9...tls-v3.1.10) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
 ## [3.1.9](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.8...tls-v3.1.9) (2026-08-22)
 
 

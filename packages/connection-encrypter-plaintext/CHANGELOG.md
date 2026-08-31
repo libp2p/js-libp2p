@@ -72,6 +72,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.28](https://github.com/libp2p/js-libp2p/compare/plaintext-v3.0.27...plaintext-v3.0.28) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
 ## [3.0.27](https://github.com/libp2p/js-libp2p/compare/plaintext-v3.0.26...plaintext-v3.0.27) (2026-08-22)
 
 

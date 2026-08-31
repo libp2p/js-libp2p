@@ -36,6 +36,14 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.0...utils-v7.4.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **utils:** abort the stream on byteStream read buffer overflow ([#3612](https://github.com/libp2p/js-libp2p/issues/3612)) ([cef4d32](https://github.com/libp2p/js-libp2p/commit/cef4d32cfc55333fc48c27ca30e04653d2ba5203))
+* **utils:** dispatch progress events at most once per job ([#3614](https://github.com/libp2p/js-libp2p/issues/3614)) ([ac7305c](https://github.com/libp2p/js-libp2p/commit/ac7305ccf8fbaf21386279acee1712835b5e992f)), closes [#3613](https://github.com/libp2p/js-libp2p/issues/3613)
+
 ## [7.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.2...utils-v7.4.0) (2026-08-22)
 
 
