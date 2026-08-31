@@ -7,6 +7,7 @@ import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
+import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { tcp } from '../src/index.ts'
@@ -381,70 +382,33 @@ describe('dial', () => {
   })
 
   it('should leave no TCP handles and allow prompt worker termination after repeated shutdowns', async () => {
-    const tcpModuleUrl = new URL('../src/index.js', import.meta.url).href
+    // Support both source tests and the compiled test suite.
+    const workerUrl = new URL(`./fixtures/shutdown-worker${path.extname(import.meta.url)}`, import.meta.url)
 
     for (let iteration = 0; iteration < 5; iteration++) {
-      const worker = new Worker(`
-        const { parentPort, workerData } = require('node:worker_threads')
-
-        void (async () => {
-          const { tcp } = await import(workerData.tcpModuleUrl)
-          const { defaultLogger } = await import('@libp2p/logger')
-          const transport = tcp()({ logger: defaultLogger() })
-          const upgrader = {
-            async upgradeInbound () {},
-            async upgradeOutbound () { return {} }
-          }
-          const listener = transport.createListener({ upgrader })
-
-          transport.start()
-          await listener.listen((await import('@multiformats/multiaddr')).multiaddr('/ip4/127.0.0.1/tcp/0'))
-
-          await Promise.all(Array.from({ length: 16 }, async () => {
-            await transport.dial(listener.getAddrs()[0], {
-              upgrader,
-              signal: AbortSignal.timeout(5_000)
-            })
-          }))
-
-          await Promise.all([
-            listener.close(),
-            transport.stop()
-          ])
-          await new Promise(resolve => setImmediate(resolve))
-
-          parentPort.postMessage(process.getActiveResourcesInfo().filter(name => name === 'TCPSocketWrap'))
-        })().catch(err => {
-          parentPort.postMessage({ error: err.stack ?? err.message })
-        })
-      `, {
-        eval: true,
-        workerData: { tcpModuleUrl }
-      })
-
-      const resources = await new Promise<unknown>((resolve, reject) => {
-        worker.once('message', resolve)
-        worker.once('error', reject)
-      })
-
-      if (resources != null && typeof resources === 'object' && !Array.isArray(resources) && 'error' in resources) {
-        throw new Error(String(resources.error))
-      }
-
-      expect(resources).to.deep.equal([])
-
-      const terminationTimeout = Promise.withResolvers<void>()
-      const timeout = setTimeout(() => {
-        terminationTimeout.reject(new Error('Worker did not terminate promptly'))
-      }, 1_000)
+      const worker = new Worker(workerUrl)
 
       try {
-        await Promise.race([
-          worker.terminate(),
-          terminationTimeout.promise
-        ])
+        const resources = await pEvent(worker, 'message', {
+          rejectionEvents: ['error', 'exit'],
+          signal: AbortSignal.timeout(10_000)
+        })
+
+        expect(resources).to.deep.equal([])
       } finally {
-        clearTimeout(timeout)
+        const terminationTimeout = Promise.withResolvers<void>()
+        const timeout = setTimeout(() => {
+          terminationTimeout.reject(new Error('Worker did not terminate promptly'))
+        }, 1_000)
+
+        try {
+          await Promise.race([
+            worker.terminate(),
+            terminationTimeout.promise
+          ])
+        } finally {
+          clearTimeout(timeout)
+        }
       }
     }
   })
