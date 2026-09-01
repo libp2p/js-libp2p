@@ -1,0 +1,15 @@
+{
+  "name": "yamux-benchmarks",
+  "version": "0.0.1",
+  "description": "Benchmark for Libp2p's Yamux specification in Js",
+  "main": "benchmark.js",
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "it-drain": "^3.0.3",
+    "it-pair": "^2.0.6",
+    "it-pipe": "^3.0.1",
+    "uint8arraylist": "^2.4.3"
+  }
+}
