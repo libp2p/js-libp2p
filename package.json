@@ -35,8 +35,8 @@
     "release": "run-s build docs:no-publish npm:release docs",
     "npm:release": "aegir exec --bail false npm -- publish",
     "release:rc": "aegir release-rc",
-    "docs": "aegir docs -- --exclude packages/stream-multiplexer-yamux",
-    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc --exclude packages/stream-multiplexer-yamux"
+    "docs": "aegir docs -- --exclude packages/connection-encrypter-noise --exclude packages/stream-multiplexer-yamux",
+    "docs:no-publish": "aegir docs --publish false -- --exclude interop --exclude doc --exclude packages/connection-encrypter-noise --exclude packages/stream-multiplexer-yamux"
   },
   "devDependencies": {
     "aegir": "^48.1.1",

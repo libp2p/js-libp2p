@@ -1,0 +1,6 @@
+{
+  "name": "@libp2p/noise",
+  "version": "17.0.0",
+  "private": true,
+  "scripts": {}
+}
