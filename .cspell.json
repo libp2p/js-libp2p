@@ -9,7 +9,6 @@
     "addWords": true
   }],
   "ignorePaths": [
-    "packages/gossipsub/**",
-    "packages/connection-encrypter-noise/**"
+    "packages/gossipsub/**"
   ]
 }

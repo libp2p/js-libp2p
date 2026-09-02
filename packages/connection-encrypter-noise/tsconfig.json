@@ -6,5 +6,43 @@
   "include": [
     "src",
     "test"
+  ],
+  "references": [
+    {
+      "path": "../crypto"
+    },
+    {
+      "path": "../interface"
+    },
+    {
+      "path": "../interface-compliance-tests"
+    },
+    {
+      "path": "../interop"
+    },
+    {
+      "path": "../libp2p"
+    },
+    {
+      "path": "../libp2p-daemon-client"
+    },
+    {
+      "path": "../libp2p-daemon-server"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../peer-id"
+    },
+    {
+      "path": "../stream-multiplexer-yamux"
+    },
+    {
+      "path": "../transport-tcp"
+    },
+    {
+      "path": "../utils"
+    }
   ]
 }

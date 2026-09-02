@@ -1,6 +1,117 @@
 {
   "name": "@libp2p/noise",
   "version": "17.0.0",
-  "private": true,
-  "scripts": {}
+  "description": "Noise libp2p handshake for js-libp2p",
+  "author": "ChainSafe <info@chainsafe.io>",
+  "license": "Apache-2.0 OR MIT",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/connection-encrypter-noise#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
+  },
+  "bugs": {
+    "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "keywords": [
+    "crypto",
+    "libp2p",
+    "noise"
+  ],
+  "type": "module",
+  "types": "./dist/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ],
+      "src/*": [
+        "*",
+        "dist/*",
+        "dist/src/*",
+        "dist/src/*/index"
+      ]
+    }
+  },
+  "files": [
+    "src",
+    "dist",
+    "!dist/test",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/src/crypto/index.d.ts",
+      "import": "./dist/src/crypto/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "aegir clean",
+    "lint": "aegir lint",
+    "dep-check": "aegir dep-check",
+    "doc-check": "aegir doc-check",
+    "build": "aegir build",
+    "bench": "node benchmarks/benchmark.js",
+    "generate": "protons ./src/proto/payload.proto",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
+    "test:interop": "aegir test -t node -f dist/test/interop.js"
+  },
+  "dependencies": {
+    "@chainsafe/as-chacha20poly1305": "^0.1.0",
+    "@chainsafe/as-sha256": "^1.2.0",
+    "@libp2p/crypto": "^5.1.23",
+    "@libp2p/interface": "^3.3.0",
+    "@libp2p/peer-id": "^6.0.15",
+    "@libp2p/utils": "^7.4.1",
+    "@noble/ciphers": "^2.0.1",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1",
+    "protons-runtime": "^7.0.0",
+    "uint8arraylist": "^3.0.2",
+    "uint8arrays": "^6.1.1",
+    "wherearewe": "^2.0.1"
+  },
+  "devDependencies": {
+    "@libp2p/daemon-client": "^10.0.38",
+    "@libp2p/daemon-server": "^9.0.38",
+    "@libp2p/interface-compliance-tests": "^7.0.31",
+    "@libp2p/interop": "^14.0.38",
+    "@libp2p/logger": "^6.2.13",
+    "@libp2p/tcp": "^11.0.28",
+    "@libp2p/yamux": "^8.0.1",
+    "@multiformats/multiaddr": "^13.0.3",
+    "@types/sinon": "^22.0.0",
+    "aegir": "^48.1.1",
+    "benchmark": "^2.1.4",
+    "execa": "^10.0.0",
+    "go-libp2p": "^1.7.0",
+    "iso-random-stream": "^2.0.2",
+    "it-pair": "^2.0.6",
+    "libp2p": "^3.3.10",
+    "mkdirp": "^3.0.1",
+    "multiformats": "^14.0.0",
+    "p-defer": "^4.0.1",
+    "protons": "^9.0.1",
+    "sinon": "^22.0.0",
+    "sinon-ts": "^2.0.0"
+  },
+  "browser": {
+    "./dist/src/crypto/index.js": "./dist/src/crypto/index.browser.js"
+  }
 }
