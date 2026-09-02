@@ -50,6 +50,7 @@
     "packages/protocol-ping": {},
     "packages/record": {},
     "packages/stream-multiplexer-mplex": {},
+    "packages/stream-multiplexer-yamux": {},
     "packages/transport-circuit-relay-v2": {},
     "packages/transport-memory": {},
     "packages/transport-tcp": {},
