@@ -4,10 +4,10 @@ import {
   logRemoteEphemeralKey,
   logRemoteStaticKey,
   logCipherState
-} from './logger.js'
-import { ZEROLEN, XXHandshakeState } from './protocol.js'
-import { createHandshakePayload, decodeHandshakePayload } from './utils.js'
-import type { HandshakeResult, HandshakeParams } from './types.js'
+} from './logger.ts'
+import { ZEROLEN, XXHandshakeState } from './protocol.ts'
+import { createHandshakePayload, decodeHandshakePayload } from './utils.ts'
+import type { HandshakeResult, HandshakeParams } from './types.ts'
 import type { AbortOptions } from '@libp2p/interface'
 
 export async function performHandshakeInitiator (init: HandshakeParams, options?: AbortOptions): Promise<HandshakeResult> {

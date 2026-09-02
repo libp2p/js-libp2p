@@ -6,8 +6,8 @@ import { expect } from 'aegir/chai'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { noise } from '../src/index.js'
-import { Noise } from '../src/noise.js'
+import { noise } from '../src/index.ts'
+import { Noise } from '../src/noise.ts'
 import type { Metrics, Upgrader } from '@libp2p/interface'
 
 function createCounterSpy (): ReturnType<typeof sinon.spy> {

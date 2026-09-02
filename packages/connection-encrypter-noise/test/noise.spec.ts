@@ -7,9 +7,9 @@ import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { pureJsCrypto } from '../src/crypto/js.js'
-import { Noise } from '../src/noise.js'
-import { createPeerIdsFromFixtures } from './fixtures/peer.js'
+import { pureJsCrypto } from '../src/crypto/js.ts'
+import { Noise } from '../src/noise.ts'
+import { createPeerIdsFromFixtures } from './fixtures/peer.ts'
 import type { StreamMuxerFactory, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
 
 describe('Noise', () => {

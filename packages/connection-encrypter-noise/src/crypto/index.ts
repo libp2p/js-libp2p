@@ -3,9 +3,9 @@ import { newInstance, ChaCha20Poly1305 } from '@chainsafe/as-chacha20poly1305'
 import { digest } from '@chainsafe/as-sha256'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { isElectronMain } from 'wherearewe'
-import { pureJsCrypto } from './js.js'
-import type { ICryptoInterface } from '../crypto.js'
-import type { KeyPair } from '../types.js'
+import { pureJsCrypto } from './js.ts'
+import type { ICryptoInterface } from '../crypto.ts'
+import type { KeyPair } from '../types.ts'
 
 const ctx = newInstance()
 const asImpl = new ChaCha20Poly1305(ctx)
