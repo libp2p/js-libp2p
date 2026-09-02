@@ -9,6 +9,7 @@
     "addWords": true
   }],
   "ignorePaths": [
-    "packages/gossipsub/**"
+    "packages/gossipsub/**",
+    "packages/stream-multiplexer-yamux/**"
   ]
 }
