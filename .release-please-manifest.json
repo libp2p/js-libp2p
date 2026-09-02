@@ -1,6 +1,7 @@
 {
   "packages/config": "1.1.37",
-  "packages/connection-encrypter-noise": "17.0.0", "packages/connection-encrypter-plaintext": "3.0.28",
+  "packages/connection-encrypter-noise": "17.0.0",
+  "packages/connection-encrypter-plaintext": "3.0.28",
   "packages/connection-encrypter-tls": "3.1.10",
   "packages/crypto": "5.1.23",
   "packages/floodsub": "11.0.30",

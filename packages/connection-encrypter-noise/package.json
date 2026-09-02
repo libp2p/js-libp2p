@@ -48,11 +48,13 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./crypto": {
       "types": "./dist/src/crypto/index.d.ts",
-      "import": "./dist/src/crypto/index.js"
+      "import": "./dist/src/crypto/index.js",
+      "module-sync": "./dist/src/crypto/index.js"
     }
   },
   "scripts": {
@@ -113,5 +115,6 @@
   },
   "browser": {
     "./dist/src/crypto/index.js": "./dist/src/crypto/index.browser.js"
-  }
+  },
+  "sideEffects": false
 }
