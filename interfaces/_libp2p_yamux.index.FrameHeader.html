@@ -14,7 +14,7 @@
 <h1>Interface FrameHeader</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">FrameHeader</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#flag">flag</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#length">length</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#streamid">streamID</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#type">type</a><span class="tsd-signature-symbol">:</span> <a href="../enums/_libp2p_yamux.index.FrameType.html" class="tsd-signature-type tsd-kind-enum">FrameType</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#version">version</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/aa8900b369c2c85972e599158e5d7c4ccb865e95/packages/stream-multiplexer-yamux/src/frame.ts#L35">packages/stream-multiplexer-yamux/src/frame.ts:35</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/f494d1bfba887250cfa0bc400f2dd65d83f50ac4/packages/stream-multiplexer-yamux/src/frame.ts#L35">packages/stream-multiplexer-yamux/src/frame.ts:35</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -37,7 +37,7 @@
 <div class="tsd-comment tsd-typography"><p>The flags field is used to provide additional information related to the message type.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/aa8900b369c2c85972e599158e5d7c4ccb865e95/packages/stream-multiplexer-yamux/src/frame.ts#L44">packages/stream-multiplexer-yamux/src/frame.ts:44</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/f494d1bfba887250cfa0bc400f2dd65d83f50ac4/packages/stream-multiplexer-yamux/src/frame.ts#L44">packages/stream-multiplexer-yamux/src/frame.ts:44</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="length"><span>length</span><a href="#length" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">length</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -48,7 +48,7 @@ Ping - Contains an opaque value, echoed back
 Go Away - Contains an error code</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/aa8900b369c2c85972e599158e5d7c4ccb865e95/packages/stream-multiplexer-yamux/src/frame.ts#L58">packages/stream-multiplexer-yamux/src/frame.ts:58</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/f494d1bfba887250cfa0bc400f2dd65d83f50ac4/packages/stream-multiplexer-yamux/src/frame.ts#L58">packages/stream-multiplexer-yamux/src/frame.ts:58</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="streamid"><span>stream<wbr/>ID</span><a href="#streamid" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">streamID</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
@@ -57,14 +57,14 @@ The client side should use odd ID's, and the server even.
 This prevents any collisions. Additionally, the 0 ID is reserved to represent the session.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/aa8900b369c2c85972e599158e5d7c4ccb865e95/packages/stream-multiplexer-yamux/src/frame.ts#L50">packages/stream-multiplexer-yamux/src/frame.ts:50</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/f494d1bfba887250cfa0bc400f2dd65d83f50ac4/packages/stream-multiplexer-yamux/src/frame.ts#L50">packages/stream-multiplexer-yamux/src/frame.ts:50</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="type"><span>type</span><a href="#type" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">type</span><span class="tsd-signature-symbol">:</span> <a href="../enums/_libp2p_yamux.index.FrameType.html" class="tsd-signature-type tsd-kind-enum">FrameType</a></div>
 <div class="tsd-comment tsd-typography"><p>The type field is used to switch the frame message type.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/aa8900b369c2c85972e599158e5d7c4ccb865e95/packages/stream-multiplexer-yamux/src/frame.ts#L42">packages/stream-multiplexer-yamux/src/frame.ts:42</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/f494d1bfba887250cfa0bc400f2dd65d83f50ac4/packages/stream-multiplexer-yamux/src/frame.ts#L42">packages/stream-multiplexer-yamux/src/frame.ts:42</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="version"><code class="tsd-tag">Optional</code><span>version</span><a href="#version" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">version</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">number</span></div>
@@ -72,7 +72,7 @@ This prevents any collisions. Additionally, the 0 ID is reserved to represent th
 At the current time, the field is always set to 0, to indicate the initial version.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/aa8900b369c2c85972e599158e5d7c4ccb865e95/packages/stream-multiplexer-yamux/src/frame.ts#L40">packages/stream-multiplexer-yamux/src/frame.ts:40</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/libp2p/js-libp2p/blob/f494d1bfba887250cfa0bc400f2dd65d83f50ac4/packages/stream-multiplexer-yamux/src/frame.ts#L40">packages/stream-multiplexer-yamux/src/frame.ts:40</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
