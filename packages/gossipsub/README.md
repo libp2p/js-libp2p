@@ -1,83 +1,83 @@
 # @libp2p/gossipsub
 
-![ES Version](https://img.shields.io/badge/ES-2017-yellow)
-![Node Version](https://img.shields.io/badge/node-10.x-green)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
-## Table of Contents
+> A typescript implementation of gossipsub
 
-- [@libp2p/gossipsub](#libp2pgossipsub)
-  - [Lead Maintainer](#lead-maintainer)
-  - [Table of Contents](#table-of-contents)
-  - [Specs](#specs)
-  - [Install](#install)
-  - [Usage](#usage)
-  - [API](#api)
-    - [Create a gossipsub implementation](#create-a-gossipsub-implementation)
-  - [Contribute](#contribute)
-  - [License](#license)
+# About
 
-## Specs
+<!--
 
-Gossipsub is an implementation of pubsub based on meshsub and floodsub. You can read the specification [here](https://github.com/libp2p/specs/tree/master/pubsub/gossipsub).
+!IMPORTANT!
 
-`@libp2p/gossipsub` currently implements the [`v1.1`](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md) of the spec.
+Everything in this README between "# About" and "# Install" is automatically
+generated and will be overwritten the next time the doc generator is run.
 
-## Install
+To make changes to this section, please update the @packageDocumentation section
+of src/index.js or src/index.ts
 
-`npm install @libp2p/gossipsub`
+To experiment with formatting, please run "npm run docs" from the root of this
+repo and examine the changes made.
 
-## Usage
+-->
 
-```javascript
+Gossipsub is an implementation of pubsub based on meshsub and floodsub.
+
+You can read the specification [here](https://github.com/libp2p/specs/tree/master/pubsub/gossipsub).
+
+`@libp2p/gossipsub` currently implements [version 1.1](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md) of the spec.
+
+## Example - Configuring libp2p to use gossipsub
+
+```TypeScript
+import { createLibp2p } from 'libp2p'
 import { gossipsub } from '@libp2p/gossipsub'
 
-
-const libp2p = await createLibp2p({
-  // ...
+const node = await createLibp2p({
   services: {
-    pubsub: gossipsub(options)
+    pubsub: gossipsub()
   }
-});
+  //... other options
+})
+await node.start()
 
-libp2p.services.pubsub.addEventListener('message', (message) => {
-  console.log(`${message.detail.topic}:`, new TextDecoder().decode(message.detail.data))
+node.services.pubsub.addEventListener('message', (evt) => {
+  console.log(`${evt.detail.topic}:`, new TextDecoder().decode(evt.detail.data))
 })
 
-libp2p.services.pubsub.subscribe('fruit')
+node.services.pubsub.subscribe('fruit')
 
-libp2p.services.pubsub.publish('fruit', new TextEncoder().encode('banana'))
+node.services.pubsub.publish('fruit', new TextEncoder().encode('banana'))
 ```
 
-## API
+# Install
 
-### Create a gossipsub implementation
-
-```js
-const options = {…}
-const gossipsub = gossipsub(options)(libp2p)
+```console
+$ npm i @libp2p/gossipsub
 ```
 
-Options is an optional object with the following key-value pairs:
+## Browser `<script>` tag
 
-- **`emitSelf`**: boolean identifying whether the node should emit to self on publish, in the event of the topic being subscribed (defaults to **false**).
-- **`gossipIncoming`**: boolean identifying if incoming messages on a subscribed topic should be automatically gossiped (defaults to **true**).
-- **`fallbackToFloodsub`**: boolean identifying whether the node should fallback to the floodsub protocol, if another connecting peer does not support gossipsub (defaults to **true**).
-- **`floodPublish`**: boolean identifying if self-published messages should be sent to all peers, (defaults to **true**).
-- **`doPX`**: boolean identifying whether PX is enabled; this should be enabled in bootstrappers and other well connected/trusted nodes (defaults to **false**).
-- **`msgIdFn`**: a function with signature `(message) => string` defining the message id given a message, used internally to deduplicate gossip (defaults to `(message) => message.from + message.seqno.toString('hex')`)
-- **`signMessages`**: boolean identifying if we want to sign outgoing messages or not (default: `true`)
-- **`strictSigning`**: boolean identifying if message signing is required for incoming messages or not (default: `true`)
-- **`messageCache`**: optional, a customized `MessageCache` instance, see the implementation for the interface.
-- **`scoreParams`**: optional, a customized peer score parameters Object.
-- **`scoreThresholds`**: optional, a customized peer score thresholds Object.
-- **`directPeers`**: optional, an array of `AddrInfo` of peers with which we will maintain direct connections.
+Loading this module through a script tag will make its exports available as `Libp2pGossipsub` in the global namespace.
 
-For the remaining API, see [@libp2p/interface-pubsub](https://github.com/libp2p/js-libp2p-interfaces/tree/master/packages/interface-pubsub).
+```html
+<script src="https://unpkg.com/@libp2p/gossipsub/dist/index.min.js"></script>
+```
 
-## Contribute
+# API Docs
 
-This module is actively under development. Please check out the issues and submit PRs!
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_gossipsub.html>
 
-## License
+# License
 
-MIT © ChainSafe Systems
+Licensed under either of
+
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/gossipsub/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/gossipsub/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+
+# Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
