@@ -10,6 +10,7 @@
   }],
   "ignorePaths": [
     "packages/gossipsub/**",
-    "packages/connection-encrypter-noise/**"
+    "packages/connection-encrypter-noise/**",
+    "packages/stream-multiplexer-yamux/**"
   ]
 }

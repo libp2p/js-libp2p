@@ -1,0 +1,8 @@
+name: Automerge
+on: [ pull_request ]
+
+jobs:
+  automerge:
+    uses: protocol/.github/.github/workflows/automerge.yml@master
+    with:
+      job: 'automerge'
