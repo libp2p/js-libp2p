@@ -1,4 +1,4 @@
-import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError, StreamCloseEvent } from '@libp2p/interface'
+import { connectionSymbol, LimitedConnectionError, ConnectionClosedError, TooManyOutboundProtocolStreamsError, TooManyInboundProtocolStreamsError, InboundStreamRateLimitError, StreamCloseEvent } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { setMaxListeners, TypedEventEmitter } from 'main-event'
@@ -54,6 +54,12 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   private readonly inboundStreamProtocolNegotiationTimeout: number
   private readonly closeTimeout: number
 
+  /**
+   * Tracks per-protocol inbound stream rate limit state for this connection.
+   * Key is protocol string; value is a fixed-window counter.
+   */
+  private readonly inboundRateLimitState: Map<string, { count: number, resetAt: number }>
+
   constructor (components: ConnectionComponents, init: ConnectionInit) {
     super()
 
@@ -72,6 +78,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.closeTimeout = init.closeTimeout ?? CONNECTION_CLOSE_TIMEOUT
     this.direct = isDirect(init.maConn.remoteAddr)
+    this.inboundRateLimitState = new Map()
 
     this.onIncomingStream = this.onIncomingStream.bind(this)
 
@@ -234,6 +241,25 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
         throw new TooManyInboundProtocolStreamsError(`Too many inbound protocol streams for protocol "${muxedStream.protocol}" - limit ${incomingLimit}`)
       }
 
+      // Check per-protocol inbound stream rate limit
+      const rateLimit = findIncomingStreamRateLimit(muxedStream.protocol, this.components.registrar)
+
+      if (rateLimit != null) {
+        const now = Date.now()
+        let state = this.inboundRateLimitState.get(muxedStream.protocol)
+
+        if (state == null || now >= state.resetAt) {
+          state = { count: 0, resetAt: now + rateLimit.interval }
+          this.inboundRateLimitState.set(muxedStream.protocol, state)
+        }
+
+        state.count++
+
+        if (state.count > rateLimit.count) {
+          throw new InboundStreamRateLimitError(`Inbound stream rate limit exceeded for protocol "${muxedStream.protocol}" - ${state.count}/${rateLimit.count} streams opened within ${rateLimit.interval}ms`)
+        }
+      }
+
       // If a protocol stream has been successfully negotiated and is to be passed to the application,
       // the peer store should ensure that the peer is registered with that protocol
       await this.components.peerStore.merge(this.remotePeer, {
@@ -351,6 +377,19 @@ function findOutgoingStreamLimit (protocol: string, registrar: Registrar, option
   }
 
   return options.maxOutboundStreams ?? DEFAULT_MAX_OUTBOUND_STREAMS
+}
+
+function findIncomingStreamRateLimit (protocol: string, registrar: Registrar): { count: number, interval: number } | undefined {
+  try {
+    const { options } = registrar.getHandler(protocol)
+    return options.inboundStreamRateLimit
+  } catch (err: any) {
+    if (err.name !== 'UnhandledProtocolError') {
+      throw err
+    }
+  }
+
+  return undefined
 }
 
 function countStreams (protocol: string, direction: 'inbound' | 'outbound', connection: Connection): number {
