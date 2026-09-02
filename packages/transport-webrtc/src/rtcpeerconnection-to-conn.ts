@@ -29,6 +29,18 @@ class RTCPeerConnectionMultiaddrConnection extends AbstractMultiaddrConnection {
         this.peerConnection.close()
       }
     }
+
+    // Handle the case where the peerConnection already reached a terminal state
+    // before this handler was registered (e.g. ICE failed during SDP exchange).
+    // Since onconnectionstatechange is a property assignment it won't fire for
+    // past state transitions, so we need to check the current state explicitly.
+    // Note: 'disconnected' is transient and may recover to 'connected', so only
+    // 'failed' and 'closed' are treated as terminal states here.
+    if (initialState === 'failed' || initialState === 'closed') {
+      this.log.trace('peer connection already in terminal state %s at construction time', initialState)
+      this.onTransportClosed()
+      this.peerConnection.close()
+    }
   }
 
   sendData (data: Uint8ArrayList): SendResult {
