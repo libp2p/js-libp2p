@@ -49,15 +49,18 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "import": "./dist/src/index.js",
+      "module-sync": "./dist/src/index.js"
     },
     "./config": {
       "types": "./dist/src/config.d.ts",
-      "import": "./dist/src/config.js"
+      "import": "./dist/src/config.js",
+      "module-sync": "./dist/src/config.js"
     },
     "./stream": {
       "types": "./dist/src/stream.d.ts",
-      "import": "./dist/src/stream.js"
+      "import": "./dist/src/stream.js",
+      "module-sync": "./dist/src/stream.js"
     }
   },
   "scripts": {
@@ -90,5 +93,6 @@
     "it-drain": "^3.0.10",
     "it-pushable": "^3.2.3",
     "p-event": "^7.0.0"
-  }
+  },
+  "sideEffects": false
 }
