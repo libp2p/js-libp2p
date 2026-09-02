@@ -46,13 +46,26 @@ const libp2p = await createLibp2p({
 
 See the [NoiseInit](https://github.com/libp2p/js-libp2p/blob/main/packages/connection-encrypter-noise/src/noise.ts) interface for noise configuration options.
 
+To use a fixed x25519 static key instead of generating one per session, pass it as `staticNoiseKey`:
+
+```ts
+import { createLibp2p } from 'libp2p'
+import { noise, pureJsCrypto } from '@libp2p/noise'
+
+const staticNoiseKey = pureJsCrypto.generateX25519KeyPair().privateKey
+
+const node = await createLibp2p({
+  connectionEncrypters: [noise({ staticNoiseKey })]
+})
+```
+
 ## API
 
 This module exposes an implementation of the [ConnectionEncrypter](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.ConnectionEncrypter.html) interface.
 
 ## Bring your own crypto
 
-You can provide a custom crypto implementation (instead of the default, based on [noble](https://paulmillr.com/noble/)) by adding a `crypto` field to the init argument passed to the `Noise` factory.
+You can provide a custom crypto implementation (instead of the default, based on [@noble](https://paulmillr.com/noble/)) by adding a `crypto` field to the init argument passed to the `Noise` factory.
 
 The implementation must conform to the `ICryptoInterface`, defined in <https://github.com/libp2p/js-libp2p/blob/main/packages/connection-encrypter-noise/src/crypto.ts>
 
