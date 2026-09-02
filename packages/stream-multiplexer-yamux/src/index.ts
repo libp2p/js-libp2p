@@ -3,11 +3,13 @@
  *
  * This module is a JavaScript implementation of [Yamux from Hashicorp](https://github.com/hashicorp/yamux/blob/master/spec.md) designed to be used with [js-libp2p](https://github.com/libp2p/js-libp2p).
  *
+ * Formerly published as [`@chainsafe/libp2p-yamux`](https://www.npmjs.com/package/@chainsafe/libp2p-yamux).
+ *
  * @example Configure libp2p with Yamux
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { yamux } from '@libp2p/yamux'
  *
  * const node = await createLibp2p({
  *   // ... other options
@@ -20,7 +22,7 @@
  * @example Using the low-level API
  *
  * ```js
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { yamux } from '@libp2p/yamux'
  * import { pipe } from 'it-pipe'
  * import { duplexPair } from 'it-pair/duplex'
  * import all from 'it-all'
