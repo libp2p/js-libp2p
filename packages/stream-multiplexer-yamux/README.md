@@ -1,7 +1,9 @@
-# @chainsafe/libp2p-yamux
+# @libp2p/yamux
 
-[![codecov](https://img.shields.io/codecov/c/github/ChainSafe/js-libp2p-yamux.svg?style=flat-square)](https://codecov.io/gh/ChainSafe/js-libp2p-yamux)
-[![CI](https://img.shields.io/github/actions/workflow/status/ChainSafe/js-libp2p-yamux/js-test-and-release.yml?branch=master\&style=flat-square)](https://github.com/ChainSafe/js-libp2p-yamux/actions/workflows/js-test-and-release.yml?query=branch%3Amaster)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > Yamux stream multiplexer for libp2p
 
@@ -24,11 +26,13 @@ repo and examine the changes made.
 
 This module is a JavaScript implementation of [Yamux from Hashicorp](https://github.com/hashicorp/yamux/blob/master/spec.md) designed to be used with [js-libp2p](https://github.com/libp2p/js-libp2p).
 
+Formerly published as [`@chainsafe/libp2p-yamux`](https://www.npmjs.com/package/@chainsafe/libp2p-yamux).
+
 ## Example - Configure libp2p with Yamux
 
 ```typescript
 import { createLibp2p } from 'libp2p'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { yamux } from '@libp2p/yamux'
 
 const node = await createLibp2p({
   // ... other options
@@ -40,87 +44,69 @@ const node = await createLibp2p({
 
 ## Example - Using the low-level API
 
-```js
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { pipe } from 'it-pipe'
-import { duplexPair } from 'it-pair/duplex'
-import all from 'it-all'
+```typescript
+import { yamux } from '@libp2p/yamux'
+import { multiaddrConnectionPair } from '@libp2p/utils'
 
-// Connect two yamux muxers to demo basic stream multiplexing functionality
+// a pair of connected multiaddr connections - in a real application these
+// would be the two ends of a network connection
+const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
 
-const clientMuxer = yamux({
-  client: true,
-  onIncomingStream: stream => {
-    // echo data on incoming streams
-    pipe(stream, stream)
-  },
-  onStreamEnd: stream => {
-    // do nothing
-  }
-})()
+const clientMuxer = yamux()().createStreamMuxer(outboundConnection)
+const serverMuxer = yamux()().createStreamMuxer(inboundConnection)
 
-const serverMuxer = yamux({
-  client: false,
-  onIncomingStream: stream => {
-    // echo data on incoming streams
-    pipe(stream, stream)
-  },
-  onStreamEnd: stream => {
-    // do nothing
-  }
-})()
+// echo incoming data back on the server side
+serverMuxer.addEventListener('stream', (evt) => {
+  const stream = evt.detail
 
-// `p` is our "connections", what we use to connect the two sides
-// In a real application, a connection is usually to a remote computer
-const p = duplexPair()
+  stream.addEventListener('message', (msg) => {
+    stream.send(msg.data)
+  })
+})
 
-// connect the muxers together
-pipe(p[0], clientMuxer, p[0])
-pipe(p[1], serverMuxer, p[1])
+// open a stream from the client and send some data
+const stream = await clientMuxer.createStream()
 
-// now either side can open streams
-const stream0 = clientMuxer.newStream()
-const stream1 = serverMuxer.newStream()
+const received = new Promise<string>((resolve) => {
+  stream.addEventListener('message', (msg) => {
+    resolve(new TextDecoder().decode(msg.data.subarray()))
+  })
+})
 
-// Send some data to the other side
-const encoder = new TextEncoder()
-const data = [encoder.encode('hello'), encoder.encode('world')]
-pipe(data, stream0)
+stream.send(new TextEncoder().encode('hello world'))
 
-// Receive data back
-const result = await pipe(stream0, all)
+console.info(await received)
+// -> hello world
 
-// close a stream
-stream1.close()
-
-// close the muxer
-clientMuxer.close()
+await stream.close()
+await clientMuxer.close()
+await serverMuxer.close()
 ```
 
 # Install
 
 ```console
-$ npm i @chainsafe/libp2p-yamux
+$ npm i @libp2p/yamux
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make its exports available as `ChainsafeLibp2pYamux` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pYamux` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@chainsafe/libp2p-yamux/dist/index.min.js"></script>
+<script src="https://unpkg.com/@libp2p/yamux/dist/index.min.js"></script>
 ```
 
 # API Docs
 
-- <https://ChainSafe.github.io/js-libp2p-yamux>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_yamux.html>
 
 # License
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/ChainSafe/js-libp2p-yamux/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/ChainSafe/js-libp2p-yamux/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/stream-multiplexer-yamux/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/stream-multiplexer-yamux/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

@@ -1,5 +1,5 @@
 import { InvalidParametersError } from '@libp2p/interface'
-import { INITIAL_STREAM_WINDOW, MAX_STREAM_WINDOW } from './constants.js'
+import { INITIAL_STREAM_WINDOW, MAX_STREAM_WINDOW } from './constants.ts'
 import type { StreamMuxerOptions, StreamOptions } from '@libp2p/interface'
 
 export interface YamuxStreamOptions extends StreamOptions {

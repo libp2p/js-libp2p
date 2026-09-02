@@ -3,11 +3,13 @@
  *
  * This module is a JavaScript implementation of [Yamux from Hashicorp](https://github.com/hashicorp/yamux/blob/master/spec.md) designed to be used with [js-libp2p](https://github.com/libp2p/js-libp2p).
  *
+ * Formerly published as [`@chainsafe/libp2p-yamux`](https://www.npmjs.com/package/@chainsafe/libp2p-yamux).
+ *
  * @example Configure libp2p with Yamux
  *
  * ```typescript
  * import { createLibp2p } from 'libp2p'
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { yamux } from '@libp2p/yamux'
  *
  * const node = await createLibp2p({
  *   // ... other options
@@ -19,70 +21,52 @@
  *
  * @example Using the low-level API
  *
- * ```js
- * import { yamux } from '@chainsafe/libp2p-yamux'
- * import { pipe } from 'it-pipe'
- * import { duplexPair } from 'it-pair/duplex'
- * import all from 'it-all'
+ * ```typescript
+ * import { yamux } from '@libp2p/yamux'
+ * import { multiaddrConnectionPair } from '@libp2p/utils'
  *
- * // Connect two yamux muxers to demo basic stream multiplexing functionality
+ * // a pair of connected multiaddr connections - in a real application these
+ * // would be the two ends of a network connection
+ * const [outboundConnection, inboundConnection] = multiaddrConnectionPair()
  *
- * const clientMuxer = yamux({
- *   client: true,
- *   onIncomingStream: stream => {
- *     // echo data on incoming streams
- *     pipe(stream, stream)
- *   },
- *   onStreamEnd: stream => {
- *     // do nothing
- *   }
- * })()
+ * const clientMuxer = yamux()().createStreamMuxer(outboundConnection)
+ * const serverMuxer = yamux()().createStreamMuxer(inboundConnection)
  *
- * const serverMuxer = yamux({
- *   client: false,
- *   onIncomingStream: stream => {
- *     // echo data on incoming streams
- *     pipe(stream, stream)
- *   },
- *   onStreamEnd: stream => {
- *     // do nothing
- *   }
- * })()
+ * // echo incoming data back on the server side
+ * serverMuxer.addEventListener('stream', (evt) => {
+ *   const stream = evt.detail
  *
- * // `p` is our "connections", what we use to connect the two sides
- * // In a real application, a connection is usually to a remote computer
- * const p = duplexPair()
+ *   stream.addEventListener('message', (msg) => {
+ *     stream.send(msg.data)
+ *   })
+ * })
  *
- * // connect the muxers together
- * pipe(p[0], clientMuxer, p[0])
- * pipe(p[1], serverMuxer, p[1])
+ * // open a stream from the client and send some data
+ * const stream = await clientMuxer.createStream()
  *
- * // now either side can open streams
- * const stream0 = clientMuxer.newStream()
- * const stream1 = serverMuxer.newStream()
+ * const received = new Promise<string>((resolve) => {
+ *   stream.addEventListener('message', (msg) => {
+ *     resolve(new TextDecoder().decode(msg.data.subarray()))
+ *   })
+ * })
  *
- * // Send some data to the other side
- * const encoder = new TextEncoder()
- * const data = [encoder.encode('hello'), encoder.encode('world')]
- * pipe(data, stream0)
+ * stream.send(new TextEncoder().encode('hello world'))
  *
- * // Receive data back
- * const result = await pipe(stream0, all)
+ * console.info(await received)
+ * // -> hello world
  *
- * // close a stream
- * stream1.close()
- *
- * // close the muxer
- * clientMuxer.close()
+ * await stream.close()
+ * await clientMuxer.close()
+ * await serverMuxer.close()
  * ```
  */
 
-import { Yamux } from './muxer.js'
-import type { YamuxMuxer, YamuxMuxerInit } from './muxer.js'
+import { Yamux } from './muxer.ts'
+import type { YamuxMuxer, YamuxMuxerInit } from './muxer.ts'
 import type { StreamMuxerFactory } from '@libp2p/interface'
 
-export { GoAwayCode } from './frame.js'
-export type { FrameHeader, FrameType } from './frame.js'
+export { GoAwayCode } from './frame.ts'
+export type { FrameHeader, FrameType } from './frame.ts'
 export type { YamuxMuxerInit }
 
 export function yamux (init: YamuxMuxerInit = {}): () => StreamMuxerFactory<YamuxMuxer> {

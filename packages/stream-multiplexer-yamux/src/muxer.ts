@@ -2,15 +2,15 @@ import { InvalidParametersError, MuxerClosedError, TooManyOutboundProtocolStream
 import { AbstractStreamMuxer, repeatingTask } from '@libp2p/utils'
 import { raceSignal } from 'race-signal'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { defaultConfig, verifyConfig } from './config.js'
-import { Decoder } from './decode.js'
-import { encodeHeader } from './encode.js'
-import { InvalidFrameError, isProtocolError, NotMatchingPingError, UnRequestedPingError } from './errors.js'
-import { Flag, FrameType, GoAwayCode } from './frame.js'
-import { StreamState, YamuxStream } from './stream.js'
-import type { Config } from './config.js'
-import type { Frame } from './decode.js'
-import type { FrameHeader } from './frame.js'
+import { defaultConfig, verifyConfig } from './config.ts'
+import { Decoder } from './decode.ts'
+import { encodeHeader } from './encode.ts'
+import { InvalidFrameError, isProtocolError, NotMatchingPingError, UnRequestedPingError } from './errors.ts'
+import { Flag, FrameType, GoAwayCode } from './frame.ts'
+import { StreamState, YamuxStream } from './stream.ts'
+import type { Config } from './config.ts'
+import type { Frame } from './decode.ts'
+import type { FrameHeader } from './frame.ts'
 import type { AbortOptions, MessageStream, StreamMuxerFactory } from '@libp2p/interface'
 import type { RepeatingTask } from '@libp2p/utils'
 
@@ -41,7 +41,7 @@ export class Yamux implements StreamMuxerFactory {
     this._init = init
   }
 
-  readonly [Symbol.toStringTag] = '@chainsafe/libp2p-yamux'
+  readonly [Symbol.toStringTag] = '@libp2p/yamux'
 
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/stream-multiplexing'

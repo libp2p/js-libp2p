@@ -1,10 +1,10 @@
 import { expect } from 'aegir/chai'
 import all from 'it-all'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { Decoder } from '../src/decode.js'
-import { encodeHeader } from '../src/encode.js'
-import { Flag, FrameType, GoAwayCode } from '../src/frame.js'
-import type { FrameHeader } from '../src/frame.js'
+import { Decoder } from '../src/decode.ts'
+import { encodeHeader } from '../src/encode.ts'
+import { Flag, FrameType, GoAwayCode } from '../src/frame.ts'
+import type { FrameHeader } from '../src/frame.ts'
 
 const frames: Array<{ header: FrameHeader, data?: Uint8Array }> = [
   { header: { type: FrameType.Ping, flag: Flag.SYN, streamID: 0, length: 1 } },
