@@ -4,6 +4,14 @@
 
 * make sendReset synchronous to avoid unhandled rejections ([#113](https://github.com/ChainSafe/js-libp2p-yamux/issues/113)) ([232fb1b](https://github.com/ChainSafe/js-libp2p-yamux/commit/232fb1b6aec679d61a31f4b97deeed135ef6f5c4))
 
+## [8.0.2](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.1...yamux-v8.0.2) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @chainsafe/libp2p-noise and @chainsafe/libp2p-yamux ([#3308](https://github.com/libp2p/js-libp2p/issues/3308)) ([425a42c](https://github.com/libp2p/js-libp2p/commit/425a42cddac5aac4d0ac822295cc4c4817dcdc95))
+* **yamux:** enable @libp2p/yamux ([#3619](https://github.com/libp2p/js-libp2p/issues/3619)) ([24aeb4a](https://github.com/libp2p/js-libp2p/commit/24aeb4aeb67d54304278d995c9fe132236f29b2b))
+
 ## [8.0.0](https://github.com/ChainSafe/js-libp2p-yamux/compare/v7.0.4...v8.0.0) (2025-09-25)
 
 ### ⚠ BREAKING CHANGES
