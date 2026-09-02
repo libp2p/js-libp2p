@@ -96,6 +96,22 @@
   * devDependencies
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.39](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.38...webtransport-v6.0.39) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/noise bumped from ^17.0.1 to ^17.0.2
+  * devDependencies
+    * libp2p bumped from ^3.3.10 to ^3.3.11
+
 ## [6.0.38](https://github.com/libp2p/js-libp2p/compare/webtransport-v6.0.37...webtransport-v6.0.38) (2026-08-31)
 
 

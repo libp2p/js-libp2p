@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.14](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.13...echo-v3.1.14) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
 ## [3.1.13](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.12...echo-v3.1.13) (2026-08-31)
 
 

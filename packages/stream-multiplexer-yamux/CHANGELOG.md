@@ -4,6 +4,16 @@
 
 * make sendReset synchronous to avoid unhandled rejections ([#113](https://github.com/ChainSafe/js-libp2p-yamux/issues/113)) ([232fb1b](https://github.com/ChainSafe/js-libp2p-yamux/commit/232fb1b6aec679d61a31f4b97deeed135ef6f5c4))
 
+## [8.0.3](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.2...yamux-v8.0.3) (2026-09-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.31 to ^7.0.32
+    * @libp2p/mplex bumped from ^12.0.31 to ^12.0.32
+
 ## [8.0.2](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.1...yamux-v8.0.2) (2026-09-02)
 
 

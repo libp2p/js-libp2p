@@ -111,6 +111,20 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.32](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.31...webrtc-v6.0.32) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/noise bumped from ^17.0.1 to ^17.0.2
+
 ## [6.0.31](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.30...webrtc-v6.0.31) (2026-08-31)
 
 
