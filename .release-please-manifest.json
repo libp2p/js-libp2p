@@ -1,6 +1,6 @@
 {
   "packages/config": "1.1.37",
-  "packages/connection-encrypter-noise": "17.0.0",
+  "packages/connection-encrypter-noise": "17.0.1",
   "packages/connection-encrypter-plaintext": "3.0.28",
   "packages/connection-encrypter-tls": "3.1.10",
   "packages/crypto": "5.1.23",
@@ -39,7 +39,7 @@
   "packages/protocol-ping": "3.1.13",
   "packages/record": "4.0.15",
   "packages/stream-multiplexer-mplex": "12.0.31",
-  "packages/stream-multiplexer-yamux": "8.0.1",
+  "packages/stream-multiplexer-yamux": "8.0.2",
   "packages/transport-circuit-relay-v2": "4.2.13",
   "packages/transport-memory": "2.0.28",
   "packages/transport-tcp": "11.0.28",
