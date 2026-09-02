@@ -110,6 +110,13 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.11](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.10...libp2p-v3.3.11) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
 ## [3.3.10](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.9...libp2p-v3.3.10) (2026-08-31)
 
 

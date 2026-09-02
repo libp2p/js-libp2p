@@ -105,6 +105,15 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [12.0.32](https://github.com/libp2p/js-libp2p/compare/mdns-v12.0.31...mdns-v12.0.32) (2026-09-02)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.31 to ^7.0.32
+
 ## [12.0.31](https://github.com/libp2p/js-libp2p/compare/mdns-v12.0.30...mdns-v12.0.31) (2026-08-31)
 
 
