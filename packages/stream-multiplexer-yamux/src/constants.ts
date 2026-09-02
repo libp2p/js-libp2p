@@ -1,6 +1,6 @@
 // Protocol violation errors
 
-import { BothClientsError, DecodeInvalidVersionError, InvalidFrameError, NotMatchingPingError, ReceiveWindowExceededError, StreamAlreadyExistsError, UnRequestedPingError } from './errors.js'
+import { BothClientsError, DecodeInvalidVersionError, InvalidFrameError, NotMatchingPingError, ReceiveWindowExceededError, StreamAlreadyExistsError, UnRequestedPingError } from './errors.ts'
 
 export const PROTOCOL_ERRORS = new Set([
   InvalidFrameError.name,

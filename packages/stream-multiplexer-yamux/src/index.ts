@@ -77,12 +77,12 @@
  * ```
  */
 
-import { Yamux } from './muxer.js'
-import type { YamuxMuxer, YamuxMuxerInit } from './muxer.js'
+import { Yamux } from './muxer.ts'
+import type { YamuxMuxer, YamuxMuxerInit } from './muxer.ts'
 import type { StreamMuxerFactory } from '@libp2p/interface'
 
-export { GoAwayCode } from './frame.js'
-export type { FrameHeader, FrameType } from './frame.js'
+export { GoAwayCode } from './frame.ts'
+export type { FrameHeader, FrameType } from './frame.ts'
 export type { YamuxMuxerInit }
 
 export function yamux (init: YamuxMuxerInit = {}): () => StreamMuxerFactory<YamuxMuxer> {

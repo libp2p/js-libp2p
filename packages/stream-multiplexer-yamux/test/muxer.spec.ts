@@ -3,7 +3,7 @@
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { YamuxMuxer } from '../src/muxer.ts'
-import { sleep } from './util.js'
+import { sleep } from './util.ts'
 import type { MultiaddrConnection } from '@libp2p/interface'
 
 describe('muxer', () => {

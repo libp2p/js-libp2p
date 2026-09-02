@@ -1,7 +1,7 @@
 import { Uint8ArrayList } from 'uint8arraylist'
-import { InvalidFrameError } from './errors.js'
-import { FrameType, HEADER_LENGTH, YAMUX_VERSION } from './frame.js'
-import type { FrameHeader } from './frame.js'
+import { InvalidFrameError } from './errors.ts'
+import { FrameType, HEADER_LENGTH, YAMUX_VERSION } from './frame.ts'
+import type { FrameHeader } from './frame.ts'
 
 export interface Frame {
   header: FrameHeader
