@@ -1,0 +1,279 @@
+name: test & maybe release
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  packages: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash  
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+
+  check:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: pnpm run --if-present lint
+      - run: pnpm run --if-present dep-check
+      - run: pnpm run --if-present doc-check
+      - run: pnpm run --if-present spell-check
+
+  test-node:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        node: [lts/*]
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: pnpm run --if-present test:node
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: node
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          disable_safe_directory: ${{ runner.os == 'Windows' }} # NOTE: The workspace on Windows runners is on the C: drive and the codecov action is unable to lock the git directory on it
+
+  test-chrome:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: pnpm run --if-present test:chrome
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: chrome
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  test-chrome-webworker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: pnpm run --if-present test:chrome-webworker
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: chrome-webworker
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  test-firefox:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: pnpm run --if-present test:firefox
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: firefox
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  test-firefox-webworker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: pnpm run --if-present test:firefox-webworker
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: firefox-webworker
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  test-webkit:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [lts/*]
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: npx playwright install-deps
+      - run: pnpm run --if-present test:webkit
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: webkit
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          disable_safe_directory: ${{ runner.os == 'Windows' }} # NOTE: The workspace on Windows runners is on the C: drive and the codecov action is unable to lock the git directory on it
+
+  test-webkit-webworker:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [lts/*]
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: npx playwright install-deps
+      - run: pnpm run --if-present test:webkit-webworker
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: webkit-webworker
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          disable_safe_directory: ${{ runner.os == 'Windows' }} # NOTE: The workspace on Windows runners is on the C: drive and the codecov action is unable to lock the git directory on it
+
+  test-electron-main:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: npx xvfb-maybe pnpm run --if-present test:electron-main
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: electron-main
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  test-electron-renderer:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - run: npx xvfb-maybe pnpm run --if-present test:electron-renderer
+      - uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        with:
+          flags: electron-renderer
+          files: .coverage/*,packages/*/.coverage/*
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  release-check:
+    needs: [test-node, test-chrome, test-chrome-webworker, test-firefox, test-firefox-webworker, test-webkit, test-webkit-webworker, test-electron-main, test-electron-renderer]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    outputs:
+      release: ${{ steps.branch.outputs.release }}
+    steps:
+      - id: branch
+        name: Check if the branch is a release branch
+        env:
+          BRANCHES: ${{ inputs.branches }}
+          REF: ${{ github.ref }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branches = JSON.parse(process.env.BRANCHES);
+            const ref = process.env.REF.replace(/^refs\/heads\//, '');
+            const release = branches.some(b => {
+              const regexPattern = b.replace(/\*/g, '.*');
+              const regex = new RegExp(`^${regexPattern}$`);
+              return regex.test(ref);
+            });
+            console.log(`This is a release branch: ${release}`);
+            core.setOutput('release', release);
+
+  release:
+    needs: [release-check]
+    runs-on: ubuntu-latest
+    if: needs.release-check.outputs.release == 'true'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - uses: ipfs/aegir/actions/cache-node-modules@main
+      - uses: ipfs/aegir/actions/docker-login@main
+        with:
+          docker-token: ${{ secrets.DOCKER_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-registry: ${{ inputs.docker-registry }}
+      - run: pnpm run --if-present release
+        env:
+          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
