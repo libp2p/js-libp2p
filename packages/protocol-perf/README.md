@@ -29,8 +29,8 @@ The Perf service implements the [perf protocol](https://github.com/libp2p/specs/
 ## Example
 
 ```typescript
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@libp2p/noise'
+import { yamux } from '@libp2p/yamux'
 import { tcp } from '@libp2p/tcp'
 import { createLibp2p, type Libp2p } from 'libp2p'
 import { plaintext } from '@libp2p/plaintext'

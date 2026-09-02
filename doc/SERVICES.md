@@ -331,7 +331,7 @@ const node = await createLibp2p({
 
 ### Frequently used dependencies
 
-These capabilities are provided by commonly used libp2p modules such as `@libp2p/identify`, `@chainsafe/libp2p-noise`, `@libp2p/webrtc` etc.
+These capabilities are provided by commonly used libp2p modules such as `@libp2p/identify`, `@libp2p/noise`, `@libp2p/webrtc` etc.
 
 Adding these strings to your service dependencies will cause starting libp2p to throw unless a service is configured to provide these capabilities.
 
@@ -339,8 +339,8 @@ Adding these strings to your service dependencies will cause starting libp2p to 
 | -------- | ------- | ------- |
 | `@libp2p/identify` | `@libp2p/identify` | You should declare this a as a dependency if your service uses the [Registrar](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface-internal.Registrar.html) to register a network topology. |
 | `@libp2p/identify-push` | `@libp2p/identify` | |
-| `@libp2p/connection-encryption` | `@chainsafe/libp2p-noise`, `@libp2p/tls`, `@libp2p/plaintext` |  |
-| `@libp2p/stream-multiplexing` | `@chainsafe/libp2p-yamux` | |
+| `@libp2p/connection-encryption` | `@libp2p/noise`, `@libp2p/tls`, `@libp2p/plaintext` |  |
+| `@libp2p/stream-multiplexing` | `@libp2p/yamux` | |
 | `@libp2p/content-routing` | `@libp2p/kad-dht` | |
 | `@libp2p/peer-routing` | `@libp2p/kad-dht` | |
 | `@libp2p/peer-discovery` | `@libp2p/kad-dht`, `@libp2p/bootstrap`, `@libp2p/mdns` |  |

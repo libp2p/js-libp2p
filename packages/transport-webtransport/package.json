@@ -45,8 +45,8 @@
     "test:firefox": "aegir test -t browser -- --browser firefox"
   },
   "dependencies": {
-    "@chainsafe/libp2p-noise": "^17.0.0",
     "@libp2p/interface": "^3.3.0",
+    "@libp2p/noise": "^17.0.1",
     "@libp2p/peer-id": "^6.0.15",
     "@libp2p/utils": "^7.4.1",
     "@multiformats/multiaddr": "^13.0.3",
