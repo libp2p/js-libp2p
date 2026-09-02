@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../packages/connection-encrypter-noise"
+    },
+    {
       "path": "../packages/connection-encrypter-tls"
     },
     {
@@ -25,6 +28,9 @@
     },
     {
       "path": "../packages/stream-multiplexer-mplex"
+    },
+    {
+      "path": "../packages/stream-multiplexer-yamux"
     },
     {
       "path": "../packages/transport-circuit-relay-v2"

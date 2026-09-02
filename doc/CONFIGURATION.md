@@ -89,7 +89,7 @@ If you want to know more about libp2p transports, you should read the following 
 
 Some available stream multiplexers are:
 
-- [@chainsafe/libp2p-yamux](https://github.com/chainsafe/js-libp2p-yamux)
+- [@libp2p/yamux](https://github.com/chainsafe/js-libp2p-yamux)
 
 Some transports such as WebRTC and WebTransport come with their own built-in stream multiplexing capabilities.
 
@@ -111,7 +111,7 @@ If you configure multiple muxers for use in your application, js-libp2p will cho
 
 Some available connection encryption protocols:
 
-- [@chainsafe/libp2p-noise](https://github.com/chainsafe/js-libp2p-noise)
+- [@libp2p/noise](https://github.com/chainsafe/js-libp2p-noise)
 - [@libp2p/plaintext](https://github.com/libp2p/js-libp2p/blob/main/packages/connection-encrypter-plaintext/src/index.ts) (Not for production use)
 
 If none of the available connection encryption mechanisms fulfills your needs, you can create a libp2p compatible one. A libp2p connection encryption protocol just needs to be compliant with the [Connection Encrypter Interface](https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/connection-encrypter.ts).
@@ -245,11 +245,11 @@ It's important to note that some services depend on others in order to function 
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 import { mdns } from '@libp2p/mdns'
 import { kadDHT } from '@libp2p/kad-dht'
 import { gossipsub } from '@libp2p/gossipsub'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { yamux } from '@libp2p/yamux'
 
 const node = await createLibp2p({
   addresses: {
@@ -277,8 +277,8 @@ const node = await createLibp2p({
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { mdns } from '@libp2p/mdns'
 import { bootstrap } from '@libp2p/bootstrap'
 
@@ -326,8 +326,8 @@ Potential methods for discovering peers include:
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { gossipsub } from '@libp2p/gossipsub'
 import { SignaturePolicy } from '@libp2p/interface'
 import { identify } from '@libp2p/identify'
@@ -363,7 +363,7 @@ The kadDHT service requires the Identify service to discover other peers that su
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 import { kadDHT } from '@libp2p/kad-dht'
 import { identify } from '@libp2p/identify'
 
@@ -392,8 +392,8 @@ const node = await createLibp2p({
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { createDelegatedRoutingV1HttpApiClient } from '@helia/delegated-routing-v1-http-api-client'
 const node = await createLibp2p({
   transports: [
@@ -424,8 +424,8 @@ Thus, it is recommended to include the Identify service in your services configu
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { circuitRelayTransport, circuitRelayServer } from '@libp2p/circuit-relay-v2'
 import { identify } from '@libp2p/identify'
 
@@ -483,8 +483,8 @@ In this configuration the libp2p node will search the network for one relay with
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
@@ -513,7 +513,7 @@ In this configuration the libp2p node is a circuit relay client which connects t
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 
 const node = await createLibp2p({
@@ -549,8 +549,8 @@ The keychain will store keys encrypted in the datastore which default is an in m
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { FsDatastore } from 'datastore-fs';
 
 
@@ -585,8 +585,8 @@ See the [API docs](https://libp2p.github.io/js-libp2p/modules/_libp2p_interface-
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 
 const node = await createLibp2p({
   transports: [
@@ -732,8 +732,8 @@ The Transport Manager is responsible for managing the libp2p transports life cyc
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { FaultTolerance } from '@libp2p/interface-transport'
 
 const node = await createLibp2p({
@@ -769,8 +769,8 @@ The below configuration example shows how the metrics should be configured. Asid
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 
 const node = await createLibp2p({
   transports: [
@@ -812,8 +812,8 @@ The below configuration example shows how the PeerStore should be configured. As
 ```js
 import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { LevelDatastore } from 'datastore-level'
 
 const datastore = new LevelDatastore('path/to/store')
@@ -843,8 +843,8 @@ Some Transports can be passed additional options when they are created. For exam
 
 ```js
 import { createLibp2p } from 'libp2p'
-import { yamux } from '@chainsafe/libp2p-yamux'
-import { noise } from '@chainsafe/libp2p-noise'
+import { yamux } from '@libp2p/yamux'
+import { noise } from '@libp2p/noise'
 import { webRTC } from '@libp2p/webrtc'
 
 
