@@ -1,7 +1,7 @@
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DUMP_SESSION_KEYS } from './constants.js'
-import type { CipherState } from './protocol.js'
-import type { KeyPair } from './types.js'
+import { DUMP_SESSION_KEYS } from './constants.ts'
+import type { CipherState } from './protocol.ts'
+import type { KeyPair } from './types.ts'
 import type { Logger } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

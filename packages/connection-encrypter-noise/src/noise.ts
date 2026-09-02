@@ -3,17 +3,17 @@ import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interfa
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { lpStream } from '@libp2p/utils'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
-import { NOISE_MSG_MAX_LENGTH_BYTES } from './constants.js'
-import { defaultCrypto } from './crypto/index.js'
-import { wrapCrypto } from './crypto.js'
-import { uint16BEDecode, uint16BEEncode } from './encoder.js'
-import { registerMetrics } from './metrics.js'
-import { performHandshakeInitiator, performHandshakeResponder } from './performHandshake.js'
+import { NOISE_MSG_MAX_LENGTH_BYTES } from './constants.ts'
+import { defaultCrypto } from './crypto/index.ts'
+import { wrapCrypto } from './crypto.ts'
+import { uint16BEDecode, uint16BEEncode } from './encoder.ts'
+import { registerMetrics } from './metrics.ts'
+import { performHandshakeInitiator, performHandshakeResponder } from './performHandshake.ts'
 import { toMessageStream } from './utils.ts'
-import type { ICryptoInterface } from './crypto.js'
-import type { NoiseComponents } from './index.js'
-import type { MetricsRegistry } from './metrics.js'
-import type { HandshakeResult, ICrypto, INoiseConnection, INoiseExtensions, KeyPair } from './types.js'
+import type { ICryptoInterface } from './crypto.ts'
+import type { NoiseComponents } from './index.ts'
+import type { MetricsRegistry } from './metrics.ts'
+import type { HandshakeResult, ICrypto, INoiseConnection, INoiseExtensions, KeyPair } from './types.ts'
 import type { SecuredConnection, PrivateKey, PublicKey, StreamMuxerFactory, SecureConnectionOptions, Logger, MessageStream } from '@libp2p/interface'
 import type { LengthPrefixedStream } from '@libp2p/utils'
 
@@ -65,11 +65,11 @@ export class Noise implements INoiseConnection {
     this.prologue = prologueBytes ?? uint8ArrayAlloc(0)
   }
 
-  readonly [Symbol.toStringTag] = '@chainsafe/libp2p-noise'
+  readonly [Symbol.toStringTag] = '@libp2p/noise'
 
   readonly [serviceCapabilities]: string[] = [
     '@libp2p/connection-encryption',
-    '@chainsafe/libp2p-noise'
+    '@libp2p/noise'
   ]
 
   /**

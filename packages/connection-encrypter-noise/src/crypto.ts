@@ -1,4 +1,4 @@
-import type { ICrypto, KeyPair } from './types.js'
+import type { ICrypto, KeyPair } from './types.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 /** Underlying crypto implementation, meant to be overridable */

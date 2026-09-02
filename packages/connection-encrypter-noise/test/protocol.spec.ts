@@ -3,10 +3,10 @@ import { expect, assert } from 'aegir/chai'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { pureJsCrypto } from '../src/crypto/js.js'
-import { wrapCrypto } from '../src/crypto.js'
-import { XXHandshakeState, ZEROLEN } from '../src/protocol.js'
-import type { CipherState, SymmetricState } from '../src/protocol.js'
+import { pureJsCrypto } from '../src/crypto/js.ts'
+import { wrapCrypto } from '../src/crypto.ts'
+import { XXHandshakeState, ZEROLEN } from '../src/protocol.ts'
+import type { CipherState, SymmetricState } from '../src/protocol.ts'
 
 describe('XXHandshakeState', () => {
   const prologue = Buffer.alloc(0)

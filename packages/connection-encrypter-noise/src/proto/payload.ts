@@ -1,4 +1,4 @@
-import { decodeMessage, encodeMessage, MaxLengthError, message } from 'protons-runtime'
+import { decodeMessage, encodeMessage, MaxLengthError, message, streamMessage } from 'protons-runtime'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
@@ -18,14 +18,14 @@ export namespace NoiseExtensions {
           w.fork()
         }
 
-        if (obj.webtransportCerthashes != null) {
+        if (obj.webtransportCerthashes != null && obj.webtransportCerthashes.length > 0) {
           for (const value of obj.webtransportCerthashes) {
             w.uint32(10)
             w.bytes(value)
           }
         }
 
-        if (obj.streamMuxers != null) {
+        if (obj.streamMuxers != null && obj.streamMuxers.length > 0) {
           for (const value of obj.streamMuxers) {
             w.uint32(18)
             w.string(value)
@@ -49,7 +49,7 @@ export namespace NoiseExtensions {
           switch (tag >>> 3) {
             case 1: {
               if (opts.limits?.webtransportCerthashes != null && obj.webtransportCerthashes.length === opts.limits.webtransportCerthashes) {
-                throw new MaxLengthError('Decode error - map field "webtransportCerthashes" had too many elements')
+                throw new MaxLengthError('Decode error - repeated field "webtransportCerthashes" had too many elements')
               }
 
               obj.webtransportCerthashes.push(reader.bytes())
@@ -57,7 +57,7 @@ export namespace NoiseExtensions {
             }
             case 2: {
               if (opts.limits?.streamMuxers != null && obj.streamMuxers.length === opts.limits.streamMuxers) {
-                throw new MaxLengthError('Decode error - map field "streamMuxers" had too many elements')
+                throw new MaxLengthError('Decode error - repeated field "streamMuxers" had too many elements')
               }
 
               obj.streamMuxers.push(reader.string())
@@ -71,18 +71,82 @@ export namespace NoiseExtensions {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const obj = {
+          webtransportCerthashes: 0,
+          streamMuxers: 0
+        }
+
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              if (opts.limits?.webtransportCerthashes != null && obj.webtransportCerthashes === opts.limits.webtransportCerthashes) {
+                throw new MaxLengthError('Streaming decode error - repeated field "webtransportCerthashes" had too many elements')
+              }
+
+              yield {
+                field: `${prefix}.webtransportCerthashes[]`,
+                index: obj.webtransportCerthashes,
+                value: reader.bytes()
+              }
+
+              obj.webtransportCerthashes++
+
+              break
+            }
+            case 2: {
+              if (opts.limits?.streamMuxers != null && obj.streamMuxers === opts.limits.streamMuxers) {
+                throw new MaxLengthError('Streaming decode error - repeated field "streamMuxers" had too many elements')
+              }
+
+              yield {
+                field: `${prefix}.streamMuxers[]`,
+                index: obj.streamMuxers,
+                value: reader.string()
+              }
+
+              obj.streamMuxers++
+
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<NoiseExtensions>): Uint8Array => {
+  export interface NoiseExtensionsWebtransportCerthashesFieldEvent {
+    field: '$.webtransportCerthashes[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface NoiseExtensionsStreamMuxersFieldEvent {
+    field: '$.streamMuxers[]'
+    index: number
+    value: string
+  }
+
+  export function encode (obj: Partial<NoiseExtensions>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, NoiseExtensions.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseExtensions>): NoiseExtensions => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseExtensions>): NoiseExtensions {
     return decodeMessage(buf, NoiseExtensions.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseExtensions>): Generator<NoiseExtensionsWebtransportCerthashesFieldEvent | NoiseExtensionsStreamMuxersFieldEvent> {
+    return streamMessage(buf, NoiseExtensions.codec(), opts)
   }
 }
 
@@ -154,17 +218,77 @@ export namespace NoiseHandshakePayload {
         }
 
         return obj
+      }, function * (reader, length, prefix, opts = {}) {
+        const end = length == null ? reader.len : reader.pos + length
+
+        while (reader.pos < end) {
+          const tag = reader.uint32()
+
+          switch (tag >>> 3) {
+            case 1: {
+              yield {
+                field: `${prefix}.identityKey`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 2: {
+              yield {
+                field: `${prefix}.identitySig`,
+                value: reader.bytes()
+              }
+              break
+            }
+            case 4: {
+              yield * NoiseExtensions.codec().stream(reader, reader.uint32(), `${prefix}.extensions`, {
+                limits: opts.limits?.extensions
+              })
+
+              break
+            }
+            default: {
+              reader.skipType(tag & 7)
+              break
+            }
+          }
+        }
       })
     }
 
     return _codec
   }
 
-  export const encode = (obj: Partial<NoiseHandshakePayload>): Uint8Array => {
+  export interface NoiseHandshakePayloadIdentityKeyFieldEvent {
+    field: '$.identityKey'
+    value: Uint8Array
+  }
+
+  export interface NoiseHandshakePayloadIdentitySigFieldEvent {
+    field: '$.identitySig'
+    value: Uint8Array
+  }
+
+  export interface NoiseHandshakePayloadExtensionsWebtransportCerthashesFieldEvent {
+    field: '$.extensions.webtransportCerthashes[]'
+    index: number
+    value: Uint8Array
+  }
+
+  export interface NoiseHandshakePayloadExtensionsStreamMuxersFieldEvent {
+    field: '$.extensions.streamMuxers[]'
+    index: number
+    value: string
+  }
+
+  export function encode (obj: Partial<NoiseHandshakePayload>): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, NoiseHandshakePayload.codec())
   }
 
-  export const decode = (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseHandshakePayload>): NoiseHandshakePayload => {
+  export function decode (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseHandshakePayload>): NoiseHandshakePayload {
     return decodeMessage(buf, NoiseHandshakePayload.codec(), opts)
+  }
+
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseHandshakePayload>): Generator<NoiseHandshakePayloadIdentityKeyFieldEvent | NoiseHandshakePayloadIdentitySigFieldEvent | NoiseHandshakePayloadExtensionsWebtransportCerthashesFieldEvent | NoiseHandshakePayloadExtensionsStreamMuxersFieldEvent> {
+    return streamMessage(buf, NoiseHandshakePayload.codec(), opts)
   }
 }

@@ -3,7 +3,7 @@ import tests from '@libp2p/interface-compliance-tests/connection-encryption'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { stubInterface } from 'sinon-ts'
-import { Noise } from '../src/noise.js'
+import { Noise } from '../src/noise.ts'
 import type { Upgrader } from '@libp2p/interface'
 
 describe('spec compliance tests', function () {

@@ -1,9 +1,9 @@
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
-import { InvalidCryptoExchangeError } from './errors.js'
-import { Nonce } from './nonce.js'
-import type { ICipherState, ISymmetricState, IHandshakeState, KeyPair, ICrypto } from './types.js'
+import { InvalidCryptoExchangeError } from './errors.ts'
+import { Nonce } from './nonce.ts'
+import type { ICipherState, ISymmetricState, IHandshakeState, KeyPair, ICrypto } from './types.ts'
 
 // Code in this file is a direct translation of a subset of the noise protocol https://noiseprotocol.org/noise.html,
 // agnostic to libp2p's usage of noise
