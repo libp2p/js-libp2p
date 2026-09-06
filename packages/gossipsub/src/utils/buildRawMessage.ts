@@ -138,9 +138,16 @@ export async function validateToRawMessage (
 
       let publicKey: PublicKey
       if (msg.key != null) {
-        publicKey = publicKeyFromProtobuf(msg.key)
-        // TODO: Should `fromPeerId.pubKey` be optional?
-        if (fromPeerId.publicKey !== undefined && !publicKey.equals(fromPeerId.publicKey)) {
+        // malformed key bytes must reject rather than throw, so an attacker
+        // sending them is still scored as delivering an invalid message
+        try {
+          publicKey = publicKeyFromProtobuf(msg.key)
+        } catch {
+          return { valid: false, error: ValidateError.InvalidPeerId }
+        }
+
+        // the message key must derive to the `from` peer id
+        if (!fromPeerId.equals(publicKey.toMultihash().bytes)) {
           return { valid: false, error: ValidateError.InvalidPeerId }
         }
       } else {
@@ -163,7 +170,17 @@ export async function validateToRawMessage (
       // the signature is over the bytes "libp2p-pubsub:<protobuf-message>"
       const bytes = uint8ArrayConcat([SignPrefix, RPC.Message.encode(rpcMsgPreSign)])
 
-      if (!(await publicKey.verify(bytes, msg.signature))) {
+      // a malformed signature (e.g. the wrong length) makes verify throw for
+      // some key types; treat that as an invalid signature so the peer is still
+      // scored rather than the message escaping to the unscored error path
+      let validSignature: boolean
+      try {
+        validSignature = await publicKey.verify(bytes, msg.signature)
+      } catch {
+        validSignature = false
+      }
+
+      if (!validSignature) {
         return { valid: false, error: ValidateError.InvalidSignature }
       }
 
@@ -176,7 +193,7 @@ export async function validateToRawMessage (
           sequenceNumber: BigInt(`0x${uint8ArrayToString(msg.seqno, 'base16')}`),
           topic: msg.topic,
           signature: msg.signature,
-          key: msg.key != null ? publicKeyFromProtobuf(msg.key) : publicKey
+          key: publicKey
         }
       }
     }

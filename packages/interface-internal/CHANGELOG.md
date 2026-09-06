@@ -32,6 +32,52 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [3.1.13](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.12...interface-internal-v3.1.13) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.27 to ^7.0.28
+
+## [3.1.12](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.11...interface-internal-v3.1.12) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/peer-collections bumped from ^7.0.26 to ^7.0.27
+
+## [3.1.11](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.10...interface-internal-v3.1.11) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.25 to ^7.0.26
+
+## [3.1.10](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.9...interface-internal-v3.1.10) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.24 to ^7.0.25
+
+## [3.1.9](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.8...interface-internal-v3.1.9) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.23 to ^7.0.24
+
 ## [3.1.8](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.7...interface-internal-v3.1.8) (2026-07-07)
 
 

@@ -1,4 +1,5 @@
 import { defaultLogger } from '@libp2p/logger'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
@@ -1027,6 +1028,136 @@ describe('QueryManager', () => {
     expect(routingTable.queueRoutingTableUpdate.calledOnce).to.be.true()
     expect(routingTable.queueRoutingTableUpdate.firstCall.args[0].toString()).to.equal(peers[0].peerId.toString())
     expect(routingTable.queueRoutingTableUpdate.firstCall.args).to.have.lengthOf(1)
+
+    await manager.stop()
+  })
+
+  it('should not query peers farther than the kth-closest already found', async () => {
+    // the closest-peer set capacity is the kBucketSize - keep it small so the
+    // convergence gate is exercised with only a handful of peers
+    const rt = stubInterface<RoutingTable>({ kBucketSize: 1 })
+    rt.closestPeers.returns([peers[10].peerId])
+
+    const manager = new QueryManager({
+      peerId: ourPeerId,
+      logger: defaultLogger(),
+      connectionManager: stubInterface<ConnectionManager>({
+        isDialable: async () => true
+      })
+    }, {
+      ...defaultInit(),
+      routingTable: rt,
+      disjointPaths: 1,
+      alpha: 1
+    })
+    await manager.start()
+
+    // peers are sorted closest (0) -> farthest (38)
+    // 10 -> [1, 9]  both closer than the seed (10)
+    //  1 -> [0]
+    //  0 -> []
+    //  9 -> []      once 1 and 0 respond, 9 is farther than the kth-closest
+    //               (k=1) and must NOT be queried, despite being closer than
+    //               its parent (10)
+    const topology = createTopology({
+      10: { closerPeers: [1, 9] },
+      1: { closerPeers: [0] },
+      0: {},
+      9: {}
+    })
+
+    const results = await all(manager.run(key, createQueryFunction(topology)))
+    const traversed = results
+      .filter(evt => evt.type !== EventTypes.PATH_ENDED)
+      .map(event => {
+        if (event.type !== EventTypes.PEER_RESPONSE && event.type !== EventTypes.VALUE) {
+          throw new Error(`Unexpected query event type ${event.type}`)
+        }
+
+        return event.from.toString()
+      })
+
+    expect(traversed).to.include(peers[10].peerId.toString())
+    expect(traversed).to.include(peers[1].peerId.toString())
+    expect(traversed).to.include(peers[0].peerId.toString())
+    // closer than its parent (10) but farther than the kth-closest found
+    expect(traversed).to.not.include(peers[9].peerId.toString())
+
+    await manager.stop()
+  })
+
+  it('does not run the dialability check for peers that cannot enter the closest set', async () => {
+    // k = 1, alpha = 2: peers 3 and 9 are queried concurrently. peer 3 responds
+    // first and fills the size-1 closest set, then peer 9 responds with peer 5,
+    // which is closer than its parent (9) but farther than the kth-closest (3).
+    // the gate must prune peer 5 before the (expensive) dialability check runs.
+    const rt = stubInterface<RoutingTable>({ kBucketSize: 1 })
+    rt.closestPeers.returns([peers[3].peerId, peers[9].peerId])
+
+    const connectionManager = stubInterface<ConnectionManager>()
+    connectionManager.isDialable.resolves(true)
+
+    const manager = new QueryManager({
+      peerId: ourPeerId,
+      logger: defaultLogger(),
+      connectionManager
+    }, {
+      ...defaultInit(),
+      routingTable: rt,
+      disjointPaths: 1,
+      alpha: 2
+    })
+    await manager.start()
+
+    // only peer 5 carries an address, so a dial check for it is detectable
+    const peer5Multiaddr = multiaddr('/ip4/127.0.0.1/tcp/4005')
+    // release peer 9 only once peer 3 has responded and filled the closest set
+    const closestFilled = pDefer()
+
+    const queryFunc: QueryFunc = async function * (context) {
+      const { peer } = context
+      const path = { index: -1, queued: 0, running: 0, total: 0 }
+
+      if (peer.id.equals(peers[3].peerId)) {
+        // peer 2 can enter the set, so it reaches the dial check (spy is live)
+        yield peerResponseEvent({
+          from: peer.id,
+          messageType: MessageType.GET_VALUE,
+          closer: [{ id: peers[2].peerId, multiaddrs: [] }],
+          path
+        })
+        closestFilled.resolve()
+        return
+      }
+
+      if (peer.id.equals(peers[9].peerId)) {
+        await closestFilled.promise
+        yield peerResponseEvent({
+          from: peer.id,
+          messageType: MessageType.GET_VALUE,
+          closer: [{ id: peers[5].peerId, multiaddrs: [peer5Multiaddr] }],
+          path
+        })
+        return
+      }
+
+      yield peerResponseEvent({
+        from: peer.id,
+        messageType: MessageType.GET_VALUE,
+        closer: [],
+        path
+      })
+    }
+
+    await all(manager.run(key, queryFunc))
+
+    // the dial check ran (peer 2 could enter the set) ...
+    expect(connectionManager.isDialable.called).to.be.true()
+    // ... but never for peer 5, which the gate pruned beforehand
+    const dialCheckedMultiaddrs = connectionManager.isDialable.getCalls()
+      .flatMap(call => call.args[0])
+      .map(ma => ma.toString())
+    expect(dialCheckedMultiaddrs).to.not.include(peer5Multiaddr.toString())
 
     await manager.stop()
   })

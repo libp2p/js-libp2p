@@ -1,9 +1,11 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { Libp2pRecord } from '@libp2p/record'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { stubInterface } from 'sinon-ts'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { K } from '../src/constants.ts'
 import { MessageType } from '../src/message/dht.ts'
 import { PeerRouting } from '../src/peer-routing/index.ts'
@@ -180,6 +182,42 @@ describe('peer-routing', () => {
 
       expect(finalPeerIds).to.have.lengthOf(1)
       expect(finalPeerIds[0].equals(livePeer.peerId)).to.be.true()
+    })
+  })
+
+  describe('getValueOrPeers', () => {
+    it('rejects a record whose key does not match the queried key', async () => {
+      const [responder] = await getSortedPeers(Uint8Array.from([0, 1, 2, 3, 4]), 1)
+      const path = { index: 0, queued: 0, running: 0, total: 1 }
+
+      // a permissive validator so the record passes verification - only a
+      // comparison against the queried key should be able to reject it
+      init.validators = {
+        test: async () => {}
+      }
+      peerRouting = new PeerRouting(components, init)
+
+      const queriedKey = uint8ArrayFromString('/test/queried')
+      const record = new Libp2pRecord(
+        uint8ArrayFromString('/test/other'),
+        uint8ArrayFromString('value'),
+        new Date()
+      )
+
+      init.network.sendRequest.callsFake(async function * (): AsyncGenerator<QueryEvent> {
+        yield peerResponseEvent({ from: responder.peerId, messageType: MessageType.GET_VALUE, record, path })
+      })
+
+      const events: QueryEvent[] = []
+      for await (const event of peerRouting.getValueOrPeers(responder.peerId, queriedKey, { path })) {
+        events.push(event)
+      }
+
+      // the record is published under a different key, so it must be discarded
+      // as a query error rather than surfaced as a response to this query
+      expect(events.map(event => event.name)).to.include('QUERY_ERROR')
+      const records = events.filter(event => event.name === 'PEER_RESPONSE' && event.record != null)
+      expect(records).to.have.lengthOf(0)
     })
   })
 })

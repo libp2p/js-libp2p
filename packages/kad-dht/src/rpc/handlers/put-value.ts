@@ -52,7 +52,7 @@ export class PutValueHandler implements DHTMessageHandler {
       const recordKey = bufferToRecordKey(this.datastorePrefix, deserializedRecord.key)
       await this.components.datastore.put(recordKey, deserializedRecord.serialize().subarray())
 
-      this.log('accepted put for key %b under %k', key, recordKey)
+      this.log('accepted put for key %b under %s', key, recordKey)
 
       return msg
     } catch (err: any) {

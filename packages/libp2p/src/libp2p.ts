@@ -1,5 +1,5 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
-import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
+import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError, InvalidPublicKeyError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
@@ -359,8 +359,12 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
 
-    // ensure the returned key is valid
     const publicKey = publicKeyFromProtobuf(bytes)
+
+    // ensure the returned key belongs to the requested peer
+    if (!peer.equals(publicKey.toMultihash().bytes)) {
+      throw new InvalidPublicKeyError('public key did not match requested peer')
+    }
 
     await this.peerStore.patch(peer, {
       publicKey

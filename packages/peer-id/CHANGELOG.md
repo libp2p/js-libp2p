@@ -11,6 +11,32 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.1 to ^1.0.2
 
+## [6.0.15](https://github.com/libp2p/js-libp2p/compare/peer-id-v6.0.14...peer-id-v6.0.15) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+
+## [6.0.14](https://github.com/libp2p/js-libp2p/compare/peer-id-v6.0.13...peer-id-v6.0.14) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+
+## [6.0.13](https://github.com/libp2p/js-libp2p/compare/peer-id-v6.0.12...peer-id-v6.0.13) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+
 ## [6.0.12](https://github.com/libp2p/js-libp2p/compare/peer-id-v6.0.11...peer-id-v6.0.12) (2026-07-07)
 
 

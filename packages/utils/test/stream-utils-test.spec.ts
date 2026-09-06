@@ -144,6 +144,46 @@ describe('pipe', () => {
 })
 
 describe('byte-stream', () => {
+  it('should not silently discard buffered bytes on overflow', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const maxBufferSize = 1024
+    const incomingBytes = byteStream(incoming, { maxBufferSize })
+    const outgoingBytes = byteStream(outgoing)
+
+    // overflow the read buffer while nothing is reading. `hasBytes` is only
+    // created by read(), so with no read pending the overflow rejection has
+    // nowhere to go, while the buffer has already been discarded.
+    for (let i = 0; i < 4; i++) {
+      await outgoingBytes.write(new Uint8Array(512).fill(i + 1))
+    }
+    await delay(100)
+
+    // 2048 bytes were written and none were consumed, so a read must either
+    // produce them or fail. It must not quietly resume mid-stream.
+    let bytes: number | undefined
+    let error: Error | undefined
+
+    try {
+      const buf = await Promise.race([
+        incomingBytes.read(),
+        delay(500).then(async () => { throw new Error('read never settled') })
+      ])
+      bytes = buf?.byteLength
+    } catch (err: any) {
+      error = err
+    }
+
+    if (error != null) {
+      // failing loudly is fine: the caller learns the stream lost data
+      expect(error).to.have.property('message').that.includes('overflow')
+    } else {
+      expect(bytes, 'bytes were discarded without an error').to.equal(2048)
+    }
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
   it('should read bytes', async () => {
     const [outgoing, incoming] = await streamPair()
 

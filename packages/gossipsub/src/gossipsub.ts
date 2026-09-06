@@ -18,6 +18,7 @@ import { MessageCache } from './message-cache.ts'
 import {
   ChurnReason,
   getMetrics,
+  IDontWantSkipPath,
   IHaveIgnoreReason,
   InclusionReason,
 
@@ -106,7 +107,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * The signature policy to follow by default
    */
   public readonly globalSignaturePolicy: typeof StrictSign | typeof StrictNoSign
-  public protocols: string[] = [constants.GossipsubIDv12, constants.GossipsubIDv11, constants.GossipsubIDv10]
+  public protocols: string[] = [...constants.GossipsubVersionLadder].reverse()
 
   private publishConfig: PublishConfig | undefined
 
@@ -250,7 +251,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   private readonly idontwantCounts = new Map<PeerIdStr, number>()
 
   /**
-   * Tracks IDONTWANT messages received by peers and the heartbeat they were received in
+   * Tracks IDONTWANT messages received by peers and the heartbeat they were received in.
+   * Message sends in the forward (per the v1.2 spec) and IWANT response paths are
+   * skipped for peers with an entry here.
    *
    * idontwants are stored for `mcacheLength` heartbeats before being pruned,
    * so this map is bounded by peerCount * idontwantMaxMessages * mcacheLength
@@ -273,6 +276,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   private readonly maxOutboundStreams?: number
   private readonly runOnLimitedConnection?: boolean
   private readonly allowedTopics: Set<TopicStr> | null
+  private readonly maxTopicBytesPerPeer: number
+  /** Running total of subscribed-topic bytes per peer, to bound the topics map */
+  private readonly peerTopicBytes = new Map<PeerIdStr, number>()
 
   private heartbeatTimer: {
     _intervalId: ReturnType<typeof setInterval> | undefined
@@ -410,6 +416,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.runOnLimitedConnection = options.runOnLimitedConnection
 
     this.allowedTopics = (opts.allowedTopics != null) ? new Set(opts.allowedTopics) : null
+    this.maxTopicBytesPerPeer = opts.maxTopicBytesPerPeer ?? constants.GossipsubMaxTopicBytesPerPeer
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/gossipsub'
@@ -578,6 +585,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.peers.clear()
     this.subscriptions.clear()
     this.topics.clear()
+    this.peerTopicBytes.clear()
 
     // Gossipsub
 
@@ -799,6 +807,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.topics.delete(topic)
       }
     }
+    this.peerTopicBytes.delete(id)
 
     // Remove this peer from the mesh
     for (const [topicStr, peers] of this.mesh) {
@@ -972,6 +981,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       // update peer subscriptions
 
       const subscriptions: Array<{ topic: TopicStr, subscribe: boolean }> = []
+      const fromStr = from.toString()
+      const graftTopics: TopicStr[] = []
 
       rpc.subscriptions.forEach((subOpt) => {
         const topic = subOpt.topic
@@ -984,11 +995,25 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
             return
           }
 
-          this.handleReceivedSubscription(from, topic, subscribe)
+          if (!this.handleReceivedSubscription(from, topic, subscribe)) {
+            // over the per-peer topic-byte budget, so ignore this subscription
+            return
+          }
+
+          // graft the peer into the mesh now rather than waiting for the next
+          // heartbeat, so a message published right after subscribing is not dropped
+          if (subscribe && this.graftOnSubscribe(fromStr, topic)) {
+            graftTopics.push(topic)
+          }
 
           subscriptions.push({ topic, subscribe })
         }
       })
+
+      // send one batched GRAFT covering every topic grafted while handling this RPC
+      if (graftTopics.length > 0) {
+        this.sendGraft(fromStr, graftTopics)
+      }
 
       this.safeDispatchEvent<SubscriptionChangeData>('subscription-change', {
         detail: { peerId: from, subscriptions }
@@ -1025,28 +1050,50 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /**
    * Handles a subscription change from a peer
    */
-  private handleReceivedSubscription (from: PeerId, topic: TopicStr, subscribe: boolean): void {
+  private handleReceivedSubscription (from: PeerId, topic: TopicStr, subscribe: boolean): boolean {
     this.log('subscription update from %p topic %s', from, topic)
 
+    const fromStr = from.toString()
     let topicSet = this.topics.get(topic)
 
+    // charge each topic its string length plus a fixed per-entry overhead, so
+    // the budget bounds both topic bytes and topic count (a peer cannot occupy
+    // more than roughly budget / overhead entries regardless of topic length)
+    const cost = topic.length + constants.GossipsubTopicEntryOverhead
+
     if (subscribe) {
+      // a repeat SUBSCRIBE to a topic the peer already has is a no-op
+      if (topicSet?.has(fromStr) === true) {
+        return true
+      }
+
+      // bound the memory a single peer may occupy in the topics map
+      const used = this.peerTopicBytes.get(fromStr) ?? 0
+      if (used + cost > this.maxTopicBytesPerPeer) {
+        // over budget, so ignore this subscription; the peer keeps what it has
+        this.log('ignoring subscription from %p topic %s, over per-peer topic budget', from, topic)
+        return false
+      }
+      this.peerTopicBytes.set(fromStr, used + cost)
+
       if (topicSet == null) {
         topicSet = new Set()
         this.topics.set(topic, topicSet)
       }
 
       // subscribe peer to new topic
-      topicSet.add(from.toString())
-    } else if (topicSet != null) {
-      // unsubscribe from existing topic
-      topicSet.delete(from.toString())
+      topicSet.add(fromStr)
+    } else if (topicSet?.has(fromStr) === true) {
+      // unsubscribe from existing topic and refund its cost
+      topicSet.delete(fromStr)
+      this.peerTopicBytes.set(fromStr, Math.max(0, (this.peerTopicBytes.get(fromStr) ?? 0) - cost))
       if (topicSet.size === 0) {
         this.topics.delete(topic)
       }
     }
 
     // TODO: rust-libp2p has A LOT more logic here
+    return true
   }
 
   /**
@@ -1432,9 +1479,15 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         processed++
 
         const msgIdStr = this.msgIdToStrFn(msgId)
+
         const entry = this.mcache.getWithIWantCount(msgIdStr, id)
         if (entry == null) {
           iwantDonthave++
+          continue
+        }
+
+        if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+          this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.iwant)
           continue
         }
 
@@ -1539,10 +1592,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         // valid graft
       } else {
         this.log('GRAFT: Add mesh link from %s in %s', id, topicID)
-        this.score.graft(id, topicID)
-        peersInMesh.add(id)
-
-        this.metrics?.onAddToMesh(topicID, InclusionReason.Subscribed, 1)
+        this.addToMesh(id, topicID, InclusionReason.Subscribed)
       }
 
       this.safeDispatchEvent<MeshPeer>('gossipsub:graft', { detail: { peerId: id, topic: topicID, direction: 'inbound' } })
@@ -1877,7 +1927,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     toAdd.forEach((id) => {
       this.log('JOIN: Add mesh link to %s in %s', id, topic)
-      this.sendGraft(id, topic)
+      this.sendGraft(id, [topic])
 
       // rust-libp2p
       // - peer_score.graft()
@@ -1952,7 +2002,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     return tosend
   }
 
-  private selectPeersToPublish (topic: TopicStr): {
+  private selectPeersToPublish (topic: TopicStr, floodPublish?: boolean): {
     tosend: Set<PeerIdStr>
     tosendCount: ToSendGroupCount
   } {
@@ -1968,7 +2018,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     if (peersInTopic != null) {
       // flood-publish behavior
       // send to direct peers and _all_ peers meeting the publishThreshold
-      if (this.opts.floodPublish) {
+      // per-publish opt takes precedence over the global opt, while preserving a false value
+      if (floodPublish ?? this.opts.floodPublish) {
         peersInTopic.forEach((id) => {
           if (this.direct.has(id)) {
             tosend.add(id)
@@ -2080,6 +2131,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     // forward the message to peers
     tosend.forEach((id) => {
+      // skip peers that told us they already have the message
+      if (this.idontwants.get(id)?.has(msgIdStr) === true) {
+        tosend.delete(id)
+        this.metrics?.onIdontwantSkippedSend(IDontWantSkipPath.forward)
+        return
+      }
+
       // sendRpc may mutate RPC message on piggyback, create a new message for each peer
       this.sendRpc(id, createGossipRpc([rawMsg]))
     })
@@ -2121,7 +2179,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       throw Error('PublishError.Duplicate')
     }
 
-    const { tosend, tosendCount } = this.selectPeersToPublish(topic)
+    const { tosend, tosendCount } = this.selectPeersToPublish(topic, opts?.floodPublish)
     const willSendToSelf = this.opts.emitSelf && this.subscriptions.has(topic)
 
     // Current publish opt takes precedence global opts, while preserving false value
@@ -2276,14 +2334,53 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /**
    * Sends a GRAFT message to a peer
    */
-  private sendGraft (id: PeerIdStr, topic: string): void {
-    const graft = [
-      {
-        topicID: topic
-      }
-    ]
+  private sendGraft (id: PeerIdStr, topics: string[]): void {
+    const graft = topics.map((topicID) => ({ topicID }))
     const out = createGossipRpc([], { graft })
     this.sendRpc(id, out)
+  }
+
+  /**
+   * Add a peer to a topic mesh, updating peer score, mesh membership and metrics.
+   * Sending the GRAFT is left to the caller: the heartbeat and graft-on-subscribe
+   * send one, which dispatches the outbound gossipsub:graft event via sendRpc,
+   * while the inbound GRAFT handler sends none and dispatches its own event.
+   */
+  private addToMesh (id: PeerIdStr, topic: TopicStr, reason: InclusionReason): void {
+    this.score.graft(id, topic)
+    this.mesh.get(topic)?.add(id)
+    this.metrics?.onAddToMesh(topic, reason, 1)
+  }
+
+  /**
+   * When a peer subscribes to a topic we are meshed on, graft it into the mesh
+   * immediately if there is room, instead of waiting for the next heartbeat.
+   * Without this, a message published before the mesh has formed is forwarded to
+   * nobody and silently dropped. Returns true if the peer was grafted, so the
+   * caller can send one batched GRAFT for every topic grafted from an RPC.
+   */
+  private graftOnSubscribe (id: PeerIdStr, topic: TopicStr): boolean {
+    const mesh = this.mesh.get(topic)
+
+    // only fill a mesh we belong to, and only while it is below the low-water mark
+    if (mesh == null || mesh.has(id) || mesh.size >= this.opts.Dlo) {
+      return false
+    }
+
+    // require an outbound stream on one of our protocols, the same check the
+    // heartbeat applies when selecting mesh peers
+    const peerStreams = this.streamsOutbound.get(id)
+    if (peerStreams == null || !this.protocols.includes(peerStreams.protocol)) {
+      return false
+    }
+
+    // do not graft direct peers, negatively scored peers or backed off peers
+    if (this.direct.has(id) || this.score.score(id) < 0 || (this.backoff.get(topic)?.has(id) ?? false)) {
+      return false
+    }
+
+    this.addToMesh(id, topic, InclusionReason.Subscribed)
+    return true
   }
 
   /**
@@ -2305,11 +2402,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     // don't send IDONTWANT to:
     // - the source
-    // - peers that don't support v1.2
+    // - peers whose negotiated protocol doesn't support IDONTWANT
     const tosend = new Set(ids)
     tosend.delete(source)
     for (const id of tosend) {
-      if (this.streamsOutbound.get(id)?.protocol !== constants.GossipsubIDv12) {
+      if (!constants.protocolSupportsFeature(this.streamsOutbound.get(id)?.protocol, constants.GossipsubFeature.IDontWant)) {
         tosend.delete(id)
       }
     }
@@ -2540,7 +2637,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     onUnsubscribe: boolean
   ): Promise<RPC.ControlPrune> {
     this.score.prune(id, topic)
-    if (this.streamsOutbound.get(id)?.protocol === constants.GossipsubIDv10) {
+    if (!constants.protocolSupportsFeature(this.streamsOutbound.get(id)?.protocol, constants.GossipsubFeature.Backoff)) {
       // Gossipsub v1.0 -- no backoff, the peer won't be able to parse it anyway
       return {
         topicID: topic,
@@ -2752,13 +2849,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
       const graftPeer = (id: PeerIdStr, reason: InclusionReason): void => {
         this.log('HEARTBEAT: Add mesh link to %s in %s', id, topic)
-        // update peer score
-        this.score.graft(id, topic)
-        // add peer to mesh
-        peers.add(id)
+        this.addToMesh(id, topic, reason)
         // when we add a new mesh peer, we don't want to gossip messages to it
         peersToGossip.delete(id)
-        this.metrics?.onAddToMesh(topic, reason, 1)
         // add to tograft
         const topics = tograft.get(id)
         if (topics == null) {

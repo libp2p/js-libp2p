@@ -34,6 +34,7 @@
 
 import { pubSubSymbol } from './constants.ts'
 import { FloodSub as FloodSubClass } from './floodsub.ts'
+import type { DecodeRPCLimits } from './decodeRpc.ts'
 import type { PubSubRPC } from './floodsub.ts'
 import type { ComponentLogger, PeerId, PrivateKey, PublicKey, TypedEventTarget } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
@@ -126,6 +127,7 @@ export interface PeerStreamsEvents {
 }
 
 export { pubSubSymbol }
+export type { DecodeRPCLimits }
 
 /**
  * Returns true if the passed argument is a PubSub implementation
@@ -290,6 +292,12 @@ export interface FloodSubInit {
    * How many parallel outgoing streams to allow on the pubsub protocol per-connection
    */
   maxOutboundStreams?: number
+
+  /**
+   * Limits applied when decoding incoming RPC messages, to bound the number of
+   * elements a single frame can decode into
+   */
+  decodeRpcLimits?: DecodeRPCLimits
 }
 
 export function floodsub (init: FloodSubInit = {}): (components: FloodSubComponents) => FloodSub {

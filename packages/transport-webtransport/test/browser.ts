@@ -1,5 +1,5 @@
-import { noise } from '@chainsafe/libp2p-noise'
 import { stop } from '@libp2p/interface'
+import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'

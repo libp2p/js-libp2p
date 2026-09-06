@@ -97,6 +97,21 @@ export class PeerDistanceList {
   }
 
   /**
+   * True if a peer with this (already-computed) kadId could still enter the
+   * list: under capacity, or strictly closer than the furthest entry.
+   */
+  canAddKadId (kadId: Uint8Array): boolean {
+    if (this.peerDistances.length < this.capacity) {
+      return true
+    }
+
+    const distance = uint8ArrayXor(this.originDhtKey, kadId)
+    const furthest = this.peerDistances[this.peerDistances.length - 1].distance
+
+    return uint8ArrayXorCompare(distance, furthest) === -1
+  }
+
+  /**
    * Indicates whether any of the peerIds passed as a parameter are closer
    * to the origin key than the furthest peerId in the PeerDistanceList.
    */

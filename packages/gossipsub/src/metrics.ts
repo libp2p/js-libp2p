@@ -104,6 +104,11 @@ export enum IHaveIgnoreReason {
   MaxIasked = 'max_iasked'
 }
 
+export enum IDontWantSkipPath {
+  forward = 'forward',
+  iwant = 'iwant'
+}
+
 export enum ScoreThreshold {
   graylist = 'graylist',
   publish = 'publish',
@@ -612,6 +617,12 @@ export function getMetrics (
       name: 'gossipsub_idontwant_rcv_dont_have_msgids_total',
       help: 'Total received IDONTWANT messageIDs that we do not have in mcache'
     }),
+    /** Total message sends skipped because the peer sent us IDONTWANT for that message */
+    idontwantSkippedSends: register.gauge<{ on: IDontWantSkipPath }>({
+      name: 'gossipsub_idontwant_skipped_sends_total',
+      help: 'Total message sends skipped because the peer sent IDONTWANT for the message',
+      labelNames: ['on']
+    }),
     iwantPromiseStarted: register.gauge({
       name: 'gossipsub_iwant_promise_sent_total',
       help: 'Total count of started IWANT promises'
@@ -831,6 +842,10 @@ export function getMetrics (
     onIdontwantRcv (idontwant: number, idontwantDonthave: number): void {
       this.idontwantRcvMsgids.inc(idontwant)
       this.idontwantRcvDonthaveMsgids.inc(idontwantDonthave)
+    },
+
+    onIdontwantSkippedSend (on: IDontWantSkipPath): void {
+      this.idontwantSkippedSends.inc({ on }, 1)
     },
 
     onForwardMsg (topicStr: TopicStr, tosendCount: number): void {

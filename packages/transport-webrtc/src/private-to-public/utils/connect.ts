@@ -1,4 +1,4 @@
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 import { pEvent } from 'p-event'
 import { WebRTCTransportError } from '../../error.ts'
 import { DataChannelMuxerFactory } from '../../muxer.ts'
@@ -193,6 +193,8 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       signal: options.signal
     })
   } catch (err) {
+    // discard any early data channels buffered before the upgrade failed
+    muxerFactory.close()
     handshakeDataChannel.close()
     peerConnection.close()
 

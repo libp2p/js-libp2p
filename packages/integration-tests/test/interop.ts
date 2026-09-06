@@ -1,6 +1,4 @@
 import fs from 'fs'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
 import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { createClient } from '@libp2p/daemon-client'
@@ -12,11 +10,13 @@ import { UnsupportedError, interopTests } from '@libp2p/interop'
 import { kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { logger } from '@libp2p/logger'
 import { mplex } from '@libp2p/mplex'
+import { noise } from '@libp2p/noise'
 import { ping } from '@libp2p/ping'
 import { plaintext } from '@libp2p/plaintext'
 import { tcp } from '@libp2p/tcp'
 import { tls } from '@libp2p/tls'
 import { webRTCDirect } from '@libp2p/webrtc'
+import { yamux } from '@libp2p/yamux'
 import { multiaddr } from '@multiformats/multiaddr'
 import { execa } from 'execa'
 import { path as p2pd } from 'go-libp2p'
@@ -99,12 +99,14 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     }
   })
 
-  proc.catch(() => {
-    // go-libp2p daemon throws when killed
-  })
-
-  proc.once('exit', code => {
-    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${code ?? 'unknown'})`))
+  // the daemon should keep running and print its control socket, so any exit
+  // before that, clean or killed, is a startup failure. execa 10 removed the
+  // child-process 'exit' event, so the settled promise is the signal. once
+  // startup has resolved the deferred, a teardown kill's rejection is a no-op
+  void proc.then(result => {
+    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${result.exitCode ?? 'unknown'})`))
+  }, err => {
+    deferred.reject(new Error(`go-libp2p daemon exited before startup (code: ${err?.exitCode ?? 'unknown'})`))
   })
 
   let controlMultiaddr: Multiaddr | undefined

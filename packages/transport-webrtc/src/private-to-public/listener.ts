@@ -34,6 +34,7 @@ export interface WebRTCDirectListenerInit {
   upgrader: Upgrader
   certificate: TransportCertificate
   maxInboundStreams?: number
+  maxEarlyStreams?: number
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
@@ -189,7 +190,9 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       rtcConfiguration: this.init.rtcConfiguration,
       certificate: this.certificate,
       events: this.metrics?.listenerEvents,
-      dataChannel: this.init.dataChannel
+      log: this.log,
+      dataChannel: this.init.dataChannel,
+      maxEarlyStreams: this.init.maxEarlyStreams
     })
     peerConnection = results.peerConnection
 

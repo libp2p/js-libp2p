@@ -1,5 +1,57 @@
 # Changelog
 
+## [2.0.29](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.28...opentelemetry-metrics-v2.0.29) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [2.0.28](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.27...opentelemetry-metrics-v2.0.28) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+
+## [2.0.27](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.26...opentelemetry-metrics-v2.0.27) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+
+## [2.0.26](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.25...opentelemetry-metrics-v2.0.26) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+
+## [2.0.25](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.24...opentelemetry-metrics-v2.0.25) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
 ## [2.0.24](https://github.com/libp2p/js-libp2p/compare/opentelemetry-metrics-v2.0.23...opentelemetry-metrics-v2.0.24) (2026-07-07)
 
 
