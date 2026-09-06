@@ -30,14 +30,18 @@ You can read the specification [here](https://github.com/libp2p/specs/tree/maste
 
 `@libp2p/gossipsub` currently implements [version 1.1](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md) of the spec.
 
+Formerly published as [`@chainsafe/libp2p-gossipsub`](https://www.npmjs.com/package/@chainsafe/libp2p-gossipsub).
+
 ## Example - Configuring libp2p to use gossipsub
 
-```TypeScript
+```typescript
+import { identify } from '@libp2p/identify'
 import { createLibp2p } from 'libp2p'
 import { gossipsub } from '@libp2p/gossipsub'
 
 const node = await createLibp2p({
   services: {
+    identify: identify(),
     pubsub: gossipsub()
   }
   //... other options
