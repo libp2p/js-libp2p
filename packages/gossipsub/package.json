@@ -47,9 +47,10 @@
     }
   },
   "scripts": {
+    "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
-    "release": "aegir release --no-types",
+    "doc-check": "aegir doc-check",
     "build": "aegir build",
     "generate": "protons ./src/message/rpc.proto",
     "benchmark": "npm run benchmark:files -- 'dist/test/benchmark/**/*.test.js' -- --exit",
@@ -60,8 +61,8 @@
     "test:chrome-webworker": "aegir test -f dist/test/*.spec.js -t webworker",
     "test:firefox": "aegir test -f dist/test/*.spec.js -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -f dist/test/*.spec.js -t webworker -- --browser firefox",
-    "test:electron-main": "aegir test -f dist/test/*.spec.js -t electron-main",
-    "test:webkit": "aegir test -f dist/test/*.spec.js -t browser -- --browser webkit"
+    "test:webkit": "aegir test -f dist/test/*.spec.js -t browser -- --browser webkit",
+    "test:electron-main": "aegir test -f dist/test/*.spec.js -t electron-main"
   },
   "repository": {
     "type": "git",
@@ -76,6 +77,10 @@
   "license": "Apache-2.0 OR MIT",
   "bugs": {
     "url": "https://github.com/libp2p/js-libp2p/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/gossipsub#readme",
   "dependencies": {
