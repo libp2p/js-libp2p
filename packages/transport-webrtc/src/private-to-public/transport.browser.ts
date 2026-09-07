@@ -32,7 +32,9 @@ export interface WebRTCMetrics {
 
 export interface WebRTCTransportDirectInit {
   /**
-   * Select which WebRTC Direct flow to dial with.
+   * Which version of the WebRTC Direct connection flow to dial with. v1 munges
+   * the local SDP offer, which browsers are removing support for. v2 avoids
+   * munging but the server must support it. Listeners accept both versions.
    *
    * @default 'v1'
    */
@@ -105,7 +107,7 @@ export class WebRTCDirectTransport implements Transport {
       : genUfrag(32, UFRAG_PREFIX_V1)
     const pwd = this.init.version === 'v2' ? genUfrag(22, '') : ufrag
 
-    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
+    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md
     const {
       peerConnection,
       muxerFactory

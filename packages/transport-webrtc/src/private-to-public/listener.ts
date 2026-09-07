@@ -185,7 +185,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     // do not create RTCPeerConnection objects if the signal has aborted already
     signal.throwIfAborted()
 
-    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
+    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md
     const results = await createDialerRTCPeerConnection('server', serverUfrag, {
       rtcConfiguration: this.init.rtcConfiguration,
       certificate: this.certificate,
