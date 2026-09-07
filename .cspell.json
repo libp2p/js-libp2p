@@ -8,7 +8,5 @@
     "path": "./.github/dictionary.txt",
     "addWords": true
   }],
-  "ignorePaths": [
-    "packages/gossipsub/**"
-  ]
+  "ignorePaths": []
 }
