@@ -7,7 +7,7 @@ export const FloodsubID = '/floodsub/1.0.0'
 
 /**
  * The protocol ID for version 1.0.0 of the Gossipsub protocol
- * It is advertised along with GossipsubIDv11 for backwards compatability
+ * It is advertised along with GossipsubIDv11 for backwards compatibility
  */
 export const GossipsubIDv10 = '/meshsub/1.0.0'
 
@@ -199,7 +199,7 @@ export const GossipsubPrunePeers = 16
 export const GossipsubPruneBackoff = minute
 
 /**
- * Backoff to use when unsuscribing from a topic. Should not resubscribe to this topic before it expired.
+ * Backoff to use when unsubscribing from a topic. Should not resubscribe to this topic before it expired.
  */
 export const GossipsubUnsubscribeBackoff = 10 * second
 
@@ -276,7 +276,7 @@ export const GossipsubMaxIWantMessages = 10
 /**
  * Time to wait for a message requested through IWANT following an IHAVE advertisement.
  * If the message is not received within this window, a broken promise is declared and
- * the router may apply bahavioural penalties.
+ * the router may apply behavioural penalties.
  */
 export const GossipsubIWantFollowupTime = 3 * second
 

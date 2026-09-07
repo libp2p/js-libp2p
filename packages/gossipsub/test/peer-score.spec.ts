@@ -197,8 +197,8 @@ describe('PeerScore', () => {
     expect(aScore).to.be.equal(expected)
 
     // refreshing the scores applies the decay param
-    const decayInterals = 10
-    for (let i = 0; i < decayInterals; i++) {
+    const decayIntervals = 10
+    for (let i = 0; i < decayIntervals; i++) {
       ps.refreshScores()
       expected *= tparams.firstMessageDeliveriesDecay
     }

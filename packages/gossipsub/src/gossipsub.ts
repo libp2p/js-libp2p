@@ -499,7 +499,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     //
     // ## Topology
     // - new instance of Topology (unlinked to libp2p) with handlers
-    // - registar.register(topology)
+    // - registrar.register(topology)
 
     // register protocol with topology
     // Topology callbacks called on connection manager changes
@@ -1549,7 +1549,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       // we don't GRAFT to/from direct peers; complain loudly if this happens
       if (this.direct.has(id)) {
         this.log('GRAFT: ignoring request from direct peer %s', id)
-        // this is possibly a bug from a non-reciprical configuration; send a PRUNE
+        // this is possibly a bug from a non-reciprocal configuration; send a PRUNE
         prune.push(topicID)
         // but don't px
         doPX = false
@@ -2590,7 +2590,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       let peerMessageIDs = messageIDs
       if (messageIDs.length > constants.GossipsubMaxIHaveLength) {
         // shuffle and slice message IDs per peer so that we emit a different set for each peer
-        // we have enough reduncancy in the system that this will significantly increase the message
+        // we have enough redundancy in the system that this will significantly increase the message
         // coverage when we do truncate
         peerMessageIDs = shuffle(peerMessageIDs.slice()).slice(0, constants.GossipsubMaxIHaveLength)
       }
@@ -2710,7 +2710,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
           // Clear previous timeout before overwriting `status.heartbeatTimeout`, it should be completed tho.
           clearTimeout(this.status.heartbeatTimeout)
 
-          // NodeJS setInterval function is innexact, calls drift by a few miliseconds on each call.
+          // NodeJS setInterval function is inexact, calls drift by a few milliseconds on each call.
           // To run the heartbeat precisely setTimeout() must be used recomputing the delay on every loop.
           let msToNextHeartbeat =
             this.opts.heartbeatInterval - ((Date.now() - this.status.hearbeatStartMs) % this.opts.heartbeatInterval)
@@ -2734,7 +2734,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     this.heartbeatTicks++
 
-    // cache scores throught the heartbeat
+    // cache scores through the heartbeat
     const scores = new Map<string, number>()
     const getScore = (id: string): number => {
       let s = scores.get(id)
@@ -2792,7 +2792,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
      * Instead of calling getRandomGossipPeers multiple times to:
      * + get more mesh peers
      * + more outbound peers
-     * + oppportunistic grafting
+     * + opportunistic grafting
      * + emitGossip
      *
      * We want to loop through the topic peers only a single time and prepare gossip peers for all topics to improve the performance
@@ -2991,8 +2991,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     // expire fanout for topics we haven't published to in a while
     const now = Date.now()
-    this.fanoutLastpub.forEach((lastpb, topic) => {
-      if (lastpb + fanoutTTL < now) {
+    this.fanoutLastpub.forEach((lastPub, topic) => {
+      if (lastPub + fanoutTTL < now) {
         this.fanout.delete(topic)
         this.fanoutLastpub.delete(topic)
       }

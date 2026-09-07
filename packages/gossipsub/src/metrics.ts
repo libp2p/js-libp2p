@@ -60,7 +60,7 @@ export interface MetricsRegister {
 }
 
 export enum InclusionReason {
-  /** Peer was a fanaout peer. */
+  /** Peer was a fanout peer. */
   Fanout = 'fanout',
   /** Included from random selection. */
   Random = 'random',
