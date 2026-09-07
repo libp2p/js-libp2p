@@ -101,7 +101,7 @@ export async function validateToRawMessage (
   msg: RPC.Message
 ): Promise<ValidationResult> {
   // If strict-sign, verify all
-  // If anonymous (no-sign), ensure no preven
+  // If anonymous (no-sign), ensure no signature, key or seqno is present
 
   switch (signaturePolicy) {
     case StrictNoSign:

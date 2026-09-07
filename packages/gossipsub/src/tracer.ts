@@ -131,7 +131,7 @@ export class IWantTracer {
     this.trackMessage(msgIdStr)
 
     // A message got rejected, so we can stop tracking promises and let the score penalty apply.
-    // With the expection of obvious invalid messages
+    // With the exception of obvious invalid messages
     switch (reason) {
       case RejectReason.Error:
         return
