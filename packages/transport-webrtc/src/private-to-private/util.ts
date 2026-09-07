@@ -16,10 +16,10 @@ export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions, Prog
 }
 
 export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream: MessageStream<Message, Stream>, options: ReadCandidatesOptions): Promise<void> => {
-  try {
-    const connectedPromise = Promise.withResolvers<void>()
-    resolveOnConnected(pc, connectedPromise)
+  const connectedPromise = Promise.withResolvers<void>()
+  resolveOnConnected(pc, connectedPromise)
 
+  try {
     // read candidates until we are connected or we reach the end of the stream
     while (true) {
       // if we connect, stop trying to read from the stream
@@ -66,10 +66,19 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
       }
     }
   } catch (err) {
-    options.log.error('%s error parsing ICE candidate - %e', options.direction, err)
+    options.log.error('%s error reading ICE candidates - %e', options.direction, err)
 
-    if (options.signal?.aborted === true && pc.connectionState !== 'connected') {
-      throw err
+    // If the peer connection is not connected, the error may still be
+    // recoverable — the signaling stream can close just before the
+    // connectionstatechange event fires. Wait for the connected promise to
+    // settle: if the PC connects we can ignore the stream error; if it fails
+    // or was never going to connect, re-throw.
+    if (pc.connectionState !== 'connected') {
+      try {
+        await connectedPromise.promise
+      } catch {
+        throw err
+      }
     }
   }
 }
