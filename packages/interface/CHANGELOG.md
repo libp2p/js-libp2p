@@ -5,6 +5,18 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.5...interface-v3.3.0) (2026-08-22)
+
+
+### Features
+
+* emit an end event when the readable end closes ([#3608](https://github.com/libp2p/js-libp2p/issues/3608)) ([0967e75](https://github.com/libp2p/js-libp2p/commit/0967e75f56efcdc661ed9c8adcdae8f74ad781fc))
+
+
+### Bug Fixes
+
+* destroy sockets that resetAndDestroy() cannot reset ([#3607](https://github.com/libp2p/js-libp2p/issues/3607)) ([8786aa8](https://github.com/libp2p/js-libp2p/commit/8786aa8d011b1b2c0bfbb46db45a777d5e0e3172))
+
 ## [3.2.5](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.4...interface-v3.2.5) (2026-07-07)
 
 

@@ -44,7 +44,7 @@ describe('gossip / allowedTopics', () => {
     ])
 
     const nodeASubscriptions = Array.from((nodeA.pubsub)['subscriptions'].keys())
-    expect(nodeASubscriptions).deep.equals(allTopics, 'nodeA.subscriptions should be subcribed to all')
+    expect(nodeASubscriptions).deep.equals(allTopics, 'nodeA.subscriptions should be subscribed to all')
 
     const nodeBTopics = Array.from((nodeB.pubsub)['topics'].keys())
     expect(nodeBTopics).deep.equals(allowedTopics, 'nodeB.topics should only contain allowedTopics')

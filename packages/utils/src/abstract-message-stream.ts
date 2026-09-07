@@ -65,6 +65,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   protected readonly writeBuffer: Uint8ArrayList
   protected sendingData: boolean
 
+  #readableEnded = false
+
   private onDrainPromise?: PromiseWithResolvers<void>
 
   constructor (init: MessageStreamInit) {
@@ -120,6 +122,10 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
   get readBufferLength (): number {
     return this.readBuffer.byteLength
+  }
+
+  get readableEnded (): boolean {
+    return this.#readableEnded
   }
 
   get writeBufferLength (): number {
@@ -214,11 +220,12 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.readStatus = 'closed'
     this.remoteReadStatus = 'closed'
     this.timeline.close = Date.now()
+    this.maybeDispatchEnd()
 
     try {
       this.sendReset(err)
     } catch (err: any) {
-      this.log('failed to send reset to remote - %e', err)
+      this.log.error('failed to send reset to remote - %e', err)
     }
 
     this.dispatchEvent(new StreamAbortEvent(err))
@@ -353,10 +360,10 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     if (this.readBuffer.byteLength === 0) {
       this.readStatus = 'closed'
+      this.maybeDispatchEnd()
     }
 
-    const err = new StreamResetError()
-    this.dispatchEvent(new StreamResetEvent(err))
+    this.dispatchEvent(new StreamResetEvent(new StreamResetError()))
   }
 
   /**
@@ -385,16 +392,15 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }
 
     if (err != null) {
+      // abort dispatches 'end' itself, once the stream is fully terminal
       this.abort(err)
-    } else {
-      if (this.status === 'open' || this.status === 'closing') {
-        this.timeline.close = Date.now()
-        this.status = 'closed'
-        this.writeStatus = 'closed'
-        this.remoteWriteStatus = 'closed'
-        this.remoteReadStatus = 'closed'
-        this.dispatchEvent(new StreamCloseEvent())
-      }
+    } else if (this.status === 'open' || this.status === 'closing') {
+      this.timeline.close = Date.now()
+      this.status = 'closed'
+
+      // this may be the end even if the readable end was not closed above
+      this.maybeDispatchEnd()
+      this.dispatchEvent(new StreamCloseEvent())
     }
   }
 
@@ -411,6 +417,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.remoteWriteStatus = 'closed'
 
     this.safeDispatchEvent('remoteCloseWrite')
+
+    this.maybeDispatchEnd()
 
     if (this.writeStatus === 'closed') {
       this.onTransportClosed()
@@ -530,6 +538,23 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }
   }
 
+  /**
+   * Emit 'end' if nothing is buffered and no more data will be delivered.
+   * Emits at most once
+   */
+  protected maybeDispatchEnd (): void {
+    if (this.#readableEnded || this.readBuffer.byteLength > 0) {
+      return
+    }
+
+    if (this.remoteWriteStatus !== 'closed' && this.readStatus !== 'closed') {
+      return
+    }
+
+    this.#readableEnded = true
+    this.safeDispatchEvent('end')
+  }
+
   protected dispatchReadBuffer (): void {
     try {
       if (this.listenerCount('message') === 0) {
@@ -562,6 +587,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       if (this.readBuffer.byteLength === 0 && this.remoteWriteStatus === 'closed') {
         this.log('close readable end after dispatching read buffer and remote writable end is closed')
         this.readStatus = 'closed'
+        this.maybeDispatchEnd()
       }
 
       // abort if we failed to consume the read buffer and it is too large

@@ -36,6 +36,69 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.0...utils-v7.4.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **utils:** abort the stream on byteStream read buffer overflow ([#3612](https://github.com/libp2p/js-libp2p/issues/3612)) ([cef4d32](https://github.com/libp2p/js-libp2p/commit/cef4d32cfc55333fc48c27ca30e04653d2ba5203))
+* **utils:** dispatch progress events at most once per job ([#3614](https://github.com/libp2p/js-libp2p/issues/3614)) ([ac7305c](https://github.com/libp2p/js-libp2p/commit/ac7305ccf8fbaf21386279acee1712835b5e992f)), closes [#3613](https://github.com/libp2p/js-libp2p/issues/3613)
+
+## [7.4.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.2...utils-v7.4.0) (2026-08-22)
+
+
+### Features
+
+* emit an end event when the readable end closes ([#3608](https://github.com/libp2p/js-libp2p/issues/3608)) ([0967e75](https://github.com/libp2p/js-libp2p/commit/0967e75f56efcdc661ed9c8adcdae8f74ad781fc))
+
+
+### Bug Fixes
+
+* destroy sockets that resetAndDestroy() cannot reset ([#3607](https://github.com/libp2p/js-libp2p/issues/3607)) ([8786aa8](https://github.com/libp2p/js-libp2p/commit/8786aa8d011b1b2c0bfbb46db45a777d5e0e3172))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+
+## [7.3.2](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.1...utils-v7.3.2) (2026-07-30)
+
+
+### Dependencies
+
+* bump cborg from 5.1.11 to 6.0.0 ([#3586](https://github.com/libp2p/js-libp2p/issues/3586)) ([423335b](https://github.com/libp2p/js-libp2p/commit/423335b45798368f33260c6bd4b4112408991023))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+
+## [7.3.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.3.0...utils-v7.3.1) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+
+## [7.3.0](https://github.com/libp2p/js-libp2p/compare/utils-v7.2.4...utils-v7.3.0) (2026-07-19)
+
+
+### Features
+
+* **utils:** forward decode options through pbStream ([#3563](https://github.com/libp2p/js-libp2p/issues/3563)) ([a04f5e0](https://github.com/libp2p/js-libp2p/commit/a04f5e0bf392ef1cc018c0e5d58f802de7dd09c5))
+
 ## [7.2.4](https://github.com/libp2p/js-libp2p/compare/utils-v7.2.3...utils-v7.2.4) (2026-07-07)
 
 

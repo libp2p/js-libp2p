@@ -7,7 +7,7 @@ export const FloodsubID = '/floodsub/1.0.0'
 
 /**
  * The protocol ID for version 1.0.0 of the Gossipsub protocol
- * It is advertised along with GossipsubIDv11 for backwards compatability
+ * It is advertised along with GossipsubIDv11 for backwards compatibility
  */
 export const GossipsubIDv10 = '/meshsub/1.0.0'
 
@@ -24,6 +24,60 @@ export const GossipsubIDv11 = '/meshsub/1.1.0'
  * https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.2.md
  */
 export const GossipsubIDv12 = '/meshsub/1.2.0'
+
+/**
+ * An ordered ladder of gossipsub protocol IDs, oldest to newest. Each version is a
+ * superset of the one before it, so a protocol's position on the ladder determines
+ * which features it supports - see `protocolSupportsFeature`.
+ *
+ * New protocol versions must be appended to the end of this list.
+ */
+const versionLadder = [GossipsubIDv10, GossipsubIDv11, GossipsubIDv12] as const
+
+export type GossipsubVersion = (typeof versionLadder)[number]
+
+export const GossipsubVersionLadder: readonly string[] = versionLadder
+
+/**
+ * Gossipsub protocol features that are only available from a minimum protocol version
+ * onward. Used with `protocolSupportsFeature` to gate version-dependent behavior on the
+ * protocol negotiated with a peer, instead of comparing protocol IDs for equality.
+ */
+export enum GossipsubFeature {
+  /**
+   * PRUNE messages carry backoff and peer exchange info (gossipsub v1.1+)
+   */
+  Backoff = 'Backoff',
+  /**
+   * IDONTWANT control messages (gossipsub v1.2+)
+   */
+  IDontWant = 'IDontWant'
+}
+
+const featureMinimumProtocol: Record<GossipsubFeature, GossipsubVersion> = {
+  [GossipsubFeature.Backoff]: GossipsubIDv11,
+  [GossipsubFeature.IDontWant]: GossipsubIDv12
+}
+
+/**
+ * Returns true when `protocol` is a gossipsub version that supports `feature` - that is,
+ * when it sits at or above the feature's minimum version on the `GossipsubVersionLadder`.
+ *
+ * Protocols not on the ladder (floodsub, unknown protocols) support no features.
+ */
+export function protocolSupportsFeature (protocol: string | undefined, feature: GossipsubFeature): boolean {
+  if (protocol == null) {
+    return false
+  }
+
+  const protocolIndex = GossipsubVersionLadder.indexOf(protocol)
+
+  if (protocolIndex === -1) {
+    return false
+  }
+
+  return protocolIndex >= GossipsubVersionLadder.indexOf(featureMinimumProtocol[feature])
+}
 
 // Overlay parameters
 
@@ -145,7 +199,7 @@ export const GossipsubPrunePeers = 16
 export const GossipsubPruneBackoff = minute
 
 /**
- * Backoff to use when unsuscribing from a topic. Should not resubscribe to this topic before it expired.
+ * Backoff to use when unsubscribing from a topic. Should not resubscribe to this topic before it expired.
  */
 export const GossipsubUnsubscribeBackoff = 10 * second
 
@@ -222,7 +276,7 @@ export const GossipsubMaxIWantMessages = 10
 /**
  * Time to wait for a message requested through IWANT following an IHAVE advertisement.
  * If the message is not received within this window, a broken promise is declared and
- * the router may apply bahavioural penalties.
+ * the router may apply behavioural penalties.
  */
 export const GossipsubIWantFollowupTime = 3 * second
 
@@ -264,3 +318,18 @@ export const BACKOFF_SLACK = 1
 
 export const GossipsubIdontwantMinDataSize = 512
 export const GossipsubIdontwantMaxMessages = 512
+
+/**
+ * The default per-peer memory budget for tracking a peer's topic subscriptions,
+ * bounding per-peer memory in the topics map. Each topic costs its string
+ * length plus GossipsubTopicEntryOverhead, so this bounds topic count as well
+ * as bytes (~1000 topics at the 1 MiB default).
+ */
+export const GossipsubMaxTopicBytesPerPeer = 1024 * 1024
+
+/**
+ * Approximate fixed heap cost of one topics-map entry (the Map slot, the Set,
+ * and the subscriber's peer id), charged per subscription on top of the topic
+ * string length so the per-peer budget bounds topic count as well as bytes.
+ */
+export const GossipsubTopicEntryOverhead = 1024

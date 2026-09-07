@@ -3,6 +3,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import Sinon from 'sinon'
 import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT } from '../src/constants.ts'
 import { Status } from '../src/pb/index.ts'
 import { ReservationStore } from '../src/server/reservation-store.ts'
@@ -27,6 +28,32 @@ describe('circuit-relay server reservation store', function () {
     expect(result.status).to.equal(Status.OK)
     expect(result.expire).to.not.be.undefined()
     expect(store.get(peer)).to.be.ok()
+  })
+
+  it('should not attach a new abort listener when refreshing a reservation', async function () {
+    const store = new ReservationStore({ logger: defaultLogger() }, { maxReservations: 1 })
+    const privateKey = await generateKeyPair('Ed25519')
+    const peer = peerIdFromPrivateKey(privateKey)
+
+    expect(store.reserve(peer, multiaddr()).status).to.equal(Status.OK)
+
+    const reservation = store.get(peer)
+
+    if (reservation == null) {
+      throw new Error('reservation was not created')
+    }
+
+    // refreshing a reservation reuses the same signal, so spy on it to ensure
+    // no further listeners are attached
+    const signal = reservation.signal
+    const addEventListener = Sinon.spy(signal, 'addEventListener')
+
+    for (let i = 0; i < 10; i++) {
+      expect(store.reserve(peer, multiaddr()).status).to.equal(Status.OK)
+      expect(store.get(peer)?.signal).to.equal(signal)
+    }
+
+    expect(addEventListener.called).to.be.false()
   })
 
   it('should fail to add reservation on exceeding limit', async function () {

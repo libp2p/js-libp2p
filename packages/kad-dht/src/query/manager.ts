@@ -205,6 +205,7 @@ export class QueryManager implements Startable {
           query: queryFunc,
           path: index,
           numPaths: peersToQuery.length,
+          kBucketSize: this.routingTable.kBucketSize,
           alpha: this.alpha,
           log,
           peersSeen,

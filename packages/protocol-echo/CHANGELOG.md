@@ -1,5 +1,64 @@
 # Changelog
 
+## [3.1.14](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.13...echo-v3.1.14) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
+## [3.1.13](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.12...echo-v3.1.13) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.12 to ^3.1.13
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [3.1.12](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.11...echo-v3.1.12) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+
+## [3.1.11](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.10...echo-v3.1.11) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.10 to ^3.1.11
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [3.1.10](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.9...echo-v3.1.10) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [3.1.9](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.8...echo-v3.1.9) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
 ## [3.1.8](https://github.com/libp2p/js-libp2p/compare/echo-v3.1.7...echo-v3.1.8) (2026-07-07)
 
 

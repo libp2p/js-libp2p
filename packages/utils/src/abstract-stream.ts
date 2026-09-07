@@ -84,6 +84,7 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
     await this.sendCloseRead(options)
 
     this.readStatus = 'closed'
+    this.maybeDispatchEnd()
 
     this.log('closed readable end gracefully')
   }

@@ -18,8 +18,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     throw new InvalidParametersError('Invalid PeerData')
   }
 
-  if (data.publicKey != null && peerId.publicKey != null && !data.publicKey.equals(peerId.publicKey)) {
-    throw new InvalidParametersError('publicKey bytes do not match peer id publicKey bytes')
+  if (data.publicKey != null && !peerId.equals(data.publicKey.toMultihash().bytes)) {
+    throw new InvalidParametersError('publicKey does not match peer id')
   }
 
   const existingPeer = options.existingPeer?.peer
@@ -162,7 +162,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
 
   // add observed addresses to multiaddrs
   output.addresses.forEach(addr => {
-    addr.observed = options.existingPeer?.peerPB.addresses?.find(addr => uint8ArrayEquals(addr.multiaddr, addr.multiaddr))?.observed ?? Date.now()
+    addr.observed = options.existingPeer?.peerPB.addresses?.find(existingAddr => uint8ArrayEquals(existingAddr.multiaddr, addr.multiaddr))?.observed ?? Date.now()
   })
 
   // Ed25519 and secp256k1 have their public key embedded in them so no need to duplicate it

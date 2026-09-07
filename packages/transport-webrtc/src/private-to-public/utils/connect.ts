@@ -1,4 +1,4 @@
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 import { pEvent } from 'p-event'
 import { WebRTCTransportError } from '../../error.ts'
 import { DataChannelMuxerFactory } from '../../muxer.ts'
@@ -6,6 +6,7 @@ import { toMultiaddrConnection } from '../../rtcpeerconnection-to-conn.ts'
 import { createStream } from '../../stream.ts'
 import { generateNoisePrologue } from './generate-noise-prologue.ts'
 import * as sdp from './sdp.ts'
+import { serverUfragV2 } from './stun.ts'
 import type { DirectRTCPeerConnection } from './get-rtcpeerconnection.ts'
 import type { DataChannelOptions } from '../../index.ts'
 import type { ComponentLogger, Connection, CounterGroup, Logger, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
@@ -72,7 +73,7 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
           throw new WebRTCTransportError('Could not read local ICE password from local description for v2 dial')
         }
 
-        remoteAnswerUfrag = sdp.serverUfragV2(localPwd)
+        remoteAnswerUfrag = serverUfragV2(localPwd)
       } else {
         // v1 compatibility path: force ice-ufrag === ice-pwd so the server can
         // infer credentials from STUN USERNAME without explicit SDP exchange.
@@ -222,6 +223,8 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       signal: options.signal
     })
   } catch (err) {
+    // discard any early data channels buffered before the upgrade failed
+    muxerFactory.close()
     handshakeDataChannel.close()
     peerConnection.close()
 

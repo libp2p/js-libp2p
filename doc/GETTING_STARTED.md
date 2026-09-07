@@ -93,18 +93,18 @@ If you want to know more about libp2p transports, you should read the following 
 
 Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
 
-There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `@chainsafe/libp2p-noise` module.
+There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `@libp2p/noise` module.
 
 ```sh
-npm install @chainsafe/libp2p-noise
+npm install @libp2p/noise
 ```
 
-With `@chainsafe/libp2p-noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
+With `@libp2p/noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
 
 ```js
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 
 const node = await createLibp2p({
   transports: [webSockets()],
@@ -125,17 +125,17 @@ While multiplexers are not strictly required, they are highly recommended as the
 
 Looking at the [available stream multiplexing](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#stream-multiplexing) modules. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
-You can install `@chainsafe/libp2p-yamux` and add it to your libp2p node as follows in the next example.
+You can install `@libp2p/yamux` and add it to your libp2p node as follows in the next example.
 
 ```sh
-npm install @chainsafe/libp2p-yamux
+npm install @libp2p/yamux
 ```
 
 ```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@libp2p/noise'
+import { yamux } from '@libp2p/yamux'
 
 const node = await createLibp2p({
   transports: [webSockets()],
@@ -159,8 +159,8 @@ Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] 
 ```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@libp2p/noise'
+import { yamux } from '@libp2p/yamux'
 
 const node = await createLibp2p({
   // libp2p nodes are started by default, pass false to override this
@@ -213,8 +213,8 @@ We can provide specific configurations for each protocol within a `config.peerDi
 ```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@libp2p/noise'
+import { yamux } from '@libp2p/yamux'
 import { bootstrap } from '@libp2p/bootstrap'
 
 // Known peers addresses

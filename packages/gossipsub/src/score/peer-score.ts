@@ -11,7 +11,7 @@ import type { ComponentLogger, Logger } from '@libp2p/interface'
 
 interface PeerScoreOpts {
   /**
-   * Miliseconds to cache computed score per peer
+   * Milliseconds to cache computed score per peer
    */
   scoreCacheValidityMs: number
 
@@ -21,7 +21,7 @@ interface PeerScoreOpts {
 interface ScoreCacheEntry {
   /** The cached score */
   score: number
-  /** Unix timestamp in miliseconds, the time after which the cached score for a peer is no longer valid */
+  /** Unix timestamp in milliseconds, the time after which the cached score for a peer is no longer valid */
   cacheUntil: number
 }
 

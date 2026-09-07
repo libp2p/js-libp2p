@@ -6,7 +6,7 @@ import { InvalidPeerScoreThresholdsError } from '../errors.ts'
 
 export interface PeerScoreThresholds {
   /**
-   * gossipThreshold is the score threshold below which gossip propagation is supressed;
+   * gossipThreshold is the score threshold below which gossip propagation is suppressed;
    * should be negative.
    */
   gossipThreshold: number
@@ -18,7 +18,7 @@ export interface PeerScoreThresholds {
   publishThreshold: number
 
   /**
-   * graylistThreshold is the score threshold below which message processing is supressed altogether,
+   * graylistThreshold is the score threshold below which message processing is suppressed altogether,
    * implementing an effective graylist according to peer score; should be negative and <= PublisThreshold.
    */
   graylistThreshold: number

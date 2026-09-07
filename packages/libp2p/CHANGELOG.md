@@ -110,6 +110,93 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.11](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.10...libp2p-v3.3.11) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
+## [3.3.10](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.9...libp2p-v3.3.10) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.12 to ^3.1.13
+    * @libp2p/multistream-select bumped from ^7.0.27 to ^7.0.28
+    * @libp2p/peer-collections bumped from ^7.0.27 to ^7.0.28
+    * @libp2p/peer-store bumped from ^12.0.27 to ^12.0.28
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [3.3.9](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.8...libp2p-v3.3.9) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+    * @libp2p/multistream-select bumped from ^7.0.26 to ^7.0.27
+    * @libp2p/peer-collections bumped from ^7.0.26 to ^7.0.27
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/peer-store bumped from ^12.0.26 to ^12.0.27
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+
+## [3.3.8](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.7...libp2p-v3.3.8) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/interface-internal bumped from ^3.1.10 to ^3.1.11
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+    * @libp2p/multistream-select bumped from ^7.0.25 to ^7.0.26
+    * @libp2p/peer-collections bumped from ^7.0.25 to ^7.0.26
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/peer-store bumped from ^12.0.25 to ^12.0.26
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [3.3.7](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.6...libp2p-v3.3.7) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/multistream-select bumped from ^7.0.24 to ^7.0.25
+    * @libp2p/peer-collections bumped from ^7.0.24 to ^7.0.25
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/peer-store bumped from ^12.0.24 to ^12.0.25
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [3.3.6](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.5...libp2p-v3.3.6) (2026-07-19)
+
+
+### Bug Fixes
+
+* verify records and public keys match what was requested ([#3577](https://github.com/libp2p/js-libp2p/issues/3577)) ([523b52b](https://github.com/libp2p/js-libp2p/commit/523b52bd690943526f5554a3d8418c8d0c92cae5))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/multistream-select bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/peer-collections bumped from ^7.0.23 to ^7.0.24
+    * @libp2p/peer-store bumped from ^12.0.23 to ^12.0.24
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
 ## [3.3.5](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.4...libp2p-v3.3.5) (2026-07-07)
 
 

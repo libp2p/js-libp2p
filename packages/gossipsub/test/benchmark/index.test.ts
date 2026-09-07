@@ -85,7 +85,7 @@ describe('heartbeat', function () {
       const peerIdsOnTopic = peerIndices.map((peerIndex) => peerIds[peerIndex])
       // peer 0 see all subscriptions from other
       const subscription = checkReceivedSubscriptions(psubs[0], peerIdsOnTopic, topic)
-      // other peers should see the subsription from peer 0 to prevent PublishError.InsufficientPeers error
+      // other peers should see the subscription from peer 0 to prevent PublishError.InsufficientPeers error
       const otherSubscriptions = peerIndices
         .slice(1)
         .map((peerIndex) => psubs[peerIndex])

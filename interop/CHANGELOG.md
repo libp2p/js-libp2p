@@ -1,5 +1,133 @@
 # Changelog
 
+## [1.0.40](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.39...transport-interop-libp2p-main-v1.0.40) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/mplex bumped from ^12.0.31 to ^12.0.32
+    * @libp2p/noise bumped from ^17.0.1 to ^17.0.2
+    * @libp2p/webrtc bumped from ^6.0.31 to ^6.0.32
+    * @libp2p/webtransport bumped from ^6.0.38 to ^6.0.39
+    * @libp2p/yamux bumped from ^8.0.2 to ^8.0.3
+    * libp2p bumped from ^3.3.10 to ^3.3.11
+
+## [1.0.39](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.38...transport-interop-libp2p-main-v1.0.39) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.12 to ^4.2.13
+    * @libp2p/identify bumped from ^4.1.13 to ^4.1.14
+    * @libp2p/mplex bumped from ^12.0.30 to ^12.0.31
+    * @libp2p/ping bumped from ^3.1.12 to ^3.1.13
+    * @libp2p/tcp bumped from ^11.0.27 to ^11.0.28
+    * @libp2p/tls bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/webrtc bumped from ^6.0.30 to ^6.0.31
+    * @libp2p/websockets bumped from ^10.1.20 to ^10.1.21
+    * @libp2p/webtransport bumped from ^6.0.37 to ^6.0.38
+    * libp2p bumped from ^3.3.9 to ^3.3.10
+
+## [1.0.38](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.37...transport-interop-libp2p-main-v1.0.38) (2026-08-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/webtransport bumped from ^6.0.36 to ^6.0.37
+
+## [1.0.37](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.36...transport-interop-libp2p-main-v1.0.37) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.11 to ^4.2.12
+    * @libp2p/identify bumped from ^4.1.12 to ^4.1.13
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/mplex bumped from ^12.0.29 to ^12.0.30
+    * @libp2p/ping bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/tcp bumped from ^11.0.26 to ^11.0.27
+    * @libp2p/tls bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/webrtc bumped from ^6.0.29 to ^6.0.30
+    * @libp2p/websockets bumped from ^10.1.19 to ^10.1.20
+    * @libp2p/webtransport bumped from ^6.0.35 to ^6.0.36
+    * libp2p bumped from ^3.3.8 to ^3.3.9
+
+## [1.0.36](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.35...transport-interop-libp2p-main-v1.0.36) (2026-08-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/webtransport bumped from ^6.0.34 to ^6.0.35
+
+## [1.0.35](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.34...transport-interop-libp2p-main-v1.0.35) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.10 to ^4.2.11
+    * @libp2p/identify bumped from ^4.1.11 to ^4.1.12
+    * @libp2p/mplex bumped from ^12.0.28 to ^12.0.29
+    * @libp2p/ping bumped from ^3.1.10 to ^3.1.11
+    * @libp2p/tcp bumped from ^11.0.25 to ^11.0.26
+    * @libp2p/tls bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/webrtc bumped from ^6.0.28 to ^6.0.29
+    * @libp2p/websockets bumped from ^10.1.18 to ^10.1.19
+    * @libp2p/webtransport bumped from ^6.0.33 to ^6.0.34
+    * libp2p bumped from ^3.3.7 to ^3.3.8
+
+## [1.0.34](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.33...transport-interop-libp2p-main-v1.0.34) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.9 to ^4.2.10
+    * @libp2p/identify bumped from ^4.1.10 to ^4.1.11
+    * @libp2p/mplex bumped from ^12.0.27 to ^12.0.28
+    * @libp2p/ping bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/tcp bumped from ^11.0.24 to ^11.0.25
+    * @libp2p/tls bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/webrtc bumped from ^6.0.27 to ^6.0.28
+    * @libp2p/websockets bumped from ^10.1.17 to ^10.1.18
+    * @libp2p/webtransport bumped from ^6.0.32 to ^6.0.33
+    * libp2p bumped from ^3.3.6 to ^3.3.7
+
+## [1.0.33](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.32...transport-interop-libp2p-main-v1.0.33) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/circuit-relay-v2 bumped from ^4.2.8 to ^4.2.9
+    * @libp2p/identify bumped from ^4.1.9 to ^4.1.10
+    * @libp2p/mplex bumped from ^12.0.26 to ^12.0.27
+    * @libp2p/ping bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/tcp bumped from ^11.0.23 to ^11.0.24
+    * @libp2p/tls bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/webrtc bumped from ^6.0.26 to ^6.0.27
+    * @libp2p/websockets bumped from ^10.1.16 to ^10.1.17
+    * @libp2p/webtransport bumped from ^6.0.31 to ^6.0.32
+    * libp2p bumped from ^3.3.5 to ^3.3.6
+
 ## [1.0.32](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.31...transport-interop-libp2p-main-v1.0.32) (2026-07-07)
 
 

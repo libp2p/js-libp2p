@@ -29,7 +29,7 @@ export interface PeerScoreParams {
    * is the square of the difference, ie (PeersInSameIP - IPColocationThreshold)^2.
    * If the number of peers in the same IP is less than the threshold, then the value is 0.
    * The weight of the parameter MUST be negative, unless you want to disable for testing.
-   * Note: In order to simulate many IPs in a managable manner when testing, you can set the weight to 0
+   * Note: In order to simulate many IPs in a manageable manner when testing, you can set the weight to 0
    * thus disabling the IP colocation penalty.
    */
   IPColocationFactorWeight: number
@@ -266,7 +266,7 @@ export function validateTopicScoreParams (p: TopicScoreParams): void {
 
   // check P2
   if (p.firstMessageDeliveriesWeight < 0) {
-    throw new InvalidPeerScoreParamsError('invallid FirstMessageDeliveriesWeight; must be positive (or 0 to disable)')
+    throw new InvalidPeerScoreParamsError('invalid FirstMessageDeliveriesWeight; must be positive (or 0 to disable)')
   }
   if (
     p.firstMessageDeliveriesWeight !== 0 &&

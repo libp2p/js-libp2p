@@ -1,5 +1,57 @@
 # Changelog
 
+## [3.0.29](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.28...pnet-v3.0.29) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [3.0.28](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.27...pnet-v3.0.28) (2026-08-22)
+
+
+### Bug Fixes
+
+* **pnet:** abort the connection when the inbound cipher throws ([#3599](https://github.com/libp2p/js-libp2p/issues/3599)) ([4dae661](https://github.com/libp2p/js-libp2p/commit/4dae661b4e0c51a81944f119e1897abd6ec5d3c8))
+* **pnet:** bound xsalsa20 wasm memory per message and per connection ([#3585](https://github.com/libp2p/js-libp2p/issues/3585)) ([947d304](https://github.com/libp2p/js-libp2p/commit/947d304edb13b3bb30b14ecb7f0ec59388c3c4ab))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+
+## [3.0.27](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.26...pnet-v3.0.27) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [3.0.26](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.25...pnet-v3.0.26) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [3.0.25](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.24...pnet-v3.0.25) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
 ## [3.0.24](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.23...pnet-v3.0.24) (2026-07-07)
 
 

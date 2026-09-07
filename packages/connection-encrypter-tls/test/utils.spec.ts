@@ -1,7 +1,8 @@
 import 'reflect-metadata'
 import { EventEmitter } from 'node:events'
+import tls from 'node:tls'
 import { logger } from '@libp2p/logger'
-import { streamPair } from '@libp2p/utils'
+import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { Crypto } from '@peculiar/webcrypto'
 import * as x509 from '@peculiar/x509'
 import { expect } from 'aegir/chai'
@@ -10,6 +11,7 @@ import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { toMessageStream, toNodeDuplex, verifyPeerCertificate } from '../src/utils.ts'
 import * as testVectors from './fixtures/test-vectors.ts'
+import type { StreamCloseEvent } from '@libp2p/interface'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)
@@ -151,5 +153,212 @@ describe('utils', () => {
     await pEvent(outboundStream, 'close')
 
     expect(new Uint8ArrayList(...received).subarray()).to.equalBytes(new Uint8ArrayList(...sent).subarray())
+  })
+
+  it('should destroy the socket and reset the connection when the stream is aborted', async () => {
+    // a stubbed socket cannot reproduce the bug, only a real TLSSocket has the
+    // TLSWrap handle that makes resetAndDestroy() throw
+    const [connection, remoteConnection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      const stream = toMessageStream(connection, socket)
+      const socketClosed = pEvent(socket, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+      const remoteClosed = pEvent(remoteConnection, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      // nothing has torn the connection down yet, so the assertions below can
+      // only pass because of the abort
+      expect(stream.status).to.equal('open')
+      expect(connection.status).to.equal('open')
+
+      stream.abort(new Error('Oh no!'))
+
+      // resetAndDestroy() threw before it could destroy the socket, and abort()
+      // swallows the error
+      expect(socket.destroyed).to.be.true()
+
+      // destroying the socket alone would only close the transport gracefully
+      expect(connection.status).to.equal('aborted')
+
+      await socketClosed
+      await remoteClosed
+
+      // the remote has to see a reset and not a graceful close
+      expect(remoteConnection.status).to.equal('reset')
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
+  })
+
+  it('should destroy the socket when the stream is closed', async () => {
+    const [connection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      const stream = toMessageStream(connection, socket)
+
+      await stream.close({
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      expect(socket.destroyed).to.be.true()
+      expect(stream.status).to.equal('closed')
+      expect(connection.status).to.equal('closed')
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
+  })
+
+  it('should wait for a socket that is already being destroyed to close', async () => {
+    const [connection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      const stream = toMessageStream(connection, socket)
+
+      // destroy() is synchronous but 'close' is emitted on a later turn of the
+      // event loop, so the teardown is still in flight here
+      socket.destroy()
+
+      await stream.close({
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      // close() has to wait for the teardown that was already running, the
+      // socket closing on its own does not mean the transport has finished
+      expect(stream.status).to.equal('closed')
+      expect(connection.status).to.equal('closed')
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
+  })
+
+  it('should not hang when the socket closed before the stream was created', async () => {
+    const [connection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      socket.destroy()
+      await pEvent(socket, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      // the socket will never emit 'close' again, so close() cannot wait for it
+      const stream = toMessageStream(connection, socket)
+
+      await expect(stream.close({
+        signal: AbortSignal.timeout(2_000)
+      })).to.eventually.be.fulfilled()
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
+  })
+
+  it('should not hang when the stream is closed after being aborted', async () => {
+    const [connection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      const stream = toMessageStream(connection, socket)
+
+      stream.abort(new Error('Oh no!'))
+
+      // wait for the abort's 'close' to be emitted, otherwise an unguarded
+      // close() would resolve on it and this test could never fail
+      await pEvent(socket, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      // the socket cannot emit 'close' again, so close() has to return early
+      await expect(stream.close({
+        signal: AbortSignal.timeout(2_000)
+      })).to.eventually.be.fulfilled()
+
+      expect(connection.status).to.equal('aborted')
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
+  })
+
+  it('should surface a transport error to the application', async () => {
+    const [connection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      const stream = toMessageStream(connection, socket)
+      const closed = pEvent<'close', StreamCloseEvent>(stream, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      const err = new Error('Bad record MAC')
+      err.name = 'SSLError'
+      socket.emit('error', err)
+
+      const evt = await closed
+      expect(stream.status).to.equal('aborted')
+      expect(evt.error).to.have.property('name', 'SSLError')
+      expect(evt.local).to.be.true()
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
+  })
+
+  it('should surface a remote reset to the application', async () => {
+    const [connection, remoteConnection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      const stream = toMessageStream(connection, socket)
+      const closed = pEvent<'close', StreamCloseEvent>(stream, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      remoteConnection.abort(new Error('Remote went away'))
+
+      const evt = await closed
+      expect(stream.status).to.equal('reset')
+      expect(evt.error).to.have.property('name', 'StreamResetError')
+      expect(evt.local).to.be.false()
+
+      // nothing else tears the socket down on this branch
+      expect(socket.destroyed).to.be.true()
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
+  })
+
+  it('should not report an error when the connection closes cleanly', async () => {
+    const [connection, remoteConnection] = multiaddrConnectionPair()
+    const socket = new tls.TLSSocket(toNodeDuplex(connection))
+
+    try {
+      const stream = toMessageStream(connection, socket)
+      const closed = pEvent<'close', StreamCloseEvent>(stream, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      await remoteConnection.close()
+
+      const evt = await closed
+      expect(evt.error).to.be.undefined()
+      expect(stream.status).to.equal('closed')
+
+      // nothing else tears the socket down on this branch
+      expect(socket.destroyed).to.be.true()
+    } finally {
+      socket.destroy()
+      connection.abort(new Error('Test over'))
+    }
   })
 })

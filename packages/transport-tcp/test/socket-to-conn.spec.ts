@@ -1,10 +1,16 @@
 import { createServer, Socket } from 'net'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { defaultLogger } from '@libp2p/logger'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { pEvent } from 'p-event'
+import Sinon from 'sinon'
 import { toMultiaddrConnection } from '../src/socket-to-conn.ts'
+import { multiaddrToNetConfig } from '../src/utils.ts'
+import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Server, ServerOpts, SocketConstructorOpts } from 'node:net'
 
 interface TestOptions {
@@ -45,12 +51,58 @@ async function setup (opts?: TestOptions): Promise<TestFixture> {
   }
 }
 
+async function setupUnix (): Promise<TestFixture & { listenAddr: Multiaddr, cleanup(): void }> {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'libp2p-tcp-test-'))
+  const listenAddr = multiaddr(`/unix/${encodeURIComponent(path.join(dir, 'test.sock'))}`)
+  const cleanup = (): void => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  }
+
+  // on Windows a unix multiaddr binds a named pipe rather than a filesystem
+  // path, so go through the same mapping the listener uses
+  const config = multiaddrToNetConfig(listenAddr)
+
+  if (!('path' in config) || typeof config.path !== 'string') {
+    cleanup()
+    throw new Error('Expected a unix socket path')
+  }
+
+  try {
+    const server = createServer()
+    server.listen(config.path)
+    await pEvent(server, 'listening', { rejectionEvents: ['error'] })
+
+    const client = new Socket()
+    client.connect(config.path)
+
+    const [
+      serverSocket
+    ] = await Promise.all([
+      pEvent<'connection', Socket>(server, 'connection', { rejectionEvents: ['error'] }),
+      pEvent(client, 'connect', { rejectionEvents: ['error'] })
+    ])
+
+    return {
+      server,
+      serverSocket,
+      clientSocket: client,
+      listenAddr,
+      cleanup
+    }
+  } catch (err) {
+    cleanup()
+    throw err
+  }
+}
+
 describe('socket-to-conn', () => {
   let server: Server
   let clientSocket: Socket
   let serverSocket: Socket
 
   afterEach(async () => {
+    Sinon.restore()
+
     if (serverSocket != null) {
       serverSocket.destroy()
     }
@@ -507,6 +559,143 @@ describe('socket-to-conn', () => {
     expect(serverSocket.writable).to.be.false()
 
     // server socket is destroyed
+    expect(serverSocket.destroyed).to.be.true()
+  })
+
+  it('should destroy a unix socket when the MultiaddrConnection is aborted', async () => {
+    let listenAddr: Multiaddr
+    let cleanup: () => void
+    ({ server, clientSocket, serverSocket, listenAddr, cleanup } = await setupUnix())
+
+    try {
+      // the shape the listener creates
+      const maConn = toMultiaddrConnection({
+        socket: serverSocket,
+        direction: 'inbound',
+        localAddr: listenAddr,
+        log: defaultLogger().forComponent('libp2p:test-maconn')
+      })
+
+      const socketClosed = pEvent(serverSocket, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      maConn.abort(new Error('Oh no!'))
+
+      // resetAndDestroy() would throw ERR_INVALID_HANDLE_TYPE on the Pipe
+      // handle and abort() would swallow it, leaving the socket open
+      expect(serverSocket.destroyed).to.be.true()
+
+      await socketClosed
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('should destroy an outbound unix socket when the MultiaddrConnection is aborted', async () => {
+    let listenAddr: Multiaddr
+    let cleanup: () => void
+    ({ server, clientSocket, serverSocket, listenAddr, cleanup } = await setupUnix())
+
+    try {
+      // the shape the dialler creates - remoteAddr is passed directly instead
+      // of being derived from localAddr, which is the other half of the
+      // Unix.matches() discriminator
+      const maConn = toMultiaddrConnection({
+        socket: clientSocket,
+        direction: 'outbound',
+        remoteAddr: listenAddr,
+        log: defaultLogger().forComponent('libp2p:test-maconn')
+      })
+
+      const socketClosed = pEvent(clientSocket, 'close', {
+        signal: AbortSignal.timeout(2_000)
+      })
+
+      maConn.abort(new Error('Oh no!'))
+
+      expect(clientSocket.destroyed).to.be.true()
+
+      await socketClosed
+    } finally {
+      cleanup()
+    }
+  })
+
+  it('should close the socket when a reset races graceful shutdown', async () => {
+    ({ server, clientSocket, serverSocket } = await setup())
+
+    clientSocket.once('error', () => {})
+
+    // resetting a socket whose shutdown is already in flight fails with EINVAL
+    const socketErrors: Error[] = []
+    serverSocket.on('error', err => {
+      socketErrors.push(err)
+    })
+
+    const resetSpy = Sinon.spy(serverSocket, 'resetAndDestroy')
+
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
+    })
+    expect(inboundMaConn).to.have.property('status', 'open')
+
+    // resolves only on 'close', so it stays true to the test name even if the
+    // socket also errors
+    const serverClosed = pEvent(serverSocket, 'close', {
+      rejectionEvents: [],
+      signal: AbortSignal.timeout(5_000)
+    })
+    // sinks, so an assertion failing before the awaits below cannot turn these
+    // into unhandled rejections. awaiting them still rejects
+    serverClosed.catch(() => {})
+
+    // nothing has been written, so close() reaches sendClose() -> destroySoon()
+    // synchronously and puts a shutdown request in flight
+    const closePromise = inboundMaConn.close()
+    closePromise.catch(() => {})
+    expect(serverSocket.writableEnded).to.be.true()
+    expect(serverSocket.destroyed).to.be.false()
+
+    inboundMaConn.abort(new Error('close timed out'))
+
+    // the guard has to destroy the socket here. waiting only for 'close' would
+    // also pass if sendReset() did nothing, because destroySoon() closes the
+    // socket a tick later anyway
+    expect(resetSpy.called).to.be.false()
+    expect(serverSocket.destroyed).to.be.true()
+
+    // must stay above the awaits below, it is the fastest and clearest failure
+    expect(socketErrors).to.be.empty()
+
+    // without the guard the socket never emits 'close' and the handle is leaked
+    await expect(serverClosed).to.eventually.be.fulfilled()
+    await expect(closePromise).to.eventually.be.fulfilled()
+  })
+
+  it('should still reset a socket aborted before graceful close starts', async () => {
+    ({ server, clientSocket, serverSocket } = await setup())
+
+    clientSocket.once('error', () => {})
+
+    const resetSpy = Sinon.spy(serverSocket, 'resetAndDestroy')
+
+    const inboundMaConn = toMultiaddrConnection({
+      socket: serverSocket,
+      direction: 'inbound',
+      log: defaultLogger().forComponent('libp2p:test-maconn')
+    })
+
+    // the writable end is still open, so the reset path must be used
+    expect(serverSocket.writableEnded).to.be.false()
+
+    inboundMaConn.abort(new Error('Not interested'))
+
+    // assert the reset landed, not just that the method was reached. abort()
+    // swallows a failing resetAndDestroy() and would leave the socket open
+    expect(resetSpy).to.have.property('callCount', 1)
     expect(serverSocket.destroyed).to.be.true()
   })
 })

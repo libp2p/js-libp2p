@@ -183,6 +183,12 @@ class PersistentPeerStore implements PeerStore {
     }
 
     const peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+
+    if (!peerRecord.peerId.equals(peerId)) {
+      this.log('signing key did not match peer id in the peer record - signer: %p record: %p', peerId, peerRecord.peerId)
+      return false
+    }
+
     let peer: Peer | undefined
 
     try {

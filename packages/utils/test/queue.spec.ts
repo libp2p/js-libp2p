@@ -1159,4 +1159,326 @@ describe('queue', () => {
     hold.resolve()
     await p
   })
+
+  it('should dispatch a progress event at most once per job in a diamond-shaped recipient graph', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+      name?: string
+    }
+
+    const queue = new Queue<string, ProgressJobOptions>({})
+    const hold = pDefer<void>()
+    const dispatchers = new Map<string, (evt: any) => void>()
+    let subscriberA = 0
+    let subscriberB = 0
+
+    async function addJob (name: string, onProgress?: (evt: any) => void): Promise<void> {
+      const ready = pDefer<void>()
+
+      void queue.add(async (options) => {
+        if (options.onProgress != null) {
+          dispatchers.set(name, options.onProgress)
+        }
+
+        ready.resolve()
+        await hold.promise
+        return name
+      }, {
+        name,
+        onProgress
+      }).catch(() => {})
+
+      await ready.promise
+    }
+
+    function joinJob (name: string, onProgress: (evt: any) => void): void {
+      const job = queue.queue.find(job => job.options.name === name)
+      expect(job).to.be.ok()
+      void job?.join({ onProgress }).catch(() => {})
+    }
+
+    // two subscribers with an app-level progress handler each
+    await addJob('0-a', () => { subscriberA++ })
+    await addJob('0-b', () => { subscriberB++ })
+
+    // each layer's jobs have both of the previous layer's job dispatchers as
+    // recipients - the shape created by concurrent queries repeatedly dialing
+    // the same peers via DialQueue's join() support
+    const depth = 10
+
+    for (let i = 1; i <= depth; i++) {
+      for (const suffix of ['a', 'b']) {
+        const name = `${i}-${suffix}`
+        await addJob(name, dispatchers.get(`${i - 1}-a`))
+        joinJob(name, dispatchers.get(`${i - 1}-b`) ?? (() => {}))
+      }
+    }
+
+    // a single event emitted by a deepest-layer job should reach the two
+    // subscribers once each, not once per path through the graph (2^depth
+    // paths)
+    dispatchers.get(`${depth}-a`)?.(new CustomProgressEvent('kick'))
+
+    expect(subscriberA).to.equal(1)
+    expect(subscriberB).to.equal(1)
+
+    hold.resolve()
+    await queue.onIdle()
+  })
+
+  it('should stop forwarding progress events after a job has finished', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queueA = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueB = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueC = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let aSynthOP: ((evt: any) => void) | undefined
+    let bSynthOP: ((evt: any) => void) | undefined
+    let cSynthOP: ((evt: any) => void) | undefined
+
+    const aReady = pDefer<void>()
+    const bReady = pDefer<void>()
+    const cReady = pDefer<void>()
+    const aHold = pDefer<void>()
+    const bHold = pDefer<void>()
+    const cHold = pDefer<void>()
+
+    const events: any[] = []
+
+    const pA = queueA.add(async (options) => {
+      aSynthOP = options.onProgress
+      aReady.resolve()
+      await aHold.promise
+      return 'a'
+    }, {
+      onProgress: (evt) => {
+        events.push(evt)
+      }
+    })
+
+    await aReady.promise
+
+    const pB = queueB.add(async (options) => {
+      bSynthOP = options.onProgress
+      bReady.resolve()
+      await bHold.promise
+      return 'b'
+    }, {
+      onProgress: aSynthOP
+    })
+
+    await bReady.promise
+
+    const pC = queueC.add(async (options) => {
+      cSynthOP = options.onProgress
+      cReady.resolve()
+      await cHold.promise
+      return 'c'
+    }, {
+      onProgress: bSynthOP
+    })
+
+    await cReady.promise
+
+    // while all three jobs run, events emitted by C reach A's subscriber
+    cSynthOP?.(new CustomProgressEvent('while-running'))
+    expect(events.map(e => e.type)).to.deep.equal(['while-running'])
+
+    // after B finishes it should no longer forward events from C
+    bHold.resolve()
+    await pB
+
+    cSynthOP?.(new CustomProgressEvent('after-b-finished'))
+    expect(events.map(e => e.type)).to.deep.equal(['while-running'])
+
+    aHold.resolve()
+    cHold.resolve()
+    await Promise.all([pA, pC])
+  })
+
+  it('should not recurse infinitely when recipients wrap events in new objects', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queueA = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueB = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let aSynthOP: ((evt: any) => void) | undefined
+    let bSynthOP: ((evt: any) => void) | undefined
+
+    const aReady = pDefer<void>()
+    const bReady = pDefer<void>()
+    const hold = pDefer<void>()
+
+    const eventsA: any[] = []
+    const eventsB: any[] = []
+
+    const pA = queueA.add(async (options) => {
+      aSynthOP = options.onProgress
+      aReady.resolve()
+      await hold.promise
+      return 'a'
+    }, {
+      onProgress: (evt) => {
+        eventsA.push(evt)
+        // wrapping defeats same-object tracking so only the re-entry guard
+        // can stop the cycle
+        bSynthOP?.(new CustomProgressEvent('wrapped', evt))
+      }
+    })
+
+    const pB = queueB.add(async (options) => {
+      bSynthOP = options.onProgress
+      bReady.resolve()
+      await hold.promise
+      return 'b'
+    }, {
+      onProgress: (evt) => {
+        eventsB.push(evt)
+        aSynthOP?.(new CustomProgressEvent('wrapped', evt))
+      }
+    })
+
+    await Promise.all([aReady.promise, bReady.promise])
+
+    expect(() => {
+      aSynthOP?.(new CustomProgressEvent('kick'))
+    }).to.not.throw()
+
+    expect(eventsA).to.have.lengthOf(1)
+    expect(eventsB).to.have.lengthOf(1)
+
+    hold.resolve()
+    await Promise.all([pA, pB])
+  })
+
+  it('should not recurse infinitely when a non-object event cycles between jobs', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queueA = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+    const queueB = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let aSynthOP: ((evt: any) => void) | undefined
+    let bSynthOP: ((evt: any) => void) | undefined
+
+    const aReady = pDefer<void>()
+    const bReady = pDefer<void>()
+    const hold = pDefer<void>()
+
+    const eventsA: any[] = []
+    const eventsB: any[] = []
+
+    const pA = queueA.add(async (options) => {
+      aSynthOP = options.onProgress
+      aReady.resolve()
+      await hold.promise
+      return 'a'
+    }, {
+      onProgress: (evt) => {
+        eventsA.push(evt)
+        bSynthOP?.(evt)
+      }
+    })
+
+    const pB = queueB.add(async (options) => {
+      bSynthOP = options.onProgress
+      bReady.resolve()
+      await hold.promise
+      return 'b'
+    }, {
+      onProgress: (evt) => {
+        eventsB.push(evt)
+        aSynthOP?.(evt)
+      }
+    })
+
+    await Promise.all([aReady.promise, bReady.promise])
+
+    expect(() => {
+      // primitives cannot be tracked in the WeakMap so only the re-entry
+      // guard can stop the cycle
+      aSynthOP?.('kick')
+    }).to.not.throw()
+
+    expect(eventsA).to.have.lengthOf(1)
+    expect(eventsB).to.have.lengthOf(1)
+
+    hold.resolve()
+    await Promise.all([pA, pB])
+  })
+
+  it('should deliver a reused event object at most once per job', async () => {
+    interface ProgressJobOptions extends AbortOptions, ProgressOptions {
+
+    }
+
+    const queue = new Queue<string, ProgressJobOptions>({ concurrency: 1 })
+
+    let synthOP: ((evt: any) => void) | undefined
+
+    const ready = pDefer<void>()
+    const hold = pDefer<void>()
+
+    const seen: any[] = []
+
+    const p = queue.add(async (options) => {
+      synthOP = options.onProgress
+      ready.resolve()
+      await hold.promise
+      return 'done'
+    }, {
+      onProgress: (evt) => {
+        seen.push(evt)
+      }
+    })
+
+    await ready.promise
+
+    const evt = new CustomProgressEvent('tick')
+    synthOP?.(evt)
+    synthOP?.(evt)
+    synthOP?.(new CustomProgressEvent('tick'))
+
+    // each event object is forwarded at most once per job - emitters must
+    // construct a fresh event per emission
+    expect(seen).to.have.lengthOf(2)
+
+    hold.resolve()
+    await p
+  })
+
+  it('should settle every recipient when a shared signal aborts a running job', async () => {
+    const queue = new Queue<string>({})
+    const controller = new AbortController()
+    const ready = pDefer<void>()
+    const hold = pDefer<void>()
+
+    const p1 = queue.add(async () => {
+      ready.resolve()
+      await hold.promise
+      return 'ok'
+    }, {
+      signal: controller.signal
+    })
+
+    await ready.promise
+
+    // joining with the same signal puts the job's own abort listener between
+    // the two recipients' listeners on that signal
+    const p2 = queue.queue[0].join({ signal: controller.signal })
+
+    controller.abort()
+
+    await expect(p1).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+    await expect(p2).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+
+    hold.resolve()
+  })
 })
