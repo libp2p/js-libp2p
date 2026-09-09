@@ -6,7 +6,7 @@ import { toMultiaddrConnection } from '../../rtcpeerconnection-to-conn.ts'
 import { createStream } from '../../stream.ts'
 import { generateNoisePrologue } from './generate-noise-prologue.ts'
 import * as sdp from './sdp.ts'
-import { serverUfragV2 } from './stun.ts'
+import { isIcePwd, isIceUfrag, serverUfragV2 } from './stun.ts'
 import type { DirectRTCPeerConnection } from './get-rtcpeerconnection.ts'
 import type { DataChannelOptions } from '../../index.ts'
 import type { ComponentLogger, Connection, CounterGroup, Logger, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
@@ -66,14 +66,19 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
 
         const localPwd = sdp.getIcePwdFromSdp(peerConnection.localDescription?.sdp)
 
-        if (localPwd == null) {
-          // without the local ICE password we cannot build a valid v2 server
-          // ufrag; fail loudly instead of dialing with an unprefixed ufrag the
+        if (localPwd == null || !isIcePwd(localPwd)) {
+          // without a valid local ICE password we cannot build a valid v2
+          // server ufrag; fail loudly instead of dialing with a ufrag the
           // server would reject
-          throw new WebRTCTransportError('Could not read local ICE password from local description for v2 dial')
+          throw new WebRTCTransportError('Could not read a valid local ICE password from local description for v2 dial')
         }
 
         remoteAnswerUfrag = serverUfragV2(localPwd)
+
+        if (!isIceUfrag(remoteAnswerUfrag)) {
+          // the prefix counts towards the 256 character ufrag limit
+          throw new WebRTCTransportError('Local ICE password is too long to encode in a v2 server ufrag')
+        }
       } else {
         // v1 compatibility path: force ice-ufrag === ice-pwd so the server can
         // infer credentials from STUN USERNAME without explicit SDP exchange.
