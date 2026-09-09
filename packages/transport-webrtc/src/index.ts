@@ -214,7 +214,7 @@
  * Listeners accept both versions on the same port and select the version from
  * the incoming username fragment prefix. Dialers use v1 by default. Pass
  * `version: 'v2'` to dial with v2; the server must support v2 (go-libp2p does
- * from v0.49.0). `webRTCDirectV2()` is shorthand for the same configuration.
+ * from v0.49.0).
  *
  * ```TypeScript
  * import { createLibp2p } from 'libp2p'
@@ -374,17 +374,7 @@ export interface TransportCertificate {
 export type { WebRTCTransportDirectInit, WebRTCDirectTransportComponents }
 
 function webRTCDirect (init?: WebRTCTransportDirectInit): (components: WebRTCDirectTransportComponents) => Transport {
-  return (components: WebRTCDirectTransportComponents) => new WebRTCDirectTransport(components, {
-    version: 'v1',
-    ...(init ?? {})
-  })
-}
-
-function webRTCDirectV2 (init?: WebRTCTransportDirectInit): (components: WebRTCDirectTransportComponents) => Transport {
-  return (components: WebRTCDirectTransportComponents) => new WebRTCDirectTransport(components, {
-    version: 'v2',
-    ...(init ?? {})
-  })
+  return (components: WebRTCDirectTransportComponents) => new WebRTCDirectTransport(components, init)
 }
 
 export type { WebRTCTransportInit, WebRTCTransportComponents }
@@ -393,4 +383,4 @@ function webRTC (init?: WebRTCTransportInit): (components: WebRTCTransportCompon
   return (components: WebRTCTransportComponents) => new WebRTCTransport(components, init)
 }
 
-export { webRTC, webRTCDirect, webRTCDirectV2 }
+export { webRTC, webRTCDirect }

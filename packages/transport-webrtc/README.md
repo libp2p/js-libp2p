@@ -237,7 +237,7 @@ answer, where the server reads it back from the incoming STUN request.
 Listeners accept both versions on the same port and select the version from
 the incoming username fragment prefix. Dialers use v1 by default. Pass
 `version: 'v2'` to dial with v2; the server must support v2 (go-libp2p does
-from v0.49.0). `webRTCDirectV2()` is shorthand for the same configuration.
+from v0.49.0).
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
