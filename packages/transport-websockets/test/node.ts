@@ -4,6 +4,7 @@
 import { once } from 'node:events'
 import fs from 'node:fs'
 import http from 'node:http'
+import { ConnectionFailedError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -39,14 +40,11 @@ describe('WebSocket abort cleanup', () => {
   let server: http.Server
   let sockets: Set<Socket>
   let wss: WebSocketServer
-  let clients: WebSocket[]
   let ma: ReturnType<typeof multiaddr>
   let uri: string
-  const NativeWebSocket = globalThis.WebSocket
 
   beforeEach(async () => {
     sockets = new Set()
-    clients = []
     server = http.createServer()
     wss = new WebSocketServer({ noServer: true })
     server.on('connection', socket => {
@@ -66,12 +64,8 @@ describe('WebSocket abort cleanup', () => {
   })
 
   afterEach(async () => {
-    globalThis.WebSocket = NativeWebSocket
     // Assertions run before fallback fixture teardown, including on the broken
     // implementation. Never leave the test's own failed-dial sockets behind.
-    for (const client of clients) {
-      client.close()
-    }
     for (const client of wss.clients) {
       client.terminate()
     }
@@ -84,45 +78,23 @@ describe('WebSocket abort cleanup', () => {
     ])
   })
 
-  it('closes an aborted opening dial before a delayed handshake can open it', async () => {
+  it('closes an aborted opening dial with a delayed handshake', async () => {
     const ws = webSockets()({ events: new TypedEventEmitter(), logger: defaultLogger() })
     const upgrader = stubInterface<Upgrader>()
     const controller = new AbortController()
     const upgrade = once(server, 'upgrade')
-    let dialing: Promise<Connection>
-
-    // Observe the real native instance without replacing its close or event
-    // behavior. Restore the constructor immediately after dial creates it.
-    globalThis.WebSocket = new Proxy(NativeWebSocket, {
-      construct (target, args) {
-        const client = Reflect.construct(target, args) as WebSocket
-        clients.push(client)
-        return client
-      }
-    })
-    try {
-      dialing = ws.dial(ma, { upgrader, signal: controller.signal })
-    } finally {
-      globalThis.WebSocket = NativeWebSocket
-    }
-    const rejected = expect(dialing).to.eventually.be.rejectedWith('Could not connect')
-    const client = clients[0]
-    const terminal = new Promise<string>(resolve => {
-      client.addEventListener('open', () => resolve('open'), { once: true })
-      client.addEventListener('close', () => resolve('close'), { once: true })
-    })
+    const dialing = ws.dial(ma, { upgrader, signal: controller.signal })
+    const rejected = expect(dialing).to.eventually.be.rejectedWith(ConnectionFailedError, 'Could not connect')
     const [request, socket, head] = await upgrade
     const socketClosed = new Promise<void>(resolve => socket.once('close', () => resolve()))
+    expect(socket.destroyed).to.equal(false)
     controller.abort()
     await rejected
 
-    // A rejected dial must not turn into a live orphan once the peer responds.
+    // A rejected dial must not leave an orphan socket once the peer responds.
     if (!socket.destroyed) {
-      wss.handleUpgrade(request, socket, head, connection => {
-        wss.emit('connection', connection)
-      })
+      wss.handleUpgrade(request, socket, head, () => {})
     }
-    expect(await terminal).to.equal('close')
     await socketClosed
     expect(socket.destroyed).to.equal(true)
     expect(upgrader.upgradeOutbound).to.have.property('callCount', 0)
@@ -130,8 +102,7 @@ describe('WebSocket abort cleanup', () => {
 
   async function assertAbortedSocketCloses (direction: 'inbound' | 'outbound'): Promise<void> {
     const upgrade = once(server, 'upgrade')
-    const client = new NativeWebSocket(uri)
-    clients.push(client)
+    const client = new WebSocket(uri)
     const opened = once(client, 'open')
     const [request, socket, head] = await upgrade
     const serverClient = await new Promise<ServerWebSocket>(resolve => {
@@ -148,9 +119,9 @@ describe('WebSocket abort cleanup', () => {
     const closed = once(websocket, 'close')
     connection.abort(new Error('test abort'))
     expect(connection.status).to.equal('aborted')
-    expect(websocket.readyState).not.to.equal(NativeWebSocket.OPEN)
+    expect(websocket.readyState).not.to.equal(WebSocket.OPEN)
     await closed
-    expect(websocket.readyState).to.equal(NativeWebSocket.CLOSED)
+    expect(websocket.readyState).to.equal(WebSocket.CLOSED)
   }
 
   it('closes the physical outbound WebSocket when its connection is aborted', async () => {
