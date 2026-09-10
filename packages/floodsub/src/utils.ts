@@ -122,10 +122,13 @@ export const toRpcMessage = (message: Message): PubSubRPCMessage => {
       throw new InvalidMessageError('RPC message sequence number must be a uint64')
     }
 
+    const sequenceNumber = new Uint8Array(8)
+    new DataView(sequenceNumber.buffer).setBigUint64(0, message.sequenceNumber, false)
+
     return {
       from: message.from.toMultihash().bytes,
       data: message.data,
-      sequenceNumber: uint8ArrayFromString(message.sequenceNumber.toString(16).padStart(16, '0'), 'base16'),
+      sequenceNumber,
       topic: message.topic,
       signature: message.signature,
 
