@@ -26,11 +26,21 @@ export interface ConnectOptions {
   privateKey: PrivateKey
   remoteUfrag?: string
   remotePwd?: string
-  version?: 'v1' | 'v2'
 }
 
 export interface ClientOptions extends ConnectOptions {
   role: 'client'
+
+  /**
+   * Which version of the connection flow to dial with
+   */
+  version: 1 | 2
+
+  /**
+   * Continue as v2 when the runtime does not apply the munged ICE credentials
+   * a v1 dial needs
+   */
+  fallback?: boolean
 }
 
 export interface ServerOptions extends ConnectOptions {
@@ -41,9 +51,90 @@ function isServer (options: ClientOptions | ServerOptions, peerConnection: any):
   return options.role === 'server'
 }
 
-export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions): Promise<Connection>
+/**
+ * Set `offer` as the local description with its ICE ufrag and password munged
+ * to `ufrag`, as WebRTC Direct v1 requires, and report whether the runtime
+ * applied them. Browsers are removing support for this, in which case
+ * setLocalDescription either rejects the offer or keeps the generated
+ * credentials.
+ */
+async function setMungedLocalOffer (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, offer: RTCSessionDescriptionInit, ufrag: string, log: Logger): Promise<boolean> {
+  const mungedOffer = sdp.munge({ type: offer.type, sdp: offer.sdp }, ufrag)
+
+  try {
+    log.trace('client setting munged local offer %s', mungedOffer.sdp)
+    await peerConnection.setLocalDescription(mungedOffer)
+  } catch (err: any) {
+    log('runtime rejected the munged local offer - %e', err)
+    return false
+  }
+
+  const localSdp = peerConnection.localDescription?.sdp
+
+  return sdp.getIceUfragFromSdp(localSdp) === ufrag && sdp.getIcePwdFromSdp(localSdp) === ufrag
+}
+
+/**
+ * Set the local offer for the requested version and return the ufrag for the
+ * synthetic server answer, plus whether a v1 attempt found the runtime applies
+ * munged credentials.
+ *
+ * v1 munges the offer so ice-ufrag and ice-pwd both equal `ufrag`, letting the
+ * server infer the client's credentials from the STUN USERNAME alone. v2 keeps
+ * the credentials the runtime generated and carries the client's ICE password
+ * in the server ufrag instead. When a v1 attempt does not stick and fallback
+ * is allowed, the dial continues as v2.
+ */
+async function setClientOffer (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, offer: RTCSessionDescriptionInit, ufrag: string, options: ClientOptions): Promise<{ serverUfrag: string, mungeable?: boolean }> {
+  let mungeable: boolean | undefined
+
+  if (options.version === 1) {
+    mungeable = await setMungedLocalOffer(peerConnection, offer, ufrag, options.log)
+
+    if (mungeable) {
+      return { serverUfrag: ufrag, mungeable }
+    }
+
+    if (options.fallback !== true) {
+      throw new WebRTCTransportError('SDP munging is not available in this runtime so WebRTC Direct v1 cannot be used')
+    }
+
+    options.log('SDP munging is not available in this runtime, continuing as WebRTC Direct v2')
+  }
+
+  // a rejected munged offer leaves no local description, an ignored one leaves
+  // the runtime's own credentials in place, which is what v2 needs
+  if (peerConnection.localDescription == null) {
+    options.log.trace('client setting local offer %s', offer.sdp)
+    await peerConnection.setLocalDescription(offer)
+  }
+
+  // encode the client's ICE password in the synthetic server ufrag
+  const localPwd = sdp.getIcePwdFromSdp(peerConnection.localDescription?.sdp)
+
+  if (localPwd == null || !isIcePwd(localPwd)) {
+    // without a valid local ICE password we cannot build a valid v2 server
+    // ufrag; fail loudly instead of dialing with a ufrag the server would reject
+    throw new WebRTCTransportError('Could not read a valid local ICE password from local description for v2 dial')
+  }
+
+  const serverUfrag = serverUfragV2(localPwd)
+
+  if (!isIceUfrag(serverUfrag)) {
+    // the prefix counts towards the 256 character ufrag limit
+    throw new WebRTCTransportError('Local ICE password is too long to encode in a v2 server ufrag')
+  }
+
+  return { serverUfrag, mungeable }
+}
+
+export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions): Promise<{ connection: Connection, mungeable?: boolean }>
 export async function connect (peerConnection: DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ServerOptions): Promise<void>
 export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions | ServerOptions): Promise<any> {
+  // whether the runtime applied munged ICE credentials, only known after a
+  // v1 attempt and returned to the caller alongside the connection
+  let mungeable: boolean | undefined
+
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the listener will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
@@ -56,38 +147,10 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       const offerSdp = await peerConnection.createOffer()
       options.log.trace('client created local offer %s', offerSdp.sdp)
 
-      let remoteAnswerUfrag = ufrag
+      const clientOffer = await setClientOffer(peerConnection, offerSdp, ufrag, options)
+      mungeable = clientOffer.mungeable
 
-      if (options.version === 'v2') {
-        // v2 path: do not munge local SDP. Keep client credentials as generated
-        // and encode client_pwd in the synthetic server ufrag.
-        options.log.trace('client setting local offer %s', offerSdp.sdp)
-        await peerConnection.setLocalDescription(offerSdp)
-
-        const localPwd = sdp.getIcePwdFromSdp(peerConnection.localDescription?.sdp)
-
-        if (localPwd == null || !isIcePwd(localPwd)) {
-          // without a valid local ICE password we cannot build a valid v2
-          // server ufrag; fail loudly instead of dialing with a ufrag the
-          // server would reject
-          throw new WebRTCTransportError('Could not read a valid local ICE password from local description for v2 dial')
-        }
-
-        remoteAnswerUfrag = serverUfragV2(localPwd)
-
-        if (!isIceUfrag(remoteAnswerUfrag)) {
-          // the prefix counts towards the 256 character ufrag limit
-          throw new WebRTCTransportError('Local ICE password is too long to encode in a v2 server ufrag')
-        }
-      } else {
-        // v1 compatibility path: force ice-ufrag === ice-pwd so the server can
-        // infer credentials from STUN USERNAME without explicit SDP exchange.
-        const mungedOfferSdp = sdp.munge(offerSdp, ufrag)
-        options.log.trace('client setting local offer %s', mungedOfferSdp.sdp)
-        await peerConnection.setLocalDescription(mungedOfferSdp)
-      }
-
-      const answerSdp = sdp.serverAnswerFromMultiaddr(options.remoteAddr, remoteAnswerUfrag)
+      const answerSdp = sdp.serverAnswerFromMultiaddr(options.remoteAddr, clientOffer.serverUfrag)
       options.log.trace('client setting server description %s', answerSdp.sdp)
       await peerConnection.setRemoteDescription(answerSdp)
     } else {
@@ -197,13 +260,15 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       })
 
       options.log.trace('%s upgrade outbound', options.role)
-      return await options.upgrader.upgradeOutbound(maConn, {
+      const connection = await options.upgrader.upgradeOutbound(maConn, {
         skipProtection: true,
         skipEncryption: true,
         remotePeer: result.remotePeer,
         muxerFactory,
         signal: options.signal
       })
+
+      return { connection, mungeable }
     }
 
     // For inbound connections, the server is are expected to start the noise

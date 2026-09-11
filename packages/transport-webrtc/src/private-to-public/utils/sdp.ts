@@ -17,6 +17,7 @@ import type { MultihashDigest } from 'multiformats/hashes/interface'
 export const multibaseDecoder: any = Object.values(bases).map(b => b.decoder).reduce((d, b) => d.or(b))
 
 const fingerprintRegex = /^a=fingerprint:(?:\w+-[0-9]+)\s(?<fingerprint>(:?[0-9a-fA-F]{2})+)$/m
+const iceUfragRegex = /^a=ice-ufrag:(?<ufrag>[^\r\n]+)$/m
 const icePwdRegex = /^a=ice-pwd:(?<pwd>[^\r\n]+)$/m
 
 export function getFingerprintFromSdp (sdp: string | undefined): string | undefined {
@@ -26,6 +27,14 @@ export function getFingerprintFromSdp (sdp: string | undefined): string | undefi
 
   const searchResult = sdp.match(fingerprintRegex)
   return searchResult?.groups?.fingerprint
+}
+
+export function getIceUfragFromSdp (sdp: string | undefined): string | undefined {
+  if (sdp == null) {
+    return undefined
+  }
+
+  return sdp.match(iceUfragRegex)?.groups?.ufrag
 }
 
 export function getIcePwdFromSdp (sdp: string | undefined): string | undefined {

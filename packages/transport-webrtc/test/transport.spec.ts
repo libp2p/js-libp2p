@@ -329,6 +329,13 @@ describe('WebRTCDirect Transport', () => {
     await otherListener.close()
   })
 
+  it('rejects an unknown dialer version', () => {
+    expect(() => new WebRTCDirectTransport(components, {
+      // @ts-expect-error not a known version
+      dialerVersion: 3
+    })).to.throw().with.property('name', 'InvalidParametersError')
+  })
+
   it('v1 client can dial dual server', async function () {
     if (!LISTEN_SUPPORTED) {
       return this.skip()
@@ -391,7 +398,7 @@ describe('WebRTCDirect Transport', () => {
     })
 
     const clientTransport = new WebRTCDirectTransport(await createTransportComponents(), {
-      version: 'v2'
+      dialerVersion: 2
     })
     await start(clientTransport)
 

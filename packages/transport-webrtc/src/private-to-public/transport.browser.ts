@@ -1,4 +1,4 @@
-import { serviceCapabilities, transportSymbol } from '@libp2p/interface'
+import { InvalidParametersError, serviceCapabilities, transportSymbol } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CODE_P2P } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
@@ -32,13 +32,13 @@ export interface WebRTCMetrics {
 
 export interface WebRTCTransportDirectInit {
   /**
-   * Which version of the WebRTC Direct connection flow to dial with. v1 munges
-   * the local SDP offer, which browsers are removing support for. v2 avoids
-   * munging but the server must support it. Listeners accept both versions.
-   *
-   * @default 'v1'
+   * Force the version of the WebRTC Direct connection flow to dial with. When
+   * not set, the first dial tries v1 and continues as v2 if the runtime does
+   * not apply the munged ICE credentials in the local SDP offer, and later
+   * dials start at whichever version that showed the runtime supports. The
+   * server must support the version in use, listeners accept both.
    */
-  version?: 'v1' | 'v2'
+  dialerVersion?: 1 | 2
 
   /**
    * The default configuration used by all created RTCPeerConnections
@@ -64,11 +64,18 @@ export class WebRTCDirectTransport implements Transport {
   protected readonly metrics?: WebRTCMetrics
   protected readonly components: WebRTCDirectTransportComponents
   protected readonly init: WebRTCTransportDirectInit
+  private mungeable?: boolean
 
   constructor (components: WebRTCDirectTransportComponents, init: WebRTCTransportDirectInit = {}) {
     this.log = components.logger.forComponent('libp2p:webrtc-direct')
     this.components = components
     this.init = init
+
+    const dialerVersion: unknown = init.dialerVersion
+
+    if (dialerVersion != null && dialerVersion !== 1 && dialerVersion !== 2) {
+      throw new InvalidParametersError(`Unknown WebRTC Direct dialer version "${String(dialerVersion)}"`)
+    }
 
     if (components.metrics != null) {
       this.metrics = {
@@ -102,10 +109,13 @@ export class WebRTCDirectTransport implements Transport {
       theirPeerId = peerIdFromString(remotePeerString)
     }
 
-    const ufrag = this.init.version === 'v2'
+    // an explicit dialer version is always used, otherwise start at v1 until a
+    // dial shows this runtime does not apply munged ICE credentials
+    const version = this.init.dialerVersion ?? (this.mungeable === false ? 2 : 1)
+    const ufrag = version === 2
       ? genUfrag(32, '')
       : genUfrag(32, UFRAG_PREFIX_V1)
-    const pwd = this.init.version === 'v2' ? genUfrag(22, '') : ufrag
+    const pwd = version === 2 ? genUfrag(22, '') : ufrag
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md
     const {
@@ -121,13 +131,14 @@ export class WebRTCDirectTransport implements Transport {
     })
 
     try {
-      return await connect(peerConnection, muxerFactory, ufrag, {
+      const { connection, mungeable } = await connect(peerConnection, muxerFactory, ufrag, {
         role: 'client',
         log: this.log,
         logger: this.components.logger,
         events: this.metrics?.dialerEvents,
         signal: options.signal,
-        version: this.init.version,
+        version,
+        fallback: this.init.dialerVersion == null,
         remoteAddr: ma,
         dataChannel: this.init.dataChannel,
         upgrader: options.upgrader,
@@ -135,6 +146,12 @@ export class WebRTCDirectTransport implements Transport {
         remotePeer: theirPeerId,
         privateKey: this.components.privateKey
       })
+
+      // remember what the munge attempt showed so later dials start at the
+      // right version
+      this.mungeable ??= mungeable
+
+      return connection
     } catch (err) {
       peerConnection.close()
       throw err
