@@ -54,14 +54,14 @@
     "@libp2p/peer-id": "^6.0.15",
     "@multiformats/multiaddr": "^13.0.3",
     "multiformats": "^14.0.0",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "7.0.0",
     "uint8-varint": "^3.0.0",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
     "aegir": "^48.1.1",
-    "protons": "^9.0.1"
+    "protons": "9.0.2"
   },
   "sideEffects": false
 }
