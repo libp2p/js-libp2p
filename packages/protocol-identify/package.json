@@ -57,7 +57,7 @@
     "it-drain": "^3.0.10",
     "it-parallel": "^3.0.13",
     "main-event": "^1.0.1",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "7.0.0",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
@@ -66,7 +66,7 @@
     "aegir": "^48.1.1",
     "delay": "^7.0.0",
     "it-length-prefixed": "^11.0.1",
-    "protons": "^9.0.1",
+    "protons": "9.0.2",
     "sinon-ts": "^2.0.0"
   },
   "sideEffects": false

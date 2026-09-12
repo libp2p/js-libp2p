@@ -146,16 +146,18 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       options.onProgress?.(new CustomProgressEvent('websockets:open-connection'))
       await pEvent(websocket, 'open', options)
     } catch (err: any) {
+      try {
+        websocket.close()
+      } catch {
+        // Preserve the connection failure if cleanup throws.
+      }
+
       if (options.signal?.aborted) {
         this.metrics?.dialerEvents.increment({ abort: true })
         throw new ConnectionFailedError(`Could not connect to ${uri}`)
       } else {
         this.metrics?.dialerEvents.increment({ error: true })
       }
-
-      try {
-        websocket.close()
-      } catch {}
 
       throw err
     }
