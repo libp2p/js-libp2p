@@ -57,7 +57,6 @@
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^2.0.0",
-    "get-port": "^7.1.0",
     "interface-datastore": "^10.0.1",
     "it-length-prefixed": "^11.0.1",
     "it-protobuf-stream": "^3.0.0",
