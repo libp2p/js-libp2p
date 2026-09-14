@@ -55,7 +55,8 @@ describe('WebRTC Direct UDP listener lifecycle', () => {
     const socket = createSocket('udp4')
     sockets.push(socket)
     const listening = once(socket, 'listening')
-    socket.bind(port)
+    // Windows can allow wildcard and specific-address binds on the same port.
+    socket.bind(port, '127.0.0.1')
     await listening
     return socket
   }
@@ -110,7 +111,7 @@ describe('WebRTC Direct UDP listener lifecycle', () => {
   })
 
   for (const collisions of [1, 5]) {
-    it(collisions === 1 ? 'reselects after an ephemeral bind collision' : 'bounds ephemeral bind reselection', async () => {
+    it(collisions === 1 ? 'retries after an ephemeral bind collision' : 'bounds ephemeral bind retries', async () => {
       const dispose = Socket.prototype[Symbol.asyncDispose]
       let probes = 0
       Sinon.stub(Socket.prototype, Symbol.asyncDispose).callsFake(async function (this: Socket) {
