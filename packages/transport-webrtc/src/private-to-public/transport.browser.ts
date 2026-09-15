@@ -117,6 +117,8 @@ export class WebRTCDirectTransport implements Transport {
       : genUfrag(32, UFRAG_PREFIX_V1)
     const pwd = version === 2 ? genUfrag(22, '') : ufrag
 
+    this.log('dial %a starting as WebRTC Direct v%d', ma, version)
+
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md
     const {
       peerConnection,
@@ -153,6 +155,7 @@ export class WebRTCDirectTransport implements Transport {
 
       return connection
     } catch (err) {
+      this.log('dial %a failed, started as WebRTC Direct v%d - %e', ma, version, err)
       peerConnection.close()
       throw err
     }
