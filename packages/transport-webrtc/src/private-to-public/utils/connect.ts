@@ -55,8 +55,8 @@ function isServer (options: ClientOptions | ServerOptions, peerConnection: any):
  * Set `offer` as the local description with its ICE ufrag and password munged
  * to `ufrag`, as WebRTC Direct v1 requires, and report whether the runtime
  * applied them. Browsers are removing support for this, in which case
- * setLocalDescription either rejects the offer or keeps the generated
- * credentials.
+ * setLocalDescription either rejects the offer with an InvalidModificationError
+ * or keeps the generated credentials.
  */
 async function setMungedLocalOffer (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, offer: RTCSessionDescriptionInit, ufrag: string, log: Logger): Promise<boolean> {
   const mungedOffer = sdp.munge({ type: offer.type, sdp: offer.sdp }, ufrag)
@@ -65,6 +65,11 @@ async function setMungedLocalOffer (peerConnection: RTCPeerConnection | DirectRT
     log.trace('client setting munged local offer %s', mungedOffer.sdp)
     await peerConnection.setLocalDescription(mungedOffer)
   } catch (err: any) {
+    // any other rejection is a real failure, not the runtime refusing the munge
+    if (err.name !== 'InvalidModificationError') {
+      throw err
+    }
+
     log('runtime rejected the munged local offer - %e', err)
     return false
   }

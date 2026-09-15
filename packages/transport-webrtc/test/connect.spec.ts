@@ -17,9 +17,10 @@ const RUNTIME_PWD = 'runtimeGeneratedPassword'
 interface FakePeerConnectionInit {
   /**
    * What the runtime does with a munged offer: apply it, reject it in
-   * setLocalDescription, or accept the call but keep its own credentials
+   * setLocalDescription, accept the call but keep its own credentials, or fail
+   * setLocalDescription for an unrelated reason
    */
-  munging?: 'allowed' | 'rejected' | 'ignored'
+  munging?: 'allowed' | 'rejected' | 'ignored' | 'failed'
   pwd?: string
 }
 
@@ -43,7 +44,11 @@ function fakePeerConnection (init: FakePeerConnectionInit = {}): any {
     const munged = desc.sdp !== original
 
     if (munged && munging === 'rejected') {
-      throw new Error('The ICE ufrag and pwd cannot be modified')
+      throw new DOMException('The ICE ufrag and pwd cannot be modified', 'InvalidModificationError')
+    }
+
+    if (munging === 'failed') {
+      throw new DOMException('The peer connection is closed', 'InvalidStateError')
     }
 
     pc.localDescription = { type: 'offer', sdp: munged && munging === 'ignored' ? original : desc.sdp }
@@ -135,6 +140,16 @@ describe('webrtc-direct client offer', () => {
       expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
       expectV2(pc)
+    })
+
+    it('fails when setting the munged offer fails for another reason', async () => {
+      const pc = fakePeerConnection({ munging: 'failed' })
+
+      const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true }))
+
+      expect(err).to.have.property('name', 'InvalidStateError')
+      expect(pc.setLocalDescription.calledOnce).to.be.true()
+      expect(pc.setRemoteDescription.called).to.be.false()
     })
   })
 
