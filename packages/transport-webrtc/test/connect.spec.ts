@@ -111,7 +111,7 @@ describe('webrtc-direct client offer', () => {
 
       const err = await dial(pc, ufrag, await clientOptions({ version: 1, fallback: true }))
 
-      expect(err).to.not.have.property('name', 'WebRTCTransportError')
+      expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
       expectV1(pc, ufrag)
     })
@@ -121,7 +121,7 @@ describe('webrtc-direct client offer', () => {
 
       const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true }))
 
-      expect(err).to.not.have.property('name', 'WebRTCTransportError')
+      expect(err).to.have.property('name', 'TimeoutError')
       // the munged offer was rejected so the original one was set instead
       expect(pc.setLocalDescription.calledTwice).to.be.true()
       expectV2(pc)
@@ -132,7 +132,7 @@ describe('webrtc-direct client offer', () => {
 
       const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true }))
 
-      expect(err).to.not.have.property('name', 'WebRTCTransportError')
+      expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
       expectV2(pc)
     })
@@ -145,7 +145,7 @@ describe('webrtc-direct client offer', () => {
 
       const err = await dial(pc, ufrag, await clientOptions({ version: 1 }))
 
-      expect(err).to.not.have.property('name', 'WebRTCTransportError')
+      expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
       expectV1(pc, ufrag)
     })
@@ -176,7 +176,7 @@ describe('webrtc-direct client offer', () => {
 
       const err = await dial(pc, genUfrag(32, ''), await clientOptions({ version: 2 }))
 
-      expect(err).to.not.have.property('name', 'WebRTCTransportError')
+      expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
       expectV2(pc)
     })
