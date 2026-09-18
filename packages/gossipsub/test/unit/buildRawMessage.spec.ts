@@ -2,13 +2,47 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { StrictSign } from '../../src/index.ts'
+import { StrictNoSign, StrictSign } from '../../src/index.ts'
+import { RPC } from '../../src/message/rpc.ts'
 import { ValidateError } from '../../src/types.ts'
 import { buildRawMessage, validateToRawMessage } from '../../src/utils/buildRawMessage.ts'
 import { getPublishConfigFromPeerId } from '../../src/utils/publishConfig.ts'
 import type { PrivateKey } from '@libp2p/interface'
 
 describe('buildRawMessage', () => {
+  describe('StrictNoSign', () => {
+    const topic = 'test-topic'
+    const data = uint8ArrayFromString('hello')
+
+    it('accepts a message with all authentication fields absent', async () => {
+      const raw = RPC.Message.decode(RPC.Message.encode({ topic, data }))
+
+      expect(await validateToRawMessage(StrictNoSign, raw)).to.deep.equal({
+        valid: true,
+        message: { type: 'unsigned', topic, data }
+      })
+    })
+
+    for (const [field, error] of [
+      ['from', ValidateError.FromPresent],
+      ['seqno', ValidateError.SeqnoPresent],
+      ['signature', ValidateError.SignaturePresent],
+      ['key', ValidateError.FromPresent]
+    ] as const) {
+      for (const length of [0, 32]) {
+        it(`rejects a present ${field} field with ${length} bytes`, async () => {
+          const raw = RPC.Message.decode(RPC.Message.encode({
+            topic,
+            data,
+            [field]: new Uint8Array(length).fill(0xa0)
+          }))
+
+          expect(await validateToRawMessage(StrictNoSign, raw)).to.deep.equal({ valid: false, error })
+        })
+      }
+    }
+  })
+
   describe('Signing seqno', () => {
     it('produces strictly increasing big-endian uint64 seqnos', async () => {
       const privateKey = await generateKeyPair('Ed25519')
