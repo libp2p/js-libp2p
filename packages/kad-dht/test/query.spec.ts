@@ -57,7 +57,7 @@ describe('QueryManager', () => {
     return init
   }
 
-  function createTopology (opts: Record<number, { delay?: number, error?: Error, value?: Uint8Array, closerPeers?: number[] }>): Topology {
+  function createTopology (opts: Record<number, { delay?: number, error?: Error, value?: Uint8Array<ArrayBuffer>, closerPeers?: number[] }>): Topology {
     const topology: Topology = {}
 
     Object.keys(opts).forEach(key => {

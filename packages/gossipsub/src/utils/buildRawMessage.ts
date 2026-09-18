@@ -4,6 +4,7 @@ import * as Digest from 'multiformats/hashes/digest'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { StrictSign, StrictNoSign } from '../index.ts'
 import { RPC } from '../message/rpc.ts'
 import { PublishConfigType, ValidateError } from '../types.ts'
@@ -20,7 +21,7 @@ export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
 // than the previously-seen max from that peer.
 let seqnoCounter = BigInt(Date.now()) * 1_000_000n
 
-function nextSeqno (): Uint8Array {
+function nextSeqno (): Uint8Array<ArrayBuffer> {
   const v = ++seqnoCounter
   const out = new Uint8Array(8)
   new DataView(out.buffer).setBigUint64(0, v, false)
@@ -42,7 +43,7 @@ export async function buildRawMessage (
     case PublishConfigType.Signing: {
       const rpcMsg: RPC.Message = {
         from: publishConfig.author.toMultihash().bytes,
-        data: transformedData,
+        data: withArrayBuffer(transformedData),
         seqno: nextSeqno(),
         topic,
         signature: undefined, // Exclude signature field for signing
@@ -54,12 +55,12 @@ export async function buildRawMessage (
       const bytes = uint8ArrayConcat([SignPrefix, RPC.Message.encode(rpcMsg)])
 
       rpcMsg.signature = await publishConfig.privateKey.sign(bytes)
-      rpcMsg.key = publishConfig.key
+      rpcMsg.key = withArrayBuffer(publishConfig.key)
 
       const msg: Message = {
         type: 'signed',
         from: publishConfig.author,
-        data: originalData,
+        data: withArrayBuffer(originalData),
         sequenceNumber: BigInt(`0x${uint8ArrayToString(rpcMsg.seqno ?? new Uint8Array(0), 'base16')}`),
         topic,
         signature: rpcMsg.signature,
@@ -75,7 +76,7 @@ export async function buildRawMessage (
       return {
         raw: {
           from: undefined,
-          data: transformedData,
+          data: withArrayBuffer(transformedData),
           seqno: undefined,
           topic,
           signature: undefined,
@@ -83,7 +84,7 @@ export async function buildRawMessage (
         },
         msg: {
           type: 'unsigned',
-          data: originalData,
+          data: withArrayBuffer(originalData),
           topic
         }
       }

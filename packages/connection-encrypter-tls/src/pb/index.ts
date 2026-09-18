@@ -17,22 +17,27 @@ enum __KeyTypeValues {
 }
 
 export namespace KeyType {
-  export const codec = (): Codec<KeyType> => {
+  export const codec = (): Codec<KeyType, KeyType> => {
     return enumeration<KeyType>(__KeyTypeValues)
   }
 }
 
 export interface PublicKey {
   type?: KeyType
+  data?: Uint8Array<ArrayBuffer>
+}
+
+export interface PublicKeyInput {
+  type?: KeyType
   data?: Uint8Array
 }
 
 export namespace PublicKey {
-  let _codec: Codec<PublicKey>
+  let _codec: Codec<PublicKey, PublicKeyInput>
 
-  export const codec = (): Codec<PublicKey> => {
+  export const codec = (): Codec<PublicKey, PublicKeyInput> => {
     if (_codec == null) {
-      _codec = message<PublicKey>((obj, w, opts = {}) => {
+      _codec = message<PublicKey, PublicKeyInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -50,56 +55,72 @@ export namespace PublicKey {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {}
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.type = KeyType.codec().decode(reader)
+              obj.type = KeyType.codec().decode(r)
               break
             }
             case 2: {
-              obj.data = reader.bytes()
+              obj.data = r.bytes()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'PublicKey'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.type`,
-                value: KeyType.codec().decode(reader)
+                field: `${prefix}type`,
+                value: KeyType.codec().decode(r)
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.data`,
-                value: reader.bytes()
+                field: `${prefix}data`,
+                value: r.bytes()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'PublicKey'
           }
         }
       })
@@ -109,16 +130,16 @@ export namespace PublicKey {
   }
 
   export interface PublicKeyTypeFieldEvent {
-    field: '$.type'
+    field: '.type'
     value: KeyType
   }
 
   export interface PublicKeyDataFieldEvent {
-    field: '$.data'
-    value: Uint8Array
+    field: '.data'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<PublicKey>): Uint8Array {
+  export function encode (obj: PublicKeyInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, PublicKey.codec())
   }
 

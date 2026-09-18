@@ -85,7 +85,7 @@ export class ECDSAPrivateKey implements ECDSAPrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  async sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Promise<Uint8Array> {
+  async sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
     return hashAndSign(this.jwk, message, options)
   }
 }

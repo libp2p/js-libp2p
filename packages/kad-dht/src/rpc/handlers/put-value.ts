@@ -3,7 +3,7 @@ import { Libp2pRecord } from '@libp2p/record'
 import { verifyRecord } from '../../record/validators.ts'
 import { bufferToRecordKey } from '../../utils.ts'
 import type { Validators } from '../../index.ts'
-import type { Message } from '../../message/dht.ts'
+import type { Message, MessageInput } from '../../message/dht.ts'
 import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
@@ -34,7 +34,7 @@ export class PutValueHandler implements DHTMessageHandler {
     this.validators = validators
   }
 
-  async handle (peerId: PeerId, msg: Message): Promise<Message> {
+  async handle (peerId: PeerId, msg: Message): Promise<MessageInput> {
     const key = msg.key
     this.log('%p asked us to store value for key %b', peerId, key)
 

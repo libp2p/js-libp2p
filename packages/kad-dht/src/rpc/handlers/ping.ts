@@ -1,4 +1,4 @@
-import type { Message } from '../../message/dht.ts'
+import type { Message, MessageInput } from '../../message/dht.ts'
 import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
@@ -17,7 +17,7 @@ export class PingHandler implements DHTMessageHandler {
     this.log = components.logger.forComponent(`${init.logPrefix}:rpc:handlers:ping`)
   }
 
-  async handle (peerId: PeerId, msg: Message): Promise<Message> {
+  async handle (peerId: PeerId, msg: Message): Promise<MessageInput> {
     this.log('ping from %p', peerId)
     return msg
   }

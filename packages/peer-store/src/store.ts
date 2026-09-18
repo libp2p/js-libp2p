@@ -181,7 +181,7 @@ export class PersistentStore {
   async save (peerId: PeerId, data: PeerData, options?: AbortOptions): Promise<PeerUpdate> {
     const existingPeer = await this.#findExistingPeer(peerId, options)
 
-    const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
+    const peerPb = await toPeerPB(peerId, data, 'patch', {
       ...options,
       addressFilter: this.addressFilter
     })

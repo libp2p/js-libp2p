@@ -170,8 +170,8 @@ export { MessageType }
 export type MessageName = keyof typeof MessageType
 
 export interface DHTRecord {
-  key: Uint8Array
-  value: Uint8Array
+  key: Uint8Array<ArrayBuffer>
+  value: Uint8Array<ArrayBuffer>
   timeReceived?: Date
 }
 
@@ -260,7 +260,7 @@ export interface ValueEvent {
   from: PeerId
   type: EventTypes.VALUE
   name: 'VALUE'
-  value: Uint8Array
+  value: Uint8Array<ArrayBuffer>
   path: DisjointPath
 }
 

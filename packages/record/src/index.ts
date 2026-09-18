@@ -26,15 +26,15 @@
  * ```
  */
 
-import {
-  Record
-} from './record.ts'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
+import { Record } from './record.ts'
 import * as utils from './utils.ts'
+import type { RecordInput } from './record.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export class Libp2pRecord {
-  public key: Uint8Array
-  public value: Uint8Array
+  public key: Uint8Array<ArrayBuffer>
+  public value: Uint8Array<ArrayBuffer>
   public timeReceived: Date
 
   constructor (key: Uint8Array, value: Uint8Array, timeReceived: Date) {
@@ -46,19 +46,19 @@ export class Libp2pRecord {
       throw new Error('value must be a Uint8Array')
     }
 
-    this.key = key
-    this.value = value
+    this.key = withArrayBuffer(key)
+    this.value = withArrayBuffer(value)
     this.timeReceived = timeReceived
   }
 
-  serialize (): Uint8Array {
+  serialize (): Uint8Array<ArrayBuffer> {
     return Record.encode(this.prepareSerialize())
   }
 
   /**
    * Return the object format ready to be given to the protobuf library.
    */
-  prepareSerialize (): Record {
+  prepareSerialize (): RecordInput {
     return {
       key: this.key,
       value: this.value,

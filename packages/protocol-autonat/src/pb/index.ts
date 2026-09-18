@@ -8,6 +8,12 @@ export interface Message {
   dialResponse?: Message.DialResponse
 }
 
+export interface MessageInput {
+  type?: Message.MessageType
+  dial?: Message.DialInput
+  dialResponse?: Message.DialResponseInput
+}
+
 export namespace Message {
   export enum MessageType {
     DIAL = 'DIAL',
@@ -20,7 +26,7 @@ export namespace Message {
   }
 
   export namespace MessageType {
-    export const codec = (): Codec<MessageType> => {
+    export const codec = (): Codec<MessageType, MessageType> => {
       return enumeration<MessageType>(__MessageTypeValues)
     }
   }
@@ -42,22 +48,27 @@ export namespace Message {
   }
 
   export namespace ResponseStatus {
-    export const codec = (): Codec<ResponseStatus> => {
+    export const codec = (): Codec<ResponseStatus, ResponseStatus> => {
       return enumeration<ResponseStatus>(__ResponseStatusValues)
     }
   }
 
   export interface PeerInfo {
+    id?: Uint8Array<ArrayBuffer>
+    addrs: Uint8Array<ArrayBuffer>[]
+  }
+
+  export interface PeerInfoInput {
     id?: Uint8Array
-    addrs: Uint8Array[]
+    addrs?: Uint8Array[]
   }
 
   export namespace PeerInfo {
-    let _codec: Codec<PeerInfo>
+    let _codec: Codec<PeerInfo, PeerInfoInput>
 
-    export const codec = (): Codec<PeerInfo> => {
+    export const codec = (): Codec<PeerInfo, PeerInfoInput> => {
       if (_codec == null) {
-        _codec = message<PeerInfo>((obj, w, opts = {}) => {
+        _codec = message<PeerInfo, PeerInfoInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -77,19 +88,19 @@ export namespace Message {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {
             addrs: []
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.id = reader.bytes()
+                obj.id = r.bytes()
                 break
               }
               case 2: {
@@ -97,32 +108,40 @@ export namespace Message {
                   throw new MaxLengthError('Decode error - repeated field "addrs" had too many elements')
                 }
 
-                obj.addrs.push(reader.bytes())
+                obj.addrs.push(r.bytes())
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
+        }, function * (r, length, prefix, opts = {}) {
           const obj = {
             addrs: 0
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'Message.PeerInfo'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.id`,
-                  value: reader.bytes()
+                  field: `${prefix}id`,
+                  value: r.bytes()
                 }
                 break
               }
@@ -132,9 +151,9 @@ export namespace Message {
                 }
 
                 yield {
-                  field: `${prefix}.addrs[]`,
+                  field: `${prefix}addrs[]`,
                   index: obj.addrs,
-                  value: reader.bytes()
+                  value: r.bytes()
                 }
 
                 obj.addrs++
@@ -142,9 +161,17 @@ export namespace Message {
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'Message.PeerInfo'
             }
           }
         })
@@ -154,17 +181,17 @@ export namespace Message {
     }
 
     export interface PeerInfoIdFieldEvent {
-      field: '$.id'
-      value: Uint8Array
+      field: '.id'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface PeerInfoAddrsFieldEvent {
-      field: '$.addrs[]'
+      field: '.addrs[]'
       index: number
-      value: Uint8Array
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<PeerInfo>): Uint8Array {
+    export function encode (obj: PeerInfoInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, PeerInfo.codec())
     }
 
@@ -181,12 +208,16 @@ export namespace Message {
     peer?: Message.PeerInfo
   }
 
-  export namespace Dial {
-    let _codec: Codec<Dial>
+  export interface DialInput {
+    peer?: Message.PeerInfoInput
+  }
 
-    export const codec = (): Codec<Dial> => {
+  export namespace Dial {
+    let _codec: Codec<Dial, DialInput>
+
+    export const codec = (): Codec<Dial, DialInput> => {
       if (_codec == null) {
-        _codec = message<Dial>((obj, w, opts = {}) => {
+        _codec = message<Dial, DialInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -199,47 +230,63 @@ export namespace Message {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {}
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.peer = Message.PeerInfo.codec().decode(reader, reader.uint32(), {
+                obj.peer = Message.PeerInfo.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.peer
                 })
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix, opts = {}) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'Message.Dial'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                yield * Message.PeerInfo.codec().stream(reader, reader.uint32(), `${prefix}.peer`, {
+                yield * Message.PeerInfo.codec().stream(r, r.uint32(), `${prefix}peer.`, {
                   limits: opts.limits?.peer
                 })
 
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'Message.Dial'
             }
           }
         })
@@ -248,18 +295,28 @@ export namespace Message {
       return _codec
     }
 
+    export interface DialPeerMessageStart {
+      field: '.peer'
+      type: 'start'
+    }
+
+    export interface DialPeerMessageEnd {
+      field: '.peer'
+      type: 'end'
+    }
+
     export interface DialPeerIdFieldEvent {
-      field: '$.peer.id'
-      value: Uint8Array
+      field: '.peer.id'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface DialPeerAddrsFieldEvent {
-      field: '$.peer.addrs[]'
+      field: '.peer.addrs[]'
       index: number
-      value: Uint8Array
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<Dial>): Uint8Array {
+    export function encode (obj: DialInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, Dial.codec())
     }
 
@@ -267,7 +324,7 @@ export namespace Message {
       return decodeMessage(buf, Dial.codec(), opts)
     }
 
-    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Dial>): Generator<DialPeerIdFieldEvent | DialPeerAddrsFieldEvent> {
+    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Dial>): Generator<DialPeerMessageStart | DialPeerMessageEnd | DialPeerIdFieldEvent | DialPeerAddrsFieldEvent> {
       return streamMessage(buf, Dial.codec(), opts)
     }
   }
@@ -275,15 +332,21 @@ export namespace Message {
   export interface DialResponse {
     status?: Message.ResponseStatus
     statusText?: string
+    addr?: Uint8Array<ArrayBuffer>
+  }
+
+  export interface DialResponseInput {
+    status?: Message.ResponseStatus
+    statusText?: string
     addr?: Uint8Array
   }
 
   export namespace DialResponse {
-    let _codec: Codec<DialResponse>
+    let _codec: Codec<DialResponse, DialResponseInput>
 
-    export const codec = (): Codec<DialResponse> => {
+    export const codec = (): Codec<DialResponse, DialResponseInput> => {
       if (_codec == null) {
-        _codec = message<DialResponse>((obj, w, opts = {}) => {
+        _codec = message<DialResponse, DialResponseInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -306,67 +369,83 @@ export namespace Message {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {}
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.status = Message.ResponseStatus.codec().decode(reader)
+                obj.status = Message.ResponseStatus.codec().decode(r)
                 break
               }
               case 2: {
-                obj.statusText = reader.string()
+                obj.statusText = r.string()
                 break
               }
               case 3: {
-                obj.addr = reader.bytes()
+                obj.addr = r.bytes()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'Message.DialResponse'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.status`,
-                  value: Message.ResponseStatus.codec().decode(reader)
+                  field: `${prefix}status`,
+                  value: Message.ResponseStatus.codec().decode(r)
                 }
                 break
               }
               case 2: {
                 yield {
-                  field: `${prefix}.statusText`,
-                  value: reader.string()
+                  field: `${prefix}statusText`,
+                  value: r.string()
                 }
                 break
               }
               case 3: {
                 yield {
-                  field: `${prefix}.addr`,
-                  value: reader.bytes()
+                  field: `${prefix}addr`,
+                  value: r.bytes()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'Message.DialResponse'
             }
           }
         })
@@ -376,21 +455,21 @@ export namespace Message {
     }
 
     export interface DialResponseStatusFieldEvent {
-      field: '$.status'
+      field: '.status'
       value: Message.ResponseStatus
     }
 
     export interface DialResponseStatusTextFieldEvent {
-      field: '$.statusText'
+      field: '.statusText'
       value: string
     }
 
     export interface DialResponseAddrFieldEvent {
-      field: '$.addr'
-      value: Uint8Array
+      field: '.addr'
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<DialResponse>): Uint8Array {
+    export function encode (obj: DialResponseInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, DialResponse.codec())
     }
 
@@ -403,11 +482,11 @@ export namespace Message {
     }
   }
 
-  let _codec: Codec<Message>
+  let _codec: Codec<Message, MessageInput>
 
-  export const codec = (): Codec<Message> => {
+  export const codec = (): Codec<Message, MessageInput> => {
     if (_codec == null) {
-      _codec = message<Message>((obj, w, opts = {}) => {
+      _codec = message<Message, MessageInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -430,71 +509,87 @@ export namespace Message {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {}
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.type = Message.MessageType.codec().decode(reader)
+              obj.type = Message.MessageType.codec().decode(r)
               break
             }
             case 2: {
-              obj.dial = Message.Dial.codec().decode(reader, reader.uint32(), {
+              obj.dial = Message.Dial.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.dial
               })
               break
             }
             case 3: {
-              obj.dialResponse = Message.DialResponse.codec().decode(reader, reader.uint32(), {
+              obj.dialResponse = Message.DialResponse.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.dialResponse
               })
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix, opts = {}) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Message'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.type`,
-                value: Message.MessageType.codec().decode(reader)
+                field: `${prefix}type`,
+                value: Message.MessageType.codec().decode(r)
               }
               break
             }
             case 2: {
-              yield * Message.Dial.codec().stream(reader, reader.uint32(), `${prefix}.dial`, {
+              yield * Message.Dial.codec().stream(r, r.uint32(), `${prefix}dial.`, {
                 limits: opts.limits?.dial
               })
 
               break
             }
             case 3: {
-              yield * Message.DialResponse.codec().stream(reader, reader.uint32(), `${prefix}.dialResponse`, {
+              yield * Message.DialResponse.codec().stream(r, r.uint32(), `${prefix}dialResponse.`, {
                 limits: opts.limits?.dialResponse
               })
 
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Message'
           }
         }
       })
@@ -504,37 +599,67 @@ export namespace Message {
   }
 
   export interface MessageTypeFieldEvent {
-    field: '$.type'
+    field: '.type'
     value: Message.MessageType
   }
 
+  export interface MessageDialMessageStart {
+    field: '.dial'
+    type: 'start'
+  }
+
+  export interface MessageDialMessageEnd {
+    field: '.dial'
+    type: 'end'
+  }
+
+  export interface MessageDialPeerMessageStart {
+    field: '.dial.peer'
+    type: 'start'
+  }
+
+  export interface MessageDialPeerMessageEnd {
+    field: '.dial.peer'
+    type: 'end'
+  }
+
   export interface MessageDialPeerIdFieldEvent {
-    field: '$.dial.peer.id'
-    value: Uint8Array
+    field: '.dial.peer.id'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface MessageDialPeerAddrsFieldEvent {
-    field: '$.dial.peer.addrs[]'
+    field: '.dial.peer.addrs[]'
     index: number
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
+  }
+
+  export interface MessageDialResponseMessageStart {
+    field: '.dialResponse'
+    type: 'start'
+  }
+
+  export interface MessageDialResponseMessageEnd {
+    field: '.dialResponse'
+    type: 'end'
   }
 
   export interface MessageDialResponseStatusFieldEvent {
-    field: '$.dialResponse.status'
+    field: '.dialResponse.status'
     value: Message.ResponseStatus
   }
 
   export interface MessageDialResponseStatusTextFieldEvent {
-    field: '$.dialResponse.statusText'
+    field: '.dialResponse.statusText'
     value: string
   }
 
   export interface MessageDialResponseAddrFieldEvent {
-    field: '$.dialResponse.addr'
-    value: Uint8Array
+    field: '.dialResponse.addr'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<Message>): Uint8Array {
+  export function encode (obj: MessageInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Message.codec())
   }
 
@@ -542,7 +667,7 @@ export namespace Message {
     return decodeMessage(buf, Message.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Generator<MessageTypeFieldEvent | MessageDialPeerIdFieldEvent | MessageDialPeerAddrsFieldEvent | MessageDialResponseStatusFieldEvent | MessageDialResponseStatusTextFieldEvent | MessageDialResponseAddrFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Message>): Generator<MessageTypeFieldEvent | MessageDialMessageStart | MessageDialMessageEnd | MessageDialPeerMessageStart | MessageDialPeerMessageEnd | MessageDialPeerIdFieldEvent | MessageDialPeerAddrsFieldEvent | MessageDialResponseMessageStart | MessageDialResponseMessageEnd | MessageDialResponseStatusFieldEvent | MessageDialResponseStatusTextFieldEvent | MessageDialResponseAddrFieldEvent> {
     return streamMessage(buf, Message.codec(), opts)
   }
 }

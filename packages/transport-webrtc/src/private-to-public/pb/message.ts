@@ -4,6 +4,11 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Message {
   flag?: Message.Flag
+  message?: Uint8Array<ArrayBuffer>
+}
+
+export interface MessageInput {
+  flag?: Message.Flag
   message?: Uint8Array
 }
 
@@ -23,16 +28,16 @@ export namespace Message {
   }
 
   export namespace Flag {
-    export const codec = (): Codec<Flag> => {
+    export const codec = (): Codec<Flag, Flag> => {
       return enumeration<Flag>(__FlagValues)
     }
   }
 
-  let _codec: Codec<Message>
+  let _codec: Codec<Message, MessageInput>
 
-  export const codec = (): Codec<Message> => {
+  export const codec = (): Codec<Message, MessageInput> => {
     if (_codec == null) {
-      _codec = message<Message>((obj, w, opts = {}) => {
+      _codec = message<Message, MessageInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -50,56 +55,72 @@ export namespace Message {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {}
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.flag = Message.Flag.codec().decode(reader)
+              obj.flag = Message.Flag.codec().decode(r)
               break
             }
             case 2: {
-              obj.message = reader.bytes()
+              obj.message = r.bytes()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Message'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.flag`,
-                value: Message.Flag.codec().decode(reader)
+                field: `${prefix}flag`,
+                value: Message.Flag.codec().decode(r)
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.message`,
-                value: reader.bytes()
+                field: `${prefix}message`,
+                value: r.bytes()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Message'
           }
         }
       })
@@ -109,16 +130,16 @@ export namespace Message {
   }
 
   export interface MessageFlagFieldEvent {
-    field: '$.flag'
+    field: '.flag'
     value: Message.Flag
   }
 
   export interface MessageMessageFieldEvent {
-    field: '$.message'
-    value: Uint8Array
+    field: '.message'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<Message>): Uint8Array {
+  export function encode (obj: MessageInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Message.codec())
   }
 

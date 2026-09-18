@@ -122,8 +122,8 @@ export class MessageCache {
   /**
    * Retrieves a list of message IDs for a set of topics
    */
-  getGossipIDs (topics: Set<string>): Map<string, Uint8Array[]> {
-    const msgIdsByTopic = new Map<string, Uint8Array[]>()
+  getGossipIDs (topics: Set<string>): Map<string, Uint8Array<ArrayBuffer>[]> {
+    const msgIdsByTopic = new Map<string, Uint8Array<ArrayBuffer>[]>()
     for (let i = 0; i < this.gossip; i++) {
       this.history[i].forEach((entry) => {
         const msg = this.msgs.get(entry.msgIdStr)

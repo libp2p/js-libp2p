@@ -2,6 +2,7 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.ts'
 import type { AddressFilter } from '../index.ts'
 import type { Tag, Peer as PeerPB } from '../pb/peer.ts'
@@ -30,7 +31,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
 
   let addresses: Address[] = existingPeer?.addresses ?? []
   let protocols = new Set<string>(existingPeer?.protocols ?? [])
-  let metadata: Map<string, Uint8Array> = existingPeer?.metadata ?? new Map()
+  let metadata: Map<string, Uint8Array<ArrayBuffer>> = existingPeer?.metadata ?? new Map()
   let tags: Map<string, Tag> = existingPeer?.tags ?? new Map()
   let peerRecordEnvelope: Uint8Array | undefined = existingPeer?.peerRecordEnvelope
 
@@ -101,7 +102,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
         if (value == null) {
           metadata.delete(key)
         } else {
-          metadata.set(key, value)
+          metadata.set(key, withArrayBuffer(value))
         }
       }
 
@@ -156,8 +157,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
     }),
     metadata,
     tags,
-    publicKey,
-    peerRecordEnvelope
+    publicKey: publicKey == null ? publicKey : withArrayBuffer(publicKey),
+    peerRecordEnvelope: peerRecordEnvelope == null ? peerRecordEnvelope : withArrayBuffer(peerRecordEnvelope)
   }
 
   // add observed addresses to multiaddrs

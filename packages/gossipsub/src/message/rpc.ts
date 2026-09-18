@@ -8,18 +8,29 @@ export interface RPC {
   control?: RPC.ControlMessage
 }
 
+export interface RPCInput {
+  subscriptions?: RPC.SubOptsInput[]
+  messages?: RPC.MessageInput[]
+  control?: RPC.ControlMessageInput
+}
+
 export namespace RPC {
   export interface SubOpts {
     subscribe?: boolean
     topic?: string
   }
 
-  export namespace SubOpts {
-    let _codec: Codec<SubOpts>
+  export interface SubOptsInput {
+    subscribe?: boolean
+    topic?: string
+  }
 
-    export const codec = (): Codec<SubOpts> => {
+  export namespace SubOpts {
+    let _codec: Codec<SubOpts, SubOptsInput>
+
+    export const codec = (): Codec<SubOpts, SubOptsInput> => {
       if (_codec == null) {
-        _codec = message<SubOpts>((obj, w, opts = {}) => {
+        _codec = message<SubOpts, SubOptsInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -37,56 +48,72 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {}
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.subscribe = reader.bool()
+                obj.subscribe = r.bool()
                 break
               }
               case 2: {
-                obj.topic = reader.string()
+                obj.topic = r.string()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.SubOpts'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.subscribe`,
-                  value: reader.bool()
+                  field: `${prefix}subscribe`,
+                  value: r.bool()
                 }
                 break
               }
               case 2: {
                 yield {
-                  field: `${prefix}.topic`,
-                  value: reader.string()
+                  field: `${prefix}topic`,
+                  value: r.string()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.SubOpts'
             }
           }
         })
@@ -96,16 +123,16 @@ export namespace RPC {
     }
 
     export interface SubOptsSubscribeFieldEvent {
-      field: '$.subscribe'
+      field: '.subscribe'
       value: boolean
     }
 
     export interface SubOptsTopicFieldEvent {
-      field: '$.topic'
+      field: '.topic'
       value: string
     }
 
-    export function encode (obj: Partial<SubOpts>): Uint8Array {
+    export function encode (obj: SubOptsInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, SubOpts.codec())
     }
 
@@ -119,20 +146,29 @@ export namespace RPC {
   }
 
   export interface Message {
+    from?: Uint8Array<ArrayBuffer>
+    data?: Uint8Array<ArrayBuffer>
+    seqno?: Uint8Array<ArrayBuffer>
+    topic: string
+    signature?: Uint8Array<ArrayBuffer>
+    key?: Uint8Array<ArrayBuffer>
+  }
+
+  export interface MessageInput {
     from?: Uint8Array
     data?: Uint8Array
     seqno?: Uint8Array
-    topic: string
+    topic?: string
     signature?: Uint8Array
     key?: Uint8Array
   }
 
   export namespace Message {
-    let _codec: Codec<Message>
+    let _codec: Codec<Message, MessageInput>
 
-    export const codec = (): Codec<Message> => {
+    export const codec = (): Codec<Message, MessageInput> => {
       if (_codec == null) {
-        _codec = message<Message>((obj, w, opts = {}) => {
+        _codec = message<Message, MessageInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -170,102 +206,118 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {
             topic: ''
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.from = reader.bytes()
+                obj.from = r.bytes()
                 break
               }
               case 2: {
-                obj.data = reader.bytes()
+                obj.data = r.bytes()
                 break
               }
               case 3: {
-                obj.seqno = reader.bytes()
+                obj.seqno = r.bytes()
                 break
               }
               case 4: {
-                obj.topic = reader.string()
+                obj.topic = r.string()
                 break
               }
               case 5: {
-                obj.signature = reader.bytes()
+                obj.signature = r.bytes()
                 break
               }
               case 6: {
-                obj.key = reader.bytes()
+                obj.key = r.bytes()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.Message'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.from`,
-                  value: reader.bytes()
+                  field: `${prefix}from`,
+                  value: r.bytes()
                 }
                 break
               }
               case 2: {
                 yield {
-                  field: `${prefix}.data`,
-                  value: reader.bytes()
+                  field: `${prefix}data`,
+                  value: r.bytes()
                 }
                 break
               }
               case 3: {
                 yield {
-                  field: `${prefix}.seqno`,
-                  value: reader.bytes()
+                  field: `${prefix}seqno`,
+                  value: r.bytes()
                 }
                 break
               }
               case 4: {
                 yield {
-                  field: `${prefix}.topic`,
-                  value: reader.string()
+                  field: `${prefix}topic`,
+                  value: r.string()
                 }
                 break
               }
               case 5: {
                 yield {
-                  field: `${prefix}.signature`,
-                  value: reader.bytes()
+                  field: `${prefix}signature`,
+                  value: r.bytes()
                 }
                 break
               }
               case 6: {
                 yield {
-                  field: `${prefix}.key`,
-                  value: reader.bytes()
+                  field: `${prefix}key`,
+                  value: r.bytes()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.Message'
             }
           }
         })
@@ -275,36 +327,36 @@ export namespace RPC {
     }
 
     export interface MessageFromFieldEvent {
-      field: '$.from'
-      value: Uint8Array
+      field: '.from'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageDataFieldEvent {
-      field: '$.data'
-      value: Uint8Array
+      field: '.data'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageSeqnoFieldEvent {
-      field: '$.seqno'
-      value: Uint8Array
+      field: '.seqno'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageTopicFieldEvent {
-      field: '$.topic'
+      field: '.topic'
       value: string
     }
 
     export interface MessageSignatureFieldEvent {
-      field: '$.signature'
-      value: Uint8Array
+      field: '.signature'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageKeyFieldEvent {
-      field: '$.key'
-      value: Uint8Array
+      field: '.key'
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<Message>): Uint8Array {
+    export function encode (obj: MessageInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, Message.codec())
     }
 
@@ -325,12 +377,20 @@ export namespace RPC {
     idontwant: RPC.ControlIDontWant[]
   }
 
-  export namespace ControlMessage {
-    let _codec: Codec<ControlMessage>
+  export interface ControlMessageInput {
+    ihave?: RPC.ControlIHaveInput[]
+    iwant?: RPC.ControlIWantInput[]
+    graft?: RPC.ControlGraftInput[]
+    prune?: RPC.ControlPruneInput[]
+    idontwant?: RPC.ControlIDontWantInput[]
+  }
 
-    export const codec = (): Codec<ControlMessage> => {
+  export namespace ControlMessage {
+    let _codec: Codec<ControlMessage, ControlMessageInput>
+
+    export const codec = (): Codec<ControlMessage, ControlMessageInput> => {
       if (_codec == null) {
-        _codec = message<ControlMessage>((obj, w, opts = {}) => {
+        _codec = message<ControlMessage, ControlMessageInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -373,7 +433,7 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {
             ihave: [],
             iwant: [],
@@ -382,10 +442,10 @@ export namespace RPC {
             idontwant: []
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
@@ -393,7 +453,7 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "ihave" had too many elements')
                 }
 
-                obj.ihave.push(RPC.ControlIHave.codec().decode(reader, reader.uint32(), {
+                obj.ihave.push(RPC.ControlIHave.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.ihave$
                 }))
                 break
@@ -403,7 +463,7 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "iwant" had too many elements')
                 }
 
-                obj.iwant.push(RPC.ControlIWant.codec().decode(reader, reader.uint32(), {
+                obj.iwant.push(RPC.ControlIWant.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.iwant$
                 }))
                 break
@@ -413,7 +473,7 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "graft" had too many elements')
                 }
 
-                obj.graft.push(RPC.ControlGraft.codec().decode(reader, reader.uint32(), {
+                obj.graft.push(RPC.ControlGraft.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.graft$
                 }))
                 break
@@ -423,7 +483,7 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "prune" had too many elements')
                 }
 
-                obj.prune.push(RPC.ControlPrune.codec().decode(reader, reader.uint32(), {
+                obj.prune.push(RPC.ControlPrune.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.prune$
                 }))
                 break
@@ -433,20 +493,20 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "idontwant" had too many elements')
                 }
 
-                obj.idontwant.push(RPC.ControlIDontWant.codec().decode(reader, reader.uint32(), {
+                obj.idontwant.push(RPC.ControlIDontWant.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.idontwant$
                 }))
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
+        }, function * (r, length, prefix, opts = {}) {
           const obj = {
             ihave: 0,
             iwant: 0,
@@ -455,10 +515,18 @@ export namespace RPC {
             idontwant: 0
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.ControlMessage'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
@@ -466,7 +534,7 @@ export namespace RPC {
                   throw new MaxLengthError('Streaming decode error - repeated field "ihave" had too many elements')
                 }
 
-                for (const evt of RPC.ControlIHave.codec().stream(reader, reader.uint32(), `${prefix}.ihave[]`, {
+                for (const evt of RPC.ControlIHave.codec().stream(r, r.uint32(), `${prefix}ihave[].`, {
                   limits: opts.limits?.ihave$
                 })) {
                   yield {
@@ -484,7 +552,7 @@ export namespace RPC {
                   throw new MaxLengthError('Streaming decode error - repeated field "iwant" had too many elements')
                 }
 
-                for (const evt of RPC.ControlIWant.codec().stream(reader, reader.uint32(), `${prefix}.iwant[]`, {
+                for (const evt of RPC.ControlIWant.codec().stream(r, r.uint32(), `${prefix}iwant[].`, {
                   limits: opts.limits?.iwant$
                 })) {
                   yield {
@@ -502,7 +570,7 @@ export namespace RPC {
                   throw new MaxLengthError('Streaming decode error - repeated field "graft" had too many elements')
                 }
 
-                for (const evt of RPC.ControlGraft.codec().stream(reader, reader.uint32(), `${prefix}.graft[]`, {
+                for (const evt of RPC.ControlGraft.codec().stream(r, r.uint32(), `${prefix}graft[].`, {
                   limits: opts.limits?.graft$
                 })) {
                   yield {
@@ -520,7 +588,7 @@ export namespace RPC {
                   throw new MaxLengthError('Streaming decode error - repeated field "prune" had too many elements')
                 }
 
-                for (const evt of RPC.ControlPrune.codec().stream(reader, reader.uint32(), `${prefix}.prune[]`, {
+                for (const evt of RPC.ControlPrune.codec().stream(r, r.uint32(), `${prefix}prune[].`, {
                   limits: opts.limits?.prune$
                 })) {
                   yield {
@@ -538,7 +606,7 @@ export namespace RPC {
                   throw new MaxLengthError('Streaming decode error - repeated field "idontwant" had too many elements')
                 }
 
-                for (const evt of RPC.ControlIDontWant.codec().stream(reader, reader.uint32(), `${prefix}.idontwant[]`, {
+                for (const evt of RPC.ControlIDontWant.codec().stream(r, r.uint32(), `${prefix}idontwant[].`, {
                   limits: opts.limits?.idontwant$
                 })) {
                   yield {
@@ -552,9 +620,17 @@ export namespace RPC {
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.ControlMessage'
             }
           }
         })
@@ -564,60 +640,144 @@ export namespace RPC {
     }
 
     export interface ControlMessageIhaveTopicIDFieldEvent {
-      field: '$.ihave[].topicID'
+      field: '.ihave[].topicID'
       value: string
       index: number
     }
 
     export interface ControlMessageIhaveMessageIDsFieldEvent {
-      field: '$.ihave[].messageIDs[]'
+      field: '.ihave[].messageIDs[]'
       index: number
-      value: Uint8Array
+      value: Uint8Array<ArrayBuffer>
+    }
+
+    export interface ControlMessageIhaveMessageStartEvent {
+      field: '.ihave[]'
+      index: number
+      type: 'start'
+      message: string
+    }
+
+    export interface ControlMessageIhaveMessageEndEvent {
+      field: '.ihave[]'
+      index: number
+      type: 'end'
+      message: string
     }
 
     export interface ControlMessageIwantMessageIDsFieldEvent {
-      field: '$.iwant[].messageIDs[]'
+      field: '.iwant[].messageIDs[]'
       index: number
-      value: Uint8Array
+      value: Uint8Array<ArrayBuffer>
+    }
+
+    export interface ControlMessageIwantMessageStartEvent {
+      field: '.iwant[]'
+      index: number
+      type: 'start'
+      message: string
+    }
+
+    export interface ControlMessageIwantMessageEndEvent {
+      field: '.iwant[]'
+      index: number
+      type: 'end'
+      message: string
     }
 
     export interface ControlMessageGraftTopicIDFieldEvent {
-      field: '$.graft[].topicID'
+      field: '.graft[].topicID'
       value: string
       index: number
     }
 
+    export interface ControlMessageGraftMessageStartEvent {
+      field: '.graft[]'
+      index: number
+      type: 'start'
+      message: string
+    }
+
+    export interface ControlMessageGraftMessageEndEvent {
+      field: '.graft[]'
+      index: number
+      type: 'end'
+      message: string
+    }
+
     export interface ControlMessagePruneTopicIDFieldEvent {
-      field: '$.prune[].topicID'
+      field: '.prune[].topicID'
       value: string
       index: number
     }
 
     export interface ControlMessagePrunePeersPeerIDFieldEvent {
-      field: '$.prune[].peers[].peerID'
-      value: Uint8Array
+      field: '.prune[].peers[].peerID'
+      value: Uint8Array<ArrayBuffer>
       index: number
     }
 
     export interface ControlMessagePrunePeersSignedPeerRecordFieldEvent {
-      field: '$.prune[].peers[].signedPeerRecord'
-      value: Uint8Array
+      field: '.prune[].peers[].signedPeerRecord'
+      value: Uint8Array<ArrayBuffer>
       index: number
     }
 
+    export interface ControlMessagePrunePeersMessageStartEvent {
+      field: '.prune[].peers[]'
+      index: number
+      type: 'start'
+      message: string
+    }
+
+    export interface ControlMessagePrunePeersMessageEndEvent {
+      field: '.prune[].peers[]'
+      index: number
+      type: 'end'
+      message: string
+    }
+
     export interface ControlMessagePruneBackoffFieldEvent {
-      field: '$.prune[].backoff'
+      field: '.prune[].backoff'
       value: number
       index: number
     }
 
-    export interface ControlMessageIdontwantMessageIDsFieldEvent {
-      field: '$.idontwant[].messageIDs[]'
+    export interface ControlMessagePruneMessageStartEvent {
+      field: '.prune[]'
       index: number
-      value: Uint8Array
+      type: 'start'
+      message: string
     }
 
-    export function encode (obj: Partial<ControlMessage>): Uint8Array {
+    export interface ControlMessagePruneMessageEndEvent {
+      field: '.prune[]'
+      index: number
+      type: 'end'
+      message: string
+    }
+
+    export interface ControlMessageIdontwantMessageIDsFieldEvent {
+      field: '.idontwant[].messageIDs[]'
+      index: number
+      value: Uint8Array<ArrayBuffer>
+    }
+
+    export interface ControlMessageIdontwantMessageStartEvent {
+      field: '.idontwant[]'
+      index: number
+      type: 'start'
+      message: string
+    }
+
+    export interface ControlMessageIdontwantMessageEndEvent {
+      field: '.idontwant[]'
+      index: number
+      type: 'end'
+      message: string
+    }
+
+    export function encode (obj: ControlMessageInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, ControlMessage.codec())
     }
 
@@ -625,22 +785,27 @@ export namespace RPC {
       return decodeMessage(buf, ControlMessage.codec(), opts)
     }
 
-    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ControlMessage>): Generator<ControlMessageIhaveTopicIDFieldEvent | ControlMessageIhaveMessageIDsFieldEvent | ControlMessageIwantMessageIDsFieldEvent | ControlMessageGraftTopicIDFieldEvent | ControlMessagePruneTopicIDFieldEvent | ControlMessagePrunePeersPeerIDFieldEvent | ControlMessagePrunePeersSignedPeerRecordFieldEvent | ControlMessagePruneBackoffFieldEvent | ControlMessageIdontwantMessageIDsFieldEvent> {
+    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ControlMessage>): Generator<ControlMessageIhaveTopicIDFieldEvent | ControlMessageIhaveMessageIDsFieldEvent | ControlMessageIhaveMessageStartEvent | ControlMessageIhaveMessageEndEvent | ControlMessageIwantMessageIDsFieldEvent | ControlMessageIwantMessageStartEvent | ControlMessageIwantMessageEndEvent | ControlMessageGraftTopicIDFieldEvent | ControlMessageGraftMessageStartEvent | ControlMessageGraftMessageEndEvent | ControlMessagePruneTopicIDFieldEvent | ControlMessagePrunePeersPeerIDFieldEvent | ControlMessagePrunePeersSignedPeerRecordFieldEvent | ControlMessagePrunePeersMessageStartEvent | ControlMessagePrunePeersMessageEndEvent | ControlMessagePruneBackoffFieldEvent | ControlMessagePruneMessageStartEvent | ControlMessagePruneMessageEndEvent | ControlMessageIdontwantMessageIDsFieldEvent | ControlMessageIdontwantMessageStartEvent | ControlMessageIdontwantMessageEndEvent> {
       return streamMessage(buf, ControlMessage.codec(), opts)
     }
   }
 
   export interface ControlIHave {
     topicID?: string
-    messageIDs: Uint8Array[]
+    messageIDs: Uint8Array<ArrayBuffer>[]
+  }
+
+  export interface ControlIHaveInput {
+    topicID?: string
+    messageIDs?: Uint8Array[]
   }
 
   export namespace ControlIHave {
-    let _codec: Codec<ControlIHave>
+    let _codec: Codec<ControlIHave, ControlIHaveInput>
 
-    export const codec = (): Codec<ControlIHave> => {
+    export const codec = (): Codec<ControlIHave, ControlIHaveInput> => {
       if (_codec == null) {
-        _codec = message<ControlIHave>((obj, w, opts = {}) => {
+        _codec = message<ControlIHave, ControlIHaveInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -660,19 +825,19 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {
             messageIDs: []
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.topicID = reader.string()
+                obj.topicID = r.string()
                 break
               }
               case 2: {
@@ -680,32 +845,40 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "messageIDs" had too many elements')
                 }
 
-                obj.messageIDs.push(reader.bytes())
+                obj.messageIDs.push(r.bytes())
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
+        }, function * (r, length, prefix, opts = {}) {
           const obj = {
             messageIDs: 0
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.ControlIHave'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.topicID`,
-                  value: reader.string()
+                  field: `${prefix}topicID`,
+                  value: r.string()
                 }
                 break
               }
@@ -715,9 +888,9 @@ export namespace RPC {
                 }
 
                 yield {
-                  field: `${prefix}.messageIDs[]`,
+                  field: `${prefix}messageIDs[]`,
                   index: obj.messageIDs,
-                  value: reader.bytes()
+                  value: r.bytes()
                 }
 
                 obj.messageIDs++
@@ -725,9 +898,17 @@ export namespace RPC {
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.ControlIHave'
             }
           }
         })
@@ -737,17 +918,17 @@ export namespace RPC {
     }
 
     export interface ControlIHaveTopicIDFieldEvent {
-      field: '$.topicID'
+      field: '.topicID'
       value: string
     }
 
     export interface ControlIHaveMessageIDsFieldEvent {
-      field: '$.messageIDs[]'
+      field: '.messageIDs[]'
       index: number
-      value: Uint8Array
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<ControlIHave>): Uint8Array {
+    export function encode (obj: ControlIHaveInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, ControlIHave.codec())
     }
 
@@ -761,15 +942,19 @@ export namespace RPC {
   }
 
   export interface ControlIWant {
-    messageIDs: Uint8Array[]
+    messageIDs: Uint8Array<ArrayBuffer>[]
+  }
+
+  export interface ControlIWantInput {
+    messageIDs?: Uint8Array[]
   }
 
   export namespace ControlIWant {
-    let _codec: Codec<ControlIWant>
+    let _codec: Codec<ControlIWant, ControlIWantInput>
 
-    export const codec = (): Codec<ControlIWant> => {
+    export const codec = (): Codec<ControlIWant, ControlIWantInput> => {
       if (_codec == null) {
-        _codec = message<ControlIWant>((obj, w, opts = {}) => {
+        _codec = message<ControlIWant, ControlIWantInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -784,15 +969,15 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {
             messageIDs: []
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
@@ -800,26 +985,34 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "messageIDs" had too many elements')
                 }
 
-                obj.messageIDs.push(reader.bytes())
+                obj.messageIDs.push(r.bytes())
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
+        }, function * (r, length, prefix, opts = {}) {
           const obj = {
             messageIDs: 0
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.ControlIWant'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
@@ -828,9 +1021,9 @@ export namespace RPC {
                 }
 
                 yield {
-                  field: `${prefix}.messageIDs[]`,
+                  field: `${prefix}messageIDs[]`,
                   index: obj.messageIDs,
-                  value: reader.bytes()
+                  value: r.bytes()
                 }
 
                 obj.messageIDs++
@@ -838,9 +1031,17 @@ export namespace RPC {
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.ControlIWant'
             }
           }
         })
@@ -850,12 +1051,12 @@ export namespace RPC {
     }
 
     export interface ControlIWantMessageIDsFieldEvent {
-      field: '$.messageIDs[]'
+      field: '.messageIDs[]'
       index: number
-      value: Uint8Array
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<ControlIWant>): Uint8Array {
+    export function encode (obj: ControlIWantInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, ControlIWant.codec())
     }
 
@@ -872,12 +1073,16 @@ export namespace RPC {
     topicID?: string
   }
 
-  export namespace ControlGraft {
-    let _codec: Codec<ControlGraft>
+  export interface ControlGraftInput {
+    topicID?: string
+  }
 
-    export const codec = (): Codec<ControlGraft> => {
+  export namespace ControlGraft {
+    let _codec: Codec<ControlGraft, ControlGraftInput>
+
+    export const codec = (): Codec<ControlGraft, ControlGraftInput> => {
       if (_codec == null) {
-        _codec = message<ControlGraft>((obj, w, opts = {}) => {
+        _codec = message<ControlGraft, ControlGraftInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -890,45 +1095,61 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {}
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.topicID = reader.string()
+                obj.topicID = r.string()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.ControlGraft'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.topicID`,
-                  value: reader.string()
+                  field: `${prefix}topicID`,
+                  value: r.string()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.ControlGraft'
             }
           }
         })
@@ -938,11 +1159,11 @@ export namespace RPC {
     }
 
     export interface ControlGraftTopicIDFieldEvent {
-      field: '$.topicID'
+      field: '.topicID'
       value: string
     }
 
-    export function encode (obj: Partial<ControlGraft>): Uint8Array {
+    export function encode (obj: ControlGraftInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, ControlGraft.codec())
     }
 
@@ -961,12 +1182,18 @@ export namespace RPC {
     backoff?: number
   }
 
-  export namespace ControlPrune {
-    let _codec: Codec<ControlPrune>
+  export interface ControlPruneInput {
+    topicID?: string
+    peers?: RPC.PeerInfoInput[]
+    backoff?: number
+  }
 
-    export const codec = (): Codec<ControlPrune> => {
+  export namespace ControlPrune {
+    let _codec: Codec<ControlPrune, ControlPruneInput>
+
+    export const codec = (): Codec<ControlPrune, ControlPruneInput> => {
       if (_codec == null) {
-        _codec = message<ControlPrune>((obj, w, opts = {}) => {
+        _codec = message<ControlPrune, ControlPruneInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -991,19 +1218,19 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {
             peers: []
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.topicID = reader.string()
+                obj.topicID = r.string()
                 break
               }
               case 2: {
@@ -1011,38 +1238,46 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "peers" had too many elements')
                 }
 
-                obj.peers.push(RPC.PeerInfo.codec().decode(reader, reader.uint32(), {
+                obj.peers.push(RPC.PeerInfo.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.peers$
                 }))
                 break
               }
               case 3: {
-                obj.backoff = reader.uint64Number()
+                obj.backoff = r.uint64Number()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
+        }, function * (r, length, prefix, opts = {}) {
           const obj = {
             peers: 0
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.ControlPrune'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.topicID`,
-                  value: reader.string()
+                  field: `${prefix}topicID`,
+                  value: r.string()
                 }
                 break
               }
@@ -1051,7 +1286,7 @@ export namespace RPC {
                   throw new MaxLengthError('Streaming decode error - repeated field "peers" had too many elements')
                 }
 
-                for (const evt of RPC.PeerInfo.codec().stream(reader, reader.uint32(), `${prefix}.peers[]`, {
+                for (const evt of RPC.PeerInfo.codec().stream(r, r.uint32(), `${prefix}peers[].`, {
                   limits: opts.limits?.peers$
                 })) {
                   yield {
@@ -1066,15 +1301,23 @@ export namespace RPC {
               }
               case 3: {
                 yield {
-                  field: `${prefix}.backoff`,
-                  value: reader.uint64Number()
+                  field: `${prefix}backoff`,
+                  value: r.uint64Number()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.ControlPrune'
             }
           }
         })
@@ -1084,28 +1327,42 @@ export namespace RPC {
     }
 
     export interface ControlPruneTopicIDFieldEvent {
-      field: '$.topicID'
+      field: '.topicID'
       value: string
     }
 
     export interface ControlPrunePeersPeerIDFieldEvent {
-      field: '$.peers[].peerID'
-      value: Uint8Array
+      field: '.peers[].peerID'
+      value: Uint8Array<ArrayBuffer>
       index: number
     }
 
     export interface ControlPrunePeersSignedPeerRecordFieldEvent {
-      field: '$.peers[].signedPeerRecord'
-      value: Uint8Array
+      field: '.peers[].signedPeerRecord'
+      value: Uint8Array<ArrayBuffer>
       index: number
     }
 
+    export interface ControlPrunePeersMessageStartEvent {
+      field: '.peers[]'
+      index: number
+      type: 'start'
+      message: string
+    }
+
+    export interface ControlPrunePeersMessageEndEvent {
+      field: '.peers[]'
+      index: number
+      type: 'end'
+      message: string
+    }
+
     export interface ControlPruneBackoffFieldEvent {
-      field: '$.backoff'
+      field: '.backoff'
       value: number
     }
 
-    export function encode (obj: Partial<ControlPrune>): Uint8Array {
+    export function encode (obj: ControlPruneInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, ControlPrune.codec())
     }
 
@@ -1113,22 +1370,27 @@ export namespace RPC {
       return decodeMessage(buf, ControlPrune.codec(), opts)
     }
 
-    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ControlPrune>): Generator<ControlPruneTopicIDFieldEvent | ControlPrunePeersPeerIDFieldEvent | ControlPrunePeersSignedPeerRecordFieldEvent | ControlPruneBackoffFieldEvent> {
+    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<ControlPrune>): Generator<ControlPruneTopicIDFieldEvent | ControlPrunePeersPeerIDFieldEvent | ControlPrunePeersSignedPeerRecordFieldEvent | ControlPrunePeersMessageStartEvent | ControlPrunePeersMessageEndEvent | ControlPruneBackoffFieldEvent> {
       return streamMessage(buf, ControlPrune.codec(), opts)
     }
   }
 
   export interface PeerInfo {
+    peerID?: Uint8Array<ArrayBuffer>
+    signedPeerRecord?: Uint8Array<ArrayBuffer>
+  }
+
+  export interface PeerInfoInput {
     peerID?: Uint8Array
     signedPeerRecord?: Uint8Array
   }
 
   export namespace PeerInfo {
-    let _codec: Codec<PeerInfo>
+    let _codec: Codec<PeerInfo, PeerInfoInput>
 
-    export const codec = (): Codec<PeerInfo> => {
+    export const codec = (): Codec<PeerInfo, PeerInfoInput> => {
       if (_codec == null) {
-        _codec = message<PeerInfo>((obj, w, opts = {}) => {
+        _codec = message<PeerInfo, PeerInfoInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -1146,56 +1408,72 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {}
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.peerID = reader.bytes()
+                obj.peerID = r.bytes()
                 break
               }
               case 2: {
-                obj.signedPeerRecord = reader.bytes()
+                obj.signedPeerRecord = r.bytes()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.PeerInfo'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.peerID`,
-                  value: reader.bytes()
+                  field: `${prefix}peerID`,
+                  value: r.bytes()
                 }
                 break
               }
               case 2: {
                 yield {
-                  field: `${prefix}.signedPeerRecord`,
-                  value: reader.bytes()
+                  field: `${prefix}signedPeerRecord`,
+                  value: r.bytes()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.PeerInfo'
             }
           }
         })
@@ -1205,16 +1483,16 @@ export namespace RPC {
     }
 
     export interface PeerInfoPeerIDFieldEvent {
-      field: '$.peerID'
-      value: Uint8Array
+      field: '.peerID'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface PeerInfoSignedPeerRecordFieldEvent {
-      field: '$.signedPeerRecord'
-      value: Uint8Array
+      field: '.signedPeerRecord'
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<PeerInfo>): Uint8Array {
+    export function encode (obj: PeerInfoInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, PeerInfo.codec())
     }
 
@@ -1228,15 +1506,19 @@ export namespace RPC {
   }
 
   export interface ControlIDontWant {
-    messageIDs: Uint8Array[]
+    messageIDs: Uint8Array<ArrayBuffer>[]
+  }
+
+  export interface ControlIDontWantInput {
+    messageIDs?: Uint8Array[]
   }
 
   export namespace ControlIDontWant {
-    let _codec: Codec<ControlIDontWant>
+    let _codec: Codec<ControlIDontWant, ControlIDontWantInput>
 
-    export const codec = (): Codec<ControlIDontWant> => {
+    export const codec = (): Codec<ControlIDontWant, ControlIDontWantInput> => {
       if (_codec == null) {
-        _codec = message<ControlIDontWant>((obj, w, opts = {}) => {
+        _codec = message<ControlIDontWant, ControlIDontWantInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -1251,15 +1533,15 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {
             messageIDs: []
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
@@ -1267,26 +1549,34 @@ export namespace RPC {
                   throw new MaxLengthError('Decode error - repeated field "messageIDs" had too many elements')
                 }
 
-                obj.messageIDs.push(reader.bytes())
+                obj.messageIDs.push(r.bytes())
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
+        }, function * (r, length, prefix, opts = {}) {
           const obj = {
             messageIDs: 0
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.ControlIDontWant'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
@@ -1295,9 +1585,9 @@ export namespace RPC {
                 }
 
                 yield {
-                  field: `${prefix}.messageIDs[]`,
+                  field: `${prefix}messageIDs[]`,
                   index: obj.messageIDs,
-                  value: reader.bytes()
+                  value: r.bytes()
                 }
 
                 obj.messageIDs++
@@ -1305,9 +1595,17 @@ export namespace RPC {
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.ControlIDontWant'
             }
           }
         })
@@ -1317,12 +1615,12 @@ export namespace RPC {
     }
 
     export interface ControlIDontWantMessageIDsFieldEvent {
-      field: '$.messageIDs[]'
+      field: '.messageIDs[]'
       index: number
-      value: Uint8Array
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<ControlIDontWant>): Uint8Array {
+    export function encode (obj: ControlIDontWantInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, ControlIDontWant.codec())
     }
 
@@ -1335,11 +1633,11 @@ export namespace RPC {
     }
   }
 
-  let _codec: Codec<RPC>
+  let _codec: Codec<RPC, RPCInput>
 
-  export const codec = (): Codec<RPC> => {
+  export const codec = (): Codec<RPC, RPCInput> => {
     if (_codec == null) {
-      _codec = message<RPC>((obj, w, opts = {}) => {
+      _codec = message<RPC, RPCInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -1366,16 +1664,16 @@ export namespace RPC {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {
           subscriptions: [],
           messages: []
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -1383,7 +1681,7 @@ export namespace RPC {
                 throw new MaxLengthError('Decode error - repeated field "subscriptions" had too many elements')
               }
 
-              obj.subscriptions.push(RPC.SubOpts.codec().decode(reader, reader.uint32(), {
+              obj.subscriptions.push(RPC.SubOpts.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.subscriptions$
               }))
               break
@@ -1393,35 +1691,43 @@ export namespace RPC {
                 throw new MaxLengthError('Decode error - repeated field "messages" had too many elements')
               }
 
-              obj.messages.push(RPC.Message.codec().decode(reader, reader.uint32(), {
+              obj.messages.push(RPC.Message.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.messages$
               }))
               break
             }
             case 3: {
-              obj.control = RPC.ControlMessage.codec().decode(reader, reader.uint32(), {
+              obj.control = RPC.ControlMessage.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.control
               })
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (r, length, prefix, opts = {}) {
         const obj = {
           subscriptions: 0,
           messages: 0
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'RPC'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -1429,7 +1735,7 @@ export namespace RPC {
                 throw new MaxLengthError('Streaming decode error - repeated field "subscriptions" had too many elements')
               }
 
-              for (const evt of RPC.SubOpts.codec().stream(reader, reader.uint32(), `${prefix}.subscriptions[]`, {
+              for (const evt of RPC.SubOpts.codec().stream(r, r.uint32(), `${prefix}subscriptions[].`, {
                 limits: opts.limits?.subscriptions$
               })) {
                 yield {
@@ -1447,7 +1753,7 @@ export namespace RPC {
                 throw new MaxLengthError('Streaming decode error - repeated field "messages" had too many elements')
               }
 
-              for (const evt of RPC.Message.codec().stream(reader, reader.uint32(), `${prefix}.messages[]`, {
+              for (const evt of RPC.Message.codec().stream(r, r.uint32(), `${prefix}messages[].`, {
                 limits: opts.limits?.messages$
               })) {
                 yield {
@@ -1461,16 +1767,24 @@ export namespace RPC {
               break
             }
             case 3: {
-              yield * RPC.ControlMessage.codec().stream(reader, reader.uint32(), `${prefix}.control`, {
+              yield * RPC.ControlMessage.codec().stream(r, r.uint32(), `${prefix}control.`, {
                 limits: opts.limits?.control
               })
 
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'RPC'
           }
         }
       })
@@ -1480,108 +1794,230 @@ export namespace RPC {
   }
 
   export interface RPCSubscriptionsSubscribeFieldEvent {
-    field: '$.subscriptions[].subscribe'
+    field: '.subscriptions[].subscribe'
     value: boolean
     index: number
   }
 
   export interface RPCSubscriptionsTopicFieldEvent {
-    field: '$.subscriptions[].topic'
+    field: '.subscriptions[].topic'
     value: string
     index: number
   }
 
+  export interface RPCSubscriptionsMessageStartEvent {
+    field: '.subscriptions[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCSubscriptionsMessageEndEvent {
+    field: '.subscriptions[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface RPCMessagesFromFieldEvent {
-    field: '$.messages[].from'
-    value: Uint8Array
+    field: '.messages[].from'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesDataFieldEvent {
-    field: '$.messages[].data'
-    value: Uint8Array
+    field: '.messages[].data'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesSeqnoFieldEvent {
-    field: '$.messages[].seqno'
-    value: Uint8Array
+    field: '.messages[].seqno'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesTopicFieldEvent {
-    field: '$.messages[].topic'
+    field: '.messages[].topic'
     value: string
     index: number
   }
 
   export interface RPCMessagesSignatureFieldEvent {
-    field: '$.messages[].signature'
-    value: Uint8Array
+    field: '.messages[].signature'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesKeyFieldEvent {
-    field: '$.messages[].key'
-    value: Uint8Array
+    field: '.messages[].key'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
+  export interface RPCMessagesMessageStartEvent {
+    field: '.messages[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCMessagesMessageEndEvent {
+    field: '.messages[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
+  export interface RPCControlMessageStart {
+    field: '.control'
+    type: 'start'
+  }
+
+  export interface RPCControlMessageEnd {
+    field: '.control'
+    type: 'end'
+  }
+
   export interface RPCControlIhaveTopicIDFieldEvent {
-    field: '$.control.ihave[].topicID'
+    field: '.control.ihave[].topicID'
     value: string
     index: number
   }
 
   export interface RPCControlIhaveMessageIDsFieldEvent {
-    field: '$.control.ihave[].messageIDs[]'
+    field: '.control.ihave[].messageIDs[]'
     index: number
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
+  }
+
+  export interface RPCControlIhaveMessageStartEvent {
+    field: '.control.ihave[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCControlIhaveMessageEndEvent {
+    field: '.control.ihave[]'
+    index: number
+    type: 'end'
+    message: string
   }
 
   export interface RPCControlIwantMessageIDsFieldEvent {
-    field: '$.control.iwant[].messageIDs[]'
+    field: '.control.iwant[].messageIDs[]'
     index: number
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
+  }
+
+  export interface RPCControlIwantMessageStartEvent {
+    field: '.control.iwant[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCControlIwantMessageEndEvent {
+    field: '.control.iwant[]'
+    index: number
+    type: 'end'
+    message: string
   }
 
   export interface RPCControlGraftTopicIDFieldEvent {
-    field: '$.control.graft[].topicID'
+    field: '.control.graft[].topicID'
     value: string
     index: number
   }
 
+  export interface RPCControlGraftMessageStartEvent {
+    field: '.control.graft[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCControlGraftMessageEndEvent {
+    field: '.control.graft[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface RPCControlPruneTopicIDFieldEvent {
-    field: '$.control.prune[].topicID'
+    field: '.control.prune[].topicID'
     value: string
     index: number
   }
 
   export interface RPCControlPrunePeersPeerIDFieldEvent {
-    field: '$.control.prune[].peers[].peerID'
-    value: Uint8Array
+    field: '.control.prune[].peers[].peerID'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCControlPrunePeersSignedPeerRecordFieldEvent {
-    field: '$.control.prune[].peers[].signedPeerRecord'
-    value: Uint8Array
+    field: '.control.prune[].peers[].signedPeerRecord'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
+  export interface RPCControlPrunePeersMessageStartEvent {
+    field: '.control.prune[].peers[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCControlPrunePeersMessageEndEvent {
+    field: '.control.prune[].peers[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface RPCControlPruneBackoffFieldEvent {
-    field: '$.control.prune[].backoff'
+    field: '.control.prune[].backoff'
     value: number
     index: number
   }
 
-  export interface RPCControlIdontwantMessageIDsFieldEvent {
-    field: '$.control.idontwant[].messageIDs[]'
+  export interface RPCControlPruneMessageStartEvent {
+    field: '.control.prune[]'
     index: number
-    value: Uint8Array
+    type: 'start'
+    message: string
   }
 
-  export function encode (obj: Partial<RPC>): Uint8Array {
+  export interface RPCControlPruneMessageEndEvent {
+    field: '.control.prune[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
+  export interface RPCControlIdontwantMessageIDsFieldEvent {
+    field: '.control.idontwant[].messageIDs[]'
+    index: number
+    value: Uint8Array<ArrayBuffer>
+  }
+
+  export interface RPCControlIdontwantMessageStartEvent {
+    field: '.control.idontwant[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCControlIdontwantMessageEndEvent {
+    field: '.control.idontwant[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
+  export function encode (obj: RPCInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, RPC.codec())
   }
 
@@ -1589,7 +2025,7 @@ export namespace RPC {
     return decodeMessage(buf, RPC.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<RPC>): Generator<RPCSubscriptionsSubscribeFieldEvent | RPCSubscriptionsTopicFieldEvent | RPCMessagesFromFieldEvent | RPCMessagesDataFieldEvent | RPCMessagesSeqnoFieldEvent | RPCMessagesTopicFieldEvent | RPCMessagesSignatureFieldEvent | RPCMessagesKeyFieldEvent | RPCControlIhaveTopicIDFieldEvent | RPCControlIhaveMessageIDsFieldEvent | RPCControlIwantMessageIDsFieldEvent | RPCControlGraftTopicIDFieldEvent | RPCControlPruneTopicIDFieldEvent | RPCControlPrunePeersPeerIDFieldEvent | RPCControlPrunePeersSignedPeerRecordFieldEvent | RPCControlPruneBackoffFieldEvent | RPCControlIdontwantMessageIDsFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<RPC>): Generator<RPCSubscriptionsSubscribeFieldEvent | RPCSubscriptionsTopicFieldEvent | RPCSubscriptionsMessageStartEvent | RPCSubscriptionsMessageEndEvent | RPCMessagesFromFieldEvent | RPCMessagesDataFieldEvent | RPCMessagesSeqnoFieldEvent | RPCMessagesTopicFieldEvent | RPCMessagesSignatureFieldEvent | RPCMessagesKeyFieldEvent | RPCMessagesMessageStartEvent | RPCMessagesMessageEndEvent | RPCControlMessageStart | RPCControlMessageEnd | RPCControlIhaveTopicIDFieldEvent | RPCControlIhaveMessageIDsFieldEvent | RPCControlIhaveMessageStartEvent | RPCControlIhaveMessageEndEvent | RPCControlIwantMessageIDsFieldEvent | RPCControlIwantMessageStartEvent | RPCControlIwantMessageEndEvent | RPCControlGraftTopicIDFieldEvent | RPCControlGraftMessageStartEvent | RPCControlGraftMessageEndEvent | RPCControlPruneTopicIDFieldEvent | RPCControlPrunePeersPeerIDFieldEvent | RPCControlPrunePeersSignedPeerRecordFieldEvent | RPCControlPrunePeersMessageStartEvent | RPCControlPrunePeersMessageEndEvent | RPCControlPruneBackoffFieldEvent | RPCControlPruneMessageStartEvent | RPCControlPruneMessageEndEvent | RPCControlIdontwantMessageIDsFieldEvent | RPCControlIdontwantMessageStartEvent | RPCControlIdontwantMessageEndEvent> {
     return streamMessage(buf, RPC.codec(), opts)
   }
 }

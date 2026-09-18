@@ -21,7 +21,7 @@ export async function generateECDSAKey (curve: Curve = 'P-256'): Promise<JWKKeyP
   }
 }
 
-export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Promise<Uint8Array> {
+export async function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
   const privateKey = await crypto.subtle.importKey('jwk', key, {
     name: 'ECDSA',
     namedCurve: key.crv ?? 'P-256'

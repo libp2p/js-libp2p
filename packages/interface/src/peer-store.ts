@@ -52,7 +52,7 @@ export interface Peer {
   /**
    * Peer's metadata map
    */
-  metadata: Map<string, Uint8Array>
+  metadata: Map<string, Uint8Array<ArrayBuffer>>
 
   /**
    * Tags a peer has
@@ -62,7 +62,7 @@ export interface Peer {
   /**
    * The last peer record envelope received
    */
-  peerRecordEnvelope?: Uint8Array
+  peerRecordEnvelope?: Uint8Array<ArrayBuffer>
 }
 
 /**
@@ -96,7 +96,7 @@ export interface PeerData {
   /**
    * Peer's metadata map. When merging pass undefined as values to remove metadata.
    */
-  metadata?: Map<string, Uint8Array | undefined> | Record<string, Uint8Array | undefined>
+  metadata?: Map<string, Uint8Array<ArrayBuffer> | undefined> | Record<string, Uint8Array<ArrayBuffer> | undefined>
 
   /**
    * Peer tags. When merging pass undefined as values to remove tags.
@@ -113,7 +113,7 @@ export interface PeerData {
   /**
    * The last peer record envelope received
    */
-  peerRecordEnvelope?: Uint8Array
+  peerRecordEnvelope?: Uint8Array<ArrayBuffer>
 }
 
 export interface TagOptions {

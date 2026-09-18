@@ -122,8 +122,22 @@ describe('rpc - handlers - GetProviders', () => {
 
     expect(response.key).to.be.eql(v.cid.bytes)
     expect(response.providers).to.have.lengthOf(1)
-    expect(peerIdFromMultihash(Digest.decode(response.providers[0].id)).toString()).to.equal(provider[0].id.toString())
+
+    const returnedProvider = response.providers?.[0]
+
+    if (returnedProvider?.id == null) {
+      throw new Error('Provider peer expected')
+    }
+
+    expect(peerIdFromMultihash(Digest.decode(returnedProvider.id)).toString()).to.equal(provider[0].id.toString())
     expect(response.closer).to.have.lengthOf(1)
-    expect(peerIdFromMultihash(Digest.decode(response.closer[0].id)).toString()).to.equal(closer[0].id.toString())
+
+    const returnedCloser = response.closer?.[0]
+
+    if (returnedCloser?.id == null) {
+      throw new Error('Closer peer expected')
+    }
+
+    expect(peerIdFromMultihash(Digest.decode(returnedCloser.id)).toString()).to.equal(closer[0].id.toString())
   })
 })
