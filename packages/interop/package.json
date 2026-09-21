@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "aegir": "^48.1.1",
-    "protons": "^9.0.1"
+    "protons": "^10.0.4"
   },
   "peerDependencies": {
     "aegir": "^48.1.1"

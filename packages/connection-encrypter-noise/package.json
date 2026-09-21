@@ -109,7 +109,7 @@
     "mkdirp": "^3.0.1",
     "multiformats": "^14.0.0",
     "p-defer": "^4.0.1",
-    "protons": "^9.0.1",
+    "protons": "^10.0.4",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },

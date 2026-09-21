@@ -99,7 +99,7 @@
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
     "p-retry": "^8.0.0",
-    "protons": "^9.0.1",
+    "protons": "^10.0.4",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "which": "^7.0.0"
