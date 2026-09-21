@@ -95,7 +95,7 @@
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "multiformats": "^14.0.0",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "^8.0.1",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
