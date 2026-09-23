@@ -3,6 +3,7 @@ import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { Envelope as Protobuf } from './envelope.ts'
 import { InvalidSignatureError } from './errors.ts'
 import type { Record, Envelope, PrivateKey, PublicKey, AbortOptions } from '@libp2p/interface'
@@ -69,10 +70,10 @@ export class RecordEnvelope implements Envelope {
   }
 
   public publicKey: PublicKey
-  public payloadType: Uint8Array
-  public payload: Uint8Array
-  public signature: Uint8Array
-  public marshaled?: Uint8Array
+  public payloadType: Uint8Array<ArrayBuffer>
+  public payload: Uint8Array<ArrayBuffer>
+  public signature: Uint8Array<ArrayBuffer>
+  public marshaled?: Uint8Array<ArrayBuffer>
 
   /**
    * The Envelope is responsible for keeping an arbitrary signed record
@@ -82,15 +83,15 @@ export class RecordEnvelope implements Envelope {
     const { publicKey, payloadType, payload, signature } = init
 
     this.publicKey = publicKey
-    this.payloadType = payloadType
-    this.payload = payload
-    this.signature = signature
+    this.payloadType = withArrayBuffer(payloadType)
+    this.payload = withArrayBuffer(payload)
+    this.signature = withArrayBuffer(signature)
   }
 
   /**
    * Marshal the envelope content
    */
-  marshal (): Uint8Array {
+  marshal (): Uint8Array<ArrayBuffer> {
     if (this.marshaled == null) {
       this.marshaled = Protobuf.encode({
         publicKey: publicKeyToProtobuf(this.publicKey),

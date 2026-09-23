@@ -4,16 +4,21 @@ import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface NoiseExtensions {
-  webtransportCerthashes: Uint8Array[]
+  webtransportCerthashes: Uint8Array<ArrayBuffer>[]
   streamMuxers: string[]
 }
 
-export namespace NoiseExtensions {
-  let _codec: Codec<NoiseExtensions>
+export interface NoiseExtensionsInput {
+  webtransportCerthashes?: Uint8Array[]
+  streamMuxers?: string[]
+}
 
-  export const codec = (): Codec<NoiseExtensions> => {
+export namespace NoiseExtensions {
+  let _codec: Codec<NoiseExtensions, NoiseExtensionsInput>
+
+  export const codec = (): Codec<NoiseExtensions, NoiseExtensionsInput> => {
     if (_codec == null) {
-      _codec = message<NoiseExtensions>((obj, w, opts = {}) => {
+      _codec = message<NoiseExtensions, NoiseExtensionsInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -35,16 +40,16 @@ export namespace NoiseExtensions {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {
           webtransportCerthashes: [],
           streamMuxers: []
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -52,7 +57,7 @@ export namespace NoiseExtensions {
                 throw new MaxLengthError('Decode error - repeated field "webtransportCerthashes" had too many elements')
               }
 
-              obj.webtransportCerthashes.push(reader.bytes())
+              obj.webtransportCerthashes.push(r.bytes())
               break
             }
             case 2: {
@@ -60,27 +65,35 @@ export namespace NoiseExtensions {
                 throw new MaxLengthError('Decode error - repeated field "streamMuxers" had too many elements')
               }
 
-              obj.streamMuxers.push(reader.string())
+              obj.streamMuxers.push(r.string())
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (r, length, prefix, opts = {}) {
         const obj = {
           webtransportCerthashes: 0,
           streamMuxers: 0
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'NoiseExtensions'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -89,9 +102,9 @@ export namespace NoiseExtensions {
               }
 
               yield {
-                field: `${prefix}.webtransportCerthashes[]`,
+                field: `${prefix}webtransportCerthashes[]`,
                 index: obj.webtransportCerthashes,
-                value: reader.bytes()
+                value: r.bytes()
               }
 
               obj.webtransportCerthashes++
@@ -104,9 +117,9 @@ export namespace NoiseExtensions {
               }
 
               yield {
-                field: `${prefix}.streamMuxers[]`,
+                field: `${prefix}streamMuxers[]`,
                 index: obj.streamMuxers,
-                value: reader.string()
+                value: r.string()
               }
 
               obj.streamMuxers++
@@ -114,9 +127,17 @@ export namespace NoiseExtensions {
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'NoiseExtensions'
           }
         }
       })
@@ -126,18 +147,18 @@ export namespace NoiseExtensions {
   }
 
   export interface NoiseExtensionsWebtransportCerthashesFieldEvent {
-    field: '$.webtransportCerthashes[]'
+    field: '.webtransportCerthashes[]'
     index: number
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface NoiseExtensionsStreamMuxersFieldEvent {
-    field: '$.streamMuxers[]'
+    field: '.streamMuxers[]'
     index: number
     value: string
   }
 
-  export function encode (obj: Partial<NoiseExtensions>): Uint8Array<ArrayBuffer> {
+  export function encode (obj: NoiseExtensionsInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, NoiseExtensions.codec())
   }
 
@@ -151,17 +172,23 @@ export namespace NoiseExtensions {
 }
 
 export interface NoiseHandshakePayload {
-  identityKey: Uint8Array
-  identitySig: Uint8Array
+  identityKey: Uint8Array<ArrayBuffer>
+  identitySig: Uint8Array<ArrayBuffer>
   extensions?: NoiseExtensions
 }
 
-export namespace NoiseHandshakePayload {
-  let _codec: Codec<NoiseHandshakePayload>
+export interface NoiseHandshakePayloadInput {
+  identityKey?: Uint8Array
+  identitySig?: Uint8Array
+  extensions?: NoiseExtensionsInput
+}
 
-  export const codec = (): Codec<NoiseHandshakePayload> => {
+export namespace NoiseHandshakePayload {
+  let _codec: Codec<NoiseHandshakePayload, NoiseHandshakePayloadInput>
+
+  export const codec = (): Codec<NoiseHandshakePayload, NoiseHandshakePayloadInput> => {
     if (_codec == null) {
-      _codec = message<NoiseHandshakePayload>((obj, w, opts = {}) => {
+      _codec = message<NoiseHandshakePayload, NoiseHandshakePayloadInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -184,72 +211,88 @@ export namespace NoiseHandshakePayload {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {
           identityKey: uint8ArrayAlloc(0),
           identitySig: uint8ArrayAlloc(0)
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.identityKey = reader.bytes()
+              obj.identityKey = r.bytes()
               break
             }
             case 2: {
-              obj.identitySig = reader.bytes()
+              obj.identitySig = r.bytes()
               break
             }
             case 4: {
-              obj.extensions = NoiseExtensions.codec().decode(reader, reader.uint32(), {
+              obj.extensions = NoiseExtensions.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.extensions
               })
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix, opts = {}) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'NoiseHandshakePayload'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.identityKey`,
-                value: reader.bytes()
+                field: `${prefix}identityKey`,
+                value: r.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.identitySig`,
-                value: reader.bytes()
+                field: `${prefix}identitySig`,
+                value: r.bytes()
               }
               break
             }
             case 4: {
-              yield * NoiseExtensions.codec().stream(reader, reader.uint32(), `${prefix}.extensions`, {
+              yield * NoiseExtensions.codec().stream(r, r.uint32(), `${prefix}extensions.`, {
                 limits: opts.limits?.extensions
               })
 
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'NoiseHandshakePayload'
           }
         }
       })
@@ -259,28 +302,38 @@ export namespace NoiseHandshakePayload {
   }
 
   export interface NoiseHandshakePayloadIdentityKeyFieldEvent {
-    field: '$.identityKey'
-    value: Uint8Array
+    field: '.identityKey'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface NoiseHandshakePayloadIdentitySigFieldEvent {
-    field: '$.identitySig'
-    value: Uint8Array
+    field: '.identitySig'
+    value: Uint8Array<ArrayBuffer>
+  }
+
+  export interface NoiseHandshakePayloadExtensionsMessageStart {
+    field: '.extensions'
+    type: 'start'
+  }
+
+  export interface NoiseHandshakePayloadExtensionsMessageEnd {
+    field: '.extensions'
+    type: 'end'
   }
 
   export interface NoiseHandshakePayloadExtensionsWebtransportCerthashesFieldEvent {
-    field: '$.extensions.webtransportCerthashes[]'
+    field: '.extensions.webtransportCerthashes[]'
     index: number
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface NoiseHandshakePayloadExtensionsStreamMuxersFieldEvent {
-    field: '$.extensions.streamMuxers[]'
+    field: '.extensions.streamMuxers[]'
     index: number
     value: string
   }
 
-  export function encode (obj: Partial<NoiseHandshakePayload>): Uint8Array<ArrayBuffer> {
+  export function encode (obj: NoiseHandshakePayloadInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, NoiseHandshakePayload.codec())
   }
 
@@ -288,7 +341,7 @@ export namespace NoiseHandshakePayload {
     return decodeMessage(buf, NoiseHandshakePayload.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseHandshakePayload>): Generator<NoiseHandshakePayloadIdentityKeyFieldEvent | NoiseHandshakePayloadIdentitySigFieldEvent | NoiseHandshakePayloadExtensionsWebtransportCerthashesFieldEvent | NoiseHandshakePayloadExtensionsStreamMuxersFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<NoiseHandshakePayload>): Generator<NoiseHandshakePayloadIdentityKeyFieldEvent | NoiseHandshakePayloadIdentitySigFieldEvent | NoiseHandshakePayloadExtensionsMessageStart | NoiseHandshakePayloadExtensionsMessageEnd | NoiseHandshakePayloadExtensionsWebtransportCerthashesFieldEvent | NoiseHandshakePayloadExtensionsStreamMuxersFieldEvent> {
     return streamMessage(buf, NoiseHandshakePayload.codec(), opts)
   }
 }

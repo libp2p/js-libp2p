@@ -7,7 +7,7 @@ import type { PublicKey } from '@libp2p/interface'
 /**
  * Generate a message id, based on the `key` and `seqno`
  */
-export const msgId = (key: PublicKey, seqno: bigint): Uint8Array => {
+export const msgId = (key: PublicKey, seqno: bigint): Uint8Array<ArrayBuffer> => {
   const seqnoBytes = uint8ArrayFromString(seqno.toString(16).padStart(16, '0'), 'base16')
   const keyBytes = publicKeyToProtobuf(key)
 
@@ -21,7 +21,7 @@ export const msgId = (key: PublicKey, seqno: bigint): Uint8Array => {
 /**
  * Generate a message id, based on the `key` and `seqno`
  */
-export function msgIdFnStrictSign (msg: Message): Uint8Array {
+export function msgIdFnStrictSign (msg: Message): Uint8Array<ArrayBuffer> {
   if (msg.type !== 'signed') {
     throw new Error('expected signed message type')
   }
@@ -35,6 +35,6 @@ export function msgIdFnStrictSign (msg: Message): Uint8Array {
 /**
  * Generate a message id, based on message `data`
  */
-export async function msgIdFnStrictNoSign (msg: Message): Promise<Uint8Array> {
+export async function msgIdFnStrictNoSign (msg: Message): Promise<Uint8Array<ArrayBuffer>> {
   return sha256.encode(msg.data)
 }

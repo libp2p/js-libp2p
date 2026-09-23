@@ -4,15 +4,19 @@ import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface FetchRequest {
-  identifier: Uint8Array
+  identifier: Uint8Array<ArrayBuffer>
+}
+
+export interface FetchRequestInput {
+  identifier?: Uint8Array
 }
 
 export namespace FetchRequest {
-  let _codec: Codec<FetchRequest>
+  let _codec: Codec<FetchRequest, FetchRequestInput>
 
-  export const codec = (): Codec<FetchRequest> => {
+  export const codec = (): Codec<FetchRequest, FetchRequestInput> => {
     if (_codec == null) {
-      _codec = message<FetchRequest>((obj, w, opts = {}) => {
+      _codec = message<FetchRequest, FetchRequestInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -25,47 +29,63 @@ export namespace FetchRequest {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           identifier: uint8ArrayAlloc(0)
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.identifier = reader.bytes()
+              obj.identifier = r.bytes()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'FetchRequest'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.identifier`,
-                value: reader.bytes()
+                field: `${prefix}identifier`,
+                value: r.bytes()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'FetchRequest'
           }
         }
       })
@@ -75,11 +95,11 @@ export namespace FetchRequest {
   }
 
   export interface FetchRequestIdentifierFieldEvent {
-    field: '$.identifier'
-    value: Uint8Array
+    field: '.identifier'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<FetchRequest>): Uint8Array {
+  export function encode (obj: FetchRequestInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, FetchRequest.codec())
   }
 
@@ -94,7 +114,12 @@ export namespace FetchRequest {
 
 export interface FetchResponse {
   status: FetchResponse.StatusCode
-  data: Uint8Array
+  data: Uint8Array<ArrayBuffer>
+}
+
+export interface FetchResponseInput {
+  status?: FetchResponse.StatusCode
+  data?: Uint8Array
 }
 
 export namespace FetchResponse {
@@ -111,16 +136,16 @@ export namespace FetchResponse {
   }
 
   export namespace StatusCode {
-    export const codec = (): Codec<StatusCode> => {
+    export const codec = (): Codec<StatusCode, StatusCode> => {
       return enumeration<StatusCode>(__StatusCodeValues)
     }
   }
 
-  let _codec: Codec<FetchResponse>
+  let _codec: Codec<FetchResponse, FetchResponseInput>
 
-  export const codec = (): Codec<FetchResponse> => {
+  export const codec = (): Codec<FetchResponse, FetchResponseInput> => {
     if (_codec == null) {
-      _codec = message<FetchResponse>((obj, w, opts = {}) => {
+      _codec = message<FetchResponse, FetchResponseInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -138,59 +163,75 @@ export namespace FetchResponse {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           status: StatusCode.OK,
           data: uint8ArrayAlloc(0)
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.status = FetchResponse.StatusCode.codec().decode(reader)
+              obj.status = FetchResponse.StatusCode.codec().decode(r)
               break
             }
             case 2: {
-              obj.data = reader.bytes()
+              obj.data = r.bytes()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'FetchResponse'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.status`,
-                value: FetchResponse.StatusCode.codec().decode(reader)
+                field: `${prefix}status`,
+                value: FetchResponse.StatusCode.codec().decode(r)
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.data`,
-                value: reader.bytes()
+                field: `${prefix}data`,
+                value: r.bytes()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'FetchResponse'
           }
         }
       })
@@ -200,16 +241,16 @@ export namespace FetchResponse {
   }
 
   export interface FetchResponseStatusFieldEvent {
-    field: '$.status'
+    field: '.status'
     value: FetchResponse.StatusCode
   }
 
   export interface FetchResponseDataFieldEvent {
-    field: '$.data'
-    value: Uint8Array
+    field: '.data'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<FetchResponse>): Uint8Array {
+  export function encode (obj: FetchResponseInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, FetchResponse.codec())
   }
 

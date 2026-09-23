@@ -33,7 +33,7 @@ export async function generateRSAKey (bits: number, options?: AbortOptions): Pro
 
 export { randomBytes as getRandomValues }
 
-export function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array {
+export function hashAndSign (key: JsonWebKey, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> {
   options?.signal?.throwIfAborted()
 
   const hash = crypto.createSign('RSA-SHA256')

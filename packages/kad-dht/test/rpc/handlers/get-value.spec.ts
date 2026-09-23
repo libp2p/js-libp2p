@@ -13,7 +13,7 @@ import { PeerRouting } from '../../../src/peer-routing/index.ts'
 import { GetValueHandler } from '../../../src/rpc/handlers/get-value.ts'
 import * as utils from '../../../src/utils.ts'
 import { createPeerIdWithPrivateKey } from '../../utils/create-peer-id.ts'
-import type { Message } from '../../../src/message/dht.ts'
+import type { Message, MessageInput } from '../../../src/message/dht.ts'
 import type { GetValueHandlerComponents } from '../../../src/rpc/handlers/get-value.ts'
 import type { PeerAndKey } from '../../utils/create-peer-id.ts'
 import type { Libp2pEvents, PeerStore } from '@libp2p/interface'
@@ -135,11 +135,9 @@ describe('rpc - handlers - GetValue', () => {
   describe('public key', () => {
     it('peer in peer store', async () => {
       const key = utils.keyForPublicKey(targetPeer.peerId)
-      const msg: Message = {
+      const msg: MessageInput = {
         type: T,
-        key,
-        closer: [],
-        providers: []
+        key
       }
 
       if (targetPeer.peerId.publicKey == null) {
@@ -167,11 +165,9 @@ describe('rpc - handlers - GetValue', () => {
 
     it('peer not in peer store', async () => {
       const key = utils.keyForPublicKey(targetPeer.peerId)
-      const msg: Message = {
+      const msg: MessageInput = {
         type: T,
-        key,
-        closer: [],
-        providers: []
+        key
       }
 
       peerRouting.getClosestPeersOffline.resolves([])

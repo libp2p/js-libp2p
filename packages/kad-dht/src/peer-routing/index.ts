@@ -15,7 +15,7 @@ import {
 import { verifyRecord } from '../record/validators.ts'
 import { convertBuffer, keyForPublicKey } from '../utils.ts'
 import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.ts'
-import type { Message } from '../message/dht.ts'
+import type { MessageInput } from '../message/dht.ts'
 import type { Network, SendMessageOptions } from '../network.ts'
 import type { QueryManager, QueryOptions } from '../query/manager.ts'
 import type { QueryFunc } from '../query/types.ts'
@@ -109,7 +109,7 @@ export class PeerRouting {
    * Get a value via rpc call for the given parameters
    */
   async * _getValueSingle (peer: PeerId, key: Uint8Array, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
-    const msg: Partial<Message> = {
+    const msg: MessageInput = {
       type: MessageType.GET_VALUE,
       key
     }
@@ -192,7 +192,7 @@ export class PeerRouting {
       const self = this
 
       const findPeerQuery: QueryFunc = async function * ({ peer, signal, path }) {
-        const request: Partial<Message> = {
+        const request: MessageInput = {
           type: MessageType.FIND_NODE,
           key: id.toMultihash().bytes
         }
@@ -245,7 +245,7 @@ export class PeerRouting {
 
     const getCloserPeersQuery: QueryFunc = async function * ({ peer, path, peerKadId, signal }) {
       self.log('getClosestPeers asking %p', peer.id)
-      const request: Partial<Message> = {
+      const request: MessageInput = {
         type: MessageType.FIND_NODE,
         key
       }

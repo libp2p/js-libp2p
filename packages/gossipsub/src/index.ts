@@ -96,16 +96,16 @@ export interface SignedMessage {
   type: 'signed'
   from: PeerId
   topic: string
-  data: Uint8Array
+  data: Uint8Array<ArrayBuffer>
   sequenceNumber: bigint
-  signature: Uint8Array
+  signature: Uint8Array<ArrayBuffer>
   key: PublicKey
 }
 
 export interface UnsignedMessage {
   type: 'unsigned'
   topic: string
-  data: Uint8Array
+  data: Uint8Array<ArrayBuffer>
 }
 
 export type Message = SignedMessage | UnsignedMessage

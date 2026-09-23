@@ -11,6 +11,7 @@ import {
   dialPeerEvent
 } from './query/events.ts'
 import type { DisjointPath, KadDHTComponents, QueryEvent } from './index.ts'
+import type { MessageInput } from './message/dht.ts'
 import type { AbortOptions, Logger, Stream, PeerId, PeerInfo, Startable, RoutingOptions, CounterGroup } from '@libp2p/interface'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 
@@ -152,7 +153,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   /**
    * Send a request and read a response
    */
-  async * sendRequest (to: PeerId, msg: Partial<Message>, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
+  async * sendRequest (to: PeerId, msg: MessageInput, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
     if (!this.running) {
       return
     }
@@ -270,7 +271,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   /**
    * Write a message to the given stream
    */
-  async _writeMessage (stream: Stream, msg: Partial<Message>, options: AbortOptions): Promise<void> {
+  async _writeMessage (stream: Stream, msg: MessageInput, options: AbortOptions): Promise<void> {
     const pb = pbStream(stream)
     await pb.write(msg, Message, options)
   }
@@ -278,7 +279,7 @@ export class Network extends TypedEventEmitter<NetworkEvents> implements Startab
   /**
    * Write a message and read a response
    */
-  async _writeReadMessage (stream: Stream, msg: Partial<Message>, options: AbortOptions): Promise<Message> {
+  async _writeReadMessage (stream: Stream, msg: MessageInput, options: AbortOptions): Promise<Message> {
     const pb = pbStream(stream)
 
     await pb.write(msg, Message, options)

@@ -11,7 +11,7 @@ function randomSeqno (): bigint {
   return BigInt(`0x${uint8ArrayToString(crypto.getRandomValues(new Uint8Array(8)), 'base16')}`)
 }
 
-const toMessageId = (msgId: Uint8Array): MessageId => {
+const toMessageId = (msgId: Uint8Array<ArrayBuffer>): MessageId => {
   return {
     msgId,
     msgIdStr: messageIdToString(msgId)

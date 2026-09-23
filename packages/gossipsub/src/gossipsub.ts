@@ -1379,7 +1379,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
 
     // string msgId => msgId
-    const iwant = new Map<MsgIdStr, Uint8Array>()
+    const iwant = new Map<MsgIdStr, Uint8Array<ArrayBuffer>>()
 
     // Cap the message ids we examine per call at GossipsubMaxIHaveLength
     let processed = 0
@@ -2394,7 +2394,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.sendRpc(id, out)
   }
 
-  private sendIDontWants (msgId: Uint8Array, topic: string, source: PeerIdStr): void {
+  private sendIDontWants (msgId: Uint8Array<ArrayBuffer>, topic: string, source: PeerIdStr): void {
     const ids = this.mesh.get(topic)
     if (ids == null) {
       return
@@ -2556,7 +2556,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * @param candidateToGossip - peers to gossip
    * @param messageIDs - message ids to gossip
    */
-  private doEmitGossip (topic: string, candidateToGossip: Set<PeerIdStr>, messageIDs: Uint8Array[]): void {
+  private doEmitGossip (topic: string, candidateToGossip: Set<PeerIdStr>, messageIDs: Uint8Array<ArrayBuffer>[]): void {
     if (messageIDs.length === 0) {
       return
     }

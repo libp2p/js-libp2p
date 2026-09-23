@@ -236,7 +236,7 @@ export interface RSAPrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>>
 }
 
 export interface Ed25519PrivateKey {
@@ -264,7 +264,7 @@ export interface Ed25519PrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>>
 }
 
 export interface Secp256k1PrivateKey {
@@ -292,7 +292,7 @@ export interface Secp256k1PrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>>
 }
 
 export interface ECDSAPrivateKey {
@@ -325,7 +325,7 @@ export interface ECDSAPrivateKey {
    * Sign the passed data with this private key and return the signature for
    * later verification
    */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
+  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>>
 }
 
 export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey | ECDSAPrivateKey

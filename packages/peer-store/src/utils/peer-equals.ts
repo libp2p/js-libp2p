@@ -16,6 +16,10 @@ function addressesEqual (addressesA: Address[], addressesB: Address[]): boolean 
       return false
     }
 
+    if (a.multiaddr == null || b.multiaddr == null) {
+      return false
+    }
+
     if (!uint8ArrayEquals(a.multiaddr, b.multiaddr)) {
       return false
     }

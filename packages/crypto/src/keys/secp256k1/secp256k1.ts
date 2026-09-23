@@ -62,7 +62,7 @@ export class Secp256k1PrivateKey implements Secp256k1PrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array> {
+  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>> {
     return hashAndSign(this.raw, message, options)
   }
 }

@@ -6,6 +6,7 @@ import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { PROTOCOL_NAME, PROTOCOL_VERSION } from './constants.ts'
 import { FetchRequest, FetchResponse } from './pb/proto.ts'
 import type { Fetch as FetchInterface, FetchComponents, FetchInit, LookupFunction } from './index.ts'
+import type { FetchResponseInput } from './pb/proto.ts'
 import type { Stream, Startable, DialProtocolOptions, DialTarget } from '@libp2p/interface'
 
 const DEFAULT_TIMEOUT = 10_000
@@ -129,7 +130,7 @@ export class Fetch implements Startable, FetchInterface {
       signal
     })
 
-    let response: FetchResponse
+    let response: FetchResponseInput
     const key = uint8arrayToString(request.identifier)
 
     const lookup = this._getLookupFunction(key)

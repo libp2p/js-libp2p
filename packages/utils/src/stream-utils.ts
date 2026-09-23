@@ -435,7 +435,7 @@ export interface ProtobufStream<S extends MessageStream = MessageStream> {
   /**
    * Returns an object with read/write methods for operating on one specific type of protobuf message
    */
-  pb<T>(proto: { encode: ProtobufEncoder<T>, decode: ProtobufDecoder<T> }): ProtobufMessageStream<T, S>
+  pb<D, E>(proto: { encode: ProtobufEncoder<E>, decode: ProtobufDecoder<D> }): ProtobufMessageStream<D, E, S>
 
   /**
    * Returns the underlying stream
@@ -446,21 +446,21 @@ export interface ProtobufStream<S extends MessageStream = MessageStream> {
 /**
  * A message reader/writer that only uses one type of message
  */
-export interface ProtobufMessageStream <T, S extends MessageStream = MessageStream> {
+export interface ProtobufMessageStream <D, E, S extends MessageStream = MessageStream> {
   /**
    * Read a message from the stream
    */
-  read(options?: AbortOptions & DecodeOptions<T>): Promise<T>
+  read(options?: AbortOptions & DecodeOptions<D>): Promise<D>
 
   /**
    * Write a message to the stream
    */
-  write(d: T, options?: AbortOptions): Promise<void>
+  write(d: E, options?: AbortOptions): Promise<void>
 
   /**
    * Write several messages to the stream
    */
-  writeV(d: T[], options?: AbortOptions): Promise<void>
+  writeV(d: E[], options?: AbortOptions): Promise<void>
 
   /**
    * Unwrap the underlying protobuf stream

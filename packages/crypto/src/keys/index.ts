@@ -151,7 +151,7 @@ export function publicKeyFromMultihash (digest: MultihashDigest<0x0>): Ed25519Pu
 /**
  * Converts a public key object into a protobuf serialized public key
  */
-export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
+export function publicKeyToProtobuf (key: PublicKey): Uint8Array<ArrayBuffer> {
   return pb.PublicKey.encode({
     Type: pb.KeyType[key.type],
     Data: key.raw
@@ -208,7 +208,7 @@ export function privateKeyFromRaw (buf: Uint8Array): PrivateKey {
 /**
  * Converts a private key object into a protobuf serialized private key
  */
-export function privateKeyToProtobuf (key: PrivateKey): Uint8Array {
+export function privateKeyToProtobuf (key: PrivateKey): Uint8Array<ArrayBuffer> {
   return pb.PrivateKey.encode({
     Type: pb.KeyType[key.type],
     Data: key.raw
