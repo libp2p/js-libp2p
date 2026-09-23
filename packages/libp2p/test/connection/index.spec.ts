@@ -251,6 +251,171 @@ describe('connection', () => {
     expect(muxer.streams[2]).to.have.property('status', 'aborted')
   })
 
+  describe('inboundStreamRateLimit', () => {
+    it('should abort inbound streams that exceed the rate limit within the window', async () => {
+      const protocol = '/test/rate-limit'
+      const rateLimit = { count: 2, interval: 10_000 }
+
+      registrar.getHandler.withArgs(protocol).returns({
+        handler: Sinon.stub(),
+        options: { inboundStreamRateLimit: rateLimit }
+      })
+      registrar.getProtocols.returns([protocol])
+      registrar.getMiddleware.withArgs(protocol).returns([])
+
+      const connection = createConnection(components, init)
+
+      // Open count streams — all should be allowed
+      for (let i = 0; i < rateLimit.count; i++) {
+        const [outboundStream, inboundStream] = await streamPair()
+        outboundStream.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+        outboundStream.send(encode.single(uint8ArrayFromString(`${protocol}\n`)))
+        muxer.streams.push(inboundStream)
+        muxer.safeDispatchEvent('stream', { detail: inboundStream })
+        await delay(50)
+      }
+
+      // Open one more stream — should be rate-limited and aborted
+      const [outboundStream, inboundStream] = await streamPair()
+      outboundStream.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+      outboundStream.send(encode.single(uint8ArrayFromString(`${protocol}\n`)))
+      muxer.streams.push(inboundStream)
+      muxer.safeDispatchEvent('stream', { detail: inboundStream })
+
+      await delay(100)
+
+      const streams = muxer.streams
+      expect(streams).to.have.lengthOf(rateLimit.count + 1)
+
+      // First `count` streams are open, the last is aborted
+      for (let i = 0; i < rateLimit.count; i++) {
+        expect(streams[i]).to.have.property('status', 'open')
+      }
+      expect(streams[rateLimit.count]).to.have.property('status', 'aborted')
+    })
+
+    it('should reset the rate limit counter after the interval expires', async () => {
+      const protocol = '/test/rate-limit-reset'
+      const rateLimit = { count: 2, interval: 200 } // short window for testing
+
+      registrar.getHandler.withArgs(protocol).returns({
+        handler: Sinon.stub(),
+        options: { inboundStreamRateLimit: rateLimit }
+      })
+      registrar.getProtocols.returns([protocol])
+      registrar.getMiddleware.withArgs(protocol).returns([])
+
+      const connection = createConnection(components, init)
+
+      // Fill up the first window
+      for (let i = 0; i < rateLimit.count; i++) {
+        const [outboundStream, inboundStream] = await streamPair()
+        outboundStream.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+        outboundStream.send(encode.single(uint8ArrayFromString(`${protocol}\n`)))
+        muxer.streams.push(inboundStream)
+        muxer.safeDispatchEvent('stream', { detail: inboundStream })
+        await delay(50)
+      }
+
+      // Wait for the window to expire
+      await delay(rateLimit.interval + 50)
+
+      // Open a new stream after the reset — should be allowed
+      const [outboundStream, inboundStream] = await streamPair()
+      outboundStream.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+      outboundStream.send(encode.single(uint8ArrayFromString(`${protocol}\n`)))
+      muxer.streams.push(inboundStream)
+      muxer.safeDispatchEvent('stream', { detail: inboundStream })
+
+      await delay(100)
+
+      // All streams should be open — the counter was reset
+      const streams = muxer.streams
+      expect(streams).to.have.lengthOf(rateLimit.count + 1)
+      for (const stream of streams) {
+        expect(stream).to.have.property('status', 'open')
+      }
+    })
+
+    it('should apply rate limits per protocol independently', async () => {
+      const protocolA = '/test/rate-limit-a'
+      const protocolB = '/test/rate-limit-b'
+      const rateLimit = { count: 1, interval: 10_000 }
+
+      for (const protocol of [protocolA, protocolB]) {
+        registrar.getHandler.withArgs(protocol).returns({
+          handler: Sinon.stub(),
+          options: { inboundStreamRateLimit: rateLimit }
+        })
+        registrar.getMiddleware.withArgs(protocol).returns([])
+      }
+      registrar.getProtocols.returns([protocolA, protocolB])
+
+      createConnection(components, init)
+
+      // Open 1 stream on protocol A (hits its limit)
+      const [outA1, inA1] = await streamPair()
+      outA1.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+      outA1.send(encode.single(uint8ArrayFromString(`${protocolA}\n`)))
+      muxer.streams.push(inA1)
+      muxer.safeDispatchEvent('stream', { detail: inA1 })
+      await delay(50)
+
+      // Open 1 stream on protocol B — independent limit, should be allowed
+      const [outB1, inB1] = await streamPair()
+      outB1.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+      outB1.send(encode.single(uint8ArrayFromString(`${protocolB}\n`)))
+      muxer.streams.push(inB1)
+      muxer.safeDispatchEvent('stream', { detail: inB1 })
+      await delay(50)
+
+      // Second stream on protocol A — should be rate-limited
+      const [outA2, inA2] = await streamPair()
+      outA2.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+      outA2.send(encode.single(uint8ArrayFromString(`${protocolA}\n`)))
+      muxer.streams.push(inA2)
+      muxer.safeDispatchEvent('stream', { detail: inA2 })
+
+      await delay(100)
+
+      expect(muxer.streams).to.have.lengthOf(3)
+      expect(muxer.streams[0]).to.have.property('status', 'open')  // protocolA stream 1
+      expect(muxer.streams[1]).to.have.property('status', 'open')  // protocolB stream 1
+      expect(muxer.streams[2]).to.have.property('status', 'aborted') // protocolA stream 2 (rate-limited)
+    })
+
+    it('should not rate limit protocols that have no inboundStreamRateLimit configured', async () => {
+      const protocol = '/test/no-rate-limit'
+      const maxInboundStreams = 10
+
+      registrar.getHandler.withArgs(protocol).returns({
+        handler: Sinon.stub(),
+        options: { maxInboundStreams }
+      })
+      registrar.getProtocols.returns([protocol])
+      registrar.getMiddleware.withArgs(protocol).returns([])
+
+      createConnection(components, init)
+
+      // Open many streams rapidly — none should be rate-limited
+      for (let i = 0; i < 5; i++) {
+        const [outboundStream, inboundStream] = await streamPair()
+        outboundStream.send(encode.single(uint8ArrayFromString('/multistream/1.0.0\n')))
+        outboundStream.send(encode.single(uint8ArrayFromString(`${protocol}\n`)))
+        muxer.streams.push(inboundStream)
+        muxer.safeDispatchEvent('stream', { detail: inboundStream })
+        await delay(20)
+      }
+
+      await delay(100)
+
+      expect(muxer.streams).to.have.lengthOf(5)
+      for (const stream of muxer.streams) {
+        expect(stream).to.have.property('status', 'open')
+      }
+    })
+  })
+
   it('should limit the number of outgoing streams that can be opened using a protocol', async () => {
     const protocol = '/test/protocol'
     const maxOutboundStreams = 2
