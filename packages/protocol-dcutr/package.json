@@ -52,7 +52,7 @@
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "delay": "^7.0.0",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "^8.0.1",
     "uint8arraylist": "^3.0.2"
   },
   "devDependencies": {

@@ -71,7 +71,7 @@
     "p-timeout": "^7.0.0",
     "p-wait-for": "^6.0.0",
     "progress-events": "^1.0.1",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "^8.0.1",
     "race-signal": "^2.0.0",
     "react-native-webrtc": "^124.0.6",
     "reflect-metadata": "^0.2.2",

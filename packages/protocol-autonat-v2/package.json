@@ -53,7 +53,7 @@
     "@multiformats/multiaddr": "^13.0.3",
     "any-signal": "^4.1.1",
     "main-event": "^1.0.1",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "^8.0.1",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
