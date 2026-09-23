@@ -73,7 +73,7 @@
     "it-protobuf-stream": "^3.0.0",
     "p-event": "^7.0.0",
     "p-wait-for": "^6.0.0",
-    "protons": "^9.0.1",
+    "protons": "^10.0.5",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },
