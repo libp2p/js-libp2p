@@ -102,13 +102,13 @@ export async function validateToRawMessage (
   msg: RPC.Message
 ): Promise<ValidationResult> {
   // If strict-sign, verify all
-  // If anonymous (no-sign), ensure no signature, key or seqno is present
+  // If anonymous (no-sign), ensure no signature, key, from or seqno is present
 
   switch (signaturePolicy) {
     case StrictNoSign:
       if (msg.signature != null) { return { valid: false, error: ValidateError.SignaturePresent } }
       if (msg.seqno != null) { return { valid: false, error: ValidateError.SeqnoPresent } }
-      if (msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
+      if (msg.from != null || msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
 
       return { valid: true, message: { type: 'unsigned', topic: msg.topic, data: msg.data ?? new Uint8Array(0) } }
 

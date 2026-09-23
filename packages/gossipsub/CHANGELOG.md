@@ -1,5 +1,18 @@
 # Changelog
 
+## [17.1.2](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.1.1...gossipsub-v17.1.2) (2026-09-23)
+
+
+### Bug Fixes
+
+* **gossipsub:** enforce StrictNoSign field presence ([#3633](https://github.com/libp2p/js-libp2p/issues/3633)) ([fb139d1](https://github.com/libp2p/js-libp2p/commit/fb139d1c867b0dca375a2000fefca80c75929b42))
+* **gossipsub:** finish monorepo conformance ([#3624](https://github.com/libp2p/js-libp2p/issues/3624)) ([d91797b](https://github.com/libp2p/js-libp2p/commit/d91797b557227f66e1cf087c59f21f3cf43bd2bb))
+
+
+### Documentation
+
+* **gossipsub:** convert README to generated format ([#3566](https://github.com/libp2p/js-libp2p/issues/3566)) ([ee66662](https://github.com/libp2p/js-libp2p/commit/ee6666220c775592eed26070a1894382ce2050fb))
+
 ## [17.1.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.1.0...gossipsub-v17.1.1) (2026-08-31)
 
 
