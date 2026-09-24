@@ -76,7 +76,9 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   sendReset (): void {
-    this.websocket.close(1006) // abnormal closure
+    this.checkBufferedAmountTask.stop()
+    // 1006 describes abnormal closure but is not a valid code to send.
+    this.websocket.close()
   }
 
   async sendClose (options?: AbortOptions): Promise<void> {

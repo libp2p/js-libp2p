@@ -1,8 +1,10 @@
 /* eslint-env mocha */
 /* eslint max-nested-callbacks: ["error", 6] */
 
+import { once } from 'node:events'
 import fs from 'node:fs'
 import http from 'node:http'
+import { ConnectionFailedError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -15,9 +17,15 @@ import pWaitFor from 'p-wait-for'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { setGlobalDispatcher, Agent } from 'undici'
+import { WebSocketServer } from 'ws'
 import { webSockets } from '../src/index.ts'
+import { toWebSocket } from '../src/utils.ts'
+import { webSocketToMaConn } from '../src/websocket-to-conn.ts'
+import { registerWebSocketPollTests } from './websocket-to-conn.ts'
 import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
+import type { Socket } from 'node:net'
 import type { StubbedInstance } from 'sinon-ts'
+import type { WebSocket as ServerWebSocket } from 'ws'
 
 // allow connecting to self-signed certificates
 setGlobalDispatcher(new Agent({
@@ -25,6 +33,105 @@ setGlobalDispatcher(new Agent({
     rejectUnauthorized: false
   }
 }))
+
+registerWebSocketPollTests()
+
+describe('WebSocket abort cleanup', () => {
+  let server: http.Server
+  let sockets: Set<Socket>
+  let wss: WebSocketServer
+  let ma: ReturnType<typeof multiaddr>
+  let uri: string
+
+  beforeEach(async () => {
+    sockets = new Set()
+    server = http.createServer()
+    wss = new WebSocketServer({ noServer: true })
+    server.on('connection', socket => {
+      sockets.add(socket)
+      socket.on('error', () => {})
+      socket.once('close', () => sockets.delete(socket))
+    })
+    const listening = once(server, 'listening')
+    server.listen(0, '127.0.0.1')
+    await listening
+    const address = server.address()
+    if (address == null || typeof address === 'string') {
+      throw new Error('Expected a TCP listen address')
+    }
+    ma = multiaddr(`/ip4/127.0.0.1/tcp/${address.port}/ws`)
+    uri = `ws://127.0.0.1:${address.port}`
+  })
+
+  afterEach(async () => {
+    // Assertions run before fallback fixture teardown, including on the broken
+    // implementation. Never leave the test's own failed-dial sockets behind.
+    for (const client of wss.clients) {
+      client.terminate()
+    }
+    for (const socket of sockets) {
+      socket.destroy()
+    }
+    await Promise.all([
+      new Promise<void>((resolve, reject) => wss.close(error => error != null ? reject(error) : resolve())),
+      new Promise<void>((resolve, reject) => server.close(error => error != null ? reject(error) : resolve()))
+    ])
+  })
+
+  it('closes an aborted opening dial with a delayed handshake', async () => {
+    const ws = webSockets()({ events: new TypedEventEmitter(), logger: defaultLogger() })
+    const upgrader = stubInterface<Upgrader>()
+    const controller = new AbortController()
+    const upgrade = once(server, 'upgrade')
+    const dialing = ws.dial(ma, { upgrader, signal: controller.signal })
+    const rejected = expect(dialing).to.eventually.be.rejectedWith(ConnectionFailedError, 'Could not connect')
+    const [request, socket, head] = await upgrade
+    const socketClosed = new Promise<void>(resolve => socket.once('close', () => resolve()))
+    expect(socket.destroyed).to.equal(false)
+    controller.abort()
+    await rejected
+
+    // A rejected dial must not leave an orphan socket once the peer responds.
+    if (!socket.destroyed) {
+      wss.handleUpgrade(request, socket, head, () => {})
+    }
+    await socketClosed
+    expect(socket.destroyed).to.equal(true)
+    expect(upgrader.upgradeOutbound).to.have.property('callCount', 0)
+  })
+
+  async function assertAbortedSocketCloses (direction: 'inbound' | 'outbound'): Promise<void> {
+    const upgrade = once(server, 'upgrade')
+    const client = new WebSocket(uri)
+    const opened = once(client, 'open')
+    const [request, socket, head] = await upgrade
+    const serverClient = await new Promise<ServerWebSocket>(resolve => {
+      wss.handleUpgrade(request, socket, head, resolve)
+    })
+    await opened
+    const websocket = direction === 'outbound' ? client : toWebSocket(serverClient)
+    const connection = webSocketToMaConn({
+      websocket,
+      remoteAddr: ma,
+      direction,
+      log: defaultLogger().forComponent('test:websocket-abort')
+    })
+    const closed = once(websocket, 'close')
+    connection.abort(new Error('test abort'))
+    expect(connection.status).to.equal('aborted')
+    expect(websocket.readyState).not.to.equal(WebSocket.OPEN)
+    await closed
+    expect(websocket.readyState).to.equal(WebSocket.CLOSED)
+  }
+
+  it('closes the physical outbound WebSocket when its connection is aborted', async () => {
+    await assertAbortedSocketCloses('outbound')
+  })
+
+  it('closes the physical inbound WebSocket when its connection is aborted', async () => {
+    await assertAbortedSocketCloses('inbound')
+  })
+})
 
 describe('instantiate the transport', () => {
   it('create', () => {
