@@ -1,9 +1,11 @@
 import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as utils from '../src/utils.ts'
 import type { PubSubRPCMessage } from '../src/floodsub.ts'
-import type { Message } from '../src/index.ts'
+import type { Message, SignedMessage } from '../src/index.ts'
 
 describe('utils', () => {
   it('randomSeqno', () => {
@@ -64,19 +66,48 @@ describe('utils', () => {
       from: edPeer.toMultihash().bytes,
       topic: '',
       data: new Uint8Array(),
-      sequenceNumber: utils.bigIntToBytes(1n),
+      sequenceNumber: Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 1),
       signature: new Uint8Array(),
       key: publicKeyToProtobuf(edPeer.publicKey)
     }, {
       from: rsaPeer.toMultihash().bytes,
       topic: '',
       data: new Uint8Array(),
-      sequenceNumber: utils.bigIntToBytes(1n),
+      sequenceNumber: Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 1),
       signature: new Uint8Array(),
       key: publicKeyToProtobuf(rsaKey.publicKey)
     }]
     for (let i = 0; i < m.length; i++) {
       expect(utils.toRpcMessage(m[i])).to.deep.equal(expected[i])
+    }
+  })
+
+  it('encodes sequence numbers as uint64 big-endian bytes without truncation', async () => {
+    const privateKey = await generateKeyPair('Ed25519')
+    const message: SignedMessage = {
+      type: 'signed',
+      from: peerIdFromPrivateKey(privateKey),
+      topic: '',
+      data: new Uint8Array(),
+      sequenceNumber: 0n,
+      signature: new Uint8Array(),
+      key: privateKey.publicKey
+    }
+
+    for (const [sequenceNumber, bytes] of [
+      [0n, '0000000000000000'],
+      [1n, '0000000000000001'],
+      [0x0001020304050607n, '0001020304050607'],
+      [0x0101020304050607n, '0101020304050607'],
+      [0xffffffffffffffffn, 'ffffffffffffffff']
+    ] as const) {
+      expect(utils.toRpcMessage({ ...message, sequenceNumber }).sequenceNumber)
+        .to.equalBytes(uint8ArrayFromString(bytes, 'base16'))
+    }
+
+    for (const sequenceNumber of [-1n, 0x10000000000000000n]) {
+      expect(() => utils.toRpcMessage({ ...message, sequenceNumber }))
+        .to.throw(InvalidMessageError, 'RPC message sequence number must be a uint64')
     }
   })
 
@@ -107,21 +138,21 @@ describe('utils', () => {
         from: secp256k1Peer.toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
-        sequenceNumber: utils.bigIntToBytes(1n),
+        sequenceNumber: Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 1),
         signature: new Uint8Array(0)
       },
       {
         from: peerIdFromString('QmPNdSYk5Rfpo5euNqwtyizzmKXMNHdXeLjTQhcN4yfX22').toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
-        sequenceNumber: utils.bigIntToBytes(1n),
+        sequenceNumber: Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 1),
         signature: new Uint8Array(0)
       },
       {
         from: dummyPeerID.toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
-        sequenceNumber: utils.bigIntToBytes(1n),
+        sequenceNumber: Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 1),
         signature: new Uint8Array(0),
         key: publicKeyToProtobuf(dummyKeyPair.publicKey)
       },
@@ -129,7 +160,7 @@ describe('utils', () => {
         from: (peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toMultihash().bytes,
         topic: 'test',
         data: new Uint8Array(0),
-        sequenceNumber: utils.bigIntToBytes(1n),
+        sequenceNumber: Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 1),
         signature: new Uint8Array(0)
       }
     ]

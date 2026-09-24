@@ -60,7 +60,7 @@
     "multiformats": "^14.0.0",
     "nanoid": "^6.0.0",
     "progress-events": "^1.1.0",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "7.0.0",
     "retimeable-signal": "^1.0.1",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
@@ -73,7 +73,7 @@
     "it-protobuf-stream": "^3.0.0",
     "p-event": "^7.0.0",
     "p-wait-for": "^6.0.0",
-    "protons": "^9.0.1",
+    "protons": "9.0.2",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },

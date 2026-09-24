@@ -91,6 +91,11 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
     }
   }
 
+  // Reject non-canonical signed bytes before converting the sequence to bigint.
+  if (message.sequenceNumber?.length !== 8) {
+    throw new InvalidMessageError('RPC message sequence number must be 8 bytes')
+  }
+
   const from = peerIdFromMultihash(Digest.decode(message.from))
   const key = message.key ?? from.publicKey
 
@@ -102,7 +107,7 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
     type: 'signed',
     from,
     topic: message.topic ?? '',
-    sequenceNumber: bigIntFromBytes(message.sequenceNumber ?? new Uint8Array(0)),
+    sequenceNumber: bigIntFromBytes(message.sequenceNumber),
     data: message.data ?? new Uint8Array(0),
     signature: message.signature ?? new Uint8Array(0),
     key: key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
@@ -113,10 +118,17 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
 
 export const toRpcMessage = (message: Message): PubSubRPCMessage => {
   if (message.type === 'signed') {
+    if (message.sequenceNumber < 0n || message.sequenceNumber > 0xffffffffffffffffn) {
+      throw new InvalidMessageError('RPC message sequence number must be a uint64')
+    }
+
+    const sequenceNumber = new Uint8Array(8)
+    new DataView(sequenceNumber.buffer).setBigUint64(0, message.sequenceNumber, false)
+
     return {
       from: message.from.toMultihash().bytes,
       data: message.data,
-      sequenceNumber: bigIntToBytes(message.sequenceNumber),
+      sequenceNumber,
       topic: message.topic,
       signature: message.signature,
 

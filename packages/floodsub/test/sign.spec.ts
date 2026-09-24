@@ -1,4 +1,5 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -9,7 +10,7 @@ import {
   SignPrefix,
   verifySignature
 } from '../src/sign.ts'
-import { randomSeqno, toRpcMessage } from '../src/utils.ts'
+import { randomSeqno, toMessage, toRpcMessage } from '../src/utils.ts'
 import type { PubSubRPCMessage } from '../src/floodsub.ts'
 import type { Message, SignedMessage } from '../src/index.ts'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
@@ -25,6 +26,69 @@ describe('message signing', () => {
   before(async () => {
     privateKey = await generateKeyPair('Ed25519')
     peerId = peerIdFromPrivateKey(privateKey)
+  })
+
+  it('preserves leading-zero sequence bytes across signing and wire roundtrips', async () => {
+    const sequenceNumber = 0x0001020304050607n
+    const rpc = {
+      from: peerId.toMultihash().bytes,
+      data: uint8ArrayFromString('hello'),
+      topic: 'test-topic',
+      sequenceNumber: Uint8Array.of(0, 1, 2, 3, 4, 5, 6, 7)
+    }
+    // Sign explicit wire bytes independently of toRpcMessage.
+    const signature = await privateKey.sign(uint8ArrayConcat([SignPrefix, encodeMessage(rpc)]))
+    const signed = await signMessage(privateKey, {
+      from: peerId,
+      topic: rpc.topic,
+      data: rpc.data,
+      sequenceNumber
+    }, encodeMessage)
+    expect(signed.signature).to.equalBytes(signature)
+
+    const wire = encodeMessage({ ...rpc, signature, key: publicKeyToProtobuf(privateKey.publicKey) })
+    const received = await toMessage(RPC.Message.decode(wire))
+    if (received.type !== 'signed') {
+      throw new Error('Expected a signed message')
+    }
+
+    expect(received.sequenceNumber).to.equal(sequenceNumber)
+    await expect(verifySignature(received, encodeMessage)).to.eventually.equal(true)
+    expect(encodeMessage(toRpcMessage(received))).to.equalBytes(wire)
+  })
+
+  it('rejects changed sequence widths even with a valid canonical signature', async () => {
+    const signed = await signMessage(privateKey, {
+      from: peerId,
+      topic: 'test-topic',
+      data: uint8ArrayFromString('hello'),
+      sequenceNumber: 1n
+    }, encodeMessage)
+
+    for (const sequenceNumber of [
+      new Uint8Array(),
+      Uint8Array.of(1),
+      Uint8Array.of(0, 0, 0, 0, 0, 0, 1),
+      Uint8Array.of(0, 0, 0, 0, 0, 0, 0, 0, 1)
+    ]) {
+      await expect(toMessage({ ...toRpcMessage(signed), sequenceNumber }))
+        .to.be.rejectedWith(InvalidMessageError, 'RPC message sequence number must be 8 bytes')
+    }
+  })
+
+  it('rejects legacy short-width sequence numbers even when their signature is valid', async () => {
+    const rpc: PubSubRPCMessage = {
+      from: peerId.toMultihash().bytes,
+      data: uint8ArrayFromString('hello'),
+      topic: 'test-topic',
+      sequenceNumber: Uint8Array.of(1)
+    }
+    const bytes = uint8ArrayConcat([SignPrefix, encodeMessage(rpc)])
+    const signature = await privateKey.sign(bytes)
+    expect(await privateKey.publicKey.verify(bytes, signature)).to.equal(true)
+
+    await expect(toMessage({ ...rpc, signature }))
+      .to.be.rejectedWith(InvalidMessageError, 'RPC message sequence number must be 8 bytes')
   })
 
   it('should be able to sign and verify a message', async () => {
