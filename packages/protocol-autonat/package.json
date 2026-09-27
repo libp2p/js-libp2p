@@ -55,7 +55,7 @@
     "any-signal": "^4.1.1",
     "main-event": "^1.0.1",
     "multiformats": "^14.0.0",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "7.0.0",
     "uint8arraylist": "^3.0.2"
   },
   "devDependencies": {
@@ -67,7 +67,7 @@
     "it-length-prefixed": "^11.0.1",
     "it-pipe": "^3.0.1",
     "p-retry": "^8.0.0",
-    "protons": "^9.0.1",
+    "protons": "9.0.2",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },
