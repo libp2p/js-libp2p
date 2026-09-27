@@ -126,6 +126,11 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
   }
 
   const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
+    // the underlying stream owns incoming data once we have been unwrapped
+    if (unwrapped) {
+      return
+    }
+
     if (overflow != null) {
       // the stream is being aborted after a previous overflow, ignore any
       // more data
@@ -265,6 +270,7 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
       if (readBuffer.byteLength > 0) {
         stream.log('stream unwrapped with %d unread bytes', readBuffer.byteLength)
         stream.unshift(readBuffer)
+        readBuffer.consume(readBuffer.byteLength)
       }
 
       return stream
