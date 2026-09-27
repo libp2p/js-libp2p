@@ -50,7 +50,7 @@
     "@libp2p/interface": "^3.3.0",
     "@libp2p/peer-id": "^6.0.15",
     "@libp2p/utils": "^7.4.1",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "^8.0.1",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },

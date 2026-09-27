@@ -84,7 +84,7 @@
     "@noble/ciphers": "^2.0.1",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "^8.0.1",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1",
     "wherearewe": "^2.0.1"
