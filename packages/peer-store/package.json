@@ -57,7 +57,7 @@
     "@multiformats/multiaddr": "^13.0.3",
     "interface-datastore": "^10.0.1",
     "it-all": "^3.0.9",
-    "main-event": "^1.0.1",
+    "main-event": "^1.0.5",
     "mortice": "^3.3.1",
     "multiformats": "^14.0.0",
     "protons-runtime": "^7.0.0",

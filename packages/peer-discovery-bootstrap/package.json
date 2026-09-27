@@ -53,7 +53,7 @@
     "@libp2p/peer-id": "^6.0.15",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
-    "main-event": "^1.0.1"
+    "main-event": "^1.0.5"
   },
   "devDependencies": {
     "@libp2p/interface-compliance-tests": "^7.0.32",

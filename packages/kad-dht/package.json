@@ -69,7 +69,7 @@
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
     "it-take": "^3.0.9",
-    "main-event": "^1.0.1",
+    "main-event": "^1.0.5",
     "multiformats": "^14.0.0",
     "p-defer": "^4.0.1",
     "p-event": "^7.0.0",
