@@ -94,7 +94,7 @@
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
     "multiformats": "^14.0.0",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "7.0.0",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
   },
@@ -103,7 +103,7 @@
     "aegir": "^48.1.1",
     "asn1js": "^3.0.6",
     "benchmark": "^2.1.4",
-    "protons": "^9.0.1"
+    "protons": "9.0.2"
   },
   "browser": {
     "./dist/src/ciphers/aes-gcm.js": "./dist/src/ciphers/aes-gcm.browser.js",

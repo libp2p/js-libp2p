@@ -3,7 +3,6 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { getNetConfig, getThinWaistAddresses } from '@libp2p/utils'
 import { CODE_CERTHASH, CODE_WEBRTC_DIRECT, multiaddr } from '@multiformats/multiaddr'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
-import getPort from 'get-port'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import pWaitFor from 'p-wait-for'
 import { connect } from './utils/connect.ts'
@@ -140,7 +139,7 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   private startUDPMuxServer (host: string, port: number, family: 4 | 6): UDPMuxServer {
-    return {
+    const listener: UDPMuxServer = {
       peerId: this.components.peerId,
       owner: this,
       port,
@@ -148,14 +147,6 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
       isIPv6: family === 6,
       server: Promise.resolve()
         .then(async (): Promise<StunServer> => {
-          if (port === 0) {
-            // libjuice doesn't map 0 to a random free port so we have to do it
-            // ourselves
-            this.log.trace('searching for free port')
-            port = await getPort()
-            this.log.trace('listening on free port %d', port)
-          }
-
           return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
             const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
 
@@ -168,7 +159,16 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
               })
           })
         })
+        .then(server => {
+          listener.port = server.address().port
+          return server
+        }, err => {
+          UDP_MUX_LISTENERS = UDP_MUX_LISTENERS.filter(server => server !== listener)
+          throw err
+        })
     }
+
+    return listener
   }
 
   private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number, signal: AbortSignal): Promise<void> {
@@ -274,14 +274,16 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
   }
 
   async close (): Promise<void> {
+    // Stop in-progress incoming dials before waiting for listener startup.
+    this.shutdownController.abort()
+
     // stop our UDP mux listeners
     await Promise.all(
       UDP_MUX_LISTENERS
         .filter(listener => listener.owner === this)
-        .map(async listener => {
-          const server = await listener.server
-          await server.close()
-        })
+        .map(listener => listener.server.then(server => server.close(), () => {
+          // listen() reports startup errors; there is no native server to close.
+        }))
     )
 
     // remove our stopped UDP mux listeners
@@ -291,9 +293,6 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     for (const connection of this.connections.values()) {
       connection.close()
     }
-
-    // stop any in-progress incoming dials
-    this.shutdownController.abort()
 
     // RTCPeerConnections will be removed from the connections map when their
     // connection state changes to 'closed'/'disconnected'/'failed
