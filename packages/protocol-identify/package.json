@@ -56,7 +56,7 @@
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "it-drain": "^3.0.10",
     "it-parallel": "^3.0.13",
-    "main-event": "^1.0.1",
+    "main-event": "^1.0.5",
     "protons-runtime": "^8.0.1",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"

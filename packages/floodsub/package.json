@@ -61,7 +61,7 @@
     "@libp2p/peer-id": "^6.0.15",
     "@libp2p/utils": "^7.4.1",
     "it-length-prefixed": "^11.0.1",
-    "main-event": "^1.0.1",
+    "main-event": "^1.0.5",
     "multiformats": "^14.0.0",
     "p-queue": "^9.0.0",
     "protons-runtime": "^8.0.1",
