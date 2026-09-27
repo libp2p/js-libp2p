@@ -2,6 +2,7 @@
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Libp2pRecord } from '../src/index.ts'
+import { Record } from '../src/record.ts'
 import * as fixture from './fixtures/go-record.ts'
 
 const date = new Date()
@@ -40,6 +41,13 @@ describe('record', () => {
   })
 
   describe('go interop', () => {
+    it('streams the generated record fields', () => {
+      expect([...Record.stream(fixture.serialized)]).to.deep.equal([
+        { field: '$.key', value: uint8ArrayFromString('hello') },
+        { field: '$.value', value: uint8ArrayFromString('world') }
+      ])
+    })
+
     it('no signature', () => {
       const dec = Libp2pRecord.deserialize(fixture.serialized)
       expect(dec).to.have.property('key').eql(uint8ArrayFromString('hello'))

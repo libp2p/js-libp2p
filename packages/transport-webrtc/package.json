@@ -71,7 +71,7 @@
     "p-timeout": "^7.0.0",
     "p-wait-for": "^6.0.0",
     "progress-events": "^1.0.1",
-    "protons-runtime": "^7.0.0",
+    "protons-runtime": "7.0.0",
     "race-signal": "^2.0.0",
     "react-native-webrtc": "^124.0.6",
     "reflect-metadata": "^0.2.2",
@@ -87,7 +87,7 @@
     "datastore-core": "^12.0.1",
     "delay": "^7.0.0",
     "p-retry": "^8.0.0",
-    "protons": "^9.0.1",
+    "protons": "9.0.2",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"

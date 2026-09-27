@@ -175,23 +175,22 @@ describe('pubsub base life cycle', () => {
       expect.fail('original stream should have ended')
     })
 
-    it('should handle newStream errors in onConnect', async () => {
+    it('should propagate newStream errors to the registrar', async () => {
       const topologyA = registrarA.register.getCall(0).args[1]
-      const handlerB = registrarB.handle.getCall(0).args[1]
 
-      if (topologyA == null || handlerB == null) {
+      if (topologyA == null) {
         throw new Error(`No handler registered for ${pubsubA.protocol}`)
       }
 
       // Notify peers of connection
-      const [c0, c1] = await connectionPair(peerIdA, peerIdB)
+      const [c0] = await connectionPair(peerIdA, peerIdB)
       const error = new Error('new stream error')
       sinon.stub(c0, 'newStream').throws(error)
 
-      topologyA.onConnect?.(peerIdB, c0)
-      handlerB(await c1.newStream(pubsubA.protocol), c1)
+      await expect(topologyA.onConnect?.(peerIdB, c0)).to.be.rejectedWith(error)
 
       expect(c0.newStream).to.have.property('callCount', 1)
+      expect(pubsubA.getPeers()).to.be.empty()
     })
 
     it('should handle onDisconnect as expected', async () => {
