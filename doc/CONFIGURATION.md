@@ -97,7 +97,7 @@ If none of the available stream multiplexers fulfills your needs, you can create
 
 If you want to know more about libp2p stream multiplexing, you should read the following content:
 
-- https://docs.libp2p.io/concepts/stream-multiplexing
+- https://libp2p.io/concepts/stream-multiplexing
 - https://github.com/libp2p/specs/tree/master/connections
 - https://github.com/libp2p/specs/tree/master/yamux
 
@@ -177,7 +177,7 @@ If this DHT implementation does not fulfill your needs and you want to create or
 
 If you want to know more about libp2p DHT, you should read the following content:
 
-- https://docs.libp2p.io/concepts/fundamentals/protocols/#kad-dht
+- https://libp2p.io/concepts/fundamentals/protocols/#kad-dht
 - https://github.com/libp2p/specs/pull/108
 
 ### Pubsub
@@ -193,7 +193,7 @@ If none of the available pubsub routers fulfills your needs, you can create a li
 
 If you want to know more about libp2p pubsub, you should read the following content:
 
-- https://docs.libp2p.io/concepts/publish-subscribe
+- https://libp2p.io/concepts/publish-subscribe
 - https://github.com/libp2p/specs/tree/master/pubsub
 
 ## Customizing libp2p
@@ -320,7 +320,7 @@ Potential methods for discovering peers include:
 
 - [Distributed hash tables](#dht)
 - [Local network broadcasts](https://libp2p.io/docs/mdns/)
-- [Centralized trackers or rendezvous points](https://docs.libp2p.io/concepts/discovery-routing/rendezvous/)
+- [Centralized trackers or rendezvous points](https://libp2p.io/concepts/discovery-routing/rendezvous/)
 - [Lists of bootstrap peers](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/bootstrappers.ts)
 
 ```js
@@ -413,7 +413,7 @@ const node = await createLibp2p({
 
 #### Setup with Relay
 
-[Circuit Relay](https://docs.libp2p.io/concepts/nat/circuit-relay/), is a protocol for tunneling traffic through relay peers when two peers are unable to connect to each other directly.
+[Circuit Relay](https://libp2p.io/concepts/nat/circuit-relay/), is a protocol for tunneling traffic through relay peers when two peers are unable to connect to each other directly.
 
 When a peer to be available to be connected to via a relay, it first needs to find a peer that supports the Circuit Relay protocol.
 
@@ -899,7 +899,7 @@ In order for a node to have confidence that it is publicly dialable, the AutoNAT
 
 If enough peers report that this address is dialable, the node is free to change it's relationship to the rest of the network; for example, it could become a DHT server or fulfil some other public role.
 
-For more information see https://docs.libp2p.io/concepts/nat/autonat/#what-is-autonat
+For more information see https://libp2p.io/concepts/nat/autonat/#what-is-autonat
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
