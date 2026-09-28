@@ -69,7 +69,7 @@ Start by installing `@libp2p/websockets`:
 npm install @libp2p/websockets
 ```
 
-Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
+Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`createLibp2p`](CONFIGURATION.md) function, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `transports` array:
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -80,12 +80,12 @@ const node = await createLibp2p({
 })
 ```
 
-There are multiple libp2p transports available, you should evaluate the needs of your application and select the Transport(s) that best suit your requirements. You can add as many transports as you like to `modules.transport` in order to establish connections with as many peers as possible.
+There are multiple libp2p transports available, you should evaluate the needs of your application and select the Transport(s) that best suit your requirements. You can add as many transports as you like to `transports` in order to establish connections with as many peers as possible.
 
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://docs.libp2p.io/concepts/transports
+- https://libp2p.io/concepts/transports
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
@@ -99,7 +99,7 @@ There are a growing number of Crypto modules being developed for libp2p. As thos
 npm install @libp2p/noise
 ```
 
-With `@libp2p/noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
+With `@libp2p/noise` installed, we can add it to our existing configuration by importing it and adding it to the `connectionEncrypters` array:
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -147,7 +147,7 @@ const node = await createLibp2p({
 <details><summary>Read More</summary>
 If you want to know more about libp2p stream multiplexing, you should read the following content:
 
-- https://docs.libp2p.io/concepts/stream-multiplexing
+- https://libp2p.io/concepts/stream-multiplexing
 - https://github.com/libp2p/specs/tree/master/connections
 - https://github.com/libp2p/specs/tree/master/yamux
 </details>
@@ -333,7 +333,7 @@ There are a lot of other concepts within `libp2p`, that are not covered in this 
 ### Additional Resources
 
 - [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p) — Interactive tutorial covering libp2p fundamentals
-- [libp2p Concepts](https://docs.libp2p.io/concepts/introduction/overview/) — Overview of core concepts and architecture
+- [libp2p Concepts](https://libp2p.io/concepts/introduction/overview/) — Overview of core concepts and architecture
 - [libp2p Connectivity](https://connectivity.libp2p.io/) — Interoperability matrix across libp2p implementations
 - [Universal Connectivity](https://github.com/libp2p/universal-connectivity) — Demo application showcasing cross-implementation connectivity
 
