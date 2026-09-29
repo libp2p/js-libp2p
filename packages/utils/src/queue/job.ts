@@ -52,23 +52,44 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
     this.onAbort = this.onAbort.bind(this)
   }
 
-  abort (err: Error): void {
-    this.controller.abort(err)
+  /**
+   * Aborts when the job is aborted, either by the queue or because every
+   * recipient has aborted
+   */
+  get signal (): AbortSignal {
+    return this.controller.signal
   }
 
-  onAbort (): void {
+  abort (err: Error): void {
+    this.controller.abort(err)
+
+    // a queued job never reaches run() once aborted (the queue drops it), so
+    // settle its recipients here
+    if (this.status === 'queued') {
+      this.recipients.forEach(recipient => {
+        recipient.deferred.reject(err)
+      })
+      this.cleanup()
+    }
+  }
+
+  onAbort (evt?: Event): void {
     const allAborted = this.recipients.reduce((acc, curr) => {
       return acc && (curr.signal?.aborted === true)
     }, true)
 
-    // if all recipients have aborted the job, actually abort the job
+    // if all recipients have aborted the job, actually abort the job with the
+    // reason given by the last one
     if (allAborted) {
-      this.controller.abort(new AbortError())
+      const reason = (evt?.target as AbortSignal | null | undefined)?.reason
+      this.controller.abort(reason ?? new AbortError())
       this.cleanup()
     }
   }
 
   async join (options?: Partial<Pick<JobOptions, 'signal' | 'onProgress'>>): Promise<JobReturnType> {
+    this.controller.signal.throwIfAborted()
+
     const recipient = new JobRecipient<JobReturnType>(options)
     this.recipients.push(recipient)
 
@@ -77,7 +98,7 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
     return recipient.deferred.promise
   }
 
-  async run (): Promise<void> {
+  async run (): Promise<JobReturnType> {
     this.status = 'running'
     this.timeline.started = Date.now()
 
@@ -130,12 +151,16 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
       })
 
       this.status = 'complete'
+
+      return result
     } catch (err) {
       this.recipients.forEach(recipient => {
         recipient.deferred.reject(err)
       })
 
       this.status = 'errored'
+
+      throw err
     } finally {
       this.timeline.finished = Date.now()
       this.cleanup()
@@ -144,8 +169,8 @@ export class Job <JobOptions extends AbortOptions & ProgressOptions = AbortOptio
 
   cleanup (): void {
     this.recipients.forEach(recipient => {
-      // no-op for recipients settled by run() or their own abort listener -
-      // settles any whose abort listener was removed before it could fire
+      // no-op for recipients settled by run(), abort() or their own abort
+      // listener - settles any whose abort listener was removed before it fired
       recipient.deferred.reject(recipient.signal?.reason ?? new AbortError())
       recipient.cleanup()
       recipient.signal?.removeEventListener('abort', this.onAbort)
