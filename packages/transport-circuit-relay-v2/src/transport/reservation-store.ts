@@ -13,7 +13,7 @@ import type { TransportReservationStoreComponents, TransportReservationStoreInit
 import type { Reservation } from '../pb/index.ts'
 import type { AbortOptions, Libp2pEvents, Logger, PeerId, PeerStore, Startable, Peer, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
-import type { Filter } from '@libp2p/utils'
+import type { Filter, PeerQueueJobOptions } from '@libp2p/utils'
 import type { TypedEventTarget } from 'main-event'
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
@@ -26,6 +26,14 @@ const REFRESH_TIMEOUT = (60 * 1000) * 5
 const REFRESH_TIMEOUT_MIN = 30 * 1000
 
 export type RelayType = 'discovered' | 'configured'
+
+interface ReserveJobOptions extends PeerQueueJobOptions {
+  /**
+   * Set when a configured relay asks for this reservation, including after the
+   * attempt was queued or started
+   */
+  configured: boolean
+}
 
 export interface DiscoveredRelayEntry {
   timeout: ReturnType<typeof setTimeout>
@@ -73,7 +81,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
   private readonly events: TypedEventTarget<Libp2pEvents>
-  private readonly reserveQueue: PeerQueue<RelayReservation>
+  private readonly reserveQueue: PeerQueue<RelayReservation, ReserveJobOptions>
   private readonly reservations: PeerMap<RelayEntry>
   private readonly pendingReservations: string[]
   private readonly maxReservationQueueLength: number
@@ -97,7 +105,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
     this.started = false
     this.relayFilter = createScalableCuckooFilter(100)
 
-    // ensure we don't listen on multiple relays simultaneously
+    // limit concurrent reservation attempts
     this.reserveQueue = new PeerQueue({
       concurrency: init?.reservationConcurrency ?? DEFAULT_RESERVATION_CONCURRENCY,
       metricName: 'libp2p_relay_reservation_queue',
@@ -142,7 +150,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         this.log('removing tag from %d old relays', relayPeers.length)
 
-        // remove old relay tag and redial
+        // remove old relay tag
         await Promise.all(
           relayPeers.map(async peer => {
             await this.peerStore.merge(peer.id, {
@@ -155,8 +163,19 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         this.log('redialing %d old relays', relayPeers.length)
         await Promise.all(
-          relayPeers.map(async peer => this.addRelay(peer.id, 'discovered'))
+          relayPeers.map(async peer => {
+            await this.addRelay(peer.id, 'discovered')
+              .catch(err => {
+                if (err.name !== 'HadEnoughRelaysError') {
+                  this.log.error('could not redial old relay %p - %e', peer.id, err)
+                }
+              })
+          })
         )
+
+        if (!this.started) {
+          return
+        }
 
         this.#checkReservationCount()
       })
@@ -185,10 +204,9 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   }
 
   /**
-   * If the number of current relays is beneath the configured `maxReservations`
-   * value, and the passed peer id is not our own, and we have a non-relayed
-   * connection to the remote, and the remote peer speaks the hop protocol, try
-   * to reserve a slot on the remote peer
+   * Try to reserve a slot on the remote peer over a non-relayed connection. A
+   * configured relay does not need a free pending reservation, a new discovered
+   * relay does
    */
   async addRelay (peerId: PeerId, type: RelayType): Promise<RelayReservation> {
     if (this.peerId.equals(peerId)) {
@@ -196,30 +214,54 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
       throw new ListenError('Cannot use self as relay')
     }
 
-    if (this.reserveQueue.size > this.maxReservationQueueLength) {
-      throw new RelayQueueFullError('The reservation queue is full')
-    }
-
-    const existingJob = this.reserveQueue.find(peerId)
+    // joining a job that has finished but not yet left the queue would never
+    // settle
+    const existingJob = this.reserveQueue.queue.find(job => {
+      return job.options.peerId.equals(peerId) && (job.status === 'queued' || job.status === 'running')
+    })
 
     if (existingJob != null) {
       this.log.trace('potential relay peer %p is already in the reservation queue', peerId)
+
+      // the attempt reads this so a configured relay is not rejected as surplus
+      // and is stored as configured
+      if (type === 'configured') {
+        existingJob.options.configured = true
+      }
+
       return existingJob.join()
     }
 
-    if (this.relayFilter.has(peerId.toMultihash().bytes)) {
+    // the queue limit and the invalid relay filter only apply to new discovered
+    // relays, configured relays and refreshes skip both
+    const candidate = type === 'discovered' && !this.reservations.has(peerId)
+
+    if (candidate && this.reserveQueue.size > this.maxReservationQueueLength) {
+      throw new RelayQueueFullError('The reservation queue is full')
+    }
+
+    if (candidate && this.relayFilter.has(peerId.toMultihash().bytes)) {
       throw new ListenError('The relay was previously invalid')
     }
 
     this.log.trace('try to reserve relay slot with %p', peerId)
 
+    const jobOptions: ReserveJobOptions = {
+      peerId,
+      configured: type === 'configured'
+    }
+
     return this.reserveQueue.add(async () => {
       const start = Date.now()
 
-      try {
-        // allow refresh of an existing reservation if it is about to expire
-        const existingReservation = this.reservations.get(peerId)
+      // allow refresh of an existing reservation if it is about to expire
+      const existingReservation = this.reservations.get(peerId)
 
+      // a configured relay may join this attempt after it starts, and a
+      // configured reservation stays configured when refreshed
+      const isConfigured = (): boolean => jobOptions.configured || existingReservation?.type === 'configured'
+
+      try {
         if (existingReservation != null) {
           const connections = this.connectionManager.getConnections(peerId)
           let connected = false
@@ -251,7 +293,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         // a refresh keeps the slot it already holds; only a brand new discovered
         // reservation needs a free pending slot
-        if (type === 'discovered' && existingReservation == null && this.pendingReservations.length === 0) {
+        if (!isConfigured() && existingReservation == null && this.pendingReservations.length === 0) {
           throw new HadEnoughRelaysError('Not making reservation on discovered relay because we do not need any more relays')
         }
 
@@ -274,6 +316,34 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         this.log('created reservation on relay peer %p, expiry date is %s', peerId, new Date(Date.now() + expiration).toString())
 
+        const resType: RelayType = isConfigured() ? 'configured' : 'discovered'
+        let id: string | undefined
+
+        if (resType === 'discovered') {
+          // a live refresh reuses the slot id its reservation still holds. if
+          // that entry was removed while we were refreshing (a disconnected
+          // refresh, or a concurrent connection:close) its id went back to the
+          // pool, so claim a fresh one - an id is never both live and pending.
+          // this re-reads instead of trusting existingReservation because only
+          // one addRelay runs per peer at a time, so the entry here is only ever
+          // our own (removed or not), never another reservation's
+          const live = this.reservations.get(peerId)
+          id = live?.type === 'discovered'
+            ? live.id
+            : this.pendingReservations.pop()
+
+          if (id == null) {
+            throw new HadEnoughRelaysError('Made reservation on relay but did not need any more discovered relays')
+          }
+        } else {
+          // a discovered reservation becoming configured frees its slot
+          const live = this.reservations.get(peerId)
+
+          if (live?.type === 'discovered') {
+            this.pendingReservations.push(live.id)
+          }
+        }
+
         // sets a lower bound on the timeout, and also don't let it go over
         // 2^31 - 1 (setTimeout will only accept signed 32 bit integers)
         const timeoutDuration = Math.min(Math.max(expiration - REFRESH_TIMEOUT, REFRESH_TIMEOUT_MIN), Math.pow(2, 31) - 1)
@@ -281,7 +351,8 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         const timeout = setTimeout(() => {
           this.log('refresh reservation to relay %p', peerId)
 
-          this.addRelay(peerId, type)
+          // refresh as the stored type, the entry may have become configured
+          this.addRelay(peerId, this.reservations.get(peerId)?.type ?? resType)
             .catch(async err => {
               this.log.error('could not refresh reservation to relay %p - %e', peerId, err)
               await this.#removeReservation(peerId)
@@ -291,40 +362,20 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
             })
         }, timeoutDuration)
 
-        let res: RelayEntry
-
-        if (type === 'discovered') {
-          // a live refresh reuses the slot id its reservation still holds. if
-          // that entry was removed while we were refreshing (a disconnected
-          // refresh, or a concurrent connection:close) its id went back to the
-          // pool, so claim a fresh one - an id is never both live and pending.
-          // this re-reads instead of trusting existingReservation because only
-          // one addRelay runs per peer at a time, so the entry here is only ever
-          // our own (removed or not), never another reservation's
-          const live = this.reservations.get(peerId)
-          const id = live?.type === 'discovered'
-            ? live.id
-            : this.pendingReservations.pop()
-
-          if (id == null) {
-            throw new HadEnoughRelaysError('Made reservation on relay but did not need any more discovered relays')
-          }
-
-          res = {
-            timeout,
-            reservation,
-            type,
-            connection: connection.id,
-            id
-          }
-        } else {
-          res = {
-            timeout,
-            reservation,
-            type,
-            connection: connection.id
-          }
-        }
+        let res: RelayEntry = id == null
+          ? {
+              timeout,
+              reservation,
+              type: 'configured',
+              connection: connection.id
+            }
+          : {
+              timeout,
+              reservation,
+              type: 'discovered',
+              connection: connection.id,
+              id
+            }
 
         // clear the previous reservation's refresh timer before replacing it,
         // otherwise it stays armed and later fires against the new reservation
@@ -345,6 +396,19 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
           }
         })
 
+        // a configured relay may have joined after the type was decided, store it
+        // as configured and free the pending reservation it was given
+        if (jobOptions.configured && res.type === 'discovered' && this.reservations.get(peerId) === res) {
+          this.pendingReservations.push(res.id)
+          res = {
+            timeout,
+            reservation,
+            type: 'configured',
+            connection: connection.id
+          }
+          this.reservations.set(peerId, res)
+        }
+
         // check to see if we have discovered enough relays
         this.#checkReservationCount()
 
@@ -359,13 +423,13 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         return result
       } catch (err: any) {
-        if (!(type === 'discovered' && err.name === 'HadEnoughRelaysError')) {
+        if (isConfigured() || err.name !== 'HadEnoughRelaysError') {
           this.log.error('could not reserve slot on %p after %dms - %e', peerId, Date.now() - start, err)
         }
 
         // don't try this peer again if dialing failed or they do not support
-        // the hop protocol
-        if (err.name === 'DialError' || err.name === 'UnsupportedProtocolError') {
+        // the hop protocol, unless it is a configured relay
+        if (!isConfigured() && (err.name === 'DialError' || err.name === 'UnsupportedProtocolError')) {
           this.relayFilter.add(peerId.toMultihash().bytes)
         }
 
@@ -377,9 +441,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
 
         throw err
       }
-    }, {
-      peerId
-    })
+    }, jobOptions)
   }
 
   hasReservation (peerId: PeerId): boolean {
@@ -518,7 +580,6 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   #checkReservationCount (): void {
     if (this.pendingReservations.length === 0) {
       this.log.trace('have discovered enough relays')
-      this.reserveQueue.clear()
       this.safeDispatchEvent('relay:found-enough-relays')
 
       return
