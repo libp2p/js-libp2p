@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.24](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.23...integration-tests-v1.2.24) (2026-09-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.38 to ^10.0.39
+    * @libp2p/daemon-server bumped from ^9.0.38 to ^9.0.39
+    * @libp2p/gossipsub bumped from ^17.1.1 to ^17.1.2
+    * @libp2p/interop bumped from ^14.0.38 to ^14.0.39
+    * @libp2p/noise bumped from ^17.0.2 to ^17.0.3
+    * @libp2p/webrtc bumped from ^6.0.32 to ^6.0.33
+    * @libp2p/webtransport bumped from ^6.0.39 to ^6.0.40
+
 ## [1.2.23](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.22...integration-tests-v1.2.23) (2026-09-02)
 
 

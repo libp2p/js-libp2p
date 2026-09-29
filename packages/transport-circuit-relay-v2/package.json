@@ -56,7 +56,7 @@
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "any-signal": "^4.1.1",
-    "main-event": "^1.0.1",
+    "main-event": "^1.0.5",
     "multiformats": "^14.0.0",
     "nanoid": "^6.0.0",
     "progress-events": "^1.1.0",

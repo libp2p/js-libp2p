@@ -4,6 +4,15 @@
 
 * bump aegir from 46.0.5 to 47.0.21 ([#343](https://github.com/libp2p/js-libp2p-daemon/issues/343)) ([704c22f](https://github.com/libp2p/js-libp2p-daemon/commit/704c22f102362c6036642a73979d262e1214baa5))
 
+## [9.0.39](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.38...daemon-server-v9.0.39) (2026-09-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^17.1.1 to ^17.1.2
+
 ## [9.0.38](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.37...daemon-server-v9.0.38) (2026-08-31)
 
 
