@@ -47,7 +47,7 @@ For help configuring your node to resist malicious network peers, see [LIMITS.md
 
 ## Getting started
 
-If you are starting your journey with `js-libp2p`, read the [GETTING\_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide.
+If you are starting your journey with `js-libp2p`, read the [GETTING_STARTED.md](https://github.com/libp2p/js-libp2p/blob/main/doc/GETTING_STARTED.md) guide.
 
 ## Tutorials and Examples
 
