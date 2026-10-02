@@ -117,6 +117,9 @@ export class WebRTCDirectTransport implements Transport {
       : genUfrag(32, UFRAG_PREFIX_V1)
     const pwd = version === 2 ? genUfrag(22, '') : ufrag
 
+    // the version actually dialed, v1 may continue as v2
+    let dialedVersion = version
+
     this.log('dial %a starting as WebRTC Direct v%d', ma, version)
 
     // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md
@@ -133,7 +136,7 @@ export class WebRTCDirectTransport implements Transport {
     })
 
     try {
-      const { connection, mungeable } = await connect(peerConnection, muxerFactory, ufrag, {
+      const connection = await connect(peerConnection, muxerFactory, ufrag, {
         role: 'client',
         log: this.log,
         logger: this.components.logger,
@@ -141,6 +144,15 @@ export class WebRTCDirectTransport implements Transport {
         signal: options.signal,
         version,
         fallback: this.init.dialerVersion == null,
+        onMungeable: (mungeable) => {
+          // munging support belongs to the runtime, not the remote, so it is
+          // remembered even if this dial fails
+          this.mungeable ??= mungeable
+
+          if (!mungeable && this.init.dialerVersion == null) {
+            dialedVersion = 2
+          }
+        },
         remoteAddr: ma,
         dataChannel: this.init.dataChannel,
         upgrader: options.upgrader,
@@ -149,13 +161,9 @@ export class WebRTCDirectTransport implements Transport {
         privateKey: this.components.privateKey
       })
 
-      // remember what the munge attempt showed so later dials start at the
-      // right version
-      this.mungeable ??= mungeable
-
       return connection
     } catch (err) {
-      this.log('dial %a failed, started as WebRTC Direct v%d - %e', ma, version, err)
+      this.log('dial %a failed as WebRTC Direct v%d - %e', ma, dialedVersion, err)
       peerConnection.close()
       throw err
     }

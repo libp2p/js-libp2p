@@ -336,24 +336,25 @@ describe('WebRTCDirect Transport', () => {
     })).to.throw().with.property('name', 'InvalidParametersError')
   })
 
-  it('v1 client can dial dual server', async function () {
-    if (!LISTEN_SUPPORTED) {
-      return this.skip()
-    }
-
-    let inboundCalled = false
+  /**
+   * Dial a listener that accepts both versions and return the server ufrag the
+   * listener saw, which carries the version prefix
+   */
+  async function dialDualServer (clientTransport: WebRTCDirectTransport): Promise<string> {
+    let serverUfrag: string | undefined
     let outboundCalled = false
     const outboundConnection = stubInterface<Connection>()
 
     const serverListener = transport.createListener({
       upgrader: stubInterface<Upgrader>({
         upgradeInbound: async () => {
-          inboundCalled = true
+          // listener connections are keyed by host:port:serverUfrag:clientUfrag
+          const [key] = [...(serverListener as any).connections.keys()]
+          serverUfrag = key.split(':')[2]
         }
       })
     })
 
-    const clientTransport = new WebRTCDirectTransport(await createTransportComponents())
     await start(clientTransport)
 
     try {
@@ -372,12 +373,24 @@ describe('WebRTCDirect Transport', () => {
       })
 
       expect(conn).to.equal(outboundConnection)
-      expect(inboundCalled).to.be.true()
       expect(outboundCalled).to.be.true()
+      expect(serverUfrag).to.be.a('string')
+
+      return serverUfrag ?? ''
     } finally {
       await serverListener.close()
       await stop(clientTransport)
     }
+  }
+
+  it('v1 client can dial dual server', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    const serverUfrag = await dialDualServer(new WebRTCDirectTransport(await createTransportComponents()))
+
+    expect(serverUfrag.startsWith('libp2p+webrtc+v1/')).to.be.true()
   })
 
   it('v2 client can dial dual server', async function () {
@@ -385,43 +398,43 @@ describe('WebRTCDirect Transport', () => {
       return this.skip()
     }
 
-    let inboundCalled = false
-    let outboundCalled = false
-    const outboundConnection = stubInterface<Connection>()
-
-    const serverListener = transport.createListener({
-      upgrader: stubInterface<Upgrader>({
-        upgradeInbound: async () => {
-          inboundCalled = true
-        }
-      })
-    })
-
-    const clientTransport = new WebRTCDirectTransport(await createTransportComponents(), {
+    const serverUfrag = await dialDualServer(new WebRTCDirectTransport(await createTransportComponents(), {
       dialerVersion: 2
-    })
+    }))
+
+    expect(serverUfrag.startsWith('libp2p+webrtc+v2/')).to.be.true()
+  })
+
+  it('starts at v2 once the runtime is known not to apply munged credentials', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    const clientTransport = new WebRTCDirectTransport(await createTransportComponents())
+    ;(clientTransport as any).mungeable = false
+
+    const serverUfrag = await dialDualServer(clientTransport)
+
+    expect(serverUfrag.startsWith('libp2p+webrtc+v2/')).to.be.true()
+  })
+
+  it('remembers munging support after a failed dial', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    const clientTransport = new WebRTCDirectTransport(await createTransportComponents())
     await start(clientTransport)
 
     try {
-      await serverListener.listen(multiaddr('/ip4/127.0.0.1/udp/0'))
-      const addrs = serverListener.getAddrs()
-      const serverAddr = addrs.find(addr => getNetConfig(addr).host === '127.0.0.1') ?? addrs[0]
+      // nothing is listening so the dial times out after the offer is set
+      await expect(clientTransport.dial(multiaddr('/ip4/127.0.0.1/udp/9/webrtc-direct/certhash/uEiC5P6FL6EZzCG9zUT4nnVa3KWdMSriNIe-_5roWN7psKg'), {
+        upgrader: stubInterface<Upgrader>(),
+        signal: AbortSignal.timeout(500)
+      })).to.eventually.be.rejected()
 
-      const conn = await clientTransport.dial(serverAddr, {
-        upgrader: stubInterface<Upgrader>({
-          upgradeOutbound: async () => {
-            outboundCalled = true
-            return outboundConnection
-          }
-        }),
-        signal: AbortSignal.timeout(15_000)
-      })
-
-      expect(conn).to.equal(outboundConnection)
-      expect(inboundCalled).to.be.true()
-      expect(outboundCalled).to.be.true()
+      expect((clientTransport as any).mungeable).to.be.true()
     } finally {
-      await serverListener.close()
       await stop(clientTransport)
     }
   })

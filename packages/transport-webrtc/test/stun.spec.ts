@@ -105,15 +105,6 @@ describe('handleStunRequest', () => {
     expect(cb.calledOnceWithExactly(ufrag, ufrag, undefined, '1.2.3.4', 1234)).to.be.true()
   })
 
-  it('uses the single ufrag as both ufrags when the mux could not split the username', () => {
-    const cb = Sinon.stub()
-    const ufrag = genUfrag()
-
-    handleStunRequest(request(ufrag), log, cb)
-
-    expect(cb.calledOnceWithExactly(ufrag, ufrag, undefined, '1.2.3.4', 1234)).to.be.true()
-  })
-
   it('forwards a v2 request to the callback with the decoded client password', () => {
     const cb = Sinon.stub()
     const clientUfrag = genUfrag(32, '')

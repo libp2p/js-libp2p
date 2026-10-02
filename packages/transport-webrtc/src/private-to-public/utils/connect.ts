@@ -41,6 +41,12 @@ export interface ClientOptions extends ConnectOptions {
    * a v1 dial needs
    */
   fallback?: boolean
+
+  /**
+   * Called once a v1 attempt shows whether the runtime applies munged ICE
+   * credentials, even if the dial later fails
+   */
+  onMungeable?(mungeable: boolean): void
 }
 
 export interface ServerOptions extends ConnectOptions {
@@ -81,8 +87,7 @@ async function setMungedLocalOffer (peerConnection: RTCPeerConnection | DirectRT
 
 /**
  * Set the local offer for the requested version and return the ufrag for the
- * synthetic server answer, plus whether a v1 attempt found the runtime applies
- * munged credentials.
+ * synthetic server answer.
  *
  * v1 munges the offer so ice-ufrag and ice-pwd both equal `ufrag`, letting the
  * server infer the client's credentials from the STUN USERNAME alone. v2 keeps
@@ -90,14 +95,13 @@ async function setMungedLocalOffer (peerConnection: RTCPeerConnection | DirectRT
  * in the server ufrag instead. When a v1 attempt does not stick and fallback
  * is allowed, the dial continues as v2.
  */
-async function setClientOffer (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, offer: RTCSessionDescriptionInit, ufrag: string, options: ClientOptions): Promise<{ serverUfrag: string, mungeable?: boolean }> {
-  let mungeable: boolean | undefined
-
+async function setClientOffer (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, offer: RTCSessionDescriptionInit, ufrag: string, options: ClientOptions): Promise<string> {
   if (options.version === 1) {
-    mungeable = await setMungedLocalOffer(peerConnection, offer, ufrag, options.log)
+    const mungeable = await setMungedLocalOffer(peerConnection, offer, ufrag, options.log)
+    options.onMungeable?.(mungeable)
 
     if (mungeable) {
-      return { serverUfrag: ufrag, mungeable }
+      return ufrag
     }
 
     if (options.fallback !== true) {
@@ -130,16 +134,12 @@ async function setClientOffer (peerConnection: RTCPeerConnection | DirectRTCPeer
     throw new WebRTCTransportError('Local ICE password is too long to encode in a v2 server ufrag')
   }
 
-  return { serverUfrag, mungeable }
+  return serverUfrag
 }
 
-export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions): Promise<{ connection: Connection, mungeable?: boolean }>
+export async function connect (peerConnection: RTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions): Promise<Connection>
 export async function connect (peerConnection: DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ServerOptions): Promise<void>
 export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeerConnection, muxerFactory: DataChannelMuxerFactory, ufrag: string, options: ClientOptions | ServerOptions): Promise<any> {
-  // whether the runtime applied munged ICE credentials, only known after a
-  // v1 attempt and returned to the caller alongside the connection
-  let mungeable: boolean | undefined
-
   // create data channel for running the noise handshake. Once the data
   // channel is opened, the listener will initiate the noise handshake. This
   // is used to confirm the identity of the peer.
@@ -152,10 +152,8 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       const offerSdp = await peerConnection.createOffer()
       options.log.trace('client created local offer %s', offerSdp.sdp)
 
-      const clientOffer = await setClientOffer(peerConnection, offerSdp, ufrag, options)
-      mungeable = clientOffer.mungeable
-
-      const answerSdp = sdp.serverAnswerFromMultiaddr(options.remoteAddr, clientOffer.serverUfrag)
+      const serverUfrag = await setClientOffer(peerConnection, offerSdp, ufrag, options)
+      const answerSdp = sdp.serverAnswerFromMultiaddr(options.remoteAddr, serverUfrag)
       options.log.trace('client setting server description %s', answerSdp.sdp)
       await peerConnection.setRemoteDescription(answerSdp)
     } else {
@@ -170,18 +168,10 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
       const answerSdp = await peerConnection.createAnswer()
       options.log.trace('server created local answer')
 
-      if (options.remotePwd != null) {
-        // v2 path: the answer credentials were already pinned to server_ufrag
-        // (libp2p+webrtc+v2/<client_pwd>) when the peer connection was created,
-        // so the generated answer already carries them and needs no munging.
-        options.log.trace('server setting local description %s', answerSdp.sdp)
-        await peerConnection.setLocalDescription(answerSdp)
-      } else {
-        // v1 compatibility path: keep local answer credentials aligned to ufrag.
-        const mungedAnswerSdp = sdp.munge(answerSdp, ufrag)
-        options.log.trace('server setting local description %s', answerSdp.sdp)
-        await peerConnection.setLocalDescription(mungedAnswerSdp)
-      }
+      // the answer credentials were pinned to the server ufrag when the peer
+      // connection was created, so it needs no munging for either version
+      options.log.trace('server setting local description %s', answerSdp.sdp)
+      await peerConnection.setLocalDescription(answerSdp)
     }
 
     if (handshakeDataChannel.readyState !== 'open') {
@@ -273,7 +263,7 @@ export async function connect (peerConnection: RTCPeerConnection | DirectRTCPeer
         signal: options.signal
       })
 
-      return { connection, mungeable }
+      return connection
     }
 
     // For inbound connections, the server is are expected to start the noise

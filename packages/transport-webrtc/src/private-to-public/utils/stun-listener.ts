@@ -10,12 +10,15 @@ export interface StunServer {
   address(): AddressInfo
 }
 
-export type { StunRequestCallback as Callback }
-
 export async function stunListener (host: string, port: number, log: Logger, cb: StunRequestCallback): Promise<StunServer> {
   const listener = new IceUdpMuxListener(port, host)
   listener.onUnhandledStunRequest(request => {
-    handleStunRequest(request, log, cb)
+    // this runs inside a native callback where a throw would crash the process
+    try {
+      handleStunRequest(request, log, cb)
+    } catch (err) {
+      log.error('error handling STUN request from %s:%d - %e', request.host, request.port, err)
+    }
   })
 
   return {

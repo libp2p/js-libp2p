@@ -113,41 +113,49 @@ describe('webrtc-direct client offer', () => {
     it('dials v1 when the runtime applies the munged credentials', async () => {
       const pc = fakePeerConnection({ munging: 'allowed' })
       const ufrag = genUfrag()
+      const onMungeable = Sinon.stub()
 
-      const err = await dial(pc, ufrag, await clientOptions({ version: 1, fallback: true }))
+      const err = await dial(pc, ufrag, await clientOptions({ version: 1, fallback: true, onMungeable }))
 
       expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
+      expect(onMungeable.calledOnceWithExactly(true)).to.be.true()
       expectV1(pc, ufrag)
     })
 
     it('continues as v2 when the runtime rejects the munged offer', async () => {
       const pc = fakePeerConnection({ munging: 'rejected' })
+      const onMungeable = Sinon.stub()
 
-      const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true }))
+      const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true, onMungeable }))
 
       expect(err).to.have.property('name', 'TimeoutError')
       // the munged offer was rejected so the original one was set instead
       expect(pc.setLocalDescription.calledTwice).to.be.true()
+      expect(onMungeable.calledOnceWithExactly(false)).to.be.true()
       expectV2(pc)
     })
 
     it('continues as v2 when the runtime ignores the munged credentials', async () => {
       const pc = fakePeerConnection({ munging: 'ignored' })
+      const onMungeable = Sinon.stub()
 
-      const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true }))
+      const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true, onMungeable }))
 
       expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
+      expect(onMungeable.calledOnceWithExactly(false)).to.be.true()
       expectV2(pc)
     })
 
     it('fails when setting the munged offer fails for another reason', async () => {
       const pc = fakePeerConnection({ munging: 'failed' })
+      const onMungeable = Sinon.stub()
 
-      const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true }))
+      const err = await dial(pc, genUfrag(), await clientOptions({ version: 1, fallback: true, onMungeable }))
 
       expect(err).to.have.property('name', 'InvalidStateError')
+      expect(onMungeable.called).to.be.false()
       expect(pc.setLocalDescription.calledOnce).to.be.true()
       expect(pc.setRemoteDescription.called).to.be.false()
     })
@@ -188,11 +196,13 @@ describe('webrtc-direct client offer', () => {
   describe('with dialer version 2', () => {
     it('never munges the offer', async () => {
       const pc = fakePeerConnection({ munging: 'rejected' })
+      const onMungeable = Sinon.stub()
 
-      const err = await dial(pc, genUfrag(32, ''), await clientOptions({ version: 2 }))
+      const err = await dial(pc, genUfrag(32, ''), await clientOptions({ version: 2, onMungeable }))
 
       expect(err).to.have.property('name', 'TimeoutError')
       expect(pc.setLocalDescription.calledOnce).to.be.true()
+      expect(onMungeable.called).to.be.false()
       expectV2(pc)
     })
 

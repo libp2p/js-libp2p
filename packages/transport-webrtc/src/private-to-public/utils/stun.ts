@@ -88,10 +88,9 @@ export function handleStunRequest (request: IceUdpMuxRequest, log: Logger, cb: S
     return
   }
 
-  // The STUN USERNAME is "server_ufrag:client_ufrag" (RFC 8445 section 7.2.2).
-  // When the mux cannot split it (no colon) localUfrag is absent and the single
-  // ufrag is the shared v1 value used as both the server and client ufrag.
-  const serverUfrag = request.localUfrag ?? request.ufrag
+  // The STUN USERNAME is "server_ufrag:client_ufrag" (RFC 8445 section 7.2.2),
+  // libjuice drops usernames without a colon so both halves are always present
+  const serverUfrag = request.localUfrag
   const clientUfrag = request.ufrag
 
   const parsed = parseStunUsernameUfrags(serverUfrag, clientUfrag)
