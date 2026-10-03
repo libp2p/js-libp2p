@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.3.1](https://github.com/libp2p/js-libp2p/compare/interface-v3.3.0...interface-v3.3.1) (2026-10-03)
+
+
+### Dependencies
+
+* require main-event ^1.0.5 ([#3641](https://github.com/libp2p/js-libp2p/issues/3641)) ([e7359e5](https://github.com/libp2p/js-libp2p/commit/e7359e5f6291c56e2704d812ab1975c33c91ff3d))
+
 ## [3.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.5...interface-v3.3.0) (2026-08-22)
 
 
