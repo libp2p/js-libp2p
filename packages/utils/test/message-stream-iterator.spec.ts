@@ -384,7 +384,7 @@ describe('message stream async iterator', () => {
     await expect(second).to.eventually.be.rejectedWith(err)
   })
 
-  it('should leave data unshifted after an iterator ended for the next reader', async () => {
+  it('should leave data pushed back after an iterator ended for the next reader', async () => {
     const [, inbound] = multiaddrConnectionPair()
     const conn = inbound as AbstractMultiaddrConnection
 

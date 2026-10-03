@@ -75,7 +75,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
   /**
    * Ends active async iterators. Unlike 'end' these run each time the readable
-   * end is done, eg. again after data is unshifted following 'end'
+   * end is done, eg. again after data is pushed back following 'end'
    */
   readonly #iteratorEnds = new Set<() => void>()
 
@@ -167,7 +167,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     const streamAsyncIterableEnd = (): void => {
       this.#iteratorEnds.delete(streamAsyncIterableEnd)
-      // data unshifted later must stay buffered for the next reader
+      // data pushed back later must stay buffered for the next reader
       this.removeEventListener('message', streamAsyncIterableOnMessageListener)
 
       // ending the pushable with an error discards data not yet yielded, so
