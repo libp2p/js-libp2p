@@ -97,6 +97,9 @@
     "./dist/src/private-to-public/listener.js": "./dist/src/private-to-public/listener.browser.js",
     "./dist/src/private-to-public/transport.js": "./dist/src/private-to-public/transport.browser.js",
     "./dist/src/private-to-public/utils/get-rtcpeerconnection.js": "./dist/src/private-to-public/utils/get-rtcpeerconnection.browser.js",
+    "./dist/src/private-to-public/utils/stun-listener.js": "./dist/src/private-to-public/utils/stun-listener.browser.js",
+    "node-datachannel": "./dist/src/webrtc/node-datachannel.browser.js",
+    "node-datachannel/polyfill": "./dist/src/webrtc/index.browser.js",
     "node:net": false,
     "node:os": false
   },
