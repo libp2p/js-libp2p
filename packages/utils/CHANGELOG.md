@@ -36,6 +36,25 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.2](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.1...utils-v7.4.2) (2026-10-03)
+
+
+### Bug Fixes
+
+* **utils:** ignore byteStream messages after unwrap ([#3642](https://github.com/libp2p/js-libp2p/issues/3642)) ([776cded](https://github.com/libp2p/js-libp2p/commit/776cdedf6c943c382cab3054bfc41297bf2f5886))
+
+
+### Dependencies
+
+* require main-event ^1.0.5 ([#3641](https://github.com/libp2p/js-libp2p/issues/3641)) ([e7359e5](https://github.com/libp2p/js-libp2p/commit/e7359e5f6291c56e2704d812ab1975c33c91ff3d))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/logger bumped from ^6.2.13 to ^6.2.14
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.23 to ^5.1.24
+    * @libp2p/peer-id bumped from ^6.0.15 to ^6.0.16
+
 ## [7.4.1](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.0...utils-v7.4.1) (2026-08-31)
 
 

@@ -110,6 +110,29 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.3.12](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.11...libp2p-v3.3.12) (2026-10-03)
+
+
+### Documentation
+
+* regenerate READMEs for mdast-util-to-markdown 2.1.3 ([#3647](https://github.com/libp2p/js-libp2p/issues/3647)) ([a9bae64](https://github.com/libp2p/js-libp2p/commit/a9bae64cbfad16d59b9f0594ff96aaabf3367e07))
+
+
+### Dependencies
+
+* require main-event ^1.0.5 ([#3641](https://github.com/libp2p/js-libp2p/issues/3641)) ([e7359e5](https://github.com/libp2p/js-libp2p/commit/e7359e5f6291c56e2704d812ab1975c33c91ff3d))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.23 to ^5.1.24
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/interface-internal bumped from ^3.1.13 to ^3.1.14
+    * @libp2p/logger bumped from ^6.2.13 to ^6.2.14
+    * @libp2p/multistream-select bumped from ^7.0.28 to ^7.0.29
+    * @libp2p/peer-collections bumped from ^7.0.28 to ^7.0.29
+    * @libp2p/peer-id bumped from ^6.0.15 to ^6.0.16
+    * @libp2p/peer-store bumped from ^12.0.28 to ^12.0.29
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+
 ## [3.3.11](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.10...libp2p-v3.3.11) (2026-09-02)
 
 
