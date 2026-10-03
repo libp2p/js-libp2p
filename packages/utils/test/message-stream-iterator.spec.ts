@@ -405,7 +405,7 @@ describe('message stream async iterator', () => {
     await iterator.return(undefined)
   })
 
-  it('should end iterators before closing the readable end has been sent', async () => {
+  it('should end iterators without waiting for closing the readable end to be sent', async () => {
     const [, inbound] = await streamPair()
     const stream = inbound as unknown as AbstractStream
 
@@ -414,14 +414,18 @@ describe('message stream async iterator', () => {
       value: async () => new Promise<void>(() => {})
     })
 
-    const reading = collect(stream)
+    const before = collect(stream)
 
     stream.pause()
     stream.onData(uint8ArrayFromString('hello world'))
-    stream.onRemoteCloseWrite()
     void stream.closeRead()
 
-    await expect(reading).to.eventually.be.empty()
+    // created while the readable end is closing, the remote is still writing
+    const during = collect(stream)
+
+    await expect(before).to.eventually.be.empty()
+    await expect(during).to.eventually.be.empty()
+    expect(stream.readStatus).to.equal('closing')
   })
 
   it('should end iterators before end listeners run', async () => {

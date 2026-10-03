@@ -195,11 +195,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   /**
-   * Returns true if the read buffer is empty and either the remote writable end
-   * or our readable end is closed
+   * Returns true if nothing is buffered and nothing more will arrive, because
+   * the remote writable end is closed or our readable end is closing or closed
    */
   private readableDone (): boolean {
-    return this.readBuffer.byteLength === 0 && (this.remoteWriteStatus === 'closed' || this.readStatus === 'closed')
+    return this.readBuffer.byteLength === 0 && (this.remoteWriteStatus === 'closed' || this.readStatus === 'closing' || this.readStatus === 'closed')
   }
 
   isReadable (): boolean {

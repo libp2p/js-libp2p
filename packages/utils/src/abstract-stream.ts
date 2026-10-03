@@ -81,7 +81,8 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
 
     this.readStatus = 'closing'
 
-    // iterators can end now if the remote has already finished writing
+    // no more data can be read, so end iterators and emit 'end' without waiting
+    // for the remote to be told
     this.maybeDispatchEnd()
 
     try {
