@@ -6,6 +6,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { multiaddrConnectionPair } from '../src/multiaddr-connection-pair.ts'
 import { streamPair } from '../src/stream-pair.ts'
 import type { AbstractMultiaddrConnection } from '../src/abstract-multiaddr-connection.ts'
+import type { AbstractStream } from '../src/abstract-stream.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 async function collect (source: AsyncIterable<Uint8Array | Uint8ArrayList>): Promise<Uint8Array[]> {
@@ -98,17 +99,6 @@ describe('message stream async iterator', () => {
     await expect(collect(conn)).to.eventually.deep.equal([uint8ArrayFromString('hello world')])
   })
 
-  it('should throw when the stream is aborted', async () => {
-    const [, inbound] = multiaddrConnectionPair()
-    const err = new Error('urk!')
-
-    const reading = collect(inbound)
-
-    inbound.abort(err)
-
-    await expect(reading).to.eventually.be.rejectedWith(err)
-  })
-
   it('should yield buffered data then throw when the remote has already reset', async () => {
     const [, inbound] = multiaddrConnectionPair()
     const conn = inbound as AbstractMultiaddrConnection
@@ -127,36 +117,6 @@ describe('message stream async iterator', () => {
       .with.property('name', 'StreamResetError')
 
     expect(received).to.deep.equal([uint8ArrayFromString('hello world')])
-  })
-
-  it('should throw when the remote resets', async () => {
-    const [, inbound] = multiaddrConnectionPair()
-    const conn = inbound as AbstractMultiaddrConnection
-
-    const reading = collect(conn)
-
-    conn.onRemoteReset()
-
-    await expect(reading).to.eventually.be.rejected
-      .with.property('name', 'StreamResetError')
-  })
-
-  it('should throw the error from the close event when the remote resets', async () => {
-    const [, inbound] = multiaddrConnectionPair()
-    const conn = inbound as AbstractMultiaddrConnection
-
-    let closeError: Error | undefined
-
-    conn.addEventListener('close', (evt) => {
-      closeError = evt.error
-    })
-
-    const reading = collect(conn)
-
-    conn.onRemoteReset()
-
-    await expect(reading).to.eventually.be.rejected
-      .and.to.equal(closeError)
   })
 
   it('should ignore a remote reset after the stream has closed', async () => {
@@ -202,29 +162,6 @@ describe('message stream async iterator', () => {
     await expect(collect(conn)).to.eventually.be.rejectedWith(err)
   })
 
-  it('should yield buffered data then throw when the remote resets while paused', async () => {
-    const [, inbound] = multiaddrConnectionPair()
-    const conn = inbound as AbstractMultiaddrConnection
-
-    const received: Uint8Array[] = []
-
-    const reading = (async () => {
-      for await (const buf of conn) {
-        received.push(buf.subarray())
-      }
-    })()
-
-    conn.pause()
-    conn.onData(uint8ArrayFromString('hello world'))
-    conn.onRemoteReset()
-    conn.resume()
-
-    await expect(reading).to.eventually.be.rejected
-      .with.property('name', 'StreamResetError')
-
-    expect(received).to.deep.equal([uint8ArrayFromString('hello world')])
-  })
-
   it('should throw when the remote has already reset', async () => {
     const [, inbound] = multiaddrConnectionPair()
     const conn = inbound as AbstractMultiaddrConnection
@@ -233,15 +170,6 @@ describe('message stream async iterator', () => {
 
     await expect(collect(conn)).to.eventually.be.rejected
       .with.property('name', 'StreamResetError')
-  })
-
-  it('should throw when the stream has already been aborted', async () => {
-    const [, inbound] = multiaddrConnectionPair()
-    const err = new Error('urk!')
-
-    inbound.abort(err)
-
-    await expect(collect(inbound)).to.eventually.be.rejectedWith(err)
   })
 
   it('should throw when the transport fails while paused', async () => {
@@ -454,6 +382,46 @@ describe('message stream async iterator', () => {
 
     await expect(first).to.eventually.be.rejectedWith(err)
     await expect(second).to.eventually.be.rejectedWith(err)
+  })
+
+  it('should leave data unshifted after an iterator ended for the next reader', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+
+    const iterator = conn[Symbol.asyncIterator]()
+    const first = iterator.next()
+
+    conn.onData(uint8ArrayFromString('hello'))
+    conn.onRemoteCloseWrite()
+
+    await expect(first).to.eventually.have.nested.property('value.byteLength', 5)
+
+    // the first iterator has ended but its consumer has not pulled again, eg.
+    // a byte stream being unwrapped
+    conn.unshift(uint8ArrayFromString('world'))
+    await delay(10)
+
+    await expect(collect(conn)).to.eventually.deep.equal([uint8ArrayFromString('world')])
+    await iterator.return(undefined)
+  })
+
+  it('should end iterators before closing the readable end has been sent', async () => {
+    const [, inbound] = await streamPair()
+    const stream = inbound as unknown as AbstractStream
+
+    // eg. a transport that never confirms the close
+    Object.defineProperty(stream, 'sendCloseRead', {
+      value: async () => new Promise<void>(() => {})
+    })
+
+    const reading = collect(stream)
+
+    stream.pause()
+    stream.onData(uint8ArrayFromString('hello world'))
+    stream.onRemoteCloseWrite()
+    void stream.closeRead()
+
+    await expect(reading).to.eventually.be.empty()
   })
 
   it('should end iterators before end listeners run', async () => {

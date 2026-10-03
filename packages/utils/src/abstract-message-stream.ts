@@ -167,6 +167,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     const streamAsyncIterableEnd = (): void => {
       this.#iteratorEnds.delete(streamAsyncIterableEnd)
+      // data unshifted later must stay buffered for the next reader
+      this.removeEventListener('message', streamAsyncIterableOnMessageListener)
 
       // ending the pushable with an error discards data not yet yielded, so
       // throw the error after the output drains instead
