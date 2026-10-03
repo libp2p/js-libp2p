@@ -94,7 +94,6 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
       // unread data has been discarded so the readable end is closed even if
       // the remote could not be told
       this.readStatus = 'closed'
-      this.maybeDispatchEnd()
     }
 
     this.log('closed readable end gracefully')

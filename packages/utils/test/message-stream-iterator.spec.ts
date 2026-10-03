@@ -426,6 +426,7 @@ describe('message stream async iterator', () => {
     await expect(before).to.eventually.be.empty()
     await expect(during).to.eventually.be.empty()
     expect(stream.readStatus).to.equal('closing')
+    expect(stream).to.have.property('readableEnded', true)
   })
 
   it('should end iterators before end listeners run', async () => {
