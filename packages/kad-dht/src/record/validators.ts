@@ -2,7 +2,7 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Validators } from '../index.js'
+import type { Validators } from '../index.ts'
 import type { Libp2pRecord } from '@libp2p/record'
 import type { AbortOptions } from 'it-pushable'
 

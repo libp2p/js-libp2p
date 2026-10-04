@@ -5,7 +5,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { tcp } from '../src/index.js'
+import { tcp } from '../src/index.ts'
 import type { Connection, Upgrader } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 

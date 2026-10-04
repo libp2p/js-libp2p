@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { ScalableCuckooFilter, createScalableCuckooFilter } from '../../src/filters/scalable-cuckoo-filter.ts'
 
@@ -17,7 +16,7 @@ describe('scalable-cuckoo-filter', () => {
 
   it('add 150k keys', () => {
     for (let i = 0; i < 150000; i++) {
-      const rand = randomBytes(36)
+      const rand = crypto.getRandomValues(new Uint8Array(36))
       keys.push(rand)
 
       expect(cuckoo.add(rand)).to.be.true()
@@ -46,7 +45,7 @@ describe('scalable-cuckoo-filter', () => {
 
   it('optimizes input', () => {
     const filter = createScalableCuckooFilter(100000, 0.001)
-    const key = randomBytes(32)
+    const key = crypto.getRandomValues(new Uint8Array(32))
 
     filter.add(key)
 

@@ -21,6 +21,73 @@
   * devDependencies
     * @libp2p/peer-id bumped from ^4.0.2 to ^4.0.3
 
+## [6.2.13](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.12...logger-v6.2.13) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+
+## [6.2.12](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.11...logger-v6.2.12) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+
+## [6.2.11](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.10...logger-v6.2.11) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+
+## [6.2.10](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.9...logger-v6.2.10) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+
+## [6.2.9](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.8...logger-v6.2.9) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+
+## [6.2.8](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.7...logger-v6.2.8) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+  * devDependencies
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+
 ## [6.2.7](https://github.com/libp2p/js-libp2p/compare/logger-v6.2.6...logger-v6.2.7) (2026-05-09)
 
 

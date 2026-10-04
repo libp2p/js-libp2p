@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { SimpleTimeCache } from '../src/utils/time-cache.js'
+import { SimpleTimeCache } from '../src/utils/time-cache.ts'
 
 describe('SimpleTimeCache', () => {
   const validityMs = 1000

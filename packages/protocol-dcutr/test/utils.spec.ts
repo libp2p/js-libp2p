@@ -2,7 +2,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { isPublicAndDialable } from '../src/utils.js'
+import { isPublicAndDialable } from '../src/utils.ts'
 import type { Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 

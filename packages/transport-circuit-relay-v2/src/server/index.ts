@@ -12,13 +12,13 @@ import {
   RELAY_SOURCE_TAG,
   RELAY_V2_HOP_CODEC,
   RELAY_V2_STOP_CODEC
-} from '../constants.js'
-import { HopMessage, Status, StopMessage } from '../pb/index.js'
-import { createLimitedRelay } from '../utils.js'
+} from '../constants.ts'
+import { HopMessage, Status, StopMessage } from '../pb/index.ts'
+import { createLimitedRelay } from '../utils.ts'
 import { ReservationStore } from './reservation-store.ts'
 import { ReservationVoucherRecord } from './reservation-voucher.ts'
-import type { CircuitRelayServerComponents, CircuitRelayServerInit, CircuitRelayService, RelayReservation } from '../index.js'
-import type { Reservation } from '../pb/index.js'
+import type { CircuitRelayServerComponents, CircuitRelayServerInit, CircuitRelayService, RelayReservation } from '../index.ts'
+import type { Reservation } from '../pb/index.ts'
 import type { Logger, Connection, Stream, PeerId, Startable, AbortOptions } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { ProtobufStream } from '@libp2p/utils'

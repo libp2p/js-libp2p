@@ -5,6 +5,40 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.3.0](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.5...interface-v3.3.0) (2026-08-22)
+
+
+### Features
+
+* emit an end event when the readable end closes ([#3608](https://github.com/libp2p/js-libp2p/issues/3608)) ([0967e75](https://github.com/libp2p/js-libp2p/commit/0967e75f56efcdc661ed9c8adcdae8f74ad781fc))
+
+
+### Bug Fixes
+
+* destroy sockets that resetAndDestroy() cannot reset ([#3607](https://github.com/libp2p/js-libp2p/issues/3607)) ([8786aa8](https://github.com/libp2p/js-libp2p/commit/8786aa8d011b1b2c0bfbb46db45a777d5e0e3172))
+
+## [3.2.5](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.4...interface-v3.2.5) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+
+## [3.2.4](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.3...interface-v3.2.4) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+
+## [3.2.3](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.2...interface-v3.2.3) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+
 ## [3.2.2](https://github.com/libp2p/js-libp2p/compare/interface-v3.2.1...interface-v3.2.2) (2026-04-16)
 
 

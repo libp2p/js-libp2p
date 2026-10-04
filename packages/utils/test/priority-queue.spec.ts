@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { PriorityQueue } from '../src/priority-queue.js'
+import { PriorityQueue } from '../src/priority-queue.ts'
 
 describe('priority-queue', () => {
   it('adds with priority', async () => {

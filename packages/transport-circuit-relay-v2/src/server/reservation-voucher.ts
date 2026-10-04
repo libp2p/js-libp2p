@@ -1,4 +1,4 @@
-import { ReservationVoucher } from '../pb/index.js'
+import { ReservationVoucher } from '../pb/index.ts'
 import type { PeerId, Record } from '@libp2p/interface'
 
 export interface ReservationVoucherOptions {

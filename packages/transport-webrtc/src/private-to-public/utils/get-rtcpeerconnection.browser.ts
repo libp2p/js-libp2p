@@ -29,7 +29,9 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
   const muxerFactory = new DataChannelMuxerFactory({
     peerConnection,
     metrics: options.events,
-    dataChannelOptions: options.dataChannel
+    log: options.log,
+    dataChannelOptions: options.dataChannel,
+    maxEarlyStreams: options.maxEarlyStreams
   })
 
   return {

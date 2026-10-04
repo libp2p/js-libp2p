@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import type { Daemon, DaemonFactory, NodeType, SpawnOptions, TransportType } from '../index.js'
+import type { Daemon, DaemonFactory, NodeType, SpawnOptions, TransportType } from '../index.ts'
 
 export function connectTests (factory: DaemonFactory): void {
   const nodeTypes: NodeType[] = ['js', 'go']

@@ -1,9 +1,9 @@
 import { trackedPeerMap } from '@libp2p/peer-collections'
 import { retimeableSignal } from 'retimeable-signal'
-import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.js'
-import { Status } from '../pb/index.js'
-import type { RelayReservation, ServerReservationStoreInit } from '../index.js'
-import type { Limit } from '../pb/index.js'
+import { DEFAULT_DATA_LIMIT, DEFAULT_DURATION_LIMIT, DEFAULT_MAX_RESERVATION_STORE_SIZE, DEFAULT_MAX_RESERVATION_TTL } from '../constants.ts'
+import { Status } from '../pb/index.ts'
+import type { RelayReservation, ServerReservationStoreInit } from '../index.ts'
+import type { Limit } from '../pb/index.ts'
 import type { ComponentLogger, Logger, Metrics, PeerId } from '@libp2p/interface'
 import type { PeerMap } from '@libp2p/peer-collections'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -66,13 +66,16 @@ export class ReservationStore {
         limit: checkedLimit,
         signal: retimeableSignal(this.reservationTtl)
       }
+
+      // only register the abort listener when a new signal is created:
+      // refreshing an existing reservation reuses the same signal, so attaching
+      // a listener on every refresh would leak one listener per refresh
+      reservation.signal.addEventListener('abort', () => {
+        this.reservations.delete(peer)
+      })
     }
 
     this.reservations.set(peer, reservation)
-
-    reservation.signal.addEventListener('abort', () => {
-      this.reservations.delete(peer)
-    })
 
     // return expiry time in seconds
     return { status: Status.OK, expire: Math.round(expiry.getTime() / 1000) }

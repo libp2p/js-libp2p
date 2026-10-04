@@ -1,5 +1,5 @@
 import Denque from 'denque'
-import { TimeCacheDuration } from '../constants.js'
+import { TimeCacheDuration } from '../constants.ts'
 
 export enum DeliveryRecordStatus {
   /**

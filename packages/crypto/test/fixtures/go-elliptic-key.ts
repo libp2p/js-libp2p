@@ -1,4 +1,4 @@
-import type { Curve } from '../../src/keys/ecdh/index.js'
+import type { Curve } from '../../src/keys/ecdh/index.ts'
 
 type GoEllipticKeys = {
   [key in Curve]: {

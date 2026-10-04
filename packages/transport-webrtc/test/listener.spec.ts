@@ -5,7 +5,7 @@ import { expect } from 'aegir/chai'
 import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { WebRTCPeerListener } from '../src/private-to-private/listener.js'
+import { WebRTCPeerListener } from '../src/private-to-private/listener.ts'
 import type { Listener } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 

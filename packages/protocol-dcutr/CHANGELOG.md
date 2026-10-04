@@ -44,6 +44,105 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.28](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.27...dcutr-v3.0.28) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.12 to ^3.1.13
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [3.0.27](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.26...dcutr-v3.0.27) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+
+## [3.0.26](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.25...dcutr-v3.0.26) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.10 to ^3.1.11
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [3.0.25](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.24...dcutr-v3.0.25) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [3.0.24](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.23...dcutr-v3.0.24) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [3.0.23](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.22...dcutr-v3.0.23) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/interface-internal bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
+## [3.0.22](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.21...dcutr-v3.0.22) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
+## [3.0.21](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.20...dcutr-v3.0.21) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+
+## [3.0.20](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.19...dcutr-v3.0.20) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
 ## [3.0.19](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.18...dcutr-v3.0.19) (2026-05-09)
 
 

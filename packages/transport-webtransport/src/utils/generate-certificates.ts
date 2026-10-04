@@ -1,4 +1,4 @@
-import type { WebTransportCertificate } from '../../src/index.js'
+import type { WebTransportCertificate } from '../../src/index.ts'
 
 export interface GenerateWebTransportCertificateOptions {
   days: number

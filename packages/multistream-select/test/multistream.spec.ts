@@ -4,7 +4,7 @@
 import { streamPair, lpStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { readString } from '../src/multistream.js'
+import { readString } from '../src/multistream.ts'
 
 describe('Multistream', () => {
   describe('Multistream.read', () => {

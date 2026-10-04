@@ -7,6 +7,7 @@ import { sha512 } from '@noble/hashes/sha2.js'
 import * as asn1js from 'asn1js'
 import { base64 } from 'multiformats/bases/base64'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { ITERATIONS, KEY_SIZE } from './constants.ts'
 import type { PrivateKey, RSAPrivateKey } from '@libp2p/interface'
 
@@ -74,11 +75,11 @@ export async function importFromPem (pem: string, password: string): Promise<RSA
       }
     )
 
-    const cryptoKey = await crypto.subtle.importKey('raw', encryptionKey, 'AES-CBC', false, ['decrypt'])
+    const cryptoKey = await crypto.subtle.importKey('raw', withArrayBuffer(encryptionKey), 'AES-CBC', false, ['decrypt'])
     const decrypted = toUint8Array(await crypto.subtle.decrypt({
       name: 'AES-CBC',
-      iv
-    }, cryptoKey, cipherText))
+      iv: withArrayBuffer(iv)
+    }, cryptoKey, withArrayBuffer(cipherText)))
 
     const { result: decryptedResult } = asn1js.fromBER(decrypted)
     plaintext = findPEMData(decryptedResult)

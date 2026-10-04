@@ -1,7 +1,7 @@
 import { secp256k1 as secp } from '@noble/curves/secp256k1.js'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { SigningError, VerificationError } from '../../errors.js'
-import { isPromise } from '../../util.js'
+import { SigningError, VerificationError } from '../../errors.ts'
+import { isPromise } from '../../util.ts'
 import type { AbortOptions } from '@libp2p/interface'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

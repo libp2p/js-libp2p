@@ -6,7 +6,7 @@ import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import range from 'lodash.range'
 import * as Digest from 'multiformats/hashes/digest'
-import { Message } from '../src/message/dht.js'
+import { Message } from '../src/message/dht.ts'
 
 describe('Message', () => {
   it('go-interop', () => {

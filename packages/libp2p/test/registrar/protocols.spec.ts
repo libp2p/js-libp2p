@@ -1,7 +1,7 @@
 import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
-import { createLibp2p } from '../../src/index.js'
-import type { Components } from '../../src/components.js'
+import { createLibp2p } from '../../src/index.ts'
+import type { Components } from '../../src/components.ts'
 import type { Libp2p } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 

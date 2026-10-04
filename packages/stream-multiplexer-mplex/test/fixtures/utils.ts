@@ -1,5 +1,5 @@
-import { MessageTypes } from '../../src/message-types.js'
-import type { Message } from '../../src/message-types.js'
+import { MessageTypes } from '../../src/message-types.ts'
+import type { Message } from '../../src/message-types.ts'
 
 export type MessageWithBytes = {
   [k in keyof Message]: Message[k]

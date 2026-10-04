@@ -3,7 +3,7 @@ import { ed25519 as ed } from '@noble/curves/ed25519.js'
 import { concat as uint8arrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8arrayToString } from 'uint8arrays/to-string'
-import type { Uint8ArrayKeyPair } from '../interface.js'
+import type { Uint8ArrayKeyPair } from '../interface.ts'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const keypair = crypto.generateKeyPairSync

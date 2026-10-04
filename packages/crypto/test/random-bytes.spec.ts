@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import randomBytes from '../src/random-bytes.js'
+import randomBytes from '../src/random-bytes.ts'
 
 describe('randomBytes', () => {
   it('produces random bytes', () => {

@@ -6,7 +6,7 @@ import all from 'it-all'
 import toBuffer from 'it-to-buffer'
 import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { TestSetup } from '../index.js'
+import type { TestSetup } from '../index.ts'
 import type { ConnectionEncrypter, PeerId, PrivateKey } from '@libp2p/interface'
 
 export interface ConnectionEncrypterSetupArgs {

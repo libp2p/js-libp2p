@@ -4,7 +4,7 @@ import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { stubInterface } from 'sinon-ts'
-import { MulticastDNS } from '../src/mdns.js'
+import { MulticastDNS } from '../src/mdns.ts'
 import type { AddressManager } from '@libp2p/interface-internal'
 
 const isCI = Boolean(process.env.CI)

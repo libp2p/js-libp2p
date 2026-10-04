@@ -7,15 +7,14 @@ import * as asn1js from 'asn1js'
 import { create } from 'multiformats/hashes/digest'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { randomBytes } from '../../src/index.js'
-import { privateKeyFromCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.js'
-import * as pb from '../../src/keys/keys.js'
-import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from '../../src/keys/rsa/rsa.js'
-import { MAX_RSA_KEY_SIZE, jwkToPkcs1, jwkToPkix, jwkToRSAPrivateKey, pkcs1ToJwk, pkcs1ToRSAPrivateKey, pkixToJwk, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.js'
-import fixtures from '../fixtures/go-key-rsa.js'
-import { RSA_KEY_1024_BITS, RSA_KEY_2048_BITS, RSA_KEY_512_BITS, RSA_KEY_8192_BITS, RSA_KEY_8200_BITS } from '../fixtures/rsa.js'
-import { testGarbage } from '../helpers/test-garbage-error-handling.js'
-import type { JWKKeyPair } from '../../src/keys/interface.js'
+import { privateKeyFromCryptoKeyPair, generateKeyPair, privateKeyFromProtobuf, privateKeyFromRaw, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyFromRaw, publicKeyToProtobuf, privateKeyToCryptoKeyPair } from '../../src/keys/index.ts'
+import * as pb from '../../src/keys/keys.ts'
+import { RSAPrivateKey as RSAPrivateKeyClass, RSAPublicKey as RSAPublicKeyClass } from '../../src/keys/rsa/rsa.ts'
+import { MAX_RSA_KEY_SIZE, jwkToPkcs1, jwkToPkix, jwkToRSAPrivateKey, pkcs1ToJwk, pkcs1ToRSAPrivateKey, pkixToJwk, pkixToRSAPublicKey } from '../../src/keys/rsa/utils.ts'
+import fixtures from '../fixtures/go-key-rsa.ts'
+import { RSA_KEY_1024_BITS, RSA_KEY_2048_BITS, RSA_KEY_512_BITS, RSA_KEY_8192_BITS, RSA_KEY_8200_BITS } from '../fixtures/rsa.ts'
+import { testGarbage } from '../helpers/test-garbage-error-handling.ts'
+import type { JWKKeyPair } from '../../src/keys/interface.ts'
 import type { RSAPrivateKey } from '@libp2p/interface'
 
 const SHA2_256_CODE = 0x12
@@ -67,8 +66,8 @@ describe('RSA', function () {
 
   it('signs a list', async () => {
     const text = new Uint8ArrayList(
-      randomBytes(512),
-      randomBytes(512)
+      crypto.getRandomValues(new Uint8Array(512)),
+      crypto.getRandomValues(new Uint8Array(512))
     )
     const sig = await key.sign(text)
 
@@ -90,7 +89,7 @@ describe('RSA', function () {
   it('should abort signing', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     await expect((async () => {
       return key.sign(text, {
         signal: controller.signal
@@ -102,7 +101,7 @@ describe('RSA', function () {
   it('should abort verifying', async () => {
     const controller = new AbortController()
     controller.abort()
-    const text = randomBytes(512)
+    const text = crypto.getRandomValues(new Uint8Array(512))
     const sig = await key.sign(text)
 
     await expect((async () => {

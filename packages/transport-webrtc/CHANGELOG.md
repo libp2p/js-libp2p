@@ -111,6 +111,166 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [6.0.33](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.32...webrtc-v6.0.33) (2026-09-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/noise bumped from ^17.0.2 to ^17.0.3
+
+## [6.0.32](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.31...webrtc-v6.0.32) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/noise bumped from ^17.0.1 to ^17.0.2
+
+## [6.0.31](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.30...webrtc-v6.0.31) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.12 to ^3.1.13
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [6.0.30](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.29...webrtc-v6.0.30) (2026-08-22)
+
+
+### Dependencies
+
+* update node-datachannel to 0.33.0 ([#3600](https://github.com/libp2p/js-libp2p/issues/3600)) ([e3c6356](https://github.com/libp2p/js-libp2p/commit/e3c6356cee1eab589a7d1157e05fd1547e4f0b67))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/keychain bumped from ^6.1.6 to ^6.1.7
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+
+## [6.0.29](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.28...webrtc-v6.0.29) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/interface-internal bumped from ^3.1.10 to ^3.1.11
+    * @libp2p/keychain bumped from ^6.1.5 to ^6.1.6
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+
+## [6.0.28](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.27...webrtc-v6.0.28) (2026-07-26)
+
+
+### Bug Fixes
+
+* **transport-webrtc:** validate ufrag from incoming STUN requests ([#3584](https://github.com/libp2p/js-libp2p/issues/3584)) ([68794c8](https://github.com/libp2p/js-libp2p/commit/68794c8e2e67d5f38da59e379dc051b2789e46f6))
+* validate ufrag from incoming STUN requests in webrtc-direct ([68794c8](https://github.com/libp2p/js-libp2p/commit/68794c8e2e67d5f38da59e379dc051b2789e46f6))
+* **webrtc:** buffer early data channel messages until muxer adoption ([#3576](https://github.com/libp2p/js-libp2p/issues/3576)) ([5927b62](https://github.com/libp2p/js-libp2p/commit/5927b62d6eeeb89a50cce9e3c8367e9bf4372d43))
+
+
+### Dependencies
+
+* bump @types/sinon from 21.0.1 to 22.0.0 ([#3554](https://github.com/libp2p/js-libp2p/issues/3554)) ([02fcf70](https://github.com/libp2p/js-libp2p/commit/02fcf704d8795dd24f1dd243f67d12b7ffd9b259))
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/keychain bumped from ^6.1.4 to ^6.1.5
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+
+## [6.0.27](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.26...webrtc-v6.0.27) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [6.0.26](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.25...webrtc-v6.0.26) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/interface-internal bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/keychain bumped from ^6.1.3 to ^6.1.4
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+
+## [6.0.25](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.24...webrtc-v6.0.25) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/keychain bumped from ^6.1.2 to ^6.1.3
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+
+## [6.0.24](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.23...webrtc-v6.0.24) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/keychain bumped from ^6.1.1 to ^6.1.2
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+
+## [6.0.23](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.22...webrtc-v6.0.23) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
 ## [6.0.22](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.21...webrtc-v6.0.22) (2026-05-09)
 
 

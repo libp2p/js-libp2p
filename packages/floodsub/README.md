@@ -30,7 +30,7 @@ This module is a naive implementation of pubsub. It broadcasts all messages to a
 
 It exists for academic purposes only, you should not use it in production.
 
-Instead please use [gossipsub](https://www.npmjs.com/package/@chainsafe/libp2p-gossipsub) - a more complete implementation which is also compatible with floodsub.
+Instead please use [gossipsub](https://www.npmjs.com/package/@libp2p/gossipsub) - a more complete implementation which is also compatible with floodsub.
 
 ## Example - Configuring libp2p to use floodsub
 

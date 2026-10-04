@@ -1,5 +1,5 @@
-import type { Message } from '../../message/dht.js'
-import type { DHTMessageHandler } from '../index.js'
+import type { Message } from '../../message/dht.ts'
+import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
 
 export interface PingComponents {

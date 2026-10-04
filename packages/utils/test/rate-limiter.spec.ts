@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { RateLimiter } from '../src/rate-limiter.js'
+import { RateLimiter } from '../src/rate-limiter.ts'
 
 describe('RateLimiter with fixed window', function () {
   this.timeout(5000)

@@ -1,5 +1,5 @@
-import { Decoder, MAX_MSG_QUEUE_SIZE, MAX_MSG_SIZE } from '../../src/decode.js'
-import type { Message } from '../../src/message-types.js'
+import { Decoder, MAX_MSG_QUEUE_SIZE, MAX_MSG_SIZE } from '../../src/decode.ts'
+import type { Message } from '../../src/message-types.ts'
 import type { Source } from 'it-stream-types'
 import type { Uint8ArrayList } from 'uint8arraylist'
 

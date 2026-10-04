@@ -6,10 +6,10 @@ import all from 'it-all'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { encode } from '../src/encode.js'
+import { encode } from '../src/encode.ts'
 import { decode } from './fixtures/decode.ts'
 import { messageWithBytes } from './fixtures/utils.ts'
-import type { Message, NewStreamMessage } from '../src/message-types.js'
+import type { Message, NewStreamMessage } from '../src/message-types.ts'
 
 describe('coder', () => {
   it('should encode header', async () => {

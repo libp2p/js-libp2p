@@ -1,4 +1,4 @@
-import type { DisjointPath, QueryEvent } from '../index.js'
+import type { DisjointPath, QueryEvent } from '../index.ts'
 import type { PeerInfo } from '@libp2p/interface'
 
 export interface QueryContext {

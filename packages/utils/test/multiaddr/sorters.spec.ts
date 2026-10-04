@@ -6,7 +6,7 @@ import {
   publicAddressesFirst,
   circuitRelayAddressesLast,
   defaultMultiaddrSorter
-} from '../../src/multiaddr/sorters.js'
+} from '../../src/multiaddr/sorters.ts'
 
 describe('multiaddr sorters', () => {
   describe('reliableTransportsFirst', () => {

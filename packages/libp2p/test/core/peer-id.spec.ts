@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
-import { createLibp2p } from '../../src/index.js'
-import type { Libp2p } from '../../src/index.js'
+import { createLibp2p } from '../../src/index.ts'
+import type { Libp2p } from '../../src/index.ts'
 
 describe('peer-id', () => {
   let libp2p: Libp2p

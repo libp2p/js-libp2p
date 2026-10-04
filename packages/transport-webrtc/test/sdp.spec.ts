@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { MAX_MESSAGE_SIZE } from '../src/constants.js'
-import * as underTest from '../src/private-to-public/utils/sdp.js'
+import { MAX_MESSAGE_SIZE } from '../src/constants.ts'
+import * as underTest from '../src/private-to-public/utils/sdp.ts'
 
 const sampleMultiAddr = multiaddr('/ip4/0.0.0.0/udp/56093/webrtc/certhash/uEiByaEfNSLBexWBNFZy_QB1vAKEj7JAXDizRs4_SnTflsQ')
 /* spell-checker:disable-next-line */
@@ -84,5 +84,12 @@ a=end-of-candidates`
     const output = underTest.fingerprint2Ma(input)
 
     expect(output.toString()).to.equal('/certhash/uEiC5P6FL6EZzCG9zUT4nnVa3KWdMSriNIe-_5roWN7psKg')
+  })
+
+  it('renders the client offer ice-pwd verbatim', () => {
+    const result = underTest.clientOfferFromMultiAddr(sampleMultiAddr, 'short-ufrag')
+
+    expect(result.sdp).to.contain('a=ice-ufrag:short-ufrag')
+    expect(result.sdp).to.contain('a=ice-pwd:short-ufrag\n')
   })
 })

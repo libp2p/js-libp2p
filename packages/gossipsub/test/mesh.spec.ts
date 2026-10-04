@@ -2,7 +2,7 @@ import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { pEvent } from 'p-event'
-import { GossipsubDhi } from '../src/constants.js'
+import { GossipsubDhi } from '../src/constants.ts'
 import { connectAllPubSubNodes, createComponentsArray } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
 

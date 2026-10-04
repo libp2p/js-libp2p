@@ -1,5 +1,4 @@
-import { randomBytes } from '@libp2p/crypto'
-import { ConnectionStaleError, serviceCapabilities } from '@libp2p/interface'
+import { serviceCapabilities } from '@libp2p/interface'
 import { AdaptiveTimeout, byteStream } from '@libp2p/utils'
 import { setMaxListeners } from 'main-event'
 import type { ComponentLogger, Logger, Metrics, Startable, Stream } from '@libp2p/interface'
@@ -7,7 +6,6 @@ import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
 
 const DEFAULT_PING_INTERVAL_MS = 10000
-const DEFAULT_CONNECTION_STALE_TIMEOUT_MS = 60000
 const PROTOCOL_VERSION = '1.0.0'
 const PROTOCOL_NAME = 'ping'
 const PROTOCOL_PREFIX = 'ipfs'
@@ -30,30 +28,16 @@ export interface ConnectionMonitorInit {
   pingInterval?: number
 
   /**
-   * Timeout settings for how long an individual ping is allowed to take. The
-   * timeout is adaptive to cope with slower networks or nodes that have
-   * changing network characteristics, such as mobile.
+   * Timeout settings for how long the ping is allowed to take before the
+   * connection will be judged inactive and aborted.
    *
-   * A ping that exceeds this is logged but does not by itself cause the
-   * connection to be aborted - the staleness check on `connectionStaleTimeout`
-   * decides that.
+   * The timeout is adaptive to cope with slower networks or nodes that
+   * have changing network characteristics, such as mobile.
    */
   pingTimeout?: Omit<AdaptiveTimeoutInit, 'metricsName' | 'metrics'>
 
   /**
-   * When `abortConnectionOnPingFailure` is true and a ping fails, the
-   * connection will only be aborted if no data has been received from the
-   * remote peer on the underlying transport for this many ms. This avoids
-   * tearing down connections that are healthy but where a single ping was
-   * delayed by transient network conditions or backpressure.
-   *
-   * @default 60000
-   */
-  connectionStaleTimeout?: number
-
-  /**
-   * If true, a connection that has not received any data from the remote peer
-   * within `connectionStaleTimeout` ms will be aborted when its ping fails.
+   * If true, any connection that fails the ping will be aborted
    *
    * @default true
    */
@@ -79,7 +63,6 @@ export class ConnectionMonitor implements Startable {
   private readonly log: Logger
   private heartbeatInterval?: ReturnType<typeof setInterval>
   private readonly pingIntervalMs: number
-  private readonly connectionStaleTimeoutMs: number
   private abortController?: AbortController
   private readonly timeout: AdaptiveTimeout
   private readonly abortConnectionOnPingFailure: boolean
@@ -90,7 +73,6 @@ export class ConnectionMonitor implements Startable {
 
     this.log = components.logger.forComponent('libp2p:connection-monitor')
     this.pingIntervalMs = init.pingInterval ?? DEFAULT_PING_INTERVAL_MS
-    this.connectionStaleTimeoutMs = init.connectionStaleTimeout ?? DEFAULT_CONNECTION_STALE_TIMEOUT_MS
     this.abortConnectionOnPingFailure = init.abortConnectionOnPingFailure ?? DEFAULT_ABORT_CONNECTION_ON_PING_FAILURE
     this.timeout = new AdaptiveTimeout({
       ...(init.pingTimeout ?? {}),
@@ -127,7 +109,7 @@ export class ConnectionMonitor implements Startable {
             start = Date.now()
 
             await Promise.all([
-              bs.write(randomBytes(PING_LENGTH), {
+              bs.write(crypto.getRandomValues(new Uint8Array(PING_LENGTH)), {
                 signal
               }),
               bs.read({
@@ -158,19 +140,13 @@ export class ConnectionMonitor implements Startable {
           }
         })
           .catch(err => {
-            if (!this.abortConnectionOnPingFailure) {
-              this.log('ping failed but not aborting due to abortConnectionOnPingFailure flag - %e', err)
-              return
-            }
+            this.log.error('error during heartbeat - %e', err)
 
-            const lastReadAt = conn.timeline.lastReadAt ?? conn.timeline.open
-            const idleMs = Date.now() - lastReadAt
-
-            if (idleMs > this.connectionStaleTimeoutMs) {
-              this.log.error('aborting connection - ping failed and no data received from peer for %dms - %e', idleMs, err)
-              conn.abort(new ConnectionStaleError(`no data received from peer for ${idleMs}ms`))
+            if (this.abortConnectionOnPingFailure) {
+              this.log.error('aborting connection due to ping failure')
+              conn.abort(err)
             } else {
-              this.log('ping failed but peer sent data %dms ago, not aborting - %e', idleMs, err)
+              this.log('connection ping failed, but not aborting due to abortConnectionOnPingFailure flag')
             }
           })
       })

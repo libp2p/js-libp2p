@@ -3,7 +3,7 @@ import { isMultiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import pDefer from 'p-defer'
-import type { TestSetup } from '../index.js'
+import type { TestSetup } from '../index.ts'
 import type { PeerDiscovery } from '@libp2p/interface'
 
 export default (common: TestSetup<PeerDiscovery>): void => {

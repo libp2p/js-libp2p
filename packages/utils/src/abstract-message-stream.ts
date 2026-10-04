@@ -65,6 +65,20 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   protected readonly writeBuffer: Uint8ArrayList
   protected sendingData: boolean
 
+  #readableEnded = false
+
+  /**
+   * The error the stream was aborted or reset with, thrown by async iterators
+   * after they have yielded all received data
+   */
+  #closeError?: Error
+
+  /**
+   * Ends active async iterators. Unlike 'end' these run each time the readable
+   * end is done, eg. again after data is pushed back following 'end'
+   */
+  readonly #iteratorEnds = new Set<() => void>()
+
   private onDrainPromise?: PromiseWithResolvers<void>
 
   constructor (init: MessageStreamInit) {
@@ -100,7 +114,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
         this.writableNeedsDrain = false
 
         queueMicrotask(() => {
-          this.processSendQueue()
+          try {
+            this.processSendQueue()
+          } catch (err) {
+            this.log.error('processSendQueue threw - %e', err)
+          }
         })
       }
 
@@ -116,6 +134,10 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
   get readBufferLength (): number {
     return this.readBuffer.byteLength
+  }
+
+  get readableEnded (): boolean {
+    return this.#readableEnded
   }
 
   get writeBufferLength (): number {
@@ -135,34 +157,49 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   async * [Symbol.asyncIterator] (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
-    if (this.readStatus !== 'readable' && this.readStatus !== 'paused') {
-      return
-    }
-
     const output = pushable<Uint8Array | Uint8ArrayList>()
+    let error: Error | undefined
 
     const streamAsyncIterableOnMessageListener = (evt: StreamMessageEvent): void => {
       output.push(evt.data)
     }
     this.addEventListener('message', streamAsyncIterableOnMessageListener)
 
-    const streamAsyncIterableOnCloseListener = (evt: StreamCloseEvent): void => {
-      output.end(evt.error)
-    }
-    this.addEventListener('close', streamAsyncIterableOnCloseListener)
+    const streamAsyncIterableEnd = (): void => {
+      this.#iteratorEnds.delete(streamAsyncIterableEnd)
+      // data pushed back later must stay buffered for the next reader
+      this.removeEventListener('message', streamAsyncIterableOnMessageListener)
 
-    const streamAsyncIterableOnRemoteCloseWriteListener = (): void => {
+      // ending the pushable with an error discards data not yet yielded, so
+      // throw the error after the output drains instead
+      error = this.#closeError
       output.end()
     }
-    this.addEventListener('remoteCloseWrite', streamAsyncIterableOnRemoteCloseWriteListener)
+    this.#iteratorEnds.add(streamAsyncIterableEnd)
+
+    // there may already be nothing left to read
+    if (this.readableDone()) {
+      streamAsyncIterableEnd()
+    }
 
     try {
       yield * output
+
+      if (error != null) {
+        throw error
+      }
     } finally {
       this.removeEventListener('message', streamAsyncIterableOnMessageListener)
-      this.removeEventListener('close', streamAsyncIterableOnCloseListener)
-      this.removeEventListener('remoteCloseWrite', streamAsyncIterableOnRemoteCloseWriteListener)
+      this.#iteratorEnds.delete(streamAsyncIterableEnd)
     }
+  }
+
+  /**
+   * Returns true if nothing is buffered and nothing more will arrive, because
+   * the remote writable end is closed or our readable end is closing or closed
+   */
+  private readableDone (): boolean {
+    return this.readBuffer.byteLength === 0 && (this.remoteWriteStatus === 'closed' || this.readStatus === 'closing' || this.readStatus === 'closed')
   }
 
   isReadable (): boolean {
@@ -186,12 +223,22 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
    */
   abort (err: Error): void {
     if (this.status === 'aborted' || this.status === 'reset' || this.status === 'closed') {
+      // a paused reader can still hold unread data after the stream closes,
+      // discard it so iterators waiting on it end
+      if (this.readBuffer.byteLength > 0) {
+        this.#closeError ??= err
+        this.readBuffer.consume(this.readBuffer.byteLength)
+        this.readStatus = 'closed'
+        this.maybeDispatchEnd()
+      }
+
       return
     }
 
     this.log.error('abort with error - %e', err)
 
     this.status = 'aborted'
+    this.#closeError = err
 
     // throw away unread data
     if (this.readBuffer.byteLength > 0) {
@@ -210,11 +257,12 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.readStatus = 'closed'
     this.remoteReadStatus = 'closed'
     this.timeline.close = Date.now()
+    this.maybeDispatchEnd()
 
     try {
       this.sendReset(err)
     } catch (err: any) {
-      this.log('failed to send reset to remote - %e', err)
+      this.log.error('failed to send reset to remote - %e', err)
     }
 
     this.dispatchEvent(new StreamAbortEvent(err))
@@ -336,11 +384,19 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   /**
-   * Receive a reset message - close immediately for reading and writing (remote
-   * error)
+   * Receive a reset message (remote error) - close immediately for writing,
+   * buffered data can still be read. Ignored once the stream has closed
    */
   onRemoteReset (): void {
+    // only emit one 'close' event and keep the first close error
+    if (this.status === 'aborted' || this.status === 'reset' || this.status === 'closed') {
+      return
+    }
+
     this.log('remote reset')
+
+    const err = new StreamResetError()
+    this.#closeError = err
 
     this.status = 'reset'
     this.writeStatus = 'closed'
@@ -350,9 +406,9 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     if (this.readBuffer.byteLength === 0) {
       this.readStatus = 'closed'
+      this.maybeDispatchEnd()
     }
 
-    const err = new StreamResetError()
     this.dispatchEvent(new StreamResetEvent(err))
   }
 
@@ -382,16 +438,15 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }
 
     if (err != null) {
+      // abort dispatches 'end' itself, once the stream is fully terminal
       this.abort(err)
-    } else {
-      if (this.status === 'open' || this.status === 'closing') {
-        this.timeline.close = Date.now()
-        this.status = 'closed'
-        this.writeStatus = 'closed'
-        this.remoteWriteStatus = 'closed'
-        this.remoteReadStatus = 'closed'
-        this.dispatchEvent(new StreamCloseEvent())
-      }
+    } else if (this.status === 'open' || this.status === 'closing') {
+      this.timeline.close = Date.now()
+      this.status = 'closed'
+
+      // this may be the end even if the readable end was not closed above
+      this.maybeDispatchEnd()
+      this.dispatchEvent(new StreamCloseEvent())
     }
   }
 
@@ -408,6 +463,8 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.remoteWriteStatus = 'closed'
 
     this.safeDispatchEvent('remoteCloseWrite')
+
+    this.maybeDispatchEnd()
 
     if (this.writeStatus === 'closed') {
       this.onTransportClosed()
@@ -450,6 +507,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       return true
     }
 
+    if (this.writeStatus !== 'writable' && this.writeStatus !== 'closing') {
+      this.log.trace('not processing send queue as stream is %s', this.writeStatus)
+      return false
+    }
+
     this.sendingData = true
 
     this.log.trace('processing send queue with %d queued bytes', this.writeBuffer.byteLength)
@@ -480,7 +542,18 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
         // sending data can cause buffers to fill up, events to be emitted and
         // this method to be invoked again
-        const sendResult = this.sendData(toSend)
+        let sendResult: SendResult
+
+        try {
+          sendResult = this.sendData(toSend)
+        } catch (err: any) {
+          // restore the consumed chunk so abort() emits 'idle' for the drained
+          // write buffer (normally emitted here on completion, but the send threw)
+          this.writeBuffer.prepend(willSend)
+          this.abort(err)
+          throw err
+        }
+
         canSendMore = sendResult.canSendMore
         sentBytes += sendResult.sentBytes
 
@@ -509,6 +582,25 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     } finally {
       this.sendingData = false
     }
+  }
+
+  /**
+   * If nothing is buffered and no more data will be delivered, end any active
+   * async iterators and emit 'end'. 'end' is emitted at most once
+   */
+  protected maybeDispatchEnd (): void {
+    if (!this.readableDone()) {
+      return
+    }
+
+    this.#iteratorEnds.forEach(end => { end() })
+
+    if (this.#readableEnded) {
+      return
+    }
+
+    this.#readableEnded = true
+    this.safeDispatchEvent('end')
   }
 
   protected dispatchReadBuffer (): void {
@@ -543,6 +635,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       if (this.readBuffer.byteLength === 0 && this.remoteWriteStatus === 'closed') {
         this.log('close readable end after dispatching read buffer and remote writable end is closed')
         this.readStatus = 'closed'
+        this.maybeDispatchEnd()
       }
 
       // abort if we failed to consume the read buffer and it is too large

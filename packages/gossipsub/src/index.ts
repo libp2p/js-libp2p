@@ -1,3 +1,40 @@
+/**
+ * @packageDocumentation
+ *
+ * Gossipsub is an implementation of pubsub based on meshsub and floodsub.
+ *
+ * You can read the specification [here](https://github.com/libp2p/specs/tree/master/pubsub/gossipsub).
+ *
+ * `@libp2p/gossipsub` currently implements [version 1.1](https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md) of the spec.
+ *
+ * Formerly published as [`@chainsafe/libp2p-gossipsub`](https://www.npmjs.com/package/@chainsafe/libp2p-gossipsub).
+ *
+ * @example Configuring libp2p to use gossipsub
+ *
+ * ```typescript
+ * import { identify } from '@libp2p/identify'
+ * import { createLibp2p } from 'libp2p'
+ * import { gossipsub } from '@libp2p/gossipsub'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     identify: identify(),
+ *     pubsub: gossipsub()
+ *   }
+ *   //... other options
+ * })
+ * await node.start()
+ *
+ * node.services.pubsub.addEventListener('message', (evt) => {
+ *   console.log(`${evt.detail.topic}:`, new TextDecoder().decode(evt.detail.data))
+ * })
+ *
+ * node.services.pubsub.subscribe('fruit')
+ *
+ * node.services.pubsub.publish('fruit', new TextEncoder().encode('banana'))
+ * ```
+ */
+
 import * as constants from './constants.ts'
 import { GossipSub as GossipSubClass } from './gossipsub.ts'
 import { MessageCache } from './message-cache.ts'
@@ -196,6 +233,18 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
    * If provided, only allow topics in this list
    */
   allowedTopics?: string[] | Set<string>
+
+  /**
+   * A per-peer memory budget for tracking that peer's topic subscriptions. Each
+   * subscribed topic costs its string length plus a fixed per-entry overhead
+   * (~1 KiB, approximating the Map/Set bookkeeping), so this bounds both the
+   * total topic bytes and the number of topics a single peer may occupy in the
+   * topics map (roughly budget / 1 KiB topics). Subscriptions beyond the budget
+   * are ignored; a peer that reaches it silently stops receiving messages for
+   * further topics, so keep this well above any legitimate peer's needs.
+   * (default 1 MiB, ~1000 topics)
+   */
+  maxTopicBytesPerPeer?: number
 
   /**
    * Limits to bound protobuf decoding

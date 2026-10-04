@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { NodeType, PeerIdType } from '../../index.js'
+import type { NodeType, PeerIdType } from '../../index.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

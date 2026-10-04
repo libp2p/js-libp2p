@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { removeFirstNItemsFromSet, removeItemsFromSet } from '../../src/utils/set.js'
+import { removeFirstNItemsFromSet, removeItemsFromSet } from '../../src/utils/set.ts'
 
 describe('Set util', function () {
   describe('removeItemsFromSet', function () {

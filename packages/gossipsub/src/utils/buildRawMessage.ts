@@ -5,10 +5,10 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { StrictSign, StrictNoSign } from '../index.ts'
-import { RPC } from '../message/rpc.js'
-import { PublishConfigType, ValidateError } from '../types.js'
+import { RPC } from '../message/rpc.ts'
+import { PublishConfigType, ValidateError } from '../types.ts'
 import type { Message } from '../index.ts'
-import type { PublishConfig, TopicStr } from '../types.js'
+import type { PublishConfig, TopicStr } from '../types.ts'
 import type { PublicKey, PeerId } from '@libp2p/interface'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
@@ -101,13 +101,13 @@ export async function validateToRawMessage (
   msg: RPC.Message
 ): Promise<ValidationResult> {
   // If strict-sign, verify all
-  // If anonymous (no-sign), ensure no preven
+  // If anonymous (no-sign), ensure no signature, key, from or seqno is present
 
   switch (signaturePolicy) {
     case StrictNoSign:
       if (msg.signature != null) { return { valid: false, error: ValidateError.SignaturePresent } }
       if (msg.seqno != null) { return { valid: false, error: ValidateError.SeqnoPresent } }
-      if (msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
+      if (msg.from != null || msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
 
       return { valid: true, message: { type: 'unsigned', topic: msg.topic, data: msg.data ?? new Uint8Array(0) } }
 
@@ -138,9 +138,16 @@ export async function validateToRawMessage (
 
       let publicKey: PublicKey
       if (msg.key != null) {
-        publicKey = publicKeyFromProtobuf(msg.key)
-        // TODO: Should `fromPeerId.pubKey` be optional?
-        if (fromPeerId.publicKey !== undefined && !publicKey.equals(fromPeerId.publicKey)) {
+        // malformed key bytes must reject rather than throw, so an attacker
+        // sending them is still scored as delivering an invalid message
+        try {
+          publicKey = publicKeyFromProtobuf(msg.key)
+        } catch {
+          return { valid: false, error: ValidateError.InvalidPeerId }
+        }
+
+        // the message key must derive to the `from` peer id
+        if (!fromPeerId.equals(publicKey.toMultihash().bytes)) {
           return { valid: false, error: ValidateError.InvalidPeerId }
         }
       } else {
@@ -163,7 +170,17 @@ export async function validateToRawMessage (
       // the signature is over the bytes "libp2p-pubsub:<protobuf-message>"
       const bytes = uint8ArrayConcat([SignPrefix, RPC.Message.encode(rpcMsgPreSign)])
 
-      if (!(await publicKey.verify(bytes, msg.signature))) {
+      // a malformed signature (e.g. the wrong length) makes verify throw for
+      // some key types; treat that as an invalid signature so the peer is still
+      // scored rather than the message escaping to the unscored error path
+      let validSignature: boolean
+      try {
+        validSignature = await publicKey.verify(bytes, msg.signature)
+      } catch {
+        validSignature = false
+      }
+
+      if (!validSignature) {
         return { valid: false, error: ValidateError.InvalidSignature }
       }
 
@@ -176,7 +193,7 @@ export async function validateToRawMessage (
           sequenceNumber: BigInt(`0x${uint8ArrayToString(msg.seqno, 'base16')}`),
           topic: msg.topic,
           signature: msg.signature,
-          key: msg.key != null ? publicKeyFromProtobuf(msg.key) : publicKey
+          key: publicKey
         }
       }
     }

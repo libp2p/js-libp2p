@@ -6,6 +6,123 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.1.10](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.9...tls-v3.1.10) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [3.1.9](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.8...tls-v3.1.9) (2026-08-22)
+
+
+### Bug Fixes
+
+* destroy sockets that resetAndDestroy() cannot reset ([#3607](https://github.com/libp2p/js-libp2p/issues/3607)) ([8786aa8](https://github.com/libp2p/js-libp2p/commit/8786aa8d011b1b2c0bfbb46db45a777d5e0e3172))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+
+## [3.1.8](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.7...tls-v3.1.8) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+
+## [3.1.7](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.6...tls-v3.1.7) (2026-07-26)
+
+
+### Dependencies
+
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+
+## [3.1.6](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.5...tls-v3.1.6) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [3.1.5](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.4...tls-v3.1.5) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+
+## [3.1.4](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.3...tls-v3.1.4) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+
+## [3.1.3](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.2...tls-v3.1.3) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+
+## [3.1.2](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.1...tls-v3.1.2) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
 ## [3.1.1](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.0...tls-v3.1.1) (2026-05-09)
 
 

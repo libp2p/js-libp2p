@@ -2,7 +2,7 @@ import os from 'node:os'
 import { isIPv6 } from '@chainsafe/is-ip'
 import * as lengthPrefixed from 'it-length-prefixed'
 import { isNode, isElectronMain } from 'wherearewe'
-import { Message } from '../src/private-to-public/pb/message.js'
+import { Message } from '../src/private-to-public/pb/message.ts'
 
 /**
  * simulates receiving a FIN_ACK on the passed datachannel

@@ -1,5 +1,232 @@
 # Changelog
 
+## [17.1.2](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.1.1...gossipsub-v17.1.2) (2026-09-23)
+
+
+### Bug Fixes
+
+* **gossipsub:** enforce StrictNoSign field presence ([#3633](https://github.com/libp2p/js-libp2p/issues/3633)) ([fb139d1](https://github.com/libp2p/js-libp2p/commit/fb139d1c867b0dca375a2000fefca80c75929b42))
+* **gossipsub:** finish monorepo conformance ([#3624](https://github.com/libp2p/js-libp2p/issues/3624)) ([d91797b](https://github.com/libp2p/js-libp2p/commit/d91797b557227f66e1cf087c59f21f3cf43bd2bb))
+
+
+### Documentation
+
+* **gossipsub:** convert README to generated format ([#3566](https://github.com/libp2p/js-libp2p/issues/3566)) ([ee66662](https://github.com/libp2p/js-libp2p/commit/ee6666220c775592eed26070a1894382ce2050fb))
+
+## [17.1.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.1.0...gossipsub-v17.1.1) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.12 to ^3.1.13
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.29 to ^11.0.30
+    * @libp2p/peer-store bumped from ^12.0.27 to ^12.0.28
+
+## [17.1.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.0.1...gossipsub-v17.1.0) (2026-08-27)
+
+
+### Features
+
+* enforce idontwant ([#3595](https://github.com/libp2p/js-libp2p/issues/3595)) ([87dca02](https://github.com/libp2p/js-libp2p/commit/87dca02b07f169a41e91f01379eb4ec9a3288856))
+* **gossipsub:** add floodPublish option to PublishOpts ([#3610](https://github.com/libp2p/js-libp2p/issues/3610)) ([4a6c5d1](https://github.com/libp2p/js-libp2p/commit/4a6c5d11af8dcda44bed5a2ec9db5101ab45212d))
+
+## [17.0.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.0.0...gossipsub-v17.0.1) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.28 to ^11.0.29
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+    * @libp2p/peer-store bumped from ^12.0.26 to ^12.0.27
+
+## [17.0.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.1.1...gossipsub-v17.0.0) (2026-08-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **gossipsub:** gossipsub now caps the memory a single remote peer may occupy in the topics map via maxTopicBytesPerPeer (default 1 MiB, ~1000 topics per peer). Subscriptions beyond a peer's budget are ignored; raise the option to restore the previous unbounded behaviour.
+
+### Bug Fixes
+
+* **gossipsub:** bound subscribed topic bytes per peer ([#3593](https://github.com/libp2p/js-libp2p/issues/3593)) ([d553417](https://github.com/libp2p/js-libp2p/commit/d5534174d8b7d23ac1bd45a7e738664fbfb0cf4c))
+
+## [16.1.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.1.0...gossipsub-v16.1.1) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/interface-internal bumped from ^3.1.10 to ^3.1.11
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.27 to ^11.0.28
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+    * @libp2p/peer-store bumped from ^12.0.25 to ^12.0.26
+
+## [16.1.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.5...gossipsub-v16.1.0) (2026-07-26)
+
+
+### Features
+
+* **gossipsub:** graft peers into the mesh on subscribe ([#3583](https://github.com/libp2p/js-libp2p/issues/3583)) ([d9292b6](https://github.com/libp2p/js-libp2p/commit/d9292b69008f5a7c3d1531d4cf5daa17a2e41f2c))
+
+
+### Dependencies
+
+* bump @types/sinon from 21.0.1 to 22.0.0 ([#3554](https://github.com/libp2p/js-libp2p/issues/3554)) ([02fcf70](https://github.com/libp2p/js-libp2p/commit/02fcf704d8795dd24f1dd243f67d12b7ffd9b259))
+* bump sinon from 21.1.2 to 22.0.0 ([#3562](https://github.com/libp2p/js-libp2p/issues/3562)) ([382fbb4](https://github.com/libp2p/js-libp2p/commit/382fbb4cacc7abc0f29c0b3f2d95c1d46baf8e74))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.26 to ^11.0.27
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/peer-store bumped from ^12.0.24 to ^12.0.25
+
+## [16.0.5](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.4...gossipsub-v16.0.5) (2026-07-19)
+
+
+### Bug Fixes
+
+* **gossipsub:** reject malformed key and signature during validation ([#3578](https://github.com/libp2p/js-libp2p/issues/3578)) ([ff9e5fc](https://github.com/libp2p/js-libp2p/commit/ff9e5fc7c17b7e58436669d73d0f9c86a68e0793))
+* **gossipsub:** validate the message key for all peer id types ([#3569](https://github.com/libp2p/js-libp2p/issues/3569)) ([cec2b1f](https://github.com/libp2p/js-libp2p/commit/cec2b1f349d130065e561349a0336a239528267f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.25 to ^11.0.26
+    * @libp2p/peer-store bumped from ^12.0.23 to ^12.0.24
+
+## [16.0.4](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.3...gossipsub-v16.0.4) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/interface-internal bumped from ^3.1.7 to ^3.1.8
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.24 to ^11.0.25
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/peer-store bumped from ^12.0.22 to ^12.0.23
+
+## [16.0.3](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.2...gossipsub-v16.0.3) (2026-06-13)
+
+
+### Bug Fixes
+
+* use getRandomValues from WebCrypto ([#3540](https://github.com/libp2p/js-libp2p/issues/3540)) ([404c782](https://github.com/libp2p/js-libp2p/commit/404c7824a85e83082297fd968de32e00234c12ba))
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.23 to ^11.0.24
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/peer-store bumped from ^12.0.21 to ^12.0.22
+
+## [16.0.2](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.1...gossipsub-v16.0.2) (2026-06-06)
+
+
+### Bug Fixes
+
+* **gossipsub:** remove closed outbound streams from the registry ([#3531](https://github.com/libp2p/js-libp2p/issues/3531)) ([7ae12f9](https://github.com/libp2p/js-libp2p/commit/7ae12f9b0a6ca49b854afdd5457211eabf00e8a9))
+
+## [16.0.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v16.0.0...gossipsub-v16.0.1) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.22 to ^11.0.23
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/peer-store bumped from ^12.0.20 to ^12.0.21
+
+## [16.0.0](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.23...gossipsub-v16.0.0) (2026-05-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* **gossipsub:** apply decodeRpcLimits to control messages ([#3520](https://github.com/libp2p/js-libp2p/issues/3520))
+
+### Bug Fixes
+
+* **gossipsub:** apply decodeRpcLimits to control messages ([#3520](https://github.com/libp2p/js-libp2p/issues/3520)) ([773dd80](https://github.com/libp2p/js-libp2p/commit/773dd80ded24dbd6b19e675c89fd2f3b45f2d899))
+
+
+### Documentation
+
+* @libp2p/gossipsub ([#3516](https://github.com/libp2p/js-libp2p/issues/3516)) ([c6329a0](https://github.com/libp2p/js-libp2p/commit/c6329a0efdb33f63534468fd90e6bc274ae6fe15))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.21 to ^11.0.22
+
+## [15.0.23](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.22...gossipsub-v15.0.23) (2026-05-16)
+
+
+### Bug Fixes
+
+* **gossipsub:** prune empty topic entries from topics map, reset topic map on stop ([#3405](https://github.com/libp2p/js-libp2p/issues/3405)) ([2514c01](https://github.com/libp2p/js-libp2p/commit/2514c018ada60b9dbe11f1c9c83b6cc0208b9916))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/peer-store bumped from ^12.0.19 to ^12.0.20
+
 ## [15.0.22](https://github.com/libp2p/js-libp2p/compare/gossipsub-v15.0.21...gossipsub-v15.0.22) (2026-05-09)
 
 

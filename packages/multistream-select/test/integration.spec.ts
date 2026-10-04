@@ -1,11 +1,10 @@
 import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
-import * as mss from '../src/index.js'
+import * as mss from '../src/index.ts'
 
 describe('Dialer and Listener integration', () => {
   it('should handle and select', async () => {
@@ -22,7 +21,7 @@ describe('Dialer and Listener integration', () => {
     expect(listenerSelection).to.equal(selectedProtocol)
 
     // Ensure stream is usable after selection
-    const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
+    const input = [new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3)))]
     const output = await Promise.all([
       (async function () {
         for (const buf of input) {
@@ -63,7 +62,7 @@ describe('Dialer and Listener integration', () => {
     expect(listenerSelection).to.equal(selectedProtocol)
 
     // Ensure stream is usable after selection
-    const input = [new Uint8ArrayList(randomBytes(10), randomBytes(64), randomBytes(3))]
+    const input = [new Uint8ArrayList(crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3)))]
     const output = await Promise.all([
       (async function () {
         for (const buf of input) {
@@ -99,7 +98,7 @@ describe('Dialer and Listener integration', () => {
     expect(listenerSelection).to.equal(selectedProtocol)
 
     // Ensure stream is usable after selection
-    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+    const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
     const output = await Promise.all([
       (async function () {
         for (const buf of input) {
@@ -131,7 +130,7 @@ describe('Dialer and Listener integration', () => {
     expect(dialerSelection).to.equal(protocol)
 
     // Ensure stream is usable after selection
-    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+    const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
     // Since the stream is lazy, we need to write to it before handling
     const dialerOutPromise = (async function () {
       for (const buf of input) {
@@ -172,7 +171,7 @@ describe('Dialer and Listener integration', () => {
     void mss.handle(incomingStream, otherProtocol).catch(() => {})
 
     // should fail when we interact with the stream
-    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+    const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
     await expect(async function () {
       for (const buf of input) {
         outgoingStream.send(buf)
@@ -195,7 +194,7 @@ describe('Dialer and Listener integration', () => {
     expect(dialerSelection).to.equal(protocol)
 
     // ensure stream is usable after selection
-    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+    const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
     const [, dialerOut] = await Promise.all([
       // the listener handles the incoming stream
@@ -223,7 +222,7 @@ describe('Dialer and Listener integration', () => {
     expect(dialerSelection).to.equal(protocol)
 
     // ensure stream is usable after selection
-    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+    const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
     const [listenerOut] = await Promise.all([
       // the listener handles the incoming stream
@@ -271,7 +270,7 @@ describe('Dialer and Listener integration', () => {
     expect(dialerSelection).to.equal(protocol)
 
     // Ensure stream is usable after selection
-    const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+    const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
     // Since the stream is lazy, we need to write to it before handling
     const dialerResultPromise = (async function () {

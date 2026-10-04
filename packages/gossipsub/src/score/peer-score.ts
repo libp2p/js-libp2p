@@ -1,17 +1,17 @@
-import { RejectReason } from '../types.js'
-import { MapDef } from '../utils/set.js'
+import { RejectReason } from '../types.ts'
+import { MapDef } from '../utils/set.ts'
 import { computeScore } from './compute-score.ts'
 import { MessageDeliveries, DeliveryRecordStatus } from './message-deliveries.ts'
 import { validatePeerScoreParams } from './peer-score-params.ts'
-import type { MsgIdStr, PeerIdStr, TopicStr, IPStr } from '../types.js'
+import type { MsgIdStr, PeerIdStr, TopicStr, IPStr } from '../types.ts'
 import type { PeerScoreParams } from './peer-score-params.ts'
 import type { PeerStats, TopicStats } from './peer-stats.ts'
-import type { Metrics, ScorePenalty } from '../metrics.js'
+import type { Metrics, ScorePenalty } from '../metrics.ts'
 import type { ComponentLogger, Logger } from '@libp2p/interface'
 
 interface PeerScoreOpts {
   /**
-   * Miliseconds to cache computed score per peer
+   * Milliseconds to cache computed score per peer
    */
   scoreCacheValidityMs: number
 
@@ -21,7 +21,7 @@ interface PeerScoreOpts {
 interface ScoreCacheEntry {
   /** The cached score */
   score: number
-  /** Unix timestamp in miliseconds, the time after which the cached score for a peer is no longer valid */
+  /** Unix timestamp in milliseconds, the time after which the cached score for a peer is no longer valid */
   cacheUntil: number
 }
 

@@ -82,6 +82,126 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [5.1.14](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.13...perf-v5.1.14) (2026-09-02)
+
+
+### Bug Fixes
+
+* use @libp2p/yamux and @libp2p/noise ([#3622](https://github.com/libp2p/js-libp2p/issues/3622)) ([5cb617a](https://github.com/libp2p/js-libp2p/commit/5cb617ae201c3db0c2432732a30cb3519caf0099))
+
+## [5.1.13](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.12...perf-v5.1.13) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.12 to ^3.1.13
+  * devDependencies
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [5.1.12](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.11...perf-v5.1.12) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/interface-internal bumped from ^3.1.11 to ^3.1.12
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+
+## [5.1.11](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.10...perf-v5.1.11) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.10 to ^3.1.11
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [5.1.10](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.9...perf-v5.1.10) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.9 to ^3.1.10
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [5.1.9](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.8...perf-v5.1.9) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.8 to ^3.1.9
+  * devDependencies
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [5.1.8](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.7...perf-v5.1.8) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/interface-internal bumped from ^3.1.7 to ^3.1.8
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
+## [5.1.7](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.6...perf-v5.1.7) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/interface-internal bumped from ^3.1.6 to ^3.1.7
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
+## [5.1.6](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.5...perf-v5.1.6) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/interface-internal bumped from ^3.1.5 to ^3.1.6
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+
+## [5.1.5](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.4...perf-v5.1.5) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.1.4 to ^3.1.5
+  * devDependencies
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
 ## [5.1.4](https://github.com/libp2p/js-libp2p/compare/perf-v5.1.3...perf-v5.1.4) (2026-05-09)
 
 

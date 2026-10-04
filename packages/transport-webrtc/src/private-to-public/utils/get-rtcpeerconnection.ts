@@ -1,29 +1,34 @@
+import { InvalidParametersError } from '@libp2p/interface'
 import { Crypto } from '@peculiar/webcrypto'
 import { PeerConnection } from 'node-datachannel'
 import { RTCPeerConnection } from 'node-datachannel/polyfill'
-import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.js'
+import { DEFAULT_ICE_SERVERS, MAX_MESSAGE_SIZE } from '../../constants.ts'
 import { DataChannelMuxerFactory } from '../../muxer.ts'
 import { generateTransportCertificate } from './generate-certificates.ts'
-import type { DataChannelOptions, TransportCertificate } from '../../index.js'
-import type { CounterGroup } from '@libp2p/interface'
+import { isIcePwd, isIceUfrag } from './stun.ts'
+import type { DataChannelOptions, TransportCertificate } from '../../index.ts'
+import type { CounterGroup, Logger } from '@libp2p/interface'
 import type { CertificateFingerprint } from 'node-datachannel'
 
 const crypto = new Crypto()
 
 interface DirectRTCPeerConnectionInit extends RTCConfiguration {
   ufrag: string
+  pwd: string
   peerConnection: PeerConnection
 }
 
 export class DirectRTCPeerConnection extends RTCPeerConnection {
   private peerConnection: PeerConnection
   private readonly ufrag: string
+  private readonly pwd: string
 
   constructor (init: DirectRTCPeerConnectionInit) {
     super(init)
 
     this.peerConnection = init.peerConnection
     this.ufrag = init.ufrag
+    this.pwd = init.pwd
 
     // make sure C++ peer connection is garbage collected
     // https://github.com/murat-dogan/node-datachannel/issues/366#issuecomment-3228453155
@@ -39,27 +44,37 @@ export class DirectRTCPeerConnection extends RTCPeerConnection {
   }
 
   async createOffer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
-    // have to set ufrag before creating offer
-    if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('offer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
-      })
-    }
+    // have to set the ICE credentials before creating the offer
+    this.setLocalCredentials('offer')
 
     return super.createOffer()
   }
 
   async createAnswer (): Promise<globalThis.RTCSessionDescriptionInit | any> {
-    // have to set ufrag before creating answer
-    if (this.connectionState === 'new') {
-      this.peerConnection?.setLocalDescription('answer', {
-        iceUfrag: this.ufrag,
-        icePwd: this.ufrag
-      })
-    }
+    // have to set the ICE credentials before creating the answer
+    this.setLocalCredentials('answer')
 
     return super.createAnswer()
+  }
+
+  // node-datachannel needs the ICE credentials set before the description is
+  // created. On the server they come from an attacker-controlled STUN username
+  // and an invalid value aborts the process inside the native ICE stack, so
+  // reject it with a recoverable error first. The browser path uses a native
+  // RTCPeerConnection and never reaches this class.
+  private setLocalCredentials (type: 'offer' | 'answer'): void {
+    if (this.connectionState !== 'new') {
+      return
+    }
+
+    if (!isIceUfrag(this.ufrag) || !isIcePwd(this.pwd)) {
+      throw new InvalidParametersError('ufrag or pwd is not a valid ICE credential')
+    }
+
+    this.peerConnection?.setLocalDescription(type, {
+      iceUfrag: this.ufrag,
+      icePwd: this.pwd
+    })
   }
 
   remoteFingerprint (): CertificateFingerprint {
@@ -91,7 +106,10 @@ export interface CreateDialerRTCPeerConnectionOptions {
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   certificate?: TransportCertificate
   events?: CounterGroup
+  log?: Logger
   dataChannel?: DataChannelOptions
+  maxEarlyStreams?: number
+  pwd?: string
 }
 
 export async function createDialerRTCPeerConnection (role: 'client', ufrag: string, options?: CreateDialerRTCPeerConnectionOptions): Promise<{ peerConnection: globalThis.RTCPeerConnection, muxerFactory: DataChannelMuxerFactory }>
@@ -113,10 +131,12 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
   }
 
   const rtcConfig = typeof options.rtcConfiguration === 'function' ? await options.rtcConfiguration() : options.rtcConfiguration
+  const pwd = options.pwd ?? ufrag
 
   const peerConnection = new DirectRTCPeerConnection({
     ...rtcConfig,
     ufrag,
+    pwd,
     peerConnection: new PeerConnection(`${role}-${Date.now()}`, {
       disableFingerprintVerification: true,
       disableAutoNegotiation: true,
@@ -132,7 +152,9 @@ export async function createDialerRTCPeerConnection (role: 'client' | 'server', 
     // @ts-expect-error https://github.com/murat-dogan/node-datachannel/pull/370
     peerConnection,
     metrics: options.events,
-    dataChannelOptions: options.dataChannel
+    log: options.log,
+    dataChannelOptions: options.dataChannel,
+    maxEarlyStreams: options.maxEarlyStreams
   })
 
   return {

@@ -9,7 +9,7 @@ import pWaitFor from 'p-wait-for'
 import { connect } from './utils/connect.ts'
 import { createDialerRTCPeerConnection } from './utils/get-rtcpeerconnection.ts'
 import { stunListener } from './utils/stun-listener.ts'
-import type { DataChannelOptions, TransportCertificate } from '../index.js'
+import type { DataChannelOptions, TransportCertificate } from '../index.ts'
 import type { WebRTCDirectTransportCertificateEvents } from './transport.ts'
 import type { DirectRTCPeerConnection } from './utils/get-rtcpeerconnection.ts'
 import type { StunServer } from './utils/stun-listener.ts'
@@ -34,6 +34,7 @@ export interface WebRTCDirectListenerInit {
   upgrader: Upgrader
   certificate: TransportCertificate
   maxInboundStreams?: number
+  maxEarlyStreams?: number
   dataChannel?: DataChannelOptions
   rtcConfiguration?: RTCConfiguration | (() => RTCConfiguration | Promise<RTCConfiguration>)
   emitter: TypedEventTarget<WebRTCDirectTransportCertificateEvents>
@@ -155,10 +156,10 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
             this.log.trace('listening on free port %d', port)
           }
 
-          return stunListener(host, port, this.log, (ufrag, remoteHost, remotePort) => {
+          return stunListener(host, port, this.log, (serverUfrag, clientUfrag, clientPwd, remoteHost, remotePort) => {
             const signal = this.components.upgrader.createInboundAbortSignal(this.shutdownController.signal)
 
-            this.incomingConnection(ufrag, remoteHost, remotePort, signal)
+            this.incomingConnection(serverUfrag, clientUfrag, clientPwd, remoteHost, remotePort, signal)
               .catch(err => {
                 this.log.error('error processing incoming STUN request - %e', err)
               })
@@ -170,8 +171,8 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     }
   }
 
-  private async incomingConnection (ufrag: string, remoteHost: string, remotePort: number, signal: AbortSignal): Promise<void> {
-    const key = `${remoteHost}:${remotePort}:${ufrag}`
+  private async incomingConnection (serverUfrag: string, clientUfrag: string, clientPwd: string | undefined, remoteHost: string, remotePort: number, signal: AbortSignal): Promise<void> {
+    const key = `${remoteHost}:${remotePort}:${serverUfrag}:${clientUfrag}`
     let peerConnection = this.connections.get(key)
 
     if (peerConnection != null) {
@@ -184,12 +185,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     // do not create RTCPeerConnection objects if the signal has aborted already
     signal.throwIfAborted()
 
-    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md#browser-to-public-server
-    const results = await createDialerRTCPeerConnection('server', ufrag, {
+    // https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md
+    const results = await createDialerRTCPeerConnection('server', serverUfrag, {
       rtcConfiguration: this.init.rtcConfiguration,
       certificate: this.certificate,
       events: this.metrics?.listenerEvents,
-      dataChannel: this.init.dataChannel
+      log: this.log,
+      dataChannel: this.init.dataChannel,
+      maxEarlyStreams: this.init.maxEarlyStreams
     })
     peerConnection = results.peerConnection
 
@@ -208,12 +211,14 @@ export class WebRTCDirectListener extends TypedEventEmitter<ListenerEvents> impl
     })
 
     try {
-      await connect(peerConnection, results.muxerFactory, ufrag, {
+      await connect(peerConnection, results.muxerFactory, serverUfrag, {
         role: 'server',
         log: this.log,
         logger: this.components.logger,
         events: this.metrics?.listenerEvents,
         signal,
+        remoteUfrag: clientUfrag,
+        remotePwd: clientPwd,
         remoteAddr: multiaddr(`/ip${isIPv4(remoteHost) ? 4 : 6}/${remoteHost}/udp/${remotePort}/webrtc-direct`),
         dataChannel: this.init.dataChannel,
         upgrader: this.init.upgrader,

@@ -1,7 +1,7 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import * as util from '../src/util.js'
+import * as util from '../src/util.ts'
 
 describe('Util', () => {
   it('should convert base64url encoded string to Uint8Array with padding', () => {

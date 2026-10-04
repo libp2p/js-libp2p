@@ -1,7 +1,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { PeerSet } from '../src/index.js'
+import { PeerSet } from '../src/index.ts'
 import type { PeerId } from '@libp2p/interface'
 
 describe('peer-set', () => {

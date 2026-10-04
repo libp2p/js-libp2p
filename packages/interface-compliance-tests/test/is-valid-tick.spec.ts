@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { isValidTick } from '../src/is-valid-tick.js'
+import { isValidTick } from '../src/is-valid-tick.ts'
 
 describe('is-valid-tick', () => {
   it('should validate tick', async () => {
