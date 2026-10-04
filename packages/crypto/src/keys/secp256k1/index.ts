@@ -13,7 +13,7 @@ export { PRIVATE_KEY_BYTE_LENGTH as privateKeyLength }
 /**
  * Hash and sign message with private key
  */
-export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array {
+export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> {
   options?.signal?.throwIfAborted()
 
   const hash = crypto.createHash('sha256')

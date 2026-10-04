@@ -4,18 +4,25 @@ import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Envelope {
-  publicKey: Uint8Array
-  payloadType: Uint8Array
-  payload: Uint8Array
-  signature: Uint8Array
+  publicKey: Uint8Array<ArrayBuffer>
+  payloadType: Uint8Array<ArrayBuffer>
+  payload: Uint8Array<ArrayBuffer>
+  signature: Uint8Array<ArrayBuffer>
+}
+
+export interface EnvelopeInput {
+  publicKey?: Uint8Array
+  payloadType?: Uint8Array
+  payload?: Uint8Array
+  signature?: Uint8Array
 }
 
 export namespace Envelope {
-  let _codec: Codec<Envelope>
+  let _codec: Codec<Envelope, EnvelopeInput>
 
-  export const codec = (): Codec<Envelope> => {
+  export const codec = (): Codec<Envelope, EnvelopeInput> => {
     if (_codec == null) {
-      _codec = message<Envelope>((obj, w, opts = {}) => {
+      _codec = message<Envelope, EnvelopeInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -43,7 +50,7 @@ export namespace Envelope {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           publicKey: uint8ArrayAlloc(0),
           payloadType: uint8ArrayAlloc(0),
@@ -51,75 +58,91 @@ export namespace Envelope {
           signature: uint8ArrayAlloc(0)
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.publicKey = reader.bytes()
+              obj.publicKey = r.bytes()
               break
             }
             case 2: {
-              obj.payloadType = reader.bytes()
+              obj.payloadType = r.bytes()
               break
             }
             case 3: {
-              obj.payload = reader.bytes()
+              obj.payload = r.bytes()
               break
             }
             case 5: {
-              obj.signature = reader.bytes()
+              obj.signature = r.bytes()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Envelope'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.publicKey`,
-                value: reader.bytes()
+                field: `${prefix}publicKey`,
+                value: r.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.payloadType`,
-                value: reader.bytes()
+                field: `${prefix}payloadType`,
+                value: r.bytes()
               }
               break
             }
             case 3: {
               yield {
-                field: `${prefix}.payload`,
-                value: reader.bytes()
+                field: `${prefix}payload`,
+                value: r.bytes()
               }
               break
             }
             case 5: {
               yield {
-                field: `${prefix}.signature`,
-                value: reader.bytes()
+                field: `${prefix}signature`,
+                value: r.bytes()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Envelope'
           }
         }
       })
@@ -129,26 +152,26 @@ export namespace Envelope {
   }
 
   export interface EnvelopePublicKeyFieldEvent {
-    field: '$.publicKey'
-    value: Uint8Array
+    field: '.publicKey'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface EnvelopePayloadTypeFieldEvent {
-    field: '$.payloadType'
-    value: Uint8Array
+    field: '.payloadType'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface EnvelopePayloadFieldEvent {
-    field: '$.payload'
-    value: Uint8Array
+    field: '.payload'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface EnvelopeSignatureFieldEvent {
-    field: '$.signature'
-    value: Uint8Array
+    field: '.signature'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<Envelope>): Uint8Array {
+  export function encode (obj: EnvelopeInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Envelope.codec())
   }
 

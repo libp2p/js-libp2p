@@ -17,7 +17,7 @@ import { bestRecord } from '../record/selectors.ts'
 import { verifyRecord } from '../record/validators.ts'
 import { createPutRecord, bufferToRecordKey } from '../utils.ts'
 import type { KadDHTComponents, Validators, Selectors, ValueEvent, QueryEvent } from '../index.ts'
-import type { Message } from '../message/dht.ts'
+import type { MessageInput } from '../message/dht.ts'
 import type { Network, SendMessageOptions } from '../network.ts'
 import type { PeerRouting } from '../peer-routing/index.ts'
 import type { QueryManager } from '../query/manager.ts'
@@ -88,7 +88,7 @@ export class ContentFetching {
   /**
    * Send the best record found to any peers that have an out of date record
    */
-  async * sendCorrectionRecord (key: Uint8Array, vals: ValueEvent[], best: Uint8Array, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
+  async * sendCorrectionRecord (key: Uint8Array, vals: ValueEvent[], best: Uint8Array<ArrayBuffer>, options: SendMessageOptions): AsyncGenerator<QueryEvent> {
     this.log('sendCorrection for %b', key)
     const fixupRec = createPutRecord(key, best)
 
@@ -114,7 +114,7 @@ export class ContentFetching {
 
       // send correction
       let sentCorrection = false
-      const request: Partial<Message> = {
+      const request: MessageInput = {
         type: MessageType.PUT_VALUE,
         key,
         record: fixupRec
@@ -164,7 +164,7 @@ export class ContentFetching {
 
           const events = []
 
-          const msg: Partial<Message> = {
+          const msg: MessageInput = {
             type: MessageType.PUT_VALUE,
             key,
             record

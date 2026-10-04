@@ -6,6 +6,7 @@ import { MAX_INBOUND_STREAMS, MAX_MESSAGE_SIZE, MAX_OUTBOUND_STREAMS, TIMEOUT } 
 import { DialBack, DialBackResponse, DialResponse, DialStatus, Message } from './pb/index.ts'
 import { randomNumber } from './utils.ts'
 import type { AutoNATv2Components, AutoNATv2ServiceInit } from './index.ts'
+import type { MessageInput } from './pb/index.ts'
 import type { Logger, Connection, Startable, AbortOptions, Stream } from '@libp2p/interface'
 import type { ProtobufMessageStream } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -151,7 +152,7 @@ export class AutoNATv2Server implements Startable {
     })
   }
 
-  private async preventAmplificationAttack (messages: ProtobufMessageStream<Message, Stream>, index: number, options: AbortOptions): Promise<void> {
+  private async preventAmplificationAttack (messages: ProtobufMessageStream<Message, MessageInput, Stream>, index: number, options: AbortOptions): Promise<void> {
     const numBytes = randomNumber(30_000, 100_000)
 
     await messages.write({

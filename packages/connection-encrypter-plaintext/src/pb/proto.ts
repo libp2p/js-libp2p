@@ -4,16 +4,21 @@ import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Exchange {
-  id?: Uint8Array
+  id?: Uint8Array<ArrayBuffer>
   pubkey?: PublicKey
 }
 
-export namespace Exchange {
-  let _codec: Codec<Exchange>
+export interface ExchangeInput {
+  id?: Uint8Array
+  pubkey?: PublicKeyInput
+}
 
-  export const codec = (): Codec<Exchange> => {
+export namespace Exchange {
+  let _codec: Codec<Exchange, ExchangeInput>
+
+  export const codec = (): Codec<Exchange, ExchangeInput> => {
     if (_codec == null) {
-      _codec = message<Exchange>((obj, w, opts = {}) => {
+      _codec = message<Exchange, ExchangeInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -31,58 +36,74 @@ export namespace Exchange {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {}
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.id = reader.bytes()
+              obj.id = r.bytes()
               break
             }
             case 2: {
-              obj.pubkey = PublicKey.codec().decode(reader, reader.uint32(), {
+              obj.pubkey = PublicKey.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.pubkey
               })
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix, opts = {}) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Exchange'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.id`,
-                value: reader.bytes()
+                field: `${prefix}id`,
+                value: r.bytes()
               }
               break
             }
             case 2: {
-              yield * PublicKey.codec().stream(reader, reader.uint32(), `${prefix}.pubkey`, {
+              yield * PublicKey.codec().stream(r, r.uint32(), `${prefix}pubkey.`, {
                 limits: opts.limits?.pubkey
               })
 
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Exchange'
           }
         }
       })
@@ -92,21 +113,31 @@ export namespace Exchange {
   }
 
   export interface ExchangeIdFieldEvent {
-    field: '$.id'
-    value: Uint8Array
+    field: '.id'
+    value: Uint8Array<ArrayBuffer>
+  }
+
+  export interface ExchangePubkeyMessageStart {
+    field: '.pubkey'
+    type: 'start'
+  }
+
+  export interface ExchangePubkeyMessageEnd {
+    field: '.pubkey'
+    type: 'end'
   }
 
   export interface ExchangePubkeyTypeFieldEvent {
-    field: '$.pubkey.Type'
+    field: '.pubkey.Type'
     value: KeyType
   }
 
   export interface ExchangePubkeyDataFieldEvent {
-    field: '$.pubkey.Data'
-    value: Uint8Array
+    field: '.pubkey.Data'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<Exchange>): Uint8Array {
+  export function encode (obj: ExchangeInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Exchange.codec())
   }
 
@@ -114,7 +145,7 @@ export namespace Exchange {
     return decodeMessage(buf, Exchange.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Exchange>): Generator<ExchangeIdFieldEvent | ExchangePubkeyTypeFieldEvent | ExchangePubkeyDataFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Exchange>): Generator<ExchangeIdFieldEvent | ExchangePubkeyMessageStart | ExchangePubkeyMessageEnd | ExchangePubkeyTypeFieldEvent | ExchangePubkeyDataFieldEvent> {
     return streamMessage(buf, Exchange.codec(), opts)
   }
 }
@@ -134,22 +165,27 @@ enum __KeyTypeValues {
 }
 
 export namespace KeyType {
-  export const codec = (): Codec<KeyType> => {
+  export const codec = (): Codec<KeyType, KeyType> => {
     return enumeration<KeyType>(__KeyTypeValues)
   }
 }
 
 export interface PublicKey {
   Type?: KeyType
-  Data: Uint8Array
+  Data: Uint8Array<ArrayBuffer>
+}
+
+export interface PublicKeyInput {
+  Type?: KeyType
+  Data?: Uint8Array
 }
 
 export namespace PublicKey {
-  let _codec: Codec<PublicKey>
+  let _codec: Codec<PublicKey, PublicKeyInput>
 
-  export const codec = (): Codec<PublicKey> => {
+  export const codec = (): Codec<PublicKey, PublicKeyInput> => {
     if (_codec == null) {
-      _codec = message<PublicKey>((obj, w, opts = {}) => {
+      _codec = message<PublicKey, PublicKeyInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -167,58 +203,74 @@ export namespace PublicKey {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           Data: uint8ArrayAlloc(0)
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.Type = KeyType.codec().decode(reader)
+              obj.Type = KeyType.codec().decode(r)
               break
             }
             case 2: {
-              obj.Data = reader.bytes()
+              obj.Data = r.bytes()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'PublicKey'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.Type`,
-                value: KeyType.codec().decode(reader)
+                field: `${prefix}Type`,
+                value: KeyType.codec().decode(r)
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.Data`,
-                value: reader.bytes()
+                field: `${prefix}Data`,
+                value: r.bytes()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'PublicKey'
           }
         }
       })
@@ -228,16 +280,16 @@ export namespace PublicKey {
   }
 
   export interface PublicKeyTypeFieldEvent {
-    field: '$.Type'
+    field: '.Type'
     value: KeyType
   }
 
   export interface PublicKeyDataFieldEvent {
-    field: '$.Data'
-    value: Uint8Array
+    field: '.Data'
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<PublicKey>): Uint8Array {
+  export function encode (obj: PublicKeyInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, PublicKey.codec())
   }
 

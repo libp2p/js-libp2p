@@ -8,6 +8,7 @@ import { isPeerId } from '@libp2p/interface'
 import { peerIdFromCID } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { PersistentStore } from './store.ts'
 import type { PeerUpdate } from './store.ts'
 import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions, Metrics } from '@libp2p/interface'
@@ -211,7 +212,7 @@ class PersistentPeerStore implements PeerStore {
     }
 
     await this.patch(peerRecord.peerId, {
-      peerRecordEnvelope: buf,
+      peerRecordEnvelope: withArrayBuffer(buf),
       addresses: peerRecord.multiaddrs.map(multiaddr => ({
         isCertified: true,
         multiaddr

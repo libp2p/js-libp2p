@@ -7,6 +7,11 @@ export interface Message {
   data?: string
 }
 
+export interface MessageInput {
+  type?: Message.Type
+  data?: string
+}
+
 export namespace Message {
   export enum Type {
     SDP_OFFER = 'SDP_OFFER',
@@ -21,16 +26,16 @@ export namespace Message {
   }
 
   export namespace Type {
-    export const codec = (): Codec<Type> => {
+    export const codec = (): Codec<Type, Type> => {
       return enumeration<Type>(__TypeValues)
     }
   }
 
-  let _codec: Codec<Message>
+  let _codec: Codec<Message, MessageInput>
 
-  export const codec = (): Codec<Message> => {
+  export const codec = (): Codec<Message, MessageInput> => {
     if (_codec == null) {
-      _codec = message<Message>((obj, w, opts = {}) => {
+      _codec = message<Message, MessageInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -48,56 +53,72 @@ export namespace Message {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {}
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.type = Message.Type.codec().decode(reader)
+              obj.type = Message.Type.codec().decode(r)
               break
             }
             case 2: {
-              obj.data = reader.string()
+              obj.data = r.string()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Message'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.type`,
-                value: Message.Type.codec().decode(reader)
+                field: `${prefix}type`,
+                value: Message.Type.codec().decode(r)
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.data`,
-                value: reader.string()
+                field: `${prefix}data`,
+                value: r.string()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Message'
           }
         }
       })
@@ -107,16 +128,16 @@ export namespace Message {
   }
 
   export interface MessageTypeFieldEvent {
-    field: '$.type'
+    field: '.type'
     value: Message.Type
   }
 
   export interface MessageDataFieldEvent {
-    field: '$.data'
+    field: '.data'
     value: string
   }
 
-  export function encode (obj: Partial<Message>): Uint8Array {
+  export function encode (obj: MessageInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Message.codec())
   }
 

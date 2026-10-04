@@ -9,7 +9,7 @@ import { multiaddr, isMultiaddr } from '@multiformats/multiaddr'
 import * as Digest from 'multiformats/hashes/digest'
 import { DHT } from './dht.ts'
 import { Pubsub } from './pubsub.ts'
-import type { PSMessage } from '@libp2p/daemon-protocol'
+import type { PSMessage, RequestInput } from '@libp2p/daemon-protocol'
 import type { Stream, PeerId, MultiaddrConnection, PeerInfo, Transport, Listener } from '@libp2p/interface'
 import type { ProtobufStream } from '@libp2p/utils'
 import type { Multiaddr } from '@multiformats/multiaddr'
@@ -59,7 +59,7 @@ class Client implements DaemonClient {
    * Sends the request to the daemon and returns a stream. This
    * should only be used when sending daemon requests.
    */
-  async send (request: Request): Promise<ProtobufStream<MultiaddrConnection>> {
+  async send (request: RequestInput): Promise<ProtobufStream<MultiaddrConnection>> {
     const maConn = await this.connectDaemon()
 
     const subtype = request.pubsub?.type ?? request.dht?.type ?? request.peerStore?.type ?? ''
@@ -303,7 +303,7 @@ export interface DaemonClient {
   dht: DHTClient
   pubsub: PubSubClient
 
-  send(request: Request): Promise<ProtobufStream<MultiaddrConnection>>
+  send(request: RequestInput): Promise<ProtobufStream<MultiaddrConnection>>
   openStream(peerId: PeerId, protocol: string): Promise<MultiaddrConnection>
   registerStreamHandler(protocol: string, handler: StreamHandlerFunction): Promise<void>
 }

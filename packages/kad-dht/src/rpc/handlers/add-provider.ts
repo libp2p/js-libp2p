@@ -3,7 +3,7 @@ import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
-import type { Message } from '../../message/dht.ts'
+import type { Message, MessageInput } from '../../message/dht.ts'
 import type { Providers } from '../../providers.ts'
 import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId, PeerStore } from '@libp2p/interface'
@@ -32,7 +32,7 @@ export class AddProviderHandler implements DHTMessageHandler {
     this.peerStore = components.peerStore
   }
 
-  async handle (peerId: PeerId, msg: Message): Promise<Message | undefined> {
+  async handle (peerId: PeerId, msg: Message): Promise<MessageInput | undefined> {
     if (msg.key == null || msg.key.length === 0) {
       throw new InvalidMessageError('Missing key')
     }

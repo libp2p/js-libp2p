@@ -4,17 +4,23 @@ import type { Codec, DecodeOptions } from 'protons-runtime'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface Record {
-  key: Uint8Array
-  value: Uint8Array
+  key: Uint8Array<ArrayBuffer>
+  value: Uint8Array<ArrayBuffer>
   timeReceived: string
 }
 
-export namespace Record {
-  let _codec: Codec<Record>
+export interface RecordInput {
+  key?: Uint8Array
+  value?: Uint8Array
+  timeReceived?: string
+}
 
-  export const codec = (): Codec<Record> => {
+export namespace Record {
+  let _codec: Codec<Record, RecordInput>
+
+  export const codec = (): Codec<Record, RecordInput> => {
     if (_codec == null) {
-      _codec = message<Record>((obj, w, opts = {}) => {
+      _codec = message<Record, RecordInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -37,71 +43,87 @@ export namespace Record {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           key: uint8ArrayAlloc(0),
           value: uint8ArrayAlloc(0),
           timeReceived: ''
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.key = reader.bytes()
+              obj.key = r.bytes()
               break
             }
             case 2: {
-              obj.value = reader.bytes()
+              obj.value = r.bytes()
               break
             }
             case 5: {
-              obj.timeReceived = reader.string()
+              obj.timeReceived = r.string()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Record'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.key`,
-                value: reader.bytes()
+                field: `${prefix}key`,
+                value: r.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.value`,
-                value: reader.bytes()
+                field: `${prefix}value`,
+                value: r.bytes()
               }
               break
             }
             case 5: {
               yield {
-                field: `${prefix}.timeReceived`,
-                value: reader.string()
+                field: `${prefix}timeReceived`,
+                value: r.string()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Record'
           }
         }
       })
@@ -111,21 +133,21 @@ export namespace Record {
   }
 
   export interface RecordKeyFieldEvent {
-    field: '$.key'
-    value: Uint8Array
+    field: '.key'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface RecordValueFieldEvent {
-    field: '$.value'
-    value: Uint8Array
+    field: '.value'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface RecordTimeReceivedFieldEvent {
-    field: '$.timeReceived'
+    field: '.timeReceived'
     value: string
   }
 
-  export function encode (obj: Partial<Record>): Uint8Array {
+  export function encode (obj: RecordInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Record.codec())
   }
 

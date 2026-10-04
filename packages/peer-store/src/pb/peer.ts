@@ -6,25 +6,40 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 export interface Peer {
   addresses: Address[]
   protocols: string[]
+  publicKey?: Uint8Array<ArrayBuffer>
+  peerRecordEnvelope?: Uint8Array<ArrayBuffer>
+  metadata: Map<string, Uint8Array<ArrayBuffer>>
+  tags: Map<string, Tag>
+  updated?: number
+}
+
+export interface PeerInput {
+  addresses?: AddressInput[]
+  protocols?: string[]
   publicKey?: Uint8Array
   peerRecordEnvelope?: Uint8Array
-  metadata: Map<string, Uint8Array>
-  tags: Map<string, Tag>
+  metadata?: Map<string, Uint8Array>
+  tags?: Map<string, TagInput>
   updated?: number
 }
 
 export namespace Peer {
   export interface Peer$metadataEntry {
     key: string
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
+  }
+
+  export interface Peer$metadataEntryInput {
+    key?: string
+    value?: Uint8Array
   }
 
   export namespace Peer$metadataEntry {
-    let _codec: Codec<Peer$metadataEntry>
+    let _codec: Codec<Peer$metadataEntry, Peer$metadataEntryInput>
 
-    export const codec = (): Codec<Peer$metadataEntry> => {
+    export const codec = (): Codec<Peer$metadataEntry, Peer$metadataEntryInput> => {
       if (_codec == null) {
-        _codec = message<Peer$metadataEntry>((obj, w, opts = {}) => {
+        _codec = message<Peer$metadataEntry, Peer$metadataEntryInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -42,59 +57,75 @@ export namespace Peer {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {
             key: '',
             value: uint8ArrayAlloc(0)
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.key = reader.string()
+                obj.key = r.string()
                 break
               }
               case 2: {
-                obj.value = reader.bytes()
+                obj.value = r.bytes()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'Peer.Peer$metadataEntry'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.key`,
-                  value: reader.string()
+                  field: `${prefix}key`,
+                  value: r.string()
                 }
                 break
               }
               case 2: {
                 yield {
-                  field: `${prefix}.value`,
-                  value: reader.bytes()
+                  field: `${prefix}value`,
+                  value: r.bytes()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'Peer.Peer$metadataEntry'
             }
           }
         })
@@ -104,16 +135,16 @@ export namespace Peer {
     }
 
     export interface Peer$metadataEntryKeyFieldEvent {
-      field: '$.key'
+      field: '.key'
       value: string
     }
 
     export interface Peer$metadataEntryValueFieldEvent {
-      field: '$.value'
-      value: Uint8Array
+      field: '.value'
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<Peer$metadataEntry>): Uint8Array {
+    export function encode (obj: Peer$metadataEntryInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, Peer$metadataEntry.codec())
     }
 
@@ -131,12 +162,17 @@ export namespace Peer {
     value?: Tag
   }
 
-  export namespace Peer$tagsEntry {
-    let _codec: Codec<Peer$tagsEntry>
+  export interface Peer$tagsEntryInput {
+    key?: string
+    value?: TagInput
+  }
 
-    export const codec = (): Codec<Peer$tagsEntry> => {
+  export namespace Peer$tagsEntry {
+    let _codec: Codec<Peer$tagsEntry, Peer$tagsEntryInput>
+
+    export const codec = (): Codec<Peer$tagsEntry, Peer$tagsEntryInput> => {
       if (_codec == null) {
-        _codec = message<Peer$tagsEntry>((obj, w, opts = {}) => {
+        _codec = message<Peer$tagsEntry, Peer$tagsEntryInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -154,60 +190,76 @@ export namespace Peer {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length, opts = {}) => {
           const obj: any = {
             key: ''
           }
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.key = reader.string()
+                obj.key = r.string()
                 break
               }
               case 2: {
-                obj.value = Tag.codec().decode(reader, reader.uint32(), {
+                obj.value = Tag.codec().decode(r, r.uint32(), {
                   limits: opts.limits?.value
                 })
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix, opts = {}) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'Peer.Peer$tagsEntry'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.key`,
-                  value: reader.string()
+                  field: `${prefix}key`,
+                  value: r.string()
                 }
                 break
               }
               case 2: {
-                yield * Tag.codec().stream(reader, reader.uint32(), `${prefix}.value`, {
+                yield * Tag.codec().stream(r, r.uint32(), `${prefix}value.`, {
                   limits: opts.limits?.value
                 })
 
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'Peer.Peer$tagsEntry'
             }
           }
         })
@@ -217,21 +269,31 @@ export namespace Peer {
     }
 
     export interface Peer$tagsEntryKeyFieldEvent {
-      field: '$.key'
+      field: '.key'
       value: string
     }
 
+    export interface Peer$tagsEntryValueMessageStart {
+      field: '.value'
+      type: 'start'
+    }
+
+    export interface Peer$tagsEntryValueMessageEnd {
+      field: '.value'
+      type: 'end'
+    }
+
     export interface Peer$tagsEntryValueValueFieldEvent {
-      field: '$.value.value'
+      field: '.value.value'
       value: number
     }
 
     export interface Peer$tagsEntryValueExpiryFieldEvent {
-      field: '$.value.expiry'
+      field: '.value.expiry'
       value: bigint
     }
 
-    export function encode (obj: Partial<Peer$tagsEntry>): Uint8Array {
+    export function encode (obj: Peer$tagsEntryInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, Peer$tagsEntry.codec())
     }
 
@@ -239,16 +301,16 @@ export namespace Peer {
       return decodeMessage(buf, Peer$tagsEntry.codec(), opts)
     }
 
-    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer$tagsEntry>): Generator<Peer$tagsEntryKeyFieldEvent | Peer$tagsEntryValueValueFieldEvent | Peer$tagsEntryValueExpiryFieldEvent> {
+    export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer$tagsEntry>): Generator<Peer$tagsEntryKeyFieldEvent | Peer$tagsEntryValueMessageStart | Peer$tagsEntryValueMessageEnd | Peer$tagsEntryValueValueFieldEvent | Peer$tagsEntryValueExpiryFieldEvent> {
       return streamMessage(buf, Peer$tagsEntry.codec(), opts)
     }
   }
 
-  let _codec: Codec<Peer>
+  let _codec: Codec<Peer, PeerInput>
 
-  export const codec = (): Codec<Peer> => {
+  export const codec = (): Codec<Peer, PeerInput> => {
     if (_codec == null) {
-      _codec = message<Peer>((obj, w, opts = {}) => {
+      _codec = message<Peer, PeerInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -299,18 +361,18 @@ export namespace Peer {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {
           addresses: [],
           protocols: [],
-          metadata: new Map<string, Uint8Array>(),
+          metadata: new Map<string, Uint8Array<ArrayBuffer>>(),
           tags: new Map<string, Tag>()
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -318,7 +380,7 @@ export namespace Peer {
                 throw new MaxLengthError('Decode error - repeated field "addresses" had too many elements')
               }
 
-              obj.addresses.push(Address.codec().decode(reader, reader.uint32(), {
+              obj.addresses.push(Address.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.addresses$
               }))
               break
@@ -328,15 +390,15 @@ export namespace Peer {
                 throw new MaxLengthError('Decode error - repeated field "protocols" had too many elements')
               }
 
-              obj.protocols.push(reader.string())
+              obj.protocols.push(r.string())
               break
             }
             case 4: {
-              obj.publicKey = reader.bytes()
+              obj.publicKey = r.bytes()
               break
             }
             case 5: {
-              obj.peerRecordEnvelope = reader.bytes()
+              obj.peerRecordEnvelope = r.bytes()
               break
             }
             case 6: {
@@ -344,7 +406,7 @@ export namespace Peer {
                 throw new MaxSizeError('Decode error - map field "metadata" had too many elements')
               }
 
-              const entry = Peer.Peer$metadataEntry.codec().decode(reader, reader.uint32(), {
+              const entry = Peer.Peer$metadataEntry.codec().decode(r, r.uint32(), {
                 limits: {
                   value: opts.limits?.metadata$value
                 }
@@ -357,7 +419,7 @@ export namespace Peer {
                 throw new MaxSizeError('Decode error - map field "tags" had too many elements')
               }
 
-              const entry = Peer.Peer$tagsEntry.codec().decode(reader, reader.uint32(), {
+              const entry = Peer.Peer$tagsEntry.codec().decode(r, r.uint32(), {
                 limits: {
                   value: opts.limits?.tags$value
                 }
@@ -366,18 +428,18 @@ export namespace Peer {
               break
             }
             case 8: {
-              obj.updated = reader.uint64Number()
+              obj.updated = r.uint64Number()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (r, length, prefix, opts = {}) {
         const obj = {
           addresses: 0,
           protocols: 0,
@@ -385,10 +447,18 @@ export namespace Peer {
           tags: 0
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Peer'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -396,7 +466,7 @@ export namespace Peer {
                 throw new MaxLengthError('Streaming decode error - repeated field "addresses" had too many elements')
               }
 
-              for (const evt of Address.codec().stream(reader, reader.uint32(), `${prefix}.addresses[]`, {
+              for (const evt of Address.codec().stream(r, r.uint32(), `${prefix}addresses[].`, {
                 limits: opts.limits?.addresses$
               })) {
                 yield {
@@ -415,9 +485,9 @@ export namespace Peer {
               }
 
               yield {
-                field: `${prefix}.protocols[]`,
+                field: `${prefix}protocols[]`,
                 index: obj.protocols,
-                value: reader.string()
+                value: r.string()
               }
 
               obj.protocols++
@@ -426,15 +496,15 @@ export namespace Peer {
             }
             case 4: {
               yield {
-                field: `${prefix}.publicKey`,
-                value: reader.bytes()
+                field: `${prefix}publicKey`,
+                value: r.bytes()
               }
               break
             }
             case 5: {
               yield {
-                field: `${prefix}.peerRecordEnvelope`,
-                value: reader.bytes()
+                field: `${prefix}peerRecordEnvelope`,
+                value: r.bytes()
               }
               break
             }
@@ -443,7 +513,7 @@ export namespace Peer {
                 throw new MaxLengthError('Decode error - map field "metadata" had too many elements')
               }
 
-              yield * Peer.Peer$metadataEntry.codec().stream(reader, reader.uint32(), `${prefix}.metadata{}`, {
+              yield * Peer.Peer$metadataEntry.codec().stream(r, r.uint32(), `${prefix}metadata{}.`, {
                 limits: {
                   value: opts.limits?.metadata$value
                 }
@@ -458,7 +528,7 @@ export namespace Peer {
                 throw new MaxLengthError('Decode error - map field "tags" had too many elements')
               }
 
-              yield * Peer.Peer$tagsEntry.codec().stream(reader, reader.uint32(), `${prefix}.tags{}`, {
+              yield * Peer.Peer$tagsEntry.codec().stream(r, r.uint32(), `${prefix}tags{}.`, {
                 limits: {
                   value: opts.limits?.tags$value
                 }
@@ -470,15 +540,23 @@ export namespace Peer {
             }
             case 8: {
               yield {
-                field: `${prefix}.updated`,
-                value: reader.uint64Number()
+                field: `${prefix}updated`,
+                value: r.uint64Number()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Peer'
           }
         }
       })
@@ -488,63 +566,91 @@ export namespace Peer {
   }
 
   export interface PeerAddressesMultiaddrFieldEvent {
-    field: '$.addresses[].multiaddr'
-    value: Uint8Array
+    field: '.addresses[].multiaddr'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface PeerAddressesIsCertifiedFieldEvent {
-    field: '$.addresses[].isCertified'
+    field: '.addresses[].isCertified'
     value: boolean
     index: number
   }
 
   export interface PeerAddressesObservedFieldEvent {
-    field: '$.addresses[].observed'
+    field: '.addresses[].observed'
     value: number
     index: number
   }
 
+  export interface PeerAddressesMessageStartEvent {
+    field: '.addresses[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface PeerAddressesMessageEndEvent {
+    field: '.addresses[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface PeerProtocolsFieldEvent {
-    field: '$.protocols[]'
+    field: '.protocols[]'
     index: number
     value: string
   }
 
   export interface PeerPublicKeyFieldEvent {
-    field: '$.publicKey'
-    value: Uint8Array
+    field: '.publicKey'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface PeerPeerRecordEnvelopeFieldEvent {
-    field: '$.peerRecordEnvelope'
-    value: Uint8Array
+    field: '.peerRecordEnvelope'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface PeerMetadataFieldEvent {
-    field: '$.metadata{}'
+    field: '.metadata{}'
     key: string
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface PeerTagsValueFieldEvent {
-    field: '$.tags{}.value'
+    field: '.tags{}.value'
     value: Tag
     key: string
   }
 
   export interface PeerTagsExpiryFieldEvent {
-    field: '$.tags{}.expiry'
+    field: '.tags{}.expiry'
     value: Tag
     key: string
   }
 
+  export interface PeerTagsMessageStartEvent {
+    field: '.tags{}'
+    key: string
+    type: 'start'
+    message: string
+  }
+
+  export interface PeerTagsMessageEndEvent {
+    field: '.tags{}'
+    key: string
+    type: 'end'
+    message: string
+  }
+
   export interface PeerUpdatedFieldEvent {
-    field: '$.updated'
+    field: '.updated'
     value: number
   }
 
-  export function encode (obj: Partial<Peer>): Uint8Array {
+  export function encode (obj: PeerInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Peer.codec())
   }
 
@@ -552,23 +658,29 @@ export namespace Peer {
     return decodeMessage(buf, Peer.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer>): Generator<PeerAddressesMultiaddrFieldEvent | PeerAddressesIsCertifiedFieldEvent | PeerAddressesObservedFieldEvent | PeerProtocolsFieldEvent | PeerPublicKeyFieldEvent | PeerPeerRecordEnvelopeFieldEvent | PeerMetadataFieldEvent | PeerTagsValueFieldEvent | PeerTagsExpiryFieldEvent | PeerUpdatedFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<Peer>): Generator<PeerAddressesMultiaddrFieldEvent | PeerAddressesIsCertifiedFieldEvent | PeerAddressesObservedFieldEvent | PeerAddressesMessageStartEvent | PeerAddressesMessageEndEvent | PeerProtocolsFieldEvent | PeerPublicKeyFieldEvent | PeerPeerRecordEnvelopeFieldEvent | PeerMetadataFieldEvent | PeerTagsValueFieldEvent | PeerTagsExpiryFieldEvent | PeerTagsMessageStartEvent | PeerTagsMessageEndEvent | PeerUpdatedFieldEvent> {
     return streamMessage(buf, Peer.codec(), opts)
   }
 }
 
 export interface Address {
-  multiaddr: Uint8Array
+  multiaddr: Uint8Array<ArrayBuffer>
+  isCertified?: boolean
+  observed?: number
+}
+
+export interface AddressInput {
+  multiaddr?: Uint8Array
   isCertified?: boolean
   observed?: number
 }
 
 export namespace Address {
-  let _codec: Codec<Address>
+  let _codec: Codec<Address, AddressInput>
 
-  export const codec = (): Codec<Address> => {
+  export const codec = (): Codec<Address, AddressInput> => {
     if (_codec == null) {
-      _codec = message<Address>((obj, w, opts = {}) => {
+      _codec = message<Address, AddressInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -591,69 +703,85 @@ export namespace Address {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           multiaddr: uint8ArrayAlloc(0)
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.multiaddr = reader.bytes()
+              obj.multiaddr = r.bytes()
               break
             }
             case 2: {
-              obj.isCertified = reader.bool()
+              obj.isCertified = r.bool()
               break
             }
             case 3: {
-              obj.observed = reader.uint64Number()
+              obj.observed = r.uint64Number()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Address'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.multiaddr`,
-                value: reader.bytes()
+                field: `${prefix}multiaddr`,
+                value: r.bytes()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.isCertified`,
-                value: reader.bool()
+                field: `${prefix}isCertified`,
+                value: r.bool()
               }
               break
             }
             case 3: {
               yield {
-                field: `${prefix}.observed`,
-                value: reader.uint64Number()
+                field: `${prefix}observed`,
+                value: r.uint64Number()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Address'
           }
         }
       })
@@ -663,21 +791,21 @@ export namespace Address {
   }
 
   export interface AddressMultiaddrFieldEvent {
-    field: '$.multiaddr'
-    value: Uint8Array
+    field: '.multiaddr'
+    value: Uint8Array<ArrayBuffer>
   }
 
   export interface AddressIsCertifiedFieldEvent {
-    field: '$.isCertified'
+    field: '.isCertified'
     value: boolean
   }
 
   export interface AddressObservedFieldEvent {
-    field: '$.observed'
+    field: '.observed'
     value: number
   }
 
-  export function encode (obj: Partial<Address>): Uint8Array {
+  export function encode (obj: AddressInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Address.codec())
   }
 
@@ -695,12 +823,17 @@ export interface Tag {
   expiry?: bigint
 }
 
-export namespace Tag {
-  let _codec: Codec<Tag>
+export interface TagInput {
+  value?: number
+  expiry?: bigint
+}
 
-  export const codec = (): Codec<Tag> => {
+export namespace Tag {
+  let _codec: Codec<Tag, TagInput>
+
+  export const codec = (): Codec<Tag, TagInput> => {
     if (_codec == null) {
-      _codec = message<Tag>((obj, w, opts = {}) => {
+      _codec = message<Tag, TagInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -718,58 +851,74 @@ export namespace Tag {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length) => {
         const obj: any = {
           value: 0
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.value = reader.uint32()
+              obj.value = r.uint32()
               break
             }
             case 2: {
-              obj.expiry = reader.uint64()
+              obj.expiry = r.uint64()
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
-        const end = length == null ? reader.len : reader.pos + length
+      }, function * (r, length, prefix) {
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'Tag'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.value`,
-                value: reader.uint32()
+                field: `${prefix}value`,
+                value: r.uint32()
               }
               break
             }
             case 2: {
               yield {
-                field: `${prefix}.expiry`,
-                value: reader.uint64()
+                field: `${prefix}expiry`,
+                value: r.uint64()
               }
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'Tag'
           }
         }
       })
@@ -779,16 +928,16 @@ export namespace Tag {
   }
 
   export interface TagValueFieldEvent {
-    field: '$.value'
+    field: '.value'
     value: number
   }
 
   export interface TagExpiryFieldEvent {
-    field: '$.expiry'
+    field: '.expiry'
     value: bigint
   }
 
-  export function encode (obj: Partial<Tag>): Uint8Array {
+  export function encode (obj: TagInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, Tag.codec())
   }
 

@@ -77,7 +77,7 @@ export class RSAPrivateKey implements RSAPrivateKeyInterface {
     return uint8ArrayEquals(this.raw, key.raw)
   }
 
-  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array> {
+  sign (message: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>> {
     return hashAndSign(this.jwk, message, options)
   }
 }

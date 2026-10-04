@@ -6,7 +6,7 @@ import {
 } from '../../constants.ts'
 import { MessageType } from '../../message/dht.ts'
 import { bufferToRecordKey, isPublicKeyKey, fromPublicKeyKey } from '../../utils.ts'
-import type { Message } from '../../message/dht.ts'
+import type { MessageInput } from '../../message/dht.ts'
 import type { PeerRouting } from '../../peer-routing/index.ts'
 import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId, PeerStore } from '@libp2p/interface'
@@ -39,7 +39,7 @@ export class GetValueHandler implements DHTMessageHandler {
     this.peerRouting = init.peerRouting
   }
 
-  async handle (peerId: PeerId, msg: Message): Promise<Message> {
+  async handle (peerId: PeerId, msg: MessageInput): Promise<MessageInput> {
     const key = msg.key
 
     this.log('%p asked for key %b', peerId, key)
@@ -48,7 +48,7 @@ export class GetValueHandler implements DHTMessageHandler {
       throw new InvalidMessageError('Invalid key')
     }
 
-    const response: Message = {
+    const response: MessageInput = {
       type: MessageType.GET_VALUE,
       key,
       clusterLevel: msg.clusterLevel,

@@ -8,7 +8,7 @@ import { CHACHA_TAG_LENGTH, NOISE_MSG_MAX_LENGTH_BYTES, NOISE_MSG_MAX_LENGTH_BYT
 import { uint16BEEncode, uint16BEDecode } from './encoder.ts'
 import { NoiseHandshakePayload } from './proto/payload.ts'
 import type { MetricsRegistry } from './metrics.ts'
-import type { NoiseExtensions } from './proto/payload.ts'
+import type { NoiseExtensionsInput } from './proto/payload.ts'
 import type { HandshakeResult } from './types.ts'
 import type { AbortOptions, MessageStream, PrivateKey, PublicKey, StreamCloseEvent } from '@libp2p/interface'
 import type { SendResult } from '@libp2p/utils'
@@ -16,7 +16,7 @@ import type { SendResult } from '@libp2p/utils'
 export async function createHandshakePayload (
   privateKey: PrivateKey,
   staticPublicKey: Uint8Array | Uint8ArrayList,
-  extensions?: NoiseExtensions
+  extensions?: NoiseExtensionsInput
 ): Promise<Uint8Array | Uint8ArrayList> {
   const identitySig = await privateKey.sign(getSignaturePayload(staticPublicKey))
 
