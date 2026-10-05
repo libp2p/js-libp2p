@@ -360,7 +360,6 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       return
     }
 
-    this.timeline.lastReadAt = Date.now()
     this.readBuffer.append(data)
     this.dispatchReadBuffer()
   }
