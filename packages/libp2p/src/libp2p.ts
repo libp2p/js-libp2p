@@ -409,8 +409,8 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware])
   }
 
-  unuse (protocol: string): void {
-    this.components.registrar.unuse(protocol)
+  unuse (protocol: string, middleware?: StreamMiddleware): void {
+    this.components.registrar.unuse(protocol, middleware)
   }
 
   async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {

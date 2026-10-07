@@ -166,15 +166,29 @@ export class Registrar implements RegistrarInterface {
   }
 
   use (protocol: string, middleware: StreamMiddleware[]): void {
-    this.middleware.set(protocol, middleware)
+    this.middleware.set(protocol, [...(this.middleware.get(protocol) ?? []), ...middleware])
   }
 
-  unuse (protocol: string): void {
-    this.middleware.delete(protocol)
+  unuse (protocol: string, middleware?: StreamMiddleware): void {
+    if (middleware == null) {
+      this.middleware.delete(protocol)
+      return
+    }
+
+    const remaining = (this.middleware.get(protocol) ?? []).filter(item => item !== middleware)
+
+    if (remaining.length === 0) {
+      this.middleware.delete(protocol)
+    } else {
+      this.middleware.set(protocol, remaining)
+    }
   }
 
   getMiddleware (protocol: string): StreamMiddleware[] {
-    return this.middleware.get(protocol) ?? []
+    return [
+      ...(this.middleware.get('*') ?? []),
+      ...(protocol === '*' ? [] : this.middleware.get(protocol) ?? [])
+    ]
   }
 
   /**

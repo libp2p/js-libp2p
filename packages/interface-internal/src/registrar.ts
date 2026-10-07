@@ -60,7 +60,7 @@ export interface Registrar {
    * @param protocol - The protocol to fetch middleware for
    * @returns A list of `StreamMiddleware` implementations
    */
-  unuse(protocol: string): void
+  unuse(protocol: string, middleware?: StreamMiddleware): void
 
   /**
    * Retrieve any registered middleware for a given protocol.

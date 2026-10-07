@@ -789,8 +789,11 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   unregister(id: string): void
 
   /**
-   * Registers one or more middleware implementations that will be invoked for
+   * Appends one or more middleware implementations that will be invoked for
    * incoming and outgoing protocol streams that match the passed protocol.
+   * Pass `'*'` to run middleware for every negotiated protocol, before any
+   * protocol-specific middleware. Middleware does not register a stream handler
+   * or advertise support for a protocol.
    *
    * @example
    *
@@ -804,7 +807,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
 
   /**
-   * Deregisters all middleware for the passed protocol.
+   * Deregisters all middleware for the passed protocol, or only the given middleware.
    *
    * @example
    *
@@ -813,7 +816,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * // any previously registered middleware will no longer be invoked
    * ```
    */
-  unuse (protocol: string): void
+  unuse (protocol: string, middleware?: StreamMiddleware): void
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA'
