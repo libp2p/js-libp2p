@@ -789,11 +789,26 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   unregister(id: string): void
 
   /**
-   * Appends one or more middleware implementations that will be invoked for
-   * incoming and outgoing protocol streams that match the passed protocol.
-   * Pass `'*'` to run middleware for every negotiated protocol, before any
-   * protocol-specific middleware. Middleware does not register a stream handler
-   * or advertise support for a protocol.
+   * Appends global middleware invoked for every incoming and outgoing negotiated
+   * protocol stream, before protocol-specific middleware. This does not register
+   * a stream handler or advertise support for a protocol.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * const observer: StreamMiddleware = (stream, connection, next) => {
+   *   next(stream, connection)
+   * }
+   * libp2p.use(observer)
+   * libp2p.unuse(observer)
+   * ```
+   */
+  use (middleware: StreamMiddleware): void
+
+  /**
+   * Registers one or more middleware implementations for incoming and outgoing
+   * streams matching the passed protocol, replacing any previously registered
+   * middleware for that protocol. Protocol strings are matched literally.
    *
    * @example
    *
@@ -807,16 +822,22 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
 
   /**
-   * Deregisters all middleware for the passed protocol, or only the given middleware.
+   * Deregisters all global registrations of the given middleware, preserving
+   * other global observers and all protocol-specific middleware.
+   */
+  unuse (middleware: StreamMiddleware): void
+
+  /**
+   * Deregisters all middleware for the passed protocol. Global middleware is retained.
    *
    * @example
    *
    * ```TypeScript
    * libp2p.unuse('/my/protocol/1.0.0')
-   * // any previously registered middleware will no longer be invoked
+   * // any previously registered protocol-specific middleware will no longer be invoked
    * ```
    */
-  unuse (protocol: string, middleware?: StreamMiddleware): void
+  unuse (protocol: string): void
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA'

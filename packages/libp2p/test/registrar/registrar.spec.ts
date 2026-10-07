@@ -62,26 +62,46 @@ describe('registrar topologies', () => {
   it('should run global middleware before protocol middleware', () => {
     const global: StreamMiddleware = (stream, connection, next) => next(stream, connection)
     const specific: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    registrar.use('*', [global])
+    registrar.use(global)
     registrar.use(protocol, [specific])
     expect(registrar.getMiddleware(protocol)).to.deep.equal([global, specific])
     expect(registrar.getMiddleware('/outbound-only/1.0.0')).to.deep.equal([global])
     expect(registrar.getMiddleware('*')).to.deep.equal([global])
     expect(registrar.getProtocols()).to.deep.equal([])
-    registrar.unuse('*')
+    registrar.unuse(global)
     expect(registrar.getMiddleware(protocol)).to.deep.equal([specific])
   })
 
-  it('should append middleware and remove only the requested observer', () => {
+  it('should append global middleware and remove only the requested observer', () => {
     const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
     const second: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    registrar.use('*', [first])
-    registrar.use('*', [second])
+    registrar.use(first)
+    registrar.use(second)
     expect(registrar.getMiddleware(protocol)).to.deep.equal([first, second])
-    registrar.unuse('*', second)
+    registrar.unuse(second)
     expect(registrar.getMiddleware(protocol)).to.deep.equal([first])
-    registrar.unuse('*', first)
+    registrar.unuse(first)
     expect(registrar.getMiddleware(protocol)).to.deep.equal([])
+  })
+
+  it('should preserve protocol replacement and literal asterisk registrations', () => {
+    const global: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const replacement: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    registrar.use(global)
+
+    for (const name of [protocol, '*']) {
+      registrar.use(name, [first])
+      registrar.use(name, [replacement])
+      expect(registrar.getMiddleware(name), name).to.deep.equal([global, replacement])
+      expect(registrar.getMiddleware('/unregistered/1'), name).to.deep.equal([global])
+      registrar.unuse(name)
+      expect(registrar.getMiddleware(name), name).to.deep.equal([global])
+    }
+
+    registrar.use(protocol, [first])
+    registrar.unuse(global)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([first])
   })
 
   it('should be able to unregister a protocol', async () => {

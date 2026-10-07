@@ -396,7 +396,7 @@ describe('connection', () => {
       calls.push('global')
       next(stream, connection)
     }
-    realRegistrar.use('*', [first])
+    realRegistrar.use(first)
     realRegistrar.use(ECHO_PROTOCOL, [(stream, connection, next) => {
       calls.push('specific')
       next(stream, connection)
@@ -407,7 +407,7 @@ describe('connection', () => {
       await connection.newStream(ECHO_PROTOCOL)
       expect(calls).to.deep.equal(['global', 'specific'])
       expect(realRegistrar.getProtocols()).to.deep.equal([])
-      realRegistrar.unuse('*', first)
+      realRegistrar.unuse(first)
       calls.length = 0
       await connection.newStream(ECHO_PROTOCOL)
       expect(calls).to.deep.equal(['specific'])
@@ -424,10 +424,10 @@ describe('connection', () => {
       logger: defaultLogger()
     })
     const calls: string[] = []
-    realRegistrar.use('*', [(stream, connection, next) => {
+    realRegistrar.use((stream, connection, next) => {
       calls.push('global')
       next(stream, connection)
-    }])
+    })
     realRegistrar.use(ECHO_PROTOCOL, [(stream, connection, next) => {
       calls.push('specific')
       next(stream, connection)

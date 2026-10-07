@@ -26,6 +26,7 @@ export class Registrar implements RegistrarInterface {
   private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: RegistrarComponents
   private readonly middleware: Map<string, StreamMiddleware[]>
+  private globalMiddleware: StreamMiddleware[] = []
 
   constructor (components: RegistrarComponents) {
     this.components = components
@@ -165,30 +166,33 @@ export class Registrar implements RegistrarInterface {
     }
   }
 
-  use (protocol: string, middleware: StreamMiddleware[]): void {
-    this.middleware.set(protocol, [...(this.middleware.get(protocol) ?? []), ...middleware])
-  }
-
-  unuse (protocol: string, middleware?: StreamMiddleware): void {
-    if (middleware == null) {
-      this.middleware.delete(protocol)
+  use (middleware: StreamMiddleware): void
+  use (protocol: string, middleware: StreamMiddleware[]): void
+  use (protocol: string | StreamMiddleware, middleware?: StreamMiddleware[]): void {
+    if (typeof protocol === 'function') {
+      this.globalMiddleware.push(protocol)
       return
     }
 
-    const remaining = (this.middleware.get(protocol) ?? []).filter(item => item !== middleware)
+    if (middleware == null) {
+      throw new InvalidParametersError('Protocol middleware is required')
+    }
 
-    if (remaining.length === 0) {
-      this.middleware.delete(protocol)
+    this.middleware.set(protocol, middleware)
+  }
+
+  unuse (middleware: StreamMiddleware): void
+  unuse (protocol: string): void
+  unuse (protocol: string | StreamMiddleware): void {
+    if (typeof protocol === 'function') {
+      this.globalMiddleware = this.globalMiddleware.filter(item => item !== protocol)
     } else {
-      this.middleware.set(protocol, remaining)
+      this.middleware.delete(protocol)
     }
   }
 
   getMiddleware (protocol: string): StreamMiddleware[] {
-    return [
-      ...(this.middleware.get('*') ?? []),
-      ...(protocol === '*' ? [] : this.middleware.get(protocol) ?? [])
-    ]
+    return [...this.globalMiddleware, ...(this.middleware.get(protocol) ?? [])]
   }
 
   /**
