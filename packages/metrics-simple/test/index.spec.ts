@@ -183,6 +183,43 @@ describe('simple-metrics', () => {
     expect(m3).to.equal(m1, 'did not re-use metric')
   })
 
+  it('should collect histogram buckets', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({
+      logger: defaultLogger()
+    })
+
+    const histogram = s.registerHistogram('foo', {
+      buckets: [1, 5, 10]
+    })
+    histogram.observe(3)
+
+    const group = s.registerHistogramGroup('bar')
+    group.observe({ baz: 3 })
+
+    await start(s)
+
+    const metrics = await deferred.promise
+
+    expect(metrics.foo.buckets).to.deep.equal({
+      1: 0,
+      5: 1,
+      10: 1,
+      Infinity: 1
+    })
+    expect(metrics.bar.baz.buckets).to.deep.include({
+      5: 1,
+      10: 1,
+      Infinity: 1
+    })
+  })
+
   it('should collect a calculated histogram group', async () => {
     const deferred = pDefer<Record<string, any>>()
 

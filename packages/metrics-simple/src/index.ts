@@ -149,7 +149,7 @@ class SimpleHistogram implements Histogram {
     return {
       count: this.countValue,
       sum: this.sumValue,
-      buckets: { ...this.bucketValues }
+      buckets: Object.fromEntries(this.bucketValues)
     }
   }
 
