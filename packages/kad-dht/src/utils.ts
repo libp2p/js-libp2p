@@ -104,7 +104,7 @@ export function uint8ArrayToBigInt (buf: Uint8Array): bigint {
 /**
  * Create a new put record, encodes and signs it if enabled
  */
-export function createPutRecord (key: Uint8Array, value: Uint8Array): Uint8Array {
+export function createPutRecord (key: Uint8Array, value: Uint8Array): Uint8Array<ArrayBuffer> {
   const timeReceived = new Date()
   const rec = new Libp2pRecord(key, value, timeReceived)
 

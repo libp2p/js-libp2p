@@ -77,12 +77,21 @@ describe('rpc - handlers - FindNode', () => {
     }
 
     expect(response.closer).to.have.length(2)
-    const peer = response.closer[0]
+    const peer = response.closer?.[0]
+
+    if (peer?.id == null) {
+      throw new Error('Peer expected')
+    }
 
     expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
-    expect(peer.multiaddrs).to.not.be.empty()
+    expect(peer?.multiaddrs).to.not.be.empty()
 
-    const self = response.closer[1]
+    const self = response.closer?.[1]
+
+    if (self?.id == null) {
+      throw new Error('Peer expected')
+    }
+
     expect(peerIdFromMultihash(Digest.decode(self.id)).toString()).to.equal(peerId.peerId.toString())
   })
 
@@ -112,7 +121,11 @@ describe('rpc - handlers - FindNode', () => {
     }
 
     expect(response.closer).to.have.length(1)
-    const peer = response.closer[0]
+    const peer = response.closer?.[0]
+
+    if (peer?.id == null) {
+      throw new Error('Peer expected')
+    }
 
     expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
     expect(peer.multiaddrs).to.not.be.empty()
@@ -189,11 +202,15 @@ describe('rpc - handlers - FindNode', () => {
     }
 
     expect(response.closer).to.have.length(1)
-    const peer = response.closer[0]
+    const peer = response.closer?.[0]
+
+    if (peer?.id == null) {
+      throw new Error('Peer expected')
+    }
 
     expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
-    expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.include('/ip4/192.168.1.5/tcp/4002')
-    expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/221.4.67.0/tcp/4002')
+    expect(peer.multiaddrs?.map(ma => multiaddr(ma).toString())).to.include('/ip4/192.168.1.5/tcp/4002')
+    expect(peer.multiaddrs?.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/221.4.67.0/tcp/4002')
   })
 
   it('returns only wan addresses', async () => {
@@ -232,10 +249,14 @@ describe('rpc - handlers - FindNode', () => {
     }
 
     expect(response.closer).to.have.length(1)
-    const peer = response.closer[0]
+    const peer = response.closer?.[0]
+
+    if (peer?.id == null) {
+      throw new Error('Peer expected')
+    }
 
     expect(peerIdFromMultihash(Digest.decode(peer.id)).toString()).to.equal(targetPeer.peerId.toString())
-    expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/192.168.1.5/tcp/4002')
-    expect(peer.multiaddrs.map(ma => multiaddr(ma).toString())).to.include('/ip4/221.4.67.0/tcp/4002')
+    expect(peer.multiaddrs?.map(ma => multiaddr(ma).toString())).to.not.include('/ip4/192.168.1.5/tcp/4002')
+    expect(peer.multiaddrs?.map(ma => multiaddr(ma).toString())).to.include('/ip4/221.4.67.0/tcp/4002')
   })
 })

@@ -4,7 +4,7 @@ import map from 'it-map'
 import { CID } from 'multiformats/cid'
 import { MessageType } from '../../message/dht.ts'
 import type { PeerInfoMapper } from '../../index.ts'
-import type { Message } from '../../message/dht.ts'
+import type { Message, MessageInput } from '../../message/dht.ts'
 import type { PeerRouting } from '../../peer-routing/index.ts'
 import type { Providers } from '../../providers.ts'
 import type { DHTMessageHandler } from '../index.ts'
@@ -43,7 +43,7 @@ export class GetProvidersHandler implements DHTMessageHandler {
     this.peerInfoMapper = init.peerInfoMapper
   }
 
-  async handle (peerId: PeerId, msg: Message): Promise<Message> {
+  async handle (peerId: PeerId, msg: Message): Promise<MessageInput> {
     if (msg.key == null) {
       throw new InvalidMessageError('Invalid GET_PROVIDERS message received - key was missing')
     }

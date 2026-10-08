@@ -103,7 +103,7 @@ export function providerEvent (fields: ProviderEventFields, options: ProgressOpt
 
 export interface ValueEventFields {
   from: PeerId
-  value: Uint8Array
+  value: Uint8Array<ArrayBuffer>
   path: DisjointPath
 }
 

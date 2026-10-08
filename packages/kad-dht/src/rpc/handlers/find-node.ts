@@ -3,7 +3,7 @@ import { CODE_P2P } from '@multiformats/multiaddr'
 import { equals as uint8ArrayEquals } from 'uint8arrays'
 import { MessageType } from '../../message/dht.ts'
 import type { PeerInfoMapper } from '../../index.ts'
-import type { Message } from '../../message/dht.ts'
+import type { Message, MessageInput } from '../../message/dht.ts'
 import type { PeerRouting } from '../../peer-routing/index.ts'
 import type { DHTMessageHandler } from '../index.ts'
 import type { ComponentLogger, Logger, PeerId, PeerInfo } from '@libp2p/interface'
@@ -41,7 +41,7 @@ export class FindNodeHandler implements DHTMessageHandler {
   /**
    * Process `FindNode` DHT messages
    */
-  async handle (peerId: PeerId, msg: Message): Promise<Message> {
+  async handle (peerId: PeerId, msg: Message): Promise<MessageInput> {
     this.log('incoming request from %p for peers close to %b', peerId, msg.key)
     try {
       if (msg.key == null) {

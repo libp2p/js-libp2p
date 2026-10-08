@@ -153,7 +153,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   await peerStore.patch(connection.remotePeer, peer)
 
   if (message.agentVersion != null || message.protocolVersion != null) {
-    const metadata: Record<string, Uint8Array> = {}
+    const metadata: Record<string, Uint8Array<ArrayBuffer>> = {}
 
     if (message.agentVersion != null) {
       metadata.AgentVersion = uint8ArrayFromString(message.agentVersion)

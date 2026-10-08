@@ -3,7 +3,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { messageIdToString } from '../../src/utils/messageIdToString.ts'
 import type { RPC } from '../../src/message/rpc.ts'
 
-export const getMsgId = (msg: RPC.Message): Uint8Array => {
+export const getMsgId = (msg: RPC.Message): Uint8Array<ArrayBuffer> => {
   const from = msg.from ?? new Uint8Array(0)
   const seqno = msg.seqno instanceof Uint8Array ? msg.seqno : uint8ArrayFromString(msg.seqno ?? '')
   const result = new Uint8Array(from.length + seqno.length)

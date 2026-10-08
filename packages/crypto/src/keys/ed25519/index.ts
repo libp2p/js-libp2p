@@ -56,7 +56,7 @@ export function generateKeyFromSeed (seed: Uint8Array): Uint8ArrayKeyPair {
   }
 }
 
-export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array {
+export function hashAndSign (key: Uint8Array, msg: Uint8Array | Uint8ArrayList): Uint8Array<ArrayBuffer> {
   if (!(key instanceof Uint8Array)) {
     throw new TypeError('"key" must be a node.js Buffer, or Uint8Array.')
   }

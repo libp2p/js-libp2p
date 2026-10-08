@@ -4,7 +4,12 @@ import type { Uint8ArrayList } from 'uint8arraylist'
 
 export interface HolePunch {
   type?: HolePunch.Type
-  observedAddresses: Uint8Array[]
+  observedAddresses: Uint8Array<ArrayBuffer>[]
+}
+
+export interface HolePunchInput {
+  type?: HolePunch.Type
+  observedAddresses?: Uint8Array[]
 }
 
 export namespace HolePunch {
@@ -21,16 +26,16 @@ export namespace HolePunch {
   }
 
   export namespace Type {
-    export const codec = (): Codec<Type> => {
+    export const codec = (): Codec<Type, Type> => {
       return enumeration<Type>(__TypeValues)
     }
   }
 
-  let _codec: Codec<HolePunch>
+  let _codec: Codec<HolePunch, HolePunchInput>
 
-  export const codec = (): Codec<HolePunch> => {
+  export const codec = (): Codec<HolePunch, HolePunchInput> => {
     if (_codec == null) {
-      _codec = message<HolePunch>((obj, w, opts = {}) => {
+      _codec = message<HolePunch, HolePunchInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -50,19 +55,19 @@ export namespace HolePunch {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {
           observedAddresses: []
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
-              obj.type = HolePunch.Type.codec().decode(reader)
+              obj.type = HolePunch.Type.codec().decode(r)
               break
             }
             case 2: {
@@ -70,32 +75,40 @@ export namespace HolePunch {
                 throw new MaxLengthError('Decode error - repeated field "observedAddresses" had too many elements')
               }
 
-              obj.observedAddresses.push(reader.bytes())
+              obj.observedAddresses.push(r.bytes())
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (r, length, prefix, opts = {}) {
         const obj = {
           observedAddresses: 0
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'HolePunch'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
               yield {
-                field: `${prefix}.type`,
-                value: HolePunch.Type.codec().decode(reader)
+                field: `${prefix}type`,
+                value: HolePunch.Type.codec().decode(r)
               }
               break
             }
@@ -105,9 +118,9 @@ export namespace HolePunch {
               }
 
               yield {
-                field: `${prefix}.observedAddresses[]`,
+                field: `${prefix}observedAddresses[]`,
                 index: obj.observedAddresses,
-                value: reader.bytes()
+                value: r.bytes()
               }
 
               obj.observedAddresses++
@@ -115,9 +128,17 @@ export namespace HolePunch {
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'HolePunch'
           }
         }
       })
@@ -127,17 +148,17 @@ export namespace HolePunch {
   }
 
   export interface HolePunchTypeFieldEvent {
-    field: '$.type'
+    field: '.type'
     value: HolePunch.Type
   }
 
   export interface HolePunchObservedAddressesFieldEvent {
-    field: '$.observedAddresses[]'
+    field: '.observedAddresses[]'
     index: number
-    value: Uint8Array
+    value: Uint8Array<ArrayBuffer>
   }
 
-  export function encode (obj: Partial<HolePunch>): Uint8Array {
+  export function encode (obj: HolePunchInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, HolePunch.codec())
   }
 

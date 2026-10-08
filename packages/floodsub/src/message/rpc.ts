@@ -7,18 +7,28 @@ export interface RPC {
   messages: RPC.Message[]
 }
 
+export interface RPCInput {
+  subscriptions?: RPC.SubOptsInput[]
+  messages?: RPC.MessageInput[]
+}
+
 export namespace RPC {
   export interface SubOpts {
     subscribe?: boolean
     topic?: string
   }
 
-  export namespace SubOpts {
-    let _codec: Codec<SubOpts>
+  export interface SubOptsInput {
+    subscribe?: boolean
+    topic?: string
+  }
 
-    export const codec = (): Codec<SubOpts> => {
+  export namespace SubOpts {
+    let _codec: Codec<SubOpts, SubOptsInput>
+
+    export const codec = (): Codec<SubOpts, SubOptsInput> => {
       if (_codec == null) {
-        _codec = message<SubOpts>((obj, w, opts = {}) => {
+        _codec = message<SubOpts, SubOptsInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -36,56 +46,72 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {}
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.subscribe = reader.bool()
+                obj.subscribe = r.bool()
                 break
               }
               case 2: {
-                obj.topic = reader.string()
+                obj.topic = r.string()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.SubOpts'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.subscribe`,
-                  value: reader.bool()
+                  field: `${prefix}subscribe`,
+                  value: r.bool()
                 }
                 break
               }
               case 2: {
                 yield {
-                  field: `${prefix}.topic`,
-                  value: reader.string()
+                  field: `${prefix}topic`,
+                  value: r.string()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.SubOpts'
             }
           }
         })
@@ -95,16 +121,16 @@ export namespace RPC {
     }
 
     export interface SubOptsSubscribeFieldEvent {
-      field: '$.subscribe'
+      field: '.subscribe'
       value: boolean
     }
 
     export interface SubOptsTopicFieldEvent {
-      field: '$.topic'
+      field: '.topic'
       value: string
     }
 
-    export function encode (obj: Partial<SubOpts>): Uint8Array {
+    export function encode (obj: SubOptsInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, SubOpts.codec())
     }
 
@@ -118,6 +144,15 @@ export namespace RPC {
   }
 
   export interface Message {
+    from?: Uint8Array<ArrayBuffer>
+    data?: Uint8Array<ArrayBuffer>
+    sequenceNumber?: Uint8Array<ArrayBuffer>
+    topic?: string
+    signature?: Uint8Array<ArrayBuffer>
+    key?: Uint8Array<ArrayBuffer>
+  }
+
+  export interface MessageInput {
     from?: Uint8Array
     data?: Uint8Array
     sequenceNumber?: Uint8Array
@@ -127,11 +162,11 @@ export namespace RPC {
   }
 
   export namespace Message {
-    let _codec: Codec<Message>
+    let _codec: Codec<Message, MessageInput>
 
-    export const codec = (): Codec<Message> => {
+    export const codec = (): Codec<Message, MessageInput> => {
       if (_codec == null) {
-        _codec = message<Message>((obj, w, opts = {}) => {
+        _codec = message<Message, MessageInput>((obj, w, opts = {}) => {
           if (opts.lengthDelimited !== false) {
             w.fork()
           }
@@ -169,100 +204,116 @@ export namespace RPC {
           if (opts.lengthDelimited !== false) {
             w.ldelim()
           }
-        }, (reader, length, opts = {}) => {
+        }, (r, length) => {
           const obj: any = {}
 
-          const end = length == null ? reader.len : reader.pos + length
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
-                obj.from = reader.bytes()
+                obj.from = r.bytes()
                 break
               }
               case 2: {
-                obj.data = reader.bytes()
+                obj.data = r.bytes()
                 break
               }
               case 3: {
-                obj.sequenceNumber = reader.bytes()
+                obj.sequenceNumber = r.bytes()
                 break
               }
               case 4: {
-                obj.topic = reader.string()
+                obj.topic = r.string()
                 break
               }
               case 5: {
-                obj.signature = reader.bytes()
+                obj.signature = r.bytes()
                 break
               }
               case 6: {
-                obj.key = reader.bytes()
+                obj.key = r.bytes()
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
             }
           }
 
           return obj
-        }, function * (reader, length, prefix, opts = {}) {
-          const end = length == null ? reader.len : reader.pos + length
+        }, function * (r, length, prefix) {
+          const end = length == null ? r.len : r.pos + length
 
-          while (reader.pos < end) {
-            const tag = reader.uint32()
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'start',
+              message: 'RPC.Message'
+            }
+          }
+
+          while (r.pos < end) {
+            const tag = r.uint32()
 
             switch (tag >>> 3) {
               case 1: {
                 yield {
-                  field: `${prefix}.from`,
-                  value: reader.bytes()
+                  field: `${prefix}from`,
+                  value: r.bytes()
                 }
                 break
               }
               case 2: {
                 yield {
-                  field: `${prefix}.data`,
-                  value: reader.bytes()
+                  field: `${prefix}data`,
+                  value: r.bytes()
                 }
                 break
               }
               case 3: {
                 yield {
-                  field: `${prefix}.sequenceNumber`,
-                  value: reader.bytes()
+                  field: `${prefix}sequenceNumber`,
+                  value: r.bytes()
                 }
                 break
               }
               case 4: {
                 yield {
-                  field: `${prefix}.topic`,
-                  value: reader.string()
+                  field: `${prefix}topic`,
+                  value: r.string()
                 }
                 break
               }
               case 5: {
                 yield {
-                  field: `${prefix}.signature`,
-                  value: reader.bytes()
+                  field: `${prefix}signature`,
+                  value: r.bytes()
                 }
                 break
               }
               case 6: {
                 yield {
-                  field: `${prefix}.key`,
-                  value: reader.bytes()
+                  field: `${prefix}key`,
+                  value: r.bytes()
                 }
                 break
               }
               default: {
-                reader.skipType(tag & 7)
+                r.skipType(tag & 7)
                 break
               }
+            }
+          }
+
+          if (prefix !== '.') {
+            yield {
+              field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+              type: 'end',
+              message: 'RPC.Message'
             }
           }
         })
@@ -272,36 +323,36 @@ export namespace RPC {
     }
 
     export interface MessageFromFieldEvent {
-      field: '$.from'
-      value: Uint8Array
+      field: '.from'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageDataFieldEvent {
-      field: '$.data'
-      value: Uint8Array
+      field: '.data'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageSequenceNumberFieldEvent {
-      field: '$.sequenceNumber'
-      value: Uint8Array
+      field: '.sequenceNumber'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageTopicFieldEvent {
-      field: '$.topic'
+      field: '.topic'
       value: string
     }
 
     export interface MessageSignatureFieldEvent {
-      field: '$.signature'
-      value: Uint8Array
+      field: '.signature'
+      value: Uint8Array<ArrayBuffer>
     }
 
     export interface MessageKeyFieldEvent {
-      field: '$.key'
-      value: Uint8Array
+      field: '.key'
+      value: Uint8Array<ArrayBuffer>
     }
 
-    export function encode (obj: Partial<Message>): Uint8Array {
+    export function encode (obj: MessageInput): Uint8Array<ArrayBuffer> {
       return encodeMessage(obj, Message.codec())
     }
 
@@ -314,11 +365,11 @@ export namespace RPC {
     }
   }
 
-  let _codec: Codec<RPC>
+  let _codec: Codec<RPC, RPCInput>
 
-  export const codec = (): Codec<RPC> => {
+  export const codec = (): Codec<RPC, RPCInput> => {
     if (_codec == null) {
-      _codec = message<RPC>((obj, w, opts = {}) => {
+      _codec = message<RPC, RPCInput>((obj, w, opts = {}) => {
         if (opts.lengthDelimited !== false) {
           w.fork()
         }
@@ -340,16 +391,16 @@ export namespace RPC {
         if (opts.lengthDelimited !== false) {
           w.ldelim()
         }
-      }, (reader, length, opts = {}) => {
+      }, (r, length, opts = {}) => {
         const obj: any = {
           subscriptions: [],
           messages: []
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -357,7 +408,7 @@ export namespace RPC {
                 throw new MaxLengthError('Decode error - repeated field "subscriptions" had too many elements')
               }
 
-              obj.subscriptions.push(RPC.SubOpts.codec().decode(reader, reader.uint32(), {
+              obj.subscriptions.push(RPC.SubOpts.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.subscriptions$
               }))
               break
@@ -367,29 +418,37 @@ export namespace RPC {
                 throw new MaxLengthError('Decode error - repeated field "messages" had too many elements')
               }
 
-              obj.messages.push(RPC.Message.codec().decode(reader, reader.uint32(), {
+              obj.messages.push(RPC.Message.codec().decode(r, r.uint32(), {
                 limits: opts.limits?.messages$
               }))
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
           }
         }
 
         return obj
-      }, function * (reader, length, prefix, opts = {}) {
+      }, function * (r, length, prefix, opts = {}) {
         const obj = {
           subscriptions: 0,
           messages: 0
         }
 
-        const end = length == null ? reader.len : reader.pos + length
+        const end = length == null ? r.len : r.pos + length
 
-        while (reader.pos < end) {
-          const tag = reader.uint32()
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'start',
+            message: 'RPC'
+          }
+        }
+
+        while (r.pos < end) {
+          const tag = r.uint32()
 
           switch (tag >>> 3) {
             case 1: {
@@ -397,7 +456,7 @@ export namespace RPC {
                 throw new MaxLengthError('Streaming decode error - repeated field "subscriptions" had too many elements')
               }
 
-              for (const evt of RPC.SubOpts.codec().stream(reader, reader.uint32(), `${prefix}.subscriptions[]`, {
+              for (const evt of RPC.SubOpts.codec().stream(r, r.uint32(), `${prefix}subscriptions[].`, {
                 limits: opts.limits?.subscriptions$
               })) {
                 yield {
@@ -415,7 +474,7 @@ export namespace RPC {
                 throw new MaxLengthError('Streaming decode error - repeated field "messages" had too many elements')
               }
 
-              for (const evt of RPC.Message.codec().stream(reader, reader.uint32(), `${prefix}.messages[]`, {
+              for (const evt of RPC.Message.codec().stream(r, r.uint32(), `${prefix}messages[].`, {
                 limits: opts.limits?.messages$
               })) {
                 yield {
@@ -429,9 +488,17 @@ export namespace RPC {
               break
             }
             default: {
-              reader.skipType(tag & 7)
+              r.skipType(tag & 7)
               break
             }
+          }
+        }
+
+        if (prefix !== '.') {
+          yield {
+            field: prefix.endsWith('.') ? prefix.substring(0, prefix.length - 1) : prefix,
+            type: 'end',
+            message: 'RPC'
           }
         }
       })
@@ -441,54 +508,82 @@ export namespace RPC {
   }
 
   export interface RPCSubscriptionsSubscribeFieldEvent {
-    field: '$.subscriptions[].subscribe'
+    field: '.subscriptions[].subscribe'
     value: boolean
     index: number
   }
 
   export interface RPCSubscriptionsTopicFieldEvent {
-    field: '$.subscriptions[].topic'
+    field: '.subscriptions[].topic'
     value: string
     index: number
   }
 
+  export interface RPCSubscriptionsMessageStartEvent {
+    field: '.subscriptions[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCSubscriptionsMessageEndEvent {
+    field: '.subscriptions[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
   export interface RPCMessagesFromFieldEvent {
-    field: '$.messages[].from'
-    value: Uint8Array
+    field: '.messages[].from'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesDataFieldEvent {
-    field: '$.messages[].data'
-    value: Uint8Array
+    field: '.messages[].data'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesSequenceNumberFieldEvent {
-    field: '$.messages[].sequenceNumber'
-    value: Uint8Array
+    field: '.messages[].sequenceNumber'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesTopicFieldEvent {
-    field: '$.messages[].topic'
+    field: '.messages[].topic'
     value: string
     index: number
   }
 
   export interface RPCMessagesSignatureFieldEvent {
-    field: '$.messages[].signature'
-    value: Uint8Array
+    field: '.messages[].signature'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
   export interface RPCMessagesKeyFieldEvent {
-    field: '$.messages[].key'
-    value: Uint8Array
+    field: '.messages[].key'
+    value: Uint8Array<ArrayBuffer>
     index: number
   }
 
-  export function encode (obj: Partial<RPC>): Uint8Array {
+  export interface RPCMessagesMessageStartEvent {
+    field: '.messages[]'
+    index: number
+    type: 'start'
+    message: string
+  }
+
+  export interface RPCMessagesMessageEndEvent {
+    field: '.messages[]'
+    index: number
+    type: 'end'
+    message: string
+  }
+
+  export function encode (obj: RPCInput): Uint8Array<ArrayBuffer> {
     return encodeMessage(obj, RPC.codec())
   }
 
@@ -496,7 +591,7 @@ export namespace RPC {
     return decodeMessage(buf, RPC.codec(), opts)
   }
 
-  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<RPC>): Generator<RPCSubscriptionsSubscribeFieldEvent | RPCSubscriptionsTopicFieldEvent | RPCMessagesFromFieldEvent | RPCMessagesDataFieldEvent | RPCMessagesSequenceNumberFieldEvent | RPCMessagesTopicFieldEvent | RPCMessagesSignatureFieldEvent | RPCMessagesKeyFieldEvent> {
+  export function stream (buf: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<RPC>): Generator<RPCSubscriptionsSubscribeFieldEvent | RPCSubscriptionsTopicFieldEvent | RPCSubscriptionsMessageStartEvent | RPCSubscriptionsMessageEndEvent | RPCMessagesFromFieldEvent | RPCMessagesDataFieldEvent | RPCMessagesSequenceNumberFieldEvent | RPCMessagesTopicFieldEvent | RPCMessagesSignatureFieldEvent | RPCMessagesKeyFieldEvent | RPCMessagesMessageStartEvent | RPCMessagesMessageEndEvent> {
     return streamMessage(buf, RPC.codec(), opts)
   }
 }

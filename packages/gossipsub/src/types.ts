@@ -30,7 +30,7 @@ export interface MsgIdToStrFn { (msgId: Uint8Array): string }
  * Compute spec'ed msg-id. Used for IHAVE / IWANT messages
  */
 export interface MsgIdFn {
-  (msg: Message): Promise<Uint8Array> | Uint8Array
+  (msg: Message): Promise<Uint8Array<ArrayBuffer>> | Uint8Array<ArrayBuffer>
 }
 
 export interface DataTransform {
@@ -40,13 +40,13 @@ export interface DataTransform {
    * - `inboundTransform()`: decompress snappy payload
    * - `outboundTransform()`: compress snappy payload
    */
-  inboundTransform(topic: TopicStr, data: Uint8Array): Uint8Array
+  inboundTransform(topic: TopicStr, data: Uint8Array): Uint8Array<ArrayBuffer>
 
   /**
    * Takes the data to be published (a topic and associated data) transforms the data. The
    * transformed data will then be used to create a `RawGossipsubMessage` to be sent to peers.
    */
-  outboundTransform(topic: TopicStr, data: Uint8Array): Uint8Array
+  outboundTransform(topic: TopicStr, data: Uint8Array): Uint8Array<ArrayBuffer>
 }
 
 export enum SignaturePolicy {
@@ -163,7 +163,7 @@ export enum MessageStatus {
  * See https://github.com/ChainSafe/js-libp2p-gossipsub/pull/274
  */
 export interface MessageId {
-  msgId: Uint8Array
+  msgId: Uint8Array<ArrayBuffer>
   msgIdStr: MsgIdStr
 }
 

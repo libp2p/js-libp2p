@@ -4,6 +4,7 @@ import { RPC } from './message/rpc.ts'
 import type { RPCDecodeLimits } from './decodeRpc.ts'
 import type { PubSubRPC } from './floodsub.ts'
 import type { PeerStreamsEvents } from './index.ts'
+import type { RPCInput } from './message/rpc.ts'
 import type { Stream, PeerId } from '@libp2p/interface'
 import type { ProtobufMessageStream, ProtobufStreamOpts } from '@libp2p/utils'
 import type { DecoderOptions as LpDecoderOptions } from 'it-length-prefixed'
@@ -28,9 +29,9 @@ export class PeerStreams extends TypedEventEmitter<PeerStreamsEvents> {
    */
   private readonly shutDownController: AbortController
   // messages sent by the remote
-  private inboundPb?: ProtobufMessageStream<RPC>
+  private inboundPb?: ProtobufMessageStream<RPC, RPCInput>
   // messages we send
-  private outboundPb?: ProtobufMessageStream<RPC>
+  private outboundPb?: ProtobufMessageStream<RPC, RPCInput>
 
   constructor (peerId: PeerId) {
     super()

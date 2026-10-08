@@ -8,6 +8,7 @@ import { GetValueHandler } from './handlers/get-value.ts'
 import { PingHandler } from './handlers/ping.ts'
 import { PutValueHandler } from './handlers/put-value.ts'
 import type { PeerInfoMapper, Validators } from '../index.ts'
+import type { MessageInput } from '../message/dht.ts'
 import type { PeerRouting } from '../peer-routing/index.ts'
 import type { Providers } from '../providers.ts'
 import type { FindNodeHandlerComponents } from './handlers/find-node.ts'
@@ -18,7 +19,7 @@ import type { RoutingTable } from '../routing-table/index.ts'
 import type { CounterGroup, Logger, Metrics, PeerId, MetricGroup, Connection, Stream } from '@libp2p/interface'
 
 export interface DHTMessageHandler {
-  handle(peerId: PeerId, msg: Message): Promise<Message | undefined>
+  handle(peerId: PeerId, msg: Message): Promise<MessageInput | undefined>
 }
 
 export interface RPCInit {
@@ -70,7 +71,7 @@ export class RPC {
   /**
    * Process incoming DHT messages
    */
-  async handleMessage (peerId: PeerId, msg: Message): Promise<Message | undefined> {
+  async handleMessage (peerId: PeerId, msg: Message): Promise<MessageInput | undefined> {
     // get handler & execute it
     const handler = this.handlers[msg.type]
 
