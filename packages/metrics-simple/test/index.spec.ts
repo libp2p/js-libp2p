@@ -206,7 +206,9 @@ describe('simple-metrics', () => {
 
     const metrics = await deferred.promise
     expect(metrics).to.have.nested.property('foo.a.count', 1)
+    expect(metrics).to.have.nested.property('foo.a.sum', 1)
     expect(metrics).to.have.nested.property('foo.b.count', 1)
+    expect(metrics).to.have.nested.property('foo.b.sum', 2)
   })
 
   it('should collect a calculated summary group', async () => {
@@ -232,6 +234,75 @@ describe('simple-metrics', () => {
 
     const metrics = await deferred.promise
     expect(metrics).to.have.nested.property('foo.a.count', 1)
+    expect(metrics).to.have.nested.property('foo.a.sum', 1)
     expect(metrics).to.have.nested.property('foo.b.count', 1)
+    expect(metrics).to.have.nested.property('foo.b.sum', 2)
+  })
+
+  it('should collect calculated groups with an async calculate function', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({
+      logger: defaultLogger()
+    })
+
+    await start(s)
+
+    s.registerHistogramGroup('foo', {
+      calculate: async () => ({
+        a: 1
+      })
+    })
+    s.registerSummaryGroup('bar', {
+      calculate: async () => ({
+        a: 1
+      })
+    })
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.nested.property('foo.a.sum', 1)
+    expect(metrics).to.have.nested.property('bar.a.sum', 1)
+  })
+
+  it('should observe calculated group values on every collection', async () => {
+    const deferred = pDefer<Record<string, any>>()
+    let collections = 0
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        collections++
+
+        if (collections === 2) {
+          deferred.resolve(metrics)
+        }
+      },
+      intervalMs: 10
+    })({
+      logger: defaultLogger()
+    })
+
+    await start(s)
+
+    s.registerHistogramGroup('foo', {
+      calculate: () => ({
+        a: 1
+      })
+    })
+    s.registerSummaryGroup('bar', {
+      calculate: () => ({
+        a: 1
+      })
+    })
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.nested.property('foo.a.count', 2)
+    expect(metrics).to.have.nested.property('foo.a.sum', 2)
+    expect(metrics).to.have.nested.property('bar.a.count', 2)
+    expect(metrics).to.have.nested.property('bar.a.sum', 2)
   })
 })

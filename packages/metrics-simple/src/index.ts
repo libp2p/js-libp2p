@@ -237,7 +237,7 @@ class SimpleSummary implements Summary {
   private readonly compressCount: number
   private readonly calculate?: CalculateMetric
 
-  constructor (opts?: CalculatedSummaryOptions) {
+  constructor (opts?: Partial<CalculatedSummaryOptions>) {
     this.percentiles = opts?.percentiles ?? [0.01, 0.05, 0.5, 0.9, 0.95, 0.99, 0.999]
     this.compressCount = opts?.compressCount ?? 1000
     this.calculate = opts?.calculate
@@ -283,13 +283,16 @@ class SimpleSummary implements Summary {
 
 class SimpleSummaryGroup implements SummaryGroup {
   public summaries: Record<string, SimpleSummary> = {}
-  private readonly opts?: CalculatedSummaryOptions
+  private readonly opts: SummaryOptions
   private readonly calculate?: CalculateMetric<Record<string, number>>
 
-  constructor (opts?: CalculatedSummaryOptions) {
+  constructor (opts?: Partial<CalculatedSummaryOptions<Record<string, number>>>) {
     this.summaries = {}
-    this.opts = opts
-    this.calculate = opts?.calculate as CalculateMetric<Record<string, number>> | undefined
+    this.opts = {
+      percentiles: opts?.percentiles,
+      compressCount: opts?.compressCount
+    }
+    this.calculate = opts?.calculate
   }
 
   public async collect (): Promise<Record<string, { count: number, sum: number, percentiles: Record<string, number> }>> {
