@@ -182,4 +182,56 @@ describe('simple-metrics', () => {
 
     expect(m3).to.equal(m1, 'did not re-use metric')
   })
+
+  it('should collect a calculated histogram group', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({
+      logger: defaultLogger()
+    })
+
+    await start(s)
+
+    s.registerHistogramGroup('foo', {
+      calculate: () => ({
+        a: 1,
+        b: 2
+      })
+    })
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.nested.property('foo.a.count', 1)
+    expect(metrics).to.have.nested.property('foo.b.count', 1)
+  })
+
+  it('should collect a calculated summary group', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({
+      logger: defaultLogger()
+    })
+
+    await start(s)
+
+    s.registerSummaryGroup('foo', {
+      calculate: () => ({
+        a: 1,
+        b: 2
+      })
+    })
+
+    const metrics = await deferred.promise
+    expect(metrics).to.have.nested.property('foo.a.count', 1)
+    expect(metrics).to.have.nested.property('foo.b.count', 1)
+  })
 })

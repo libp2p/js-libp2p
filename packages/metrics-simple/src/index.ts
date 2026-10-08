@@ -183,14 +183,18 @@ class SimpleHistogram implements Histogram {
 
 class SimpleHistogramGroup implements HistogramGroup {
   public histograms: Record<string, SimpleHistogram> = {}
-  private readonly calculate?: CalculateMetric
+  private readonly calculate?: CalculateMetric<Record<string, number>>
 
-  constructor (opts?: CalculatedHistogramOptions) {
+  constructor (opts?: CalculatedHistogramOptions<Record<string, number>>) {
     this.histograms = {}
     this.calculate = opts?.calculate
   }
 
   public async collect (): Promise<Record<string, { count: number, sum: number, buckets: Record<number, number> }>> {
+    if (this.calculate != null) {
+      this.observe(await this.calculate())
+    }
+
     const output: Record<string, { count: number, sum: number, buckets: Record<number, number> }> = {}
 
     for (const [key, histogram] of Object.entries(this.histograms)) {
@@ -280,13 +284,19 @@ class SimpleSummary implements Summary {
 class SimpleSummaryGroup implements SummaryGroup {
   public summaries: Record<string, SimpleSummary> = {}
   private readonly opts?: CalculatedSummaryOptions
+  private readonly calculate?: CalculateMetric<Record<string, number>>
 
   constructor (opts?: CalculatedSummaryOptions) {
     this.summaries = {}
     this.opts = opts
+    this.calculate = opts?.calculate as CalculateMetric<Record<string, number>> | undefined
   }
 
   public async collect (): Promise<Record<string, { count: number, sum: number, percentiles: Record<string, number> }>> {
+    if (this.calculate != null) {
+      this.observe(await this.calculate())
+    }
+
     return {
       ...Object.fromEntries(Object.entries(this.summaries).map(([key, summary]) => {
         return [key, {
