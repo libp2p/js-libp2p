@@ -1034,6 +1034,52 @@ describe('autonat v2 - client', () => {
       .to.be.true('Did not attempt verification despite valid remote address')
   })
 
+  it('should abort verification when the remote does not respond', async () => {
+    const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: observedAddress,
+      verified: false,
+      type: 'observed',
+      expires: 0
+    }])
+
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peer: Peer = {
+      id: peerId,
+      addresses: [{
+        multiaddr: multiaddr('/ip4/124.124.124.124/tcp/28319'),
+        isCertified: true
+      }],
+      protocols: [
+        '/libp2p/autonat/2/dial-request',
+        '/libp2p/autonat/2/dial-back'
+      ],
+      metadata: new Map(),
+      tags: new Map()
+    }
+
+    peerStore.get.withArgs(peerId).resolves(peer)
+
+    const connection = stubInterface<Connection>()
+    connection.remoteAddr = multiaddr(`/ip4/124.124.124.124/tcp/28319/p2p/${peerId.toString()}`)
+    connection.remotePeer = peerId
+
+    // the remote accepts the stream but never sends a dial response
+    const [outgoingStream] = await streamPair()
+    connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/dial-request`).resolves(outgoingStream)
+
+    await service.client.verifyExternalAddresses(connection)
+
+    // `defaultInit.timeout` is 100ms - the verification request must be aborted
+    // once that elapses instead of waiting forever for the remote
+    await delay(300)
+
+    expect(outgoingStream.status)
+      .to.not.equal('open', 'Verification was not aborted after the timeout elapsed')
+    expect(addressManager.confirmObservedAddr.called)
+      .to.be.false('Confirmed an address the remote never verified')
+  })
+
   it('should time out when verifying an observed address', async () => {
     const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([{

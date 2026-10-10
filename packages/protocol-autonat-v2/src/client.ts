@@ -441,11 +441,19 @@ export class AutoNATv2Client implements Startable {
 
     this.queue.add(async (options: AbortOptions) => {
       const signal = anySignal([options.signal, AbortSignal.timeout(this.timeout)])
+
+      // this signal is passed to every stream operation below so make sure we
+      // don't make a lot of noise in the logs
+      setMaxListeners(Infinity, signal)
+
       const nonce = BigInt(randomNumber(0, Number.MAX_SAFE_INTEGER))
       this.nonces.add(nonce)
 
       try {
-        await this.askPeerToVerify(connection, segment, nonce, options)
+        await this.askPeerToVerify(connection, segment, nonce, {
+          ...options,
+          signal
+        })
       } finally {
         signal.clear()
         this.nonces.delete(nonce)
