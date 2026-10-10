@@ -1,6 +1,7 @@
 import { isIPv4 } from '@chainsafe/is-ip'
 import { IceUdpMuxListener } from 'node-datachannel'
-import { handleStunRequest } from '../../util.ts'
+import { handleStunRequest } from './stun.ts'
+import type { StunRequestCallback } from './stun.ts'
 import type { Logger } from '@libp2p/interface'
 import type { AddressInfo } from 'node:net'
 
@@ -9,14 +10,15 @@ export interface StunServer {
   address(): AddressInfo
 }
 
-export interface Callback {
-  (ufrag: string, remoteHost: string, remotePort: number): void
-}
-
-export async function stunListener (host: string, port: number, log: Logger, cb: Callback): Promise<StunServer> {
+export async function stunListener (host: string, port: number, log: Logger, cb: StunRequestCallback): Promise<StunServer> {
   const listener = new IceUdpMuxListener(port, host)
   listener.onUnhandledStunRequest(request => {
-    handleStunRequest(request, log, cb)
+    // this runs inside a native callback where a throw would crash the process
+    try {
+      handleStunRequest(request, log, cb)
+    } catch (err) {
+      log.error('error handling STUN request from %s:%d - %e', request.host, request.port, err)
+    }
   })
 
   return {

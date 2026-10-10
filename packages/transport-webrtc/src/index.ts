@@ -15,7 +15,7 @@
  *
  * The WebRTC transport uses libp2p [Circuit Relay](https://libp2p.io/docs/circuit-relay/)s to forward SDP messages. Once a direct connection is formed the relay plays no further part in the exchange.
  *
- * WebRTC Direct uses a technique known as [SDP munging](https://webrtchacks.com/not-a-guide-to-sdp-munging/) to skip the handshake step, instead encoding enough information in the connection request that the responder can derive what would have been in the handshake messages and so requires no third parties to establish a connection.
+ * WebRTC Direct skips the handshake step, instead encoding enough information in the connection request that the responder can derive what would have been in the handshake messages and so requires no third parties to establish a connection. Version 1 of the protocol does this with a technique known as [SDP munging](https://webrtchacks.com/not-a-guide-to-sdp-munging/); version 2 avoids munging, which browsers are removing support for. See WebRTC Direct versions below.
  *
  * A WebRTC Direct multiaddr also includes a certhash of the target peer - this is used to allow opening a connection to the remote, which would otherwise be denied due to use of a self-signed certificate.
  *
@@ -196,6 +196,27 @@
  *   console.info(new TextDecoder().decode(evt.data.subarray()))
  * })
  * ```
+ *
+ * ## WebRTC Direct versions
+ *
+ * There are two versions of the WebRTC Direct connection flow. Both use the
+ * same `/webrtc-direct` multiaddr and certificate hash; they differ in how the
+ * client's ICE credentials reach the server.
+ *
+ * Version 1 munges the client's SDP offer so that the server can predict the
+ * client's ICE credentials. Browsers are removing the ability to do this, so
+ * v1 will stop working for browser clients.
+ *
+ * Version 2 leaves the local SDP offer untouched and instead carries the
+ * client's ICE password in the ICE username fragment of the synthetic server
+ * answer, where the server reads it back from the incoming STUN request.
+ *
+ * No configuration is needed for either version. Listeners accept both on the
+ * same port and select the version from the incoming username fragment prefix.
+ * The first dial tries v1 and, if the runtime does not apply the munged ICE
+ * credentials, continues as v2; later dials then start at v2. The
+ * `dialerVersion` option skips this and forces one version, for example `2`
+ * for a server known to support it (go-libp2p does from v0.49.0).
  *
  * ## WebRTC Direct certificate hashes
  *

@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.0.30](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.29...pnet-v3.0.30) (2026-10-10)
+
+
+### Documentation
+
+* regenerate READMEs for mdast-util-to-markdown 2.1.3 ([#3647](https://github.com/libp2p/js-libp2p/issues/3647)) ([a9bae64](https://github.com/libp2p/js-libp2p/commit/a9bae64cbfad16d59b9f0594ff96aaabf3367e07))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+
 ## [3.0.29](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.28...pnet-v3.0.29) (2026-08-31)
 
 

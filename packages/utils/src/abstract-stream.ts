@@ -81,10 +81,20 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
 
     this.readStatus = 'closing'
 
-    await this.sendCloseRead(options)
-
-    this.readStatus = 'closed'
+    // no more data can be read, so end iterators and emit 'end' without waiting
+    // for the remote to be told
     this.maybeDispatchEnd()
+
+    try {
+      await this.sendCloseRead(options)
+    } catch (err) {
+      this.log.error('failed to close readable end - %e', err)
+      throw err
+    } finally {
+      // unread data has been discarded so the readable end is closed even if
+      // the remote could not be told
+      this.readStatus = 'closed'
+    }
 
     this.log('closed readable end gracefully')
   }
