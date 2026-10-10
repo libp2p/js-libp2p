@@ -121,14 +121,3 @@ export class RecursionLimitError extends Error {
     this.name = 'RecursionLimitError'
   }
 }
-
-/**
- * Thrown when a connection is aborted because pings to the remote peer have
- * not succeeded within the configured staleness threshold
- */
-export class ConnectionStaleError extends Error {
-  constructor (message = 'Connection stale') {
-    super(message)
-    this.name = 'ConnectionStaleError'
-  }
-}
