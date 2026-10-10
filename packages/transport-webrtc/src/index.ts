@@ -7,6 +7,19 @@
  *
  * There are two transports exposed by this module, [webRTC](https://github.com/libp2p/specs/blob/master/webrtc/webrtc.md) and [webRTCDirect](https://github.com/libp2p/specs/blob/master/webrtc/webrtc-direct.md).
  *
+ * ## React Native installation
+ *
+ * React Native applications must install the optional `react-native-webrtc`
+ * peer dependency explicitly:
+ *
+ * ```sh
+ * npm install \@libp2p/webrtc react-native-webrtc@^124.0.6
+ * ```
+ *
+ * Follow the [react-native-webrtc installation instructions](https://github.com/react-native-webrtc/react-native-webrtc/blob/master/Documentation/GettingStarted.md)
+ * to configure the native module. Node.js and browser applications do not
+ * need this dependency.
+ *
  * ## WebRTC vs WebRTC Direct
  *
  * The connection establishment phase of WebRTC involves a handshake using [SDP](https://en.wikipedia.org/wiki/Session_Description_Protocol) during which two peers will exchange information such as open ports, network addresses and required capabilities.
