@@ -5,6 +5,22 @@
 
 * track stream metrics ([#2](https://github.com/libp2p/js-libp2p-simple-metrics/issues/2)) ([caafb3d](https://github.com/libp2p/js-libp2p-simple-metrics/commit/caafb3d103fd7df0a2a4e6b3e800f4bc9c35c58f))
 
+## [2.0.22](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.21...simple-metrics-v2.0.22) (2026-10-10)
+
+
+### Bug Fixes
+
+* **metrics-simple:** collect calculated histogram and summary groups ([#3651](https://github.com/libp2p/js-libp2p/issues/3651)) ([fc90066](https://github.com/libp2p/js-libp2p/commit/fc90066f857b63170d6903596769fd1f0619f779))
+* **metrics-simple:** return histogram buckets from collect() ([#3654](https://github.com/libp2p/js-libp2p/issues/3654)) ([9441e04](https://github.com/libp2p/js-libp2p/commit/9441e049a5cdd10e4009c0b1251c8a0595d52d0a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/logger bumped from ^6.2.13 to ^6.2.14
+
 ## [2.0.21](https://github.com/libp2p/js-libp2p/compare/simple-metrics-v2.0.20...simple-metrics-v2.0.21) (2026-08-22)
 
 
