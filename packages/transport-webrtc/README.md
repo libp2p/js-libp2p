@@ -39,7 +39,7 @@ peer dependency explicitly:
 npm install \@libp2p/webrtc react-native-webrtc@^124.0.6
 ```
 
-Follow the [react-native-webrtc installation instructions](https://github.com/react-native-webrtc/react-native-webrtc/blob/master/Documentation/GettingStarted.md)
+Follow the [react-native-webrtc installation instructions](https://github.com/react-native-webrtc/react-native-webrtc#getting-started)
 to configure the native module. Node.js and browser applications do not
 need this dependency.
 
