@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/transport-interop-libp2p-main",
-  "version": "1.0.42",
+  "version": "1.0.43",
   "type": "module",
   "private": true,
   "scripts": {
@@ -19,7 +19,7 @@
     "@libp2p/ping": "^3.1.14",
     "@libp2p/tcp": "^11.0.29",
     "@libp2p/tls": "^3.1.11",
-    "@libp2p/webrtc": "^6.1.0",
+    "@libp2p/webrtc": "^7.0.0",
     "@libp2p/websockets": "^10.1.22",
     "@libp2p/webtransport": "^6.0.41",
     "@libp2p/yamux": "^8.0.4",
