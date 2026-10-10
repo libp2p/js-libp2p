@@ -35,6 +35,19 @@
   * devDependencies
     * @libp2p/peer-id-factory bumped from ^4.0.3 to ^4.0.4
 
+## [7.0.29](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.28...peer-collections-v7.0.29) (2026-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/peer-id bumped from ^6.0.15 to ^6.0.16
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.23 to ^5.1.24
+
 ## [7.0.28](https://github.com/libp2p/js-libp2p/compare/peer-collections-v7.0.27...peer-collections-v7.0.28) (2026-08-31)
 
 
