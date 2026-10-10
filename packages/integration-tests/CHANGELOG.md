@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.26](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.25...integration-tests-v1.2.26) (2026-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/webrtc bumped from ^6.1.0 to ^7.0.0
+
 ## [1.2.25](https://github.com/libp2p/js-libp2p/compare/integration-tests-v1.2.24...integration-tests-v1.2.25) (2026-10-10)
 
 

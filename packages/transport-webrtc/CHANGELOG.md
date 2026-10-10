@@ -111,6 +111,17 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [7.0.0](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.1.0...webrtc-v7.0.0) (2026-10-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **webrtc:** React Native applications must install react-native-webrtc explicitly alongside @libp2p/webrtc.
+
+### Bug Fixes
+
+* **webrtc:** make React Native WebRTC an optional peer ([#3657](https://github.com/libp2p/js-libp2p/issues/3657)) ([5c4cdb2](https://github.com/libp2p/js-libp2p/commit/5c4cdb2d6617302e0609293863b48e751b98ff9f))
+
 ## [6.1.0](https://github.com/libp2p/js-libp2p/compare/webrtc-v6.0.33...webrtc-v6.1.0) (2026-10-10)
 
 

@@ -43,11 +43,11 @@
   "packages/transport-circuit-relay-v2": "4.2.14",
   "packages/transport-memory": "2.0.29",
   "packages/transport-tcp": "11.0.29",
-  "packages/transport-webrtc": "6.1.0",
+  "packages/transport-webrtc": "7.0.0",
   "packages/transport-websockets": "10.1.22",
   "packages/transport-webtransport": "6.0.41",
   "packages/upnp-nat": "4.0.29",
   "packages/utils": "7.4.2",
-  "packages/integration-tests": "1.2.25",
-  "interop": "1.0.42"
+  "packages/integration-tests": "1.2.26",
+  "interop": "1.0.43"
 }

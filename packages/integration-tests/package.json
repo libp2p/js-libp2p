@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/integration-tests",
-  "version": "1.2.25",
+  "version": "1.2.26",
   "description": "libp2p integration tests",
   "license": "Apache-2.0 OR MIT",
   "type": "module",
@@ -46,7 +46,7 @@
     "@libp2p/tcp": "^11.0.29",
     "@libp2p/tls": "^3.1.11",
     "@libp2p/utils": "^7.4.2",
-    "@libp2p/webrtc": "^6.1.0",
+    "@libp2p/webrtc": "^7.0.0",
     "@libp2p/websockets": "^10.1.22",
     "@libp2p/webtransport": "^6.0.41",
     "@libp2p/yamux": "^8.0.4",

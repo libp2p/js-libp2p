@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.43](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.42...transport-interop-libp2p-main-v1.0.43) (2026-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/webrtc bumped from ^6.1.0 to ^7.0.0
+
 ## [1.0.42](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.41...transport-interop-libp2p-main-v1.0.42) (2026-10-10)
 
 
