@@ -405,11 +405,24 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.registrar.unregister(id)
   }
 
-  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void {
+  use (middleware: StreamMiddleware): void
+  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
+  use (protocol: string | StreamMiddleware, middleware?: StreamMiddleware | StreamMiddleware[]): void {
+    if (typeof protocol === 'function') {
+      this.components.registrar.use(protocol)
+      return
+    }
+
+    if (middleware == null) {
+      throw new InvalidParametersError('Protocol middleware is required')
+    }
+
     this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware])
   }
 
-  unuse (protocol: string): void {
+  unuse (middleware: StreamMiddleware): void
+  unuse (protocol: string): void
+  unuse (protocol: string | StreamMiddleware): void {
     this.components.registrar.unuse(protocol)
   }
 

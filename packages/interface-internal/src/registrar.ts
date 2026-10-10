@@ -47,26 +47,25 @@ export interface Registrar {
   getHandler(protocol: string): StreamHandlerRecord
 
   /**
-   * Retrieve any registered middleware for a given protocol.
-   *
-   * @param protocol - The protocol to fetch middleware for
-   * @returns A list of `StreamMiddleware` implementations
+   * Append global middleware, invoked before protocol-specific middleware.
+   * This does not register a handler or advertise protocol support.
+   */
+  use(middleware: StreamMiddleware): void
+
+  /**
+   * Replace the middleware registered for a protocol.
    */
   use(protocol: string, middleware: StreamMiddleware[]): void
 
   /**
-   * Retrieve any registered middleware for a given protocol.
-   *
-   * @param protocol - The protocol to fetch middleware for
-   * @returns A list of `StreamMiddleware` implementations
+   * Remove protocol-specific middleware when passed a string, or all global
+   * registrations of the given middleware when passed a function.
    */
-  unuse(protocol: string): void
+  unuse(protocol: string | StreamMiddleware): void
 
   /**
-   * Retrieve any registered middleware for a given protocol.
-   *
-   * @param protocol - The protocol to fetch middleware for
-   * @returns A list of `StreamMiddleware` implementations
+   * Return a fresh chain with global middleware before protocol-specific middleware.
+   * Mutating the result does not change registered middleware.
    */
   getMiddleware(protocol: string): StreamMiddleware[]
 

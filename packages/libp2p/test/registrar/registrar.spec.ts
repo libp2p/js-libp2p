@@ -8,7 +8,7 @@ import pDefer from 'p-defer'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Registrar } from '../../src/registrar.ts'
-import type { Libp2pEvents, PeerId, PeerStore, Topology, TopologyFilter, Peer, Connection } from '@libp2p/interface'
+import type { Libp2pEvents, PeerId, PeerStore, Topology, TopologyFilter, Peer, Connection, StreamMiddleware } from '@libp2p/interface'
 import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -50,6 +50,58 @@ describe('registrar topologies', () => {
 
     expect(identifier).to.exist()
     expect(registrar.getTopologies(protocol)).to.have.lengthOf(1)
+  })
+
+  it('should keep per-stream changes out of registered middleware', () => {
+    const middleware: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    registrar.use(protocol, [middleware])
+    registrar.getMiddleware(protocol).push(() => {})
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([middleware])
+  })
+
+  it('should run global middleware before protocol middleware', () => {
+    const global: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const specific: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    registrar.use(global)
+    registrar.use(protocol, [specific])
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([global, specific])
+    expect(registrar.getMiddleware('/outbound-only/1.0.0')).to.deep.equal([global])
+    expect(registrar.getMiddleware('*')).to.deep.equal([global])
+    expect(registrar.getProtocols()).to.deep.equal([])
+    registrar.unuse(global)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([specific])
+  })
+
+  it('should append global middleware and remove only the requested observer', () => {
+    const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const second: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    registrar.use(first)
+    registrar.use(second)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([first, second])
+    registrar.unuse(second)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([first])
+    registrar.unuse(first)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([])
+  })
+
+  it('should preserve protocol replacement and literal asterisk registrations', () => {
+    const global: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const replacement: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    registrar.use(global)
+
+    for (const name of [protocol, '*']) {
+      registrar.use(name, [first])
+      registrar.use(name, [replacement])
+      expect(registrar.getMiddleware(name), name).to.deep.equal([global, replacement])
+      expect(registrar.getMiddleware('/unregistered/1'), name).to.deep.equal([global])
+      registrar.unuse(name)
+      expect(registrar.getMiddleware(name), name).to.deep.equal([global])
+    }
+
+    registrar.use(protocol, [first])
+    registrar.unuse(global)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([first])
   })
 
   it('should be able to unregister a protocol', async () => {

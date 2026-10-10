@@ -6,13 +6,16 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { encode } from 'it-length-prefixed'
+import { TypedEventEmitter } from 'main-event'
+import pDefer from 'p-defer'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { createConnection } from '../../src/connection.ts'
 import { UnhandledProtocolError } from '../../src/errors.ts'
+import { Registrar as DefaultRegistrar } from '../../src/registrar.ts'
 import type { ConnectionComponents, ConnectionInit } from '../../src/connection.ts'
-import type { MultiaddrConnection, PeerStore, Stream, StreamMuxer } from '@libp2p/interface'
+import type { MultiaddrConnection, PeerStore, Stream, StreamMuxer, Libp2pEvents, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -379,6 +382,81 @@ describe('connection', () => {
 
     expect(middleware1.called).to.be.true()
     expect(middleware2.called).to.be.true()
+  })
+
+  it('should apply global middleware to outbound-only streams without advertising protocols', async () => {
+    const realRegistrar = new DefaultRegistrar({
+      peerId: init.remotePeer,
+      peerStore,
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      logger: defaultLogger()
+    })
+    const calls: string[] = []
+    const first: StreamMiddleware = (stream, connection, next) => {
+      calls.push('global')
+      next(stream, connection)
+    }
+    realRegistrar.use(first)
+    realRegistrar.use(ECHO_PROTOCOL, [(stream, connection, next) => {
+      calls.push('specific')
+      next(stream, connection)
+    }])
+    const connection = createConnection({ ...components, registrar: realRegistrar }, init)
+
+    try {
+      await connection.newStream(ECHO_PROTOCOL)
+      expect(calls).to.deep.equal(['global', 'specific'])
+      expect(realRegistrar.getProtocols()).to.deep.equal([])
+      realRegistrar.unuse(first)
+      calls.length = 0
+      await connection.newStream(ECHO_PROTOCOL)
+      expect(calls).to.deep.equal(['specific'])
+    } finally {
+      await connection.close()
+    }
+  })
+
+  it('should isolate middleware and invoke the handler once for each incoming stream', async () => {
+    const realRegistrar = new DefaultRegistrar({
+      peerId: init.remotePeer,
+      peerStore,
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      logger: defaultLogger()
+    })
+    const calls: string[] = []
+    realRegistrar.use((stream, connection, next) => {
+      calls.push('global')
+      next(stream, connection)
+    })
+    realRegistrar.use(ECHO_PROTOCOL, [(stream, connection, next) => {
+      calls.push('specific')
+      next(stream, connection)
+    }])
+    let handled = pDefer()
+    await realRegistrar.handle(ECHO_PROTOCOL, () => {
+      calls.push('handler')
+      handled.resolve()
+    })
+    const muxer = stubInterface<StreamMuxer>({ streams: [] })
+    createConnection({ ...components, registrar: realRegistrar }, { ...init, muxer })
+    const onIncomingStream = muxer.addEventListener.getCall(0).args[1]
+    if (typeof onIncomingStream !== 'function') {
+      throw new Error('No incoming stream handler registered')
+    }
+
+    for (let i = 0; i < 3; i++) {
+      calls.length = 0
+      handled = pDefer()
+      onIncomingStream(new CustomEvent('stream', {
+        detail: stubInterface<Stream>({
+          log: defaultLogger().forComponent('stream'),
+          protocol: ECHO_PROTOCOL
+        })
+      }))
+      await handled.promise
+      await delay(0)
+      expect(calls, `incoming stream ${i}`).to.deep.equal(['global', 'specific', 'handler'])
+    }
   })
 
   it('should not call outbound middleware if previous middleware errors', async () => {
