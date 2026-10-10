@@ -73,7 +73,6 @@
     "progress-events": "^1.0.1",
     "protons-runtime": "^7.0.0",
     "race-signal": "^2.0.0",
-    "react-native-webrtc": "^124.0.6",
     "reflect-metadata": "^0.2.2",
     "uint8-varint": "^3.0.0",
     "uint8arraylist": "^3.0.2",
@@ -88,9 +87,18 @@
     "delay": "^7.0.0",
     "p-retry": "^8.0.0",
     "protons": "^9.0.1",
+    "react-native-webrtc": "^124.0.6",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "wherearewe": "^2.0.1"
+  },
+  "peerDependencies": {
+    "react-native-webrtc": "^124.0.6"
+  },
+  "peerDependenciesMeta": {
+    "react-native-webrtc": {
+      "optional": true
+    }
   },
   "browser": {
     "./dist/src/webrtc/index.js": "./dist/src/webrtc/index.browser.js",
