@@ -13,7 +13,7 @@
  * peer dependency explicitly:
  *
  * ```sh
- * npm install \@libp2p/webrtc react-native-webrtc@^124.0.6
+ * npm install @libp2p/webrtc react-native-webrtc@^124.0.6
  * ```
  *
  * Follow the [react-native-webrtc installation instructions](https://github.com/react-native-webrtc/react-native-webrtc#getting-started)
