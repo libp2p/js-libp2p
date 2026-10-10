@@ -220,6 +220,35 @@ describe('simple-metrics', () => {
     })
   })
 
+  it('should use configured buckets for a histogram group', async () => {
+    const deferred = pDefer<Record<string, any>>()
+
+    s = simpleMetrics({
+      onMetrics: (metrics) => {
+        deferred.resolve(metrics)
+      },
+      intervalMs: 10
+    })({
+      logger: defaultLogger()
+    })
+
+    const group = s.registerHistogramGroup('foo', {
+      buckets: [1, 5, 10]
+    })
+    group.observe({ bar: 3 })
+
+    await start(s)
+
+    const metrics = await deferred.promise
+
+    expect(metrics).to.have.nested.property('foo.bar.buckets').that.deep.equals({
+      1: 0,
+      5: 1,
+      10: 1,
+      Infinity: 1
+    })
+  })
+
   it('should collect a calculated histogram group', async () => {
     const deferred = pDefer<Record<string, any>>()
 
