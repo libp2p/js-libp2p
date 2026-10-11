@@ -2,7 +2,7 @@ import { expect } from 'aegir/chai'
 import pDefer from 'p-defer'
 import { createLibp2p } from '../../src/index.ts'
 import type { Components } from '../../src/components.ts'
-import type { Libp2p } from '@libp2p/interface'
+import type { Libp2p, StreamMiddleware } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 describe('registrar protocols', () => {
@@ -26,6 +26,29 @@ describe('registrar protocols', () => {
 
   afterEach(async () => {
     await libp2p?.stop()
+  })
+
+  it('should preserve protocol middleware replacement while global observers coexist', () => {
+    const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const second: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const specific: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const replacement: StreamMiddleware = (stream, connection, next) => next(stream, connection)
+    const protocol: Parameters<Libp2p['unuse']>[0] = '/middleware-test/1'
+    libp2p.use(first)
+    libp2p.use(second)
+    const registration: Parameters<Libp2p['use']> = [protocol, specific]
+    libp2p.use(...registration)
+    libp2p.use(protocol, [replacement])
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([first, second, replacement])
+    expect(registrar.getProtocols()).to.deep.equal([])
+
+    libp2p.unuse(protocol)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([first, second])
+    libp2p.use(protocol, specific)
+    libp2p.unuse(first)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([second, specific])
+    libp2p.unuse(second)
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([specific])
   })
 
   it('should be able to register and unregister a handler', async () => {
