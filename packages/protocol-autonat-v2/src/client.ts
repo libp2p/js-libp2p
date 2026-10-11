@@ -462,6 +462,11 @@ export class AutoNATv2Client implements Startable {
       peerId: connection.remotePeer
     })
       .catch(err => {
+        if (err.name === 'TimeoutError') {
+          this.log('%p did not verify addresses within %dms', connection.remotePeer, this.timeout)
+          return
+        }
+
         this.log.error('error from %p verifying addresses - %e', connection.remotePeer, err)
       })
   }
