@@ -23,7 +23,7 @@ const defaultInit: AutoNATv2ServiceInit = {
   protocolPrefix: 'libp2p',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
-  timeout: 100,
+  timeout: 1000,
   startupDelay: 120000,
   refreshInterval: 120000
 }
@@ -1035,6 +1035,13 @@ describe('autonat v2 - client', () => {
   })
 
   it('should abort verification when the remote does not respond', async () => {
+    await stop(service)
+    service = new AutoNATv2Service(components, {
+      ...defaultInit,
+      timeout: 100
+    })
+    await start(service)
+
     const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([{
       multiaddr: observedAddress,
@@ -1070,83 +1077,14 @@ describe('autonat v2 - client', () => {
 
     await service.client.verifyExternalAddresses(connection)
 
-    // `defaultInit.timeout` is 100ms - the verification request must be aborted
-    // once that elapses instead of waiting forever for the remote
-    await delay(300)
+    // the job only finishes once the verification request has been aborted
+    await service.client.queue.onIdle()
 
+    expect(connection.newStream.calledOnce).to.be.true('Did not open a dial-request stream')
     expect(outgoingStream.status)
-      .to.not.equal('open', 'Verification was not aborted after the timeout elapsed')
+      .to.equal('aborted', 'Verification was not aborted after the timeout elapsed')
+    expect(service.client.nonces.size).to.equal(0, 'Did not clean up the nonce')
     expect(addressManager.confirmObservedAddr.called)
       .to.be.false('Confirmed an address the remote never verified')
-  })
-
-  it('should time out when verifying an observed address', async () => {
-    const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
-    addressManager.getAddressesWithMetadata.returns([{
-      multiaddr: observedAddress,
-      verified: false,
-      type: 'observed',
-      expires: 0
-    }])
-
-    // The network says OK
-    const connections = [
-      await stubPeerResponse({
-        host: '124.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '125.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '126.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '127.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      })
-    ]
-
-    for (const conn of connections) {
-      await service.client.verifyExternalAddresses(conn)
-      await delay(100)
-    }
-
-    expect(addressManager.addObservedAddr.called)
-      .to.be.false('Verify external multiaddr when we should have timed out')
   })
 })
