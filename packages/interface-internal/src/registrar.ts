@@ -58,10 +58,14 @@ export interface Registrar {
   use(protocol: string, middleware: StreamMiddleware[]): void
 
   /**
-   * Remove protocol-specific middleware when passed a string, or all global
-   * registrations of the given middleware when passed a function.
+   * Remove all global registrations of the given middleware.
    */
-  unuse(protocol: string | StreamMiddleware): void
+  unuse(middleware: StreamMiddleware): void
+
+  /**
+   * Remove the middleware registered for a protocol.
+   */
+  unuse(protocol: string): void
 
   /**
    * Return a fresh chain with global middleware before protocol-specific middleware.

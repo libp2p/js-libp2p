@@ -423,6 +423,11 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
   unuse (middleware: StreamMiddleware): void
   unuse (protocol: string): void
   unuse (protocol: string | StreamMiddleware): void {
+    if (typeof protocol === 'function') {
+      this.components.registrar.unuse(protocol)
+      return
+    }
+
     this.components.registrar.unuse(protocol)
   }
 
