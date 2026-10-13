@@ -190,10 +190,14 @@ export class Registrar implements RegistrarInterface {
 
   use (middleware: StreamMiddleware[]): void
   use (protocol: string, middleware: StreamMiddleware[]): void
-  use (protocolOrMiddleware: string | StreamMiddleware[], middleware: StreamMiddleware[] = []): void {
+  use (protocolOrMiddleware: string | StreamMiddleware[], middleware?: StreamMiddleware[]): void {
     if (typeof protocolOrMiddleware !== 'string') {
       addMiddleware(this.globalMiddleware, protocolOrMiddleware)
       return
+    }
+
+    if (middleware == null) {
+      throw new InvalidParametersError('Protocol middleware is required')
     }
 
     const registered = this.middleware.get(protocolOrMiddleware) ?? []

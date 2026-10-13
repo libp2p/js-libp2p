@@ -737,6 +737,26 @@ describe('registrar middleware', () => {
     expect(registrar.getMiddleware(protocol)).to.deep.equal([a])
   })
 
+  it('should register the same middleware for different protocols separately', () => {
+    const other = '/other/1.0.0'
+    registrar.use(protocol, [a])
+    registrar.use(other, [a])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a])
+    expect(registrar.getMiddleware(other)).to.deep.equal([a])
+
+    registrar.unuse(protocol, [a])
+
+    expect(registrar.getMiddleware(protocol)).to.be.empty()
+    expect(registrar.getMiddleware(other)).to.deep.equal([a])
+  })
+
+  it('should require middleware when registering for a protocol', () => {
+    // @ts-expect-error middleware is required
+    expect(() => { registrar.use(protocol) }).to.throw()
+      .with.property('name', 'InvalidParametersError')
+  })
+
   it('should not change a returned chain when middleware changes', () => {
     registrar.use(protocol, [a, b])
 
