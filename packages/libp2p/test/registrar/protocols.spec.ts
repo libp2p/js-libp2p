@@ -128,6 +128,13 @@ describe('registrar protocols', () => {
       expect(registrar.getMiddleware(protocol)).to.be.empty()
     })
 
+    it('should not deregister protocol middleware when passed an empty list', () => {
+      libp2p.use(protocol, [a, b])
+      libp2p.unuse(protocol, [])
+
+      expect(registrar.getMiddleware(protocol)).to.deep.equal([a, b])
+    })
+
     it('should deregister all protocol middleware', () => {
       libp2p.use(a)
       libp2p.use(protocol, b)
@@ -166,6 +173,12 @@ describe('registrar protocols', () => {
         .with.property('name', 'InvalidParametersError')
       // @ts-expect-error middleware is required
       expect(() => { libp2p.use() }).to.throw()
+        .with.property('name', 'InvalidParametersError')
+      // @ts-expect-error protocol must be a string
+      expect(() => { libp2p.use(undefined, a) }).to.throw(/Protocol must be a string/)
+        .with.property('name', 'InvalidParametersError')
+      // @ts-expect-error protocol must be a string
+      expect(() => { libp2p.unuse(undefined, a) }).to.throw(/Protocol must be a string/)
         .with.property('name', 'InvalidParametersError')
 
       expect(registrar.getMiddleware(protocol)).to.be.empty()

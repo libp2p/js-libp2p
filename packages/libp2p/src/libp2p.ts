@@ -37,6 +37,14 @@ function toMiddlewareList (middleware?: StreamMiddleware | StreamMiddleware[]): 
   return list
 }
 
+function secondArgumentError (first: unknown): InvalidParametersError {
+  if (typeof first === 'function' || Array.isArray(first)) {
+    return new InvalidParametersError('Global middleware must be passed as a single argument')
+  }
+
+  return new InvalidParametersError(`Protocol must be a string, got ${first === null ? 'null' : typeof first}`)
+}
+
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
   public peerStore: PeerStore
@@ -424,7 +432,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     if (middleware != null) {
-      throw new InvalidParametersError('Global middleware must be passed as a single argument')
+      throw secondArgumentError(protocolOrMiddleware)
     }
 
     this.components.registrar.use(toMiddlewareList(protocolOrMiddleware))
@@ -439,7 +447,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     }
 
     if (middleware != null) {
-      throw new InvalidParametersError('Global middleware must be passed as a single argument')
+      throw secondArgumentError(protocolOrMiddleware)
     }
 
     this.components.registrar.unuse(toMiddlewareList(protocolOrMiddleware))
