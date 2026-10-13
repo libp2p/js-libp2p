@@ -321,7 +321,7 @@ Potential methods for discovering peers include:
 - [Distributed hash tables](#dht)
 - [Local network broadcasts](https://libp2p.io/docs/mdns/)
 - [Centralized trackers or rendezvous points](https://libp2p.io/concepts/discovery-routing/rendezvous/)
-- [Lists of bootstrap peers](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/bootstrappers.ts)
+- [Lists of bootstrap peers](https://github.com/ipfs/helia/blob/main/packages/libp2p/src/utils/bootstrappers.ts)
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -985,8 +985,8 @@ protocols: [
 
 As libp2p is designed to be a modular networking library, its usage will vary based on individual project needs. We've included links to some existing project configurations for your reference, in case you wish to replicate their configuration:
 
-- [libp2p-Helia-nodejs](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/libp2p-defaults.ts) - libp2p configuration used by Helia when running in Node.js
-- [libp2p-Helia-browser](https://github.com/ipfs/helia/blob/main/packages/helia/src/utils/libp2p-defaults.browser.ts) - libp2p configuration used by Helia when running in a Browser
+- [libp2p-Helia-nodejs](https://github.com/ipfs/helia/blob/main/packages/libp2p/src/utils/libp2p-defaults.ts) - libp2p configuration used by Helia when running in Node.js
+- [libp2p-Helia-browser](https://github.com/ipfs/helia/blob/main/packages/libp2p/src/utils/libp2p-defaults.browser.ts) - libp2p configuration used by Helia when running in a Browser
 
 If you have developed a project using `js-libp2p`, please consider submitting your configuration to this list so that it can be found easily by other users.
 
