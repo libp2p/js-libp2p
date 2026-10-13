@@ -10,11 +10,12 @@ export interface StreamHandler {
 /**
  * Stream middleware allows accessing stream data outside of the stream handler.
  *
- * It runs once per stream, after protocol negotiation and stream limit checks.
- * Middleware must call `next` or throw: throwing or rejecting before `next`
- * aborts the stream, while returning without calling `next` leaves the stream
- * pending. The stream and connection passed to `next` are received by later
- * middleware, then by the stream handler or the caller that opened the stream.
+ * It runs after protocol negotiation and stream limit checks. Middleware must
+ * call `next` or throw: throwing or rejecting before `next` aborts the stream,
+ * while returning without calling `next` leaves the stream pending. The stream
+ * and connection passed to `next` are received by later middleware and then
+ * the stream handler. For outgoing streams the caller that opened the stream
+ * receives only the stream.
  */
 export interface StreamMiddleware {
   (stream: Stream, connection: Connection, next: (stream: Stream, connection: Connection) => void): void | Promise<void>
