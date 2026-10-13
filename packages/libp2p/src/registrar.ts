@@ -18,6 +18,27 @@ export interface RegistrarComponents {
 }
 
 /**
+ * Appends middleware that is not already present, preserving existing order
+ */
+function addMiddleware (registered: StreamMiddleware[], middleware: StreamMiddleware[]): void {
+  for (const mw of middleware) {
+    if (!registered.includes(mw)) {
+      registered.push(mw)
+    }
+  }
+}
+
+function removeMiddleware (registered: StreamMiddleware[], middleware: StreamMiddleware[]): void {
+  for (const mw of middleware) {
+    const index = registered.indexOf(mw)
+
+    if (index !== -1) {
+      registered.splice(index, 1)
+    }
+  }
+}
+
+/**
  * Responsible for notifying registered protocols of events in the network.
  */
 export class Registrar implements RegistrarInterface {
@@ -26,12 +47,13 @@ export class Registrar implements RegistrarInterface {
   private readonly handlers: Map<string, StreamHandlerRecord>
   private readonly components: RegistrarComponents
   private readonly middleware: Map<string, StreamMiddleware[]>
-  private globalMiddleware: StreamMiddleware[] = []
+  private readonly globalMiddleware: StreamMiddleware[]
 
   constructor (components: RegistrarComponents) {
     this.components = components
     this.log = components.logger.forComponent('libp2p:registrar')
     this.middleware = new Map()
+    this.globalMiddleware = []
     this.topologies = new Map()
     components.metrics?.registerMetricGroup('libp2p_registrar_topologies', {
       calculate: () => {
@@ -166,33 +188,54 @@ export class Registrar implements RegistrarInterface {
     }
   }
 
-  use (middleware: StreamMiddleware): void
+  use (middleware: StreamMiddleware[]): void
   use (protocol: string, middleware: StreamMiddleware[]): void
-  use (protocol: string | StreamMiddleware, middleware?: StreamMiddleware[]): void {
-    if (typeof protocol === 'function') {
-      this.globalMiddleware.push(protocol)
+  use (protocolOrMiddleware: string | StreamMiddleware[], middleware: StreamMiddleware[] = []): void {
+    if (typeof protocolOrMiddleware !== 'string') {
+      addMiddleware(this.globalMiddleware, protocolOrMiddleware)
+      return
+    }
+
+    const registered = this.middleware.get(protocolOrMiddleware) ?? []
+
+    addMiddleware(registered, middleware)
+
+    if (registered.length > 0) {
+      this.middleware.set(protocolOrMiddleware, registered)
+    }
+  }
+
+  unuse (middleware: StreamMiddleware[]): void
+  unuse (protocol: string, middleware?: StreamMiddleware[]): void
+  unuse (protocolOrMiddleware: string | StreamMiddleware[], middleware?: StreamMiddleware[]): void {
+    if (typeof protocolOrMiddleware !== 'string') {
+      removeMiddleware(this.globalMiddleware, protocolOrMiddleware)
+      return
+    }
+
+    const registered = this.middleware.get(protocolOrMiddleware)
+
+    if (registered == null) {
       return
     }
 
     if (middleware == null) {
-      throw new InvalidParametersError('Protocol middleware is required')
+      this.middleware.delete(protocolOrMiddleware)
+      return
     }
 
-    this.middleware.set(protocol, middleware)
-  }
+    removeMiddleware(registered, middleware)
 
-  unuse (middleware: StreamMiddleware): void
-  unuse (protocol: string): void
-  unuse (protocol: string | StreamMiddleware): void {
-    if (typeof protocol === 'function') {
-      this.globalMiddleware = this.globalMiddleware.filter(item => item !== protocol)
-    } else {
-      this.middleware.delete(protocol)
+    if (registered.length === 0) {
+      this.middleware.delete(protocolOrMiddleware)
     }
   }
 
   getMiddleware (protocol: string): StreamMiddleware[] {
-    return [...this.globalMiddleware, ...(this.middleware.get(protocol) ?? [])]
+    return [
+      ...this.globalMiddleware,
+      ...(this.middleware.get(protocol) ?? [])
+    ]
   }
 
   /**

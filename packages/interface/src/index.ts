@@ -789,55 +789,77 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   unregister(id: string): void
 
   /**
-   * Appends global middleware invoked for every incoming and outgoing negotiated
-   * protocol stream, before protocol-specific middleware. This does not register
-   * a stream handler or advertise support for a protocol.
+   * Registers one or more global middleware implementations that will be
+   * invoked for incoming and outgoing streams of every protocol, before any
+   * middleware registered for the stream's protocol.
+   *
+   * Middleware is identified by reference: a function that is already
+   * registered globally is ignored, and it can only be removed by passing the
+   * same reference to `unuse`.
    *
    * @example
    *
    * ```TypeScript
-   * const observer: StreamMiddleware = (stream, connection, next) => {
-   *   next(stream, connection)
-   * }
-   * libp2p.use(observer)
-   * libp2p.unuse(observer)
-   * ```
-   */
-  use (middleware: StreamMiddleware): void
-
-  /**
-   * Registers one or more middleware implementations for incoming and outgoing
-   * streams matching the passed protocol, replacing any previously registered
-   * middleware for that protocol. Protocol strings are matched literally.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * libp2p.use('/my/protocol/1.0.0', (stream, connection, next) => {
+   * const middleware: StreamMiddleware = (stream, connection, next) => {
    *   // do something with stream and/or connection
    *   next(stream, connection)
-   * })
+   * }
+   *
+   * libp2p.use(middleware)
+   * ```
+   */
+  use (middleware: StreamMiddleware | StreamMiddleware[]): void
+
+  /**
+   * Registers one or more middleware implementations that will be invoked for
+   * incoming and outgoing protocol streams that match the passed protocol.
+   *
+   * Middleware is appended and runs in registration order. It is identified
+   * by reference: a function that is already registered for the protocol is
+   * ignored, and removing it individually requires the same reference.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * const middleware: StreamMiddleware = (stream, connection, next) => {
+   *   // do something with stream and/or connection
+   *   next(stream, connection)
+   * }
+   *
+   * libp2p.use('/my/protocol/1.0.0', middleware)
    * ```
    */
   use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
 
   /**
-   * Deregisters all global registrations of the given middleware, preserving
-   * other global observers and all protocol-specific middleware.
-   */
-  unuse (middleware: StreamMiddleware): void
-
-  /**
-   * Deregisters all middleware for the passed protocol. Global middleware is retained.
+   * Deregisters the passed global middleware. Middleware registered for a
+   * protocol is not affected.
    *
    * @example
    *
    * ```TypeScript
-   * libp2p.unuse('/my/protocol/1.0.0')
-   * // any previously registered protocol-specific middleware will no longer be invoked
+   * libp2p.unuse(middleware)
+   * // the middleware will no longer be invoked for new streams
    * ```
    */
-  unuse (protocol: string): void
+  unuse (middleware: StreamMiddleware | StreamMiddleware[]): void
+
+  /**
+   * Deregisters middleware for the passed protocol: only the passed
+   * middleware, or if none is passed all of it, including middleware
+   * registered by other callers. Global middleware is not affected.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * libp2p.unuse('/my/protocol/1.0.0', middleware)
+   * // the middleware will no longer be invoked for new streams
+   *
+   * libp2p.unuse('/my/protocol/1.0.0')
+   * // only global middleware will be invoked for new streams
+   * ```
+   */
+  unuse (protocol: string, middleware?: StreamMiddleware | StreamMiddleware[]): void
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA'

@@ -47,29 +47,45 @@ export interface Registrar {
   getHandler(protocol: string): StreamHandlerRecord
 
   /**
-   * Append global middleware, invoked before protocol-specific middleware.
-   * This does not register a handler or advertise protocol support.
+   * Append middleware that runs for every protocol. Middleware already
+   * registered globally is skipped and keeps its position.
+   *
+   * @param middleware - The middleware to append
    */
-  use(middleware: StreamMiddleware): void
+  use(middleware: StreamMiddleware[]): void
 
   /**
-   * Replace the middleware registered for a protocol.
+   * Append middleware for a protocol. Middleware already registered for the
+   * protocol is skipped and keeps its position.
+   *
+   * @param protocol - The protocol to register middleware for
+   * @param middleware - The middleware to append
    */
   use(protocol: string, middleware: StreamMiddleware[]): void
 
   /**
-   * Remove all global registrations of the given middleware.
+   * Remove global middleware. Middleware registered for a protocol is not
+   * affected.
+   *
+   * @param middleware - The middleware to remove
    */
-  unuse(middleware: StreamMiddleware): void
+  unuse(middleware: StreamMiddleware[]): void
 
   /**
-   * Remove the middleware registered for a protocol.
+   * Remove middleware registered for a protocol.
+   *
+   * @param protocol - The protocol to remove middleware from
+   * @param middleware - The middleware to remove, or all middleware for the protocol if omitted
    */
-  unuse(protocol: string): void
+  unuse(protocol: string, middleware?: StreamMiddleware[]): void
 
   /**
-   * Return a fresh chain with global middleware before protocol-specific middleware.
-   * Mutating the result does not change registered middleware.
+   * Retrieve the middleware chain for a given protocol: global middleware
+   * followed by middleware registered for the protocol. A new list is returned
+   * on each call.
+   *
+   * @param protocol - The protocol to fetch middleware for
+   * @returns A list of `StreamMiddleware` implementations
    */
   getMiddleware(protocol: string): StreamMiddleware[]
 
