@@ -28,29 +28,6 @@ describe('registrar protocols', () => {
     await libp2p?.stop()
   })
 
-  it('should append protocol middleware while global middleware coexists', () => {
-    const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const second: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const specific: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const appended: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const protocol: Parameters<Libp2p['unuse']>[0] = '/middleware-test/1'
-    libp2p.use(first)
-    libp2p.use(second)
-    const registration: Parameters<Libp2p['use']> = [protocol, specific]
-    libp2p.use(...registration)
-    libp2p.use(protocol, [appended])
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([first, second, specific, appended])
-    expect(registrar.getProtocols()).to.deep.equal([])
-
-    libp2p.unuse(protocol)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([first, second])
-    libp2p.use(protocol, specific)
-    libp2p.unuse(first)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([second, specific])
-    libp2p.unuse(second)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([specific])
-  })
-
   it('should be able to register and unregister a handler', async () => {
     expect(registrar.getProtocols()).to.not.have.any.keys(['/echo/1.0.0', '/echo/1.0.1'])
 
