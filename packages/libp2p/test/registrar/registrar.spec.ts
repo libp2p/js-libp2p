@@ -642,6 +642,10 @@ describe('registrar middleware', () => {
     registrar.unuse(protocol)
 
     expect(registrar.getMiddleware(protocol)).to.deep.equal([c])
+
+    registrar.use(protocol, [b])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([c, b])
   })
 
   it('should order global middleware before protocol middleware', () => {
@@ -651,8 +655,6 @@ describe('registrar middleware', () => {
 
     expect(registrar.getMiddleware(protocol)).to.deep.equal([b, c, a])
     expect(registrar.getMiddleware('/other/1.0.0')).to.deep.equal([b, c])
-    // not a wildcard
-    expect(registrar.getMiddleware('*')).to.deep.equal([b, c])
     expect(registrar.getProtocols()).to.be.empty()
   })
 
@@ -705,6 +707,26 @@ describe('registrar middleware', () => {
     // @ts-expect-error middleware is required
     expect(() => { registrar.use(protocol) }).to.throw()
       .with.property('name', 'InvalidParametersError')
+  })
+
+  it('should treat an asterisk as a literal protocol', () => {
+    registrar.use('*', [a])
+    registrar.use([b])
+
+    expect(registrar.getMiddleware('*')).to.deep.equal([b, a])
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([b])
+  })
+
+  it('should not change registered middleware when a returned chain changes', () => {
+    const other = '/other/1.0.0'
+    registrar.use([a])
+    registrar.use(protocol, [b])
+
+    registrar.getMiddleware(protocol).push(c)
+    registrar.getMiddleware(other).push(c)
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, b])
+    expect(registrar.getMiddleware(other)).to.deep.equal([a])
   })
 
   it('should not change a returned chain when middleware changes', () => {
