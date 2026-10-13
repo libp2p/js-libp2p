@@ -158,6 +158,20 @@ describe('registrar protocols', () => {
       expect(registrar.getMiddleware(protocol)).to.be.empty()
     })
 
+    it('should accept readonly middleware lists', () => {
+      const middleware = [a, b] as const
+
+      libp2p.use(middleware)
+      libp2p.use(protocol, middleware)
+
+      expect(registrar.getMiddleware(protocol)).to.deep.equal([a, b, a, b])
+
+      libp2p.unuse(middleware)
+      libp2p.unuse(protocol, middleware)
+
+      expect(registrar.getMiddleware(protocol)).to.be.empty()
+    })
+
     it('should reject invalid middleware', () => {
       // @ts-expect-error middleware is required
       expect(() => { libp2p.use(protocol) }).to.throw()

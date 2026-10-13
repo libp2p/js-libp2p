@@ -27,7 +27,7 @@ import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.ts'
 import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget, DialProtocolOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
-function toMiddlewareList (middleware?: StreamMiddleware | StreamMiddleware[]): StreamMiddleware[] {
+function toMiddlewareList (middleware?: StreamMiddleware | readonly StreamMiddleware[]): StreamMiddleware[] {
   const list = Array.isArray(middleware) ? middleware : [middleware]
 
   if (!list.every((mw): mw is StreamMiddleware => typeof mw === 'function')) {
@@ -423,9 +423,9 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.registrar.unregister(id)
   }
 
-  use (middleware: StreamMiddleware | StreamMiddleware[]): void
-  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
-  use (protocolOrMiddleware: string | StreamMiddleware | StreamMiddleware[], middleware?: StreamMiddleware | StreamMiddleware[]): void {
+  use (middleware: StreamMiddleware | readonly StreamMiddleware[]): void
+  use (protocol: string, middleware: StreamMiddleware | readonly StreamMiddleware[]): void
+  use (protocolOrMiddleware: string | StreamMiddleware | readonly StreamMiddleware[], middleware?: StreamMiddleware | readonly StreamMiddleware[]): void {
     if (typeof protocolOrMiddleware === 'string') {
       this.components.registrar.use(protocolOrMiddleware, toMiddlewareList(middleware))
       return
@@ -438,9 +438,9 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.registrar.use(toMiddlewareList(protocolOrMiddleware))
   }
 
-  unuse (middleware: StreamMiddleware | StreamMiddleware[]): void
-  unuse (protocol: string, middleware?: StreamMiddleware | StreamMiddleware[]): void
-  unuse (protocolOrMiddleware: string | StreamMiddleware | StreamMiddleware[], middleware?: StreamMiddleware | StreamMiddleware[]): void {
+  unuse (middleware: StreamMiddleware | readonly StreamMiddleware[]): void
+  unuse (protocol: string, middleware?: StreamMiddleware | readonly StreamMiddleware[]): void
+  unuse (protocolOrMiddleware: string | StreamMiddleware | readonly StreamMiddleware[], middleware?: StreamMiddleware | readonly StreamMiddleware[]): void {
     if (typeof protocolOrMiddleware === 'string') {
       this.components.registrar.unuse(protocolOrMiddleware, middleware == null ? undefined : toMiddlewareList(middleware))
       return

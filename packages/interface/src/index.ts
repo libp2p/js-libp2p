@@ -808,7 +808,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * libp2p.use(middleware)
    * ```
    */
-  use (middleware: StreamMiddleware | StreamMiddleware[]): void
+  use (middleware: StreamMiddleware | readonly StreamMiddleware[]): void
 
   /**
    * Registers one or more middleware implementations that will be invoked for
@@ -829,7 +829,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * libp2p.use('/my/protocol/1.0.0', middleware)
    * ```
    */
-  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
+  use (protocol: string, middleware: StreamMiddleware | readonly StreamMiddleware[]): void
 
   /**
    * Deregisters the passed global middleware. Middleware registered for a
@@ -842,7 +842,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * // the middleware will no longer be invoked for new streams
    * ```
    */
-  unuse (middleware: StreamMiddleware | StreamMiddleware[]): void
+  unuse (middleware: StreamMiddleware | readonly StreamMiddleware[]): void
 
   /**
    * Deregisters middleware for the passed protocol: only the passed
@@ -859,7 +859,7 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * // only global middleware will be invoked for new streams
    * ```
    */
-  unuse (protocol: string, middleware?: StreamMiddleware | StreamMiddleware[]): void
+  unuse (protocol: string, middleware?: StreamMiddleware | readonly StreamMiddleware[]): void
 
   /**
    * Returns the public key for the passed PeerId. If the PeerId is of the 'RSA'

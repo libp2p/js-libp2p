@@ -52,7 +52,7 @@ export interface Registrar {
    *
    * @param middleware - The middleware to append
    */
-  use(middleware: StreamMiddleware[]): void
+  use(middleware: readonly StreamMiddleware[]): void
 
   /**
    * Append middleware for a protocol. Middleware already registered for the
@@ -61,7 +61,7 @@ export interface Registrar {
    * @param protocol - The protocol to register middleware for
    * @param middleware - The middleware to append
    */
-  use(protocol: string, middleware: StreamMiddleware[]): void
+  use(protocol: string, middleware: readonly StreamMiddleware[]): void
 
   /**
    * Remove global middleware. Middleware registered for a protocol is not
@@ -69,7 +69,7 @@ export interface Registrar {
    *
    * @param middleware - The middleware to remove
    */
-  unuse(middleware: StreamMiddleware[]): void
+  unuse(middleware: readonly StreamMiddleware[]): void
 
   /**
    * Remove middleware registered for a protocol.
@@ -77,7 +77,7 @@ export interface Registrar {
    * @param protocol - The protocol to remove middleware from
    * @param middleware - The middleware to remove, or all middleware for the protocol if omitted
    */
-  unuse(protocol: string, middleware?: StreamMiddleware[]): void
+  unuse(protocol: string, middleware?: readonly StreamMiddleware[]): void
 
   /**
    * Retrieve the middleware chain for a given protocol: global middleware

@@ -20,7 +20,7 @@ export interface RegistrarComponents {
 /**
  * Appends middleware that is not already present, preserving existing order
  */
-function addMiddleware (registered: StreamMiddleware[], middleware: StreamMiddleware[]): void {
+function addMiddleware (registered: StreamMiddleware[], middleware: readonly StreamMiddleware[]): void {
   for (const mw of middleware) {
     if (!registered.includes(mw)) {
       registered.push(mw)
@@ -28,7 +28,7 @@ function addMiddleware (registered: StreamMiddleware[], middleware: StreamMiddle
   }
 }
 
-function removeMiddleware (registered: StreamMiddleware[], middleware: StreamMiddleware[]): void {
+function removeMiddleware (registered: StreamMiddleware[], middleware: readonly StreamMiddleware[]): void {
   for (const mw of middleware) {
     const index = registered.indexOf(mw)
 
@@ -188,9 +188,9 @@ export class Registrar implements RegistrarInterface {
     }
   }
 
-  use (middleware: StreamMiddleware[]): void
-  use (protocol: string, middleware: StreamMiddleware[]): void
-  use (protocolOrMiddleware: string | StreamMiddleware[], middleware?: StreamMiddleware[]): void {
+  use (middleware: readonly StreamMiddleware[]): void
+  use (protocol: string, middleware: readonly StreamMiddleware[]): void
+  use (protocolOrMiddleware: string | readonly StreamMiddleware[], middleware?: readonly StreamMiddleware[]): void {
     if (typeof protocolOrMiddleware !== 'string') {
       addMiddleware(this.globalMiddleware, protocolOrMiddleware)
       return
@@ -209,9 +209,9 @@ export class Registrar implements RegistrarInterface {
     }
   }
 
-  unuse (middleware: StreamMiddleware[]): void
-  unuse (protocol: string, middleware?: StreamMiddleware[]): void
-  unuse (protocolOrMiddleware: string | StreamMiddleware[], middleware?: StreamMiddleware[]): void {
+  unuse (middleware: readonly StreamMiddleware[]): void
+  unuse (protocol: string, middleware?: readonly StreamMiddleware[]): void
+  unuse (protocolOrMiddleware: string | readonly StreamMiddleware[], middleware?: readonly StreamMiddleware[]): void {
     if (typeof protocolOrMiddleware !== 'string') {
       removeMiddleware(this.globalMiddleware, protocolOrMiddleware)
       return
