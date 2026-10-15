@@ -85,7 +85,7 @@ There are multiple libp2p transports available, you should evaluate the needs of
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://libp2p.io/concepts/transports
+- https://libp2p.io/docs/transports-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
@@ -147,7 +147,7 @@ const node = await createLibp2p({
 <details><summary>Read More</summary>
 If you want to know more about libp2p stream multiplexing, you should read the following content:
 
-- https://libp2p.io/concepts/stream-multiplexing
+- https://libp2p.io/docs/multiplexing-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 - https://github.com/libp2p/specs/tree/master/yamux
 </details>
@@ -333,7 +333,7 @@ There are a lot of other concepts within `libp2p`, that are not covered in this 
 ### Additional Resources
 
 - [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p) — Interactive tutorial covering libp2p fundamentals
-- [libp2p Concepts](https://libp2p.io/concepts/introduction/overview/) — Overview of core concepts and architecture
+- [libp2p Concepts](https://libp2p.io/docs/) — Overview of core concepts and architecture
 - [libp2p Connectivity](https://connectivity.libp2p.io/) — Interoperability matrix across libp2p implementations
 - [Universal Connectivity](https://github.com/libp2p/universal-connectivity) — Demo application showcasing cross-implementation connectivity
 
