@@ -50,7 +50,6 @@ opgraft
 outbounds
 peerhave
 peerStore
-picklist
 prehash
 Prevalidation
 pstats
