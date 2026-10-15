@@ -42,7 +42,7 @@
 
 libp2p is a modular networking stack. It's designed to be able to suit a variety of project needs. The configuration of libp2p is a key part of its structure. It enables you to bring exactly what you need, and only what you need. This document is a guide on how to configure libp2p for your particular project. Check out the [Configuration examples](#configuration-examples) section if you're just looking to leverage an existing configuration.
 
-Regardless of how you configure libp2p, the top level [API](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md) will always remain the same. **Note**: if some modules are not configured, like Content Routing, using those methods will throw errors.
+Regardless of how you configure libp2p, the top level [API](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.Libp2p.html) will always remain the same. **Note**: if some modules are not configured, like Content Routing, using those methods will throw errors.
 
 To get a high-level overview of the js-libp2p architecture, please read the [Architecture](https://github.com/libp2p/js-libp2p/blob/main/doc/ARCHITECTURE.md) document.
 
@@ -198,7 +198,7 @@ If you want to know more about libp2p pubsub, you should read the following cont
 
 ## Customizing libp2p
 
-When [creating a libp2p node](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#create), there are a number of services which are optional but will probably be needed for your use case such as the [kademlia](#dht), [peer discovery](#peer-discovery) and [pubsub](#pubsub) services for example. These are passed into the `services` object upon creating a node. You can also pass in custom services that will be used to create the node. This is done by providing your custom implementation to the `services` object, which should have the following structure:
+When [creating a libp2p node](https://libp2p.github.io/js-libp2p/functions/libp2p.index.createLibp2p.html), there are a number of services which are optional but will probably be needed for your use case such as the [kademlia](#dht), [peer discovery](#peer-discovery) and [pubsub](#pubsub) services for example. These are passed into the `services` object upon creating a node. You can also pass in custom services that will be used to create the node. This is done by providing your custom implementation to the `services` object, which should have the following structure:
 
 ```js
 const modules = {
