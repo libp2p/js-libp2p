@@ -110,6 +110,38 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.4.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.12...libp2p-v3.4.0) (2026-10-16)
+
+
+### Features
+
+* add global stream middleware ([#3650](https://github.com/libp2p/js-libp2p/issues/3650)) ([4a41644](https://github.com/libp2p/js-libp2p/commit/4a416447c61833ff09820b22bcf744285dbaa065))
+
+
+### Bug Fixes
+
+* **libp2p:** verify the expected remote peer after encryption ([#3666](https://github.com/libp2p/js-libp2p/issues/3666)) ([be63a44](https://github.com/libp2p/js-libp2p/commit/be63a4416a96ed0d62d30e68b6db48d6f0b9a144))
+
+
+### Documentation
+
+* fix createLibp2p prose, libp2p.io links, and helia utils paths ([#3644](https://github.com/libp2p/js-libp2p/issues/3644)) ([e073d37](https://github.com/libp2p/js-libp2p/commit/e073d373de904d9f927a4856a2e592fe7481da12))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.24 to ^5.1.25
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/interface-internal bumped from ^3.1.14 to ^3.2.0
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/multistream-select bumped from ^7.0.29 to ^7.0.30
+    * @libp2p/peer-collections bumped from ^7.0.29 to ^7.0.30
+    * @libp2p/peer-id bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/peer-store bumped from ^12.0.29 to ^12.0.30
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+
 ## [3.3.12](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.11...libp2p-v3.3.12) (2026-10-10)
 
 

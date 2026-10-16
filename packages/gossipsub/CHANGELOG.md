@@ -1,5 +1,22 @@
 # Changelog
 
+## [17.1.4](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.1.3...gossipsub-v17.1.4) (2026-10-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.24 to ^5.1.25
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/interface-internal bumped from ^3.1.14 to ^3.2.0
+    * @libp2p/peer-id bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+  * devDependencies
+    * @libp2p/floodsub bumped from ^11.0.31 to ^11.0.32
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/peer-store bumped from ^12.0.29 to ^12.0.30
+
 ## [17.1.3](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.1.2...gossipsub-v17.1.3) (2026-10-10)
 
 
