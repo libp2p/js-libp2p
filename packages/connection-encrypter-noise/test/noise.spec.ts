@@ -310,9 +310,9 @@ describe('Noise', () => {
     let otherRsaPeer: PeerId
 
     before(async () => {
-      const privateKey = await generateKeyPair('RSA', 2048)
+      const privateKey = await generateKeyPair('RSA', 512)
       rsaPeer = { peerId: peerIdFromPrivateKey(privateKey), privateKey }
-      otherRsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 2048))
+      otherRsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
     })
 
     async function dial (responder: { peerId: PeerId, privateKey: PrivateKey }, expected: PeerId): Promise<PeerId> {
@@ -343,14 +343,15 @@ describe('Noise', () => {
       const expected = peerIdFromString(otherRsaPeer.toString())
       expect(expected.publicKey).to.be.undefined()
 
-      await expect(dial(rsaPeer, expected)).to.eventually.be.rejected
+      await expect(dial(rsaPeer, expected)).to.eventually.be.rejectedWith(/does not match expected remote peer id/)
         .with.property('name', 'UnexpectedPeerError')
     })
 
     it('should not match an RSA peer id against an Ed25519 key', async () => {
       const expected = peerIdFromString(rsaPeer.peerId.toString())
+      expect(expected.publicKey).to.be.undefined()
 
-      await expect(dial(remotePeer, expected)).to.eventually.be.rejected
+      await expect(dial(remotePeer, expected)).to.eventually.be.rejectedWith(/does not match expected remote peer id/)
         .with.property('name', 'UnexpectedPeerError')
     })
 
@@ -363,7 +364,7 @@ describe('Noise', () => {
     })
 
     it('should not match a different Ed25519 peer id', async () => {
-      await expect(dial(remotePeer, localPeer.peerId)).to.eventually.be.rejected
+      await expect(dial(remotePeer, localPeer.peerId)).to.eventually.be.rejectedWith(/does not match expected remote peer id/)
         .with.property('name', 'UnexpectedPeerError')
     })
 

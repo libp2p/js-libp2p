@@ -125,56 +125,83 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
       let cryptoRsa: ConnectionEncrypter
 
       before(async () => {
-        const rsaKey = await generateKeyPair('RSA', 2048)
+        const rsaKey = await generateKeyPair('RSA', 512)
         rsaPeer = peerIdFromPrivateKey(rsaKey)
         cryptoRsa = await common.setup({
           privateKey: rsaKey
         })
       })
 
-      async function secure (responder: ConnectionEncrypter, expected: PeerId): Promise<PeerId> {
+      interface SecureOptions {
+        initiator: ConnectionEncrypter
+        responder: ConnectionEncrypter
+        expectedByInitiator?: PeerId
+        expectedByResponder?: PeerId
+      }
+
+      async function secure (opts: SecureOptions): Promise<{ inbound: PeerId, outbound: PeerId }> {
         const [remoteConn, localConn] = multiaddrConnectionPair()
 
         try {
-          const [, outboundResult] = await Promise.all([
-            responder.secureInbound(localConn),
-            crypto.secureOutbound(remoteConn, {
-              remotePeer: expected
+          const [inboundResult, outboundResult] = await Promise.all([
+            opts.responder.secureInbound(localConn, {
+              remotePeer: opts.expectedByResponder
+            }),
+            opts.initiator.secureOutbound(remoteConn, {
+              remotePeer: opts.expectedByInitiator
             })
           ])
 
-          return outboundResult.remotePeer
+          return { inbound: inboundResult.remotePeer, outbound: outboundResult.remotePeer }
         } finally {
           localConn.abort(new Error('test finished'))
           remoteConn.abort(new Error('test finished'))
         }
       }
 
-      it('should match an RSA peer id', async () => {
-        const expected = peerIdFromString(rsaPeer.toString())
+      function parse (peerId: PeerId): PeerId {
+        return peerIdFromString(peerId.toString())
+      }
 
-        const remote = await secure(cryptoRsa, expected)
-        expect(remote.equals(rsaPeer)).to.be.true()
+      it('should match an RSA peer id on outbound connections', async () => {
+        const expected = parse(rsaPeer)
+        expect(expected.publicKey).to.be.undefined()
+
+        const { outbound } = await secure({ initiator: crypto, responder: cryptoRsa, expectedByInitiator: expected })
+        expect(outbound.equals(rsaPeer)).to.be.true()
       })
 
-      it('should not match an RSA peer id against a different key', async () => {
-        const expected = peerIdFromString(rsaPeer.toString())
+      it('should not match an RSA peer id against a different key on outbound connections', async () => {
+        const expected = parse(rsaPeer)
+        expect(expected.publicKey).to.be.undefined()
 
-        await expect(secure(cryptoRemote, expected)).to.eventually.be.rejected
+        await expect(secure({ initiator: crypto, responder: cryptoRemote, expectedByInitiator: expected })).to.eventually.be.rejected
+          .with.property('name', 'UnexpectedPeerError')
+      })
+
+      it('should match an RSA peer id on inbound connections', async () => {
+        const expected = parse(rsaPeer)
+        expect(expected.publicKey).to.be.undefined()
+
+        const { inbound } = await secure({ initiator: cryptoRsa, responder: cryptoRemote, expectedByResponder: expected })
+        expect(inbound.equals(rsaPeer)).to.be.true()
+      })
+
+      it('should not match an RSA peer id against a different key on inbound connections', async () => {
+        const expected = parse(rsaPeer)
+        expect(expected.publicKey).to.be.undefined()
+
+        await expect(secure({ initiator: crypto, responder: cryptoRemote, expectedByResponder: expected })).to.eventually.be.rejected
           .with.property('name', 'UnexpectedPeerError')
       })
 
       it('should match an Ed25519 peer id', async () => {
-        const expected = peerIdFromString(remotePeer.toString())
-
-        const remote = await secure(cryptoRemote, expected)
-        expect(remote.equals(remotePeer)).to.be.true()
+        const { outbound } = await secure({ initiator: crypto, responder: cryptoRemote, expectedByInitiator: parse(remotePeer) })
+        expect(outbound.equals(remotePeer)).to.be.true()
       })
 
       it('should not match a different Ed25519 peer id', async () => {
-        const expected = peerIdFromString(mitmPeer.toString())
-
-        await expect(secure(cryptoRemote, expected)).to.eventually.be.rejected
+        await expect(secure({ initiator: crypto, responder: cryptoRemote, expectedByInitiator: parse(mitmPeer) })).to.eventually.be.rejected
           .with.property('name', 'UnexpectedPeerError')
       })
     })
