@@ -8,7 +8,8 @@
  * For encryption / decryption support, RSA keys should be used.
  */
 
-import { InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
+import { InvalidParametersError, InvalidPublicKeyError, UnsupportedKeyTypeError } from '@libp2p/interface'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { ECDSAPrivateKey as ECDSAPrivateKeyClass } from './ecdsa/ecdsa.ts'
 import { ECDSA_P_256_OID, ECDSA_P_384_OID, ECDSA_P_521_OID } from './ecdsa/index.ts'
 import { generateECDSAKeyPair, pkiMessageToECDSAPrivateKey, pkiMessageToECDSAPublicKey, unmarshalECDSAPrivateKey, unmarshalECDSAPublicKey } from './ecdsa/utils.ts'
@@ -21,7 +22,7 @@ import { pkcs1ToRSAPrivateKey, pkixToRSAPublicKey, generateRSAKeyPair, pkcs1Mess
 import { privateKeyLength as secp256k1PrivateKeyLength, publicKeyLength as secp256k1PublicKeyLength } from './secp256k1/index.ts'
 import { generateSecp256k1KeyPair, unmarshalSecp256k1PrivateKey, unmarshalSecp256k1PublicKey } from './secp256k1/utils.ts'
 import type { Curve } from './ecdsa/index.ts'
-import type { PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey } from '@libp2p/interface'
+import type { AbortOptions, PeerId, PrivateKey, PublicKey, KeyType, RSAPrivateKey, Secp256k1PrivateKey, Ed25519PrivateKey, Secp256k1PublicKey, Ed25519PublicKey, ECDSAPrivateKey, ECDSAPublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
 import type { Digest } from 'multiformats/hashes/digest'
 
@@ -156,6 +157,34 @@ export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
     Type: pb.KeyType[key.type],
     Data: key.raw
   })
+}
+
+/**
+ * Returns the public key of a peer that can be trusted to verify signatures it
+ * made.
+ *
+ * A supplied key (e.g. one sent alongside a message) is only returned if it
+ * derives to the peer id, otherwise the key inlined in the peer id is used.
+ * Throws if neither is available.
+ */
+export async function publicKeyForPeer (peer: Pick<PeerId, 'publicKey' | 'toMultihash'>, key?: Uint8Array | PublicKey, options?: AbortOptions): Promise<PublicKey> {
+  options?.signal?.throwIfAborted()
+
+  if (key != null) {
+    const publicKey = key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
+
+    if (!uint8ArrayEquals(publicKey.toMultihash().bytes, peer.toMultihash().bytes)) {
+      throw new InvalidPublicKeyError('Public key does not match peer id')
+    }
+
+    return publicKey
+  }
+
+  if (peer.publicKey == null) {
+    throw new InvalidPublicKeyError('No public key available for peer id')
+  }
+
+  return peer.publicKey
 }
 
 /**
