@@ -91,7 +91,8 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
   add: CustomEvent
 
   /**
-   * A job has finished or failed
+   * A job has finished or failed, or was removed from the queue before it
+   * started
    */
   next: CustomEvent
 
@@ -101,14 +102,15 @@ export interface QueueEvents<JobReturnType, JobOptions extends AbortOptions = Ab
   completed: CustomEvent<JobReturnType>
 
   /**
-   * Emitted just after `"completed", a job has finished successfully - this
-   * event gives access to the job and it's result
+   * Emitted just after `completed`, a job has finished successfully - this
+   * event gives access to the job and its result
    */
   success: CustomEvent<QueueJobSuccess<JobReturnType, JobOptions>>
 
   /**
-   * Emitted just after `"error", a job has failed - this event gives access to
-   * the job and the thrown error
+   * A job has failed, or was cleared or aborted before it started in which case
+   * `job.status` is still `'queued'` - this event gives access to the job and
+   * the error
    */
   failure: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>
 }
@@ -217,6 +219,12 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
       this.pending++
 
       void job.run()
+        .then(result => {
+          this.safeDispatchEvent('completed', { detail: result })
+          this.safeDispatchEvent('success', { detail: { job, result } })
+        }, err => {
+          this.safeDispatchEvent('failure', { detail: { job, error: err } })
+        })
         .finally(() => {
           // remove the job from the queue
           for (let i = 0; i < this.queue.length; i++) {
@@ -246,7 +254,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
   }
 
   /**
-   * Adds a sync or async task to the queue. Always returns a promise.
+   * Adds an async task to the queue. The returned promise rejects with an
+   * AbortError if the queue is aborted, or cleared before the task starts
    */
   async add (fn: RunFunction<JobOptions, JobReturnType>, options?: JobOptions): Promise<JobReturnType> {
     options?.signal?.throwIfAborted()
@@ -256,31 +265,31 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
     }
 
     const job = new Job<JobOptions, JobReturnType>(fn, options)
+
+    // a job aborted before it starts never runs, so remove it from the queue
+    // here and report the failure
+    job.signal.addEventListener('abort', () => {
+      if (job.status !== 'queued') {
+        return
+      }
+
+      for (let i = 0; i < this.queue.length; i++) {
+        if (this.queue[i] === job) {
+          this.queue.splice(i, 1)
+          break
+        }
+      }
+
+      this.safeDispatchEvent('failure', { detail: { job, error: job.signal.reason } })
+      this.safeDispatchEvent('next')
+    }, {
+      once: true
+    })
+
     this.enqueue(job)
     this.safeDispatchEvent('add')
 
     const result = job.join(options)
-      .then(result => {
-        this.safeDispatchEvent('completed', { detail: result })
-        this.safeDispatchEvent('success', { detail: { job, result } })
-
-        return result
-      })
-      .catch(err => {
-        if (job.status === 'queued') {
-          // job was aborted before it started - remove the job from the queue
-          for (let i = 0; i < this.queue.length; i++) {
-            if (this.queue[i] === job) {
-              this.queue.splice(i, 1)
-              break
-            }
-          }
-        }
-
-        this.safeDispatchEvent('failure', { detail: { job, error: err } })
-
-        throw err
-      })
 
     this.tryToStartAnother()
 
@@ -288,21 +297,28 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
   }
 
   /**
-   * Clear the queue
+   * Clear the queue. Jobs that have not started are rejected with an
+   * AbortError, running jobs are removed from the queue but left to finish
    */
   clear (): void {
-    this.queue.splice(0, this.queue.length)
+    const err = new AbortError('The queue was cleared')
+
+    this.queue.splice(0, this.queue.length).forEach(job => {
+      if (job.status === 'queued') {
+        job.abort(err)
+      }
+    })
   }
 
   /**
    * Abort all jobs in the queue and clear it
    */
   abort (): void {
-    this.queue.forEach(job => {
-      job.abort(new AbortError())
-    })
+    const err = new AbortError('The queue was aborted')
 
-    this.clear()
+    this.queue.splice(0, this.queue.length).forEach(job => {
+      job.abort(err)
+    })
   }
 
   /**
@@ -389,6 +405,9 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
    *
    * If you need to keep the queue open indefinitely, consider using it-pushable
    * instead.
+   *
+   * Breaking out of the loop early clears the queue, so promises returned from
+   * `add()` for jobs that have not started reject with an AbortError.
    */
   async * toGenerator (options?: AbortOptions): AsyncGenerator<JobReturnType, void, unknown> {
     options?.signal?.throwIfAborted()
@@ -414,6 +433,12 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
     }
 
     const onQueueFailure = (evt: CustomEvent<QueueJobFailure<JobReturnType, JobOptions>>): void => {
+      // a job dropped before it started (cleared, or every caller aborted)
+      // should not end the generator
+      if (evt.detail.job.status === 'queued') {
+        return
+      }
+
       cleanup(evt.detail.error)
     }
 
@@ -421,9 +446,9 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
       cleanup()
     }
 
-    // clear the queue and throw if the query is aborted
+    // abort the queue and end the stream with an error if the signal aborts
     const onSignalAbort = (): void => {
-      cleanup(new AbortError('Queue aborted'))
+      cleanup(new AbortError('The queue was aborted'))
     }
 
     // add listeners
@@ -441,7 +466,8 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
       this.removeEventListener('idle', onQueueIdle)
       options?.signal?.removeEventListener('abort', onSignalAbort)
 
-      // empty the queue for when the user has broken out of a loop early
+      // empty the queue for when the user has broken out of a loop early, this
+      // rejects jobs that have not started
       cleanup()
     }
   }
