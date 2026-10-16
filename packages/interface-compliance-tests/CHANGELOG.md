@@ -75,6 +75,29 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [7.0.34](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v7.0.33...interface-compliance-tests-v7.0.34) (2026-10-16)
+
+
+### Bug Fixes
+
+* **noise:** compare remote peer by peer id ([#3665](https://github.com/libp2p/js-libp2p/issues/3665)) ([e48eabf](https://github.com/libp2p/js-libp2p/commit/e48eabf67079adf3899637e8a8a2bcd782a6acba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.24 to ^5.1.25
+    * @libp2p/echo bumped from ^3.1.15 to ^3.1.16
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/interface-internal bumped from ^3.1.14 to ^3.2.0
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/memory bumped from ^2.0.29 to ^2.0.30
+    * @libp2p/peer-id bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/plaintext bumped from ^3.0.29 to ^3.0.30
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+    * libp2p bumped from ^3.3.12 to ^3.4.0
+
 ## [7.0.33](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v7.0.32...interface-compliance-tests-v7.0.33) (2026-10-10)
 
 

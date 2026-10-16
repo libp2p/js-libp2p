@@ -5,6 +5,13 @@
 
 * add start/stop events to libp2p interface ([#407](https://github.com/libp2p/js-libp2p-interfaces/issues/407)) ([016c1e8](https://github.com/libp2p/js-libp2p-interfaces/commit/016c1e82b060c93c80546cd8c493ec6e6c97cbec))
 
+## [3.4.0](https://github.com/libp2p/js-libp2p/compare/interface-v3.3.1...interface-v3.4.0) (2026-10-16)
+
+
+### Features
+
+* add global stream middleware ([#3650](https://github.com/libp2p/js-libp2p/issues/3650)) ([4a41644](https://github.com/libp2p/js-libp2p/commit/4a416447c61833ff09820b22bcf744285dbaa065))
+
 ## [3.3.1](https://github.com/libp2p/js-libp2p/compare/interface-v3.3.0...interface-v3.3.1) (2026-10-10)
 
 

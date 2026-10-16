@@ -16,6 +16,32 @@
 
 * **release:** 17.0.0 [skip ci] ([3c628a2](https://github.com/ChainSafe/js-libp2p-noise/commit/3c628a2641c8ddaf0738f25128c7dfb586bdca5b))
 
+## [17.0.5](https://github.com/libp2p/js-libp2p/compare/noise-v17.0.4...noise-v17.0.5) (2026-10-16)
+
+
+### Bug Fixes
+
+* **noise:** compare remote peer by peer id ([#3665](https://github.com/libp2p/js-libp2p/issues/3665)) ([e48eabf](https://github.com/libp2p/js-libp2p/commit/e48eabf67079adf3899637e8a8a2bcd782a6acba))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.24 to ^5.1.25
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/peer-id bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+  * devDependencies
+    * @libp2p/daemon-client bumped from ^10.0.40 to ^10.0.41
+    * @libp2p/daemon-server bumped from ^9.0.40 to ^9.0.41
+    * @libp2p/interface-compliance-tests bumped from ^7.0.33 to ^7.0.34
+    * @libp2p/interop bumped from ^14.0.40 to ^14.0.41
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/tcp bumped from ^11.0.29 to ^11.0.30
+    * @libp2p/yamux bumped from ^8.0.4 to ^8.0.5
+    * libp2p bumped from ^3.3.12 to ^3.4.0
+
 ## [17.0.4](https://github.com/libp2p/js-libp2p/compare/noise-v17.0.3...noise-v17.0.4) (2026-10-10)
 
 

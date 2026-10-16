@@ -32,6 +32,21 @@
   * dependencies
     * @libp2p/peer-collections bumped from ^5.1.3 to ^5.1.4
 
+## [3.2.0](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.14...interface-internal-v3.2.0) (2026-10-16)
+
+
+### Features
+
+* add global stream middleware ([#3650](https://github.com/libp2p/js-libp2p/issues/3650)) ([4a41644](https://github.com/libp2p/js-libp2p/commit/4a416447c61833ff09820b22bcf744285dbaa065))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/peer-collections bumped from ^7.0.29 to ^7.0.30
+
 ## [3.1.14](https://github.com/libp2p/js-libp2p/compare/interface-internal-v3.1.13...interface-internal-v3.1.14) (2026-10-10)
 
 
