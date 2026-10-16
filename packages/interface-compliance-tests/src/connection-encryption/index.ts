@@ -120,7 +120,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
       })
     })
 
-    describe('expected remote peer parsed from a string', () => {
+    describe('remote peer id parsed from a string', () => {
       let rsaPeer: PeerId
       let cryptoRsa: ConnectionEncrypter
 
@@ -150,28 +150,28 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
         }
       }
 
-      it('should accept a responder matching an RSA peer id', async () => {
+      it('should match an RSA peer id', async () => {
         const expected = peerIdFromString(rsaPeer.toString())
 
         const remote = await secure(cryptoRsa, expected)
         expect(remote.equals(rsaPeer)).to.be.true()
       })
 
-      it('should reject a responder not matching an RSA peer id', async () => {
+      it('should not match an RSA peer id against a different key', async () => {
         const expected = peerIdFromString(rsaPeer.toString())
 
         await expect(secure(cryptoRemote, expected)).to.eventually.be.rejected
           .with.property('name', 'UnexpectedPeerError')
       })
 
-      it('should accept a responder matching an Ed25519 peer id', async () => {
+      it('should match an Ed25519 peer id', async () => {
         const expected = peerIdFromString(remotePeer.toString())
 
         const remote = await secure(cryptoRemote, expected)
         expect(remote.equals(remotePeer)).to.be.true()
       })
 
-      it('should reject a responder not matching an Ed25519 peer id', async () => {
+      it('should not match a different Ed25519 peer id', async () => {
         const expected = peerIdFromString(mitmPeer.toString())
 
         await expect(secure(cryptoRemote, expected)).to.eventually.be.rejected

@@ -305,7 +305,7 @@ describe('Noise', () => {
       .with.property('name', 'AbortError')
   })
 
-  describe('expected remote peer', () => {
+  describe('remote peer id', () => {
     let rsaPeer: { peerId: PeerId, privateKey: PrivateKey }
     let otherRsaPeer: PeerId
 
@@ -339,7 +339,7 @@ describe('Noise', () => {
       }
     }
 
-    it('should reject an RSA responder that does not match the expected peer id', async () => {
+    it('should not match a different RSA peer id', async () => {
       const expected = peerIdFromString(otherRsaPeer.toString())
       expect(expected.publicKey).to.be.undefined()
 
@@ -347,14 +347,14 @@ describe('Noise', () => {
         .with.property('name', 'UnexpectedPeerError')
     })
 
-    it('should reject any responder when the expected RSA peer id has no public key', async () => {
+    it('should not match an RSA peer id against an Ed25519 key', async () => {
       const expected = peerIdFromString(rsaPeer.peerId.toString())
 
       await expect(dial(remotePeer, expected)).to.eventually.be.rejected
         .with.property('name', 'UnexpectedPeerError')
     })
 
-    it('should accept an RSA responder that matches the expected peer id', async () => {
+    it('should match an RSA peer id parsed from a string', async () => {
       const expected = peerIdFromString(rsaPeer.peerId.toString())
       expect(expected.publicKey).to.be.undefined()
 
@@ -362,12 +362,12 @@ describe('Noise', () => {
       expect(remote.equals(rsaPeer.peerId)).to.be.true()
     })
 
-    it('should reject an Ed25519 responder that does not match the expected peer id', async () => {
+    it('should not match a different Ed25519 peer id', async () => {
       await expect(dial(remotePeer, localPeer.peerId)).to.eventually.be.rejected
         .with.property('name', 'UnexpectedPeerError')
     })
 
-    it('should accept an Ed25519 responder that matches the expected peer id', async () => {
+    it('should match an Ed25519 peer id parsed from a string', async () => {
       const remote = await dial(remotePeer, peerIdFromString(remotePeer.peerId.toString()))
       expect(remote.equals(remotePeer.peerId)).to.be.true()
     })
