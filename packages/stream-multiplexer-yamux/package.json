@@ -92,7 +92,7 @@
     "it-all": "^3.0.9",
     "it-drain": "^3.0.10",
     "it-pushable": "^3.2.3",
-    "p-event": "^7.0.0"
+    "p-event": "^8.0.1"
   },
   "sideEffects": false
 }
