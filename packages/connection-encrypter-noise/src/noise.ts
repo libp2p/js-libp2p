@@ -14,7 +14,7 @@ import type { ICryptoInterface } from './crypto.ts'
 import type { NoiseComponents } from './index.ts'
 import type { MetricsRegistry } from './metrics.ts'
 import type { HandshakeResult, ICrypto, INoiseConnection, INoiseExtensions, KeyPair } from './types.ts'
-import type { SecuredConnection, PrivateKey, PublicKey, StreamMuxerFactory, SecureConnectionOptions, Logger, MessageStream } from '@libp2p/interface'
+import type { PeerId, SecuredConnection, PrivateKey, StreamMuxerFactory, SecureConnectionOptions, Logger, MessageStream } from '@libp2p/interface'
 import type { LengthPrefixedStream } from '@libp2p/utils'
 
 export interface NoiseExtensions {
@@ -92,7 +92,7 @@ export class Noise implements INoiseConnection {
       wrappedConnection,
       this.components.privateKey,
       log,
-      options?.remotePeer?.publicKey,
+      options?.remotePeer,
       options
     )
     const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey)
@@ -147,7 +147,7 @@ export class Noise implements INoiseConnection {
       wrappedConnection,
       this.components.privateKey,
       log,
-      options?.remotePeer?.publicKey,
+      options?.remotePeer,
       options
     )
     const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey)
@@ -168,7 +168,7 @@ export class Noise implements INoiseConnection {
     // TODO: pass private key in noise constructor via Components
     privateKey: PrivateKey,
     log: Logger,
-    remoteIdentityKey?: PublicKey,
+    remotePeer?: PeerId,
     options?: SecureConnectionOptions
   ): Promise<HandshakeResult> {
     let result: HandshakeResult
@@ -178,7 +178,7 @@ export class Noise implements INoiseConnection {
       result = await performHandshakeInitiator({
         connection,
         privateKey,
-        remoteIdentityKey,
+        remotePeer,
         log: log.newScope('xxhandshake'),
         crypto: this.crypto,
         prologue: this.prologue,
@@ -205,7 +205,7 @@ export class Noise implements INoiseConnection {
     connection: LengthPrefixedStream,
     privateKey: PrivateKey,
     log: Logger,
-    remoteIdentityKey?: PublicKey,
+    remotePeer?: PeerId,
     options?: SecureConnectionOptions
   ): Promise<HandshakeResult> {
     let result: HandshakeResult
@@ -215,7 +215,7 @@ export class Noise implements INoiseConnection {
       result = await performHandshakeResponder({
         connection,
         privateKey,
-        remoteIdentityKey,
+        remotePeer,
         log: log.newScope('xxhandshake'),
         crypto: this.crypto,
         prologue: this.prologue,

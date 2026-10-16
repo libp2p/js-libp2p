@@ -1,5 +1,6 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { StreamMessageEvent, UnexpectedPeerError } from '@libp2p/interface'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { AbstractMessageStream, LengthPrefixedDecoder } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -10,7 +11,7 @@ import { NoiseHandshakePayload } from './proto/payload.ts'
 import type { MetricsRegistry } from './metrics.ts'
 import type { NoiseExtensions } from './proto/payload.ts'
 import type { HandshakeResult } from './types.ts'
-import type { AbortOptions, MessageStream, PrivateKey, PublicKey, StreamCloseEvent } from '@libp2p/interface'
+import type { AbortOptions, MessageStream, PeerId, PrivateKey, StreamCloseEvent } from '@libp2p/interface'
 import type { SendResult } from '@libp2p/utils'
 
 export async function createHandshakePayload (
@@ -30,14 +31,19 @@ export async function createHandshakePayload (
 export async function decodeHandshakePayload (
   payloadBytes: Uint8Array | Uint8ArrayList,
   remoteStaticKey?: Uint8Array | Uint8ArrayList,
-  remoteIdentityKey?: PublicKey
+  remotePeer?: PeerId
 ): Promise<NoiseHandshakePayload> {
   try {
     const payload = NoiseHandshakePayload.decode(payloadBytes)
     const publicKey = publicKeyFromProtobuf(payload.identityKey)
 
-    if (remoteIdentityKey?.equals(publicKey) === false) {
-      throw new Error(`Payload identity key ${publicKey} does not match expected remote identity key ${remoteIdentityKey}`)
+    // compare peer ids, an expected peer id may not carry its public key (e.g. RSA)
+    if (remotePeer != null) {
+      const payloadPeer = peerIdFromPublicKey(publicKey)
+
+      if (!remotePeer.equals(payloadPeer)) {
+        throw new Error(`Payload peer id ${payloadPeer} does not match expected remote peer id ${remotePeer}`)
+      }
     }
 
     if (!remoteStaticKey) {

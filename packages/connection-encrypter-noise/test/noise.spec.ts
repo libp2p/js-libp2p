@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer'
+import { generateKeyPair } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
+import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, byteStream, multiaddrConnectionPair } from '@libp2p/utils'
 import { assert, expect } from 'aegir/chai'
 import { randomBytes } from 'iso-random-stream'
@@ -301,5 +303,73 @@ describe('Noise', () => {
       })
     ])).to.eventually.be.rejected
       .with.property('name', 'AbortError')
+  })
+
+  describe('expected remote peer', () => {
+    let rsaPeer: { peerId: PeerId, privateKey: PrivateKey }
+    let otherRsaPeer: PeerId
+
+    before(async () => {
+      const privateKey = await generateKeyPair('RSA', 2048)
+      rsaPeer = { peerId: peerIdFromPrivateKey(privateKey), privateKey }
+      otherRsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 2048))
+    })
+
+    async function dial (responder: { peerId: PeerId, privateKey: PrivateKey }, expected: PeerId): Promise<PeerId> {
+      const upgrader = stubInterface<Upgrader>({
+        getStreamMuxers: () => new Map()
+      })
+      const noiseInit = new Noise({ ...localPeer, logger: defaultLogger(), upgrader })
+      const noiseResp = new Noise({ ...responder, logger: defaultLogger(), upgrader })
+      const [inboundConnection, outboundConnection] = multiaddrConnectionPair()
+
+      const inbound = noiseResp.secureInbound(inboundConnection)
+      inbound.catch(() => {})
+
+      try {
+        const outbound = await noiseInit.secureOutbound(outboundConnection, {
+          remotePeer: expected
+        })
+        await inbound
+
+        return outbound.remotePeer
+      } finally {
+        inboundConnection.abort(new Error('test finished'))
+        outboundConnection.abort(new Error('test finished'))
+      }
+    }
+
+    it('should reject an RSA responder that does not match the expected peer id', async () => {
+      const expected = peerIdFromString(otherRsaPeer.toString())
+      expect(expected.publicKey).to.be.undefined()
+
+      await expect(dial(rsaPeer, expected)).to.eventually.be.rejected
+        .with.property('name', 'UnexpectedPeerError')
+    })
+
+    it('should reject any responder when the expected RSA peer id has no public key', async () => {
+      const expected = peerIdFromString(rsaPeer.peerId.toString())
+
+      await expect(dial(remotePeer, expected)).to.eventually.be.rejected
+        .with.property('name', 'UnexpectedPeerError')
+    })
+
+    it('should accept an RSA responder that matches the expected peer id', async () => {
+      const expected = peerIdFromString(rsaPeer.peerId.toString())
+      expect(expected.publicKey).to.be.undefined()
+
+      const remote = await dial(rsaPeer, expected)
+      expect(remote.equals(rsaPeer.peerId)).to.be.true()
+    })
+
+    it('should reject an Ed25519 responder that does not match the expected peer id', async () => {
+      await expect(dial(remotePeer, localPeer.peerId)).to.eventually.be.rejected
+        .with.property('name', 'UnexpectedPeerError')
+    })
+
+    it('should accept an Ed25519 responder that matches the expected peer id', async () => {
+      const remote = await dial(remotePeer, peerIdFromString(remotePeer.peerId.toString()))
+      expect(remote.equals(remotePeer.peerId)).to.be.true()
+    })
   })
 })
