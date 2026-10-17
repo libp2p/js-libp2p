@@ -1,4 +1,5 @@
 import { privateKeyFromProtobuf } from '@libp2p/crypto'
+import { PrivateKeyMessage } from '@libp2p/crypto/pb'
 import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
 import { expect } from 'aegir/chai'
 import { base64 } from 'multiformats/bases/base64'
@@ -6,8 +7,9 @@ import sinon from 'sinon'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { PRECOMPUTED_EMPTY_PASSWORD_KEY, decryptEntry, deriveDek, encryptEntry } from '../src/cipher.ts'
-import { DEFAULT_LEGACY_DEK, decryptPem, deriveLegacyDek, isPem } from '../src/legacy.ts'
+import { DEFAULT_LEGACY_DEK, decryptPem, deriveLegacyDek, isPem, rsaKeyFromPkcs8 } from '../src/legacy.ts'
 import { getCrypto } from './fixtures/get-crypto.ts'
+import { EC_OID, RSA_OID, garbageFor, notRsaFor, pkcs8, reencryptPem, tlv } from './fixtures/helpers.ts'
 import { legacyKeychains } from './fixtures/legacy-keychains.ts'
 import type { LegacyKeychain } from './fixtures/legacy-keychains.ts'
 
@@ -21,6 +23,12 @@ async function encryptWithPrecomputedKey (data: Uint8Array): Promise<string> {
   const cipherText = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new Uint8Array(data)))
 
   return base64.encode(uint8ArrayConcat([salt, iv, cipherText]))
+}
+
+async function fixturePkcs1 (): Promise<Uint8Array> {
+  const pb = PrivateKeyMessage.decode(await decryptPem('', legacyKeychains[0].entries['/pkcs8/rsa-key']))
+
+  return pb.Data ?? new Uint8Array()
 }
 
 async function publicKeyOf (pb: Uint8Array): Promise<string> {
@@ -100,6 +108,50 @@ describe('cipher', () => {
       }
     })
   }
+
+  describe('legacy PEM validation', () => {
+    it('accepts an RSA PrivateKeyInfo', async () => {
+      const pkcs1 = await fixturePkcs1()
+
+      expect(rsaKeyFromPkcs8(pkcs8(RSA_OID, pkcs1))).to.equalBytes(pkcs1)
+    })
+
+    it('rejects a PrivateKeyInfo that is not rsaEncryption', async () => {
+      const pkcs1 = await fixturePkcs1()
+
+      expect(() => rsaKeyFromPkcs8(pkcs8(EC_OID, pkcs1))).to.throw(/RSA/)
+    })
+
+    it('rejects an RSAPrivateKey with missing fields', () => {
+      const truncated = tlv(0x30, Uint8Array.from([0x02, 0x01, 0x00, 0x02, 0x01, 0x05, 0x02, 0x01, 0x03, 0x02, 0x01, 0x07]))
+
+      expect(() => rsaKeyFromPkcs8(pkcs8(RSA_OID, truncated))).to.throw()
+    })
+
+    it('rejects garbage DER', () => {
+      expect(() => rsaKeyFromPkcs8(crypto.getRandomValues(new Uint8Array(1200)))).to.throw()
+      expect(() => rsaKeyFromPkcs8(Uint8Array.from([0x30, 0x82, 0xff, 0xff, 0x02, 0x01, 0x00]))).to.throw()
+      expect(() => rsaKeyFromPkcs8(new Uint8Array(20_000))).to.throw(/too long/)
+    })
+
+    it('rejects a correctly padded PEM plaintext that is not an RSA key', async () => {
+      const fixture = legacyKeychains[1]
+      const pem = fixture.entries['/pkcs8/rsa-key']
+      const dek = fixture.derivedDek ?? ''
+      const bogus = await reencryptPem(dek, pem, garbageFor(pem))
+
+      await expect(decryptPem(dek, bogus)).to.eventually.be.rejected.with.property('name', 'DecryptionFailedError')
+    })
+
+    it('rejects a correctly padded PEM plaintext that holds a non-RSA PrivateKeyInfo', async () => {
+      const fixture = legacyKeychains[1]
+      const pem = fixture.entries['/pkcs8/rsa-key']
+      const dek = fixture.derivedDek ?? ''
+      const bogus = await reencryptPem(dek, pem, notRsaFor(pem))
+
+      await expect(decryptPem(dek, bogus)).to.eventually.be.rejected.with.property('name', 'DecryptionFailedError')
+    })
+  })
 
   describe('empty password when PBKDF2 refuses it (WebKit/Linux)', () => {
     let refused = 0

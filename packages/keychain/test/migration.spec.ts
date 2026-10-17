@@ -3,7 +3,9 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import { Key } from 'interface-datastore/key'
 import all from 'it-all'
 import sinon from 'sinon'
-import { entries, expectKeys, load, open } from './fixtures/helpers.ts'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { encryptEntry } from '../src/cipher.ts'
+import { entries, expectKeys, load, notRsaFor, open, reencryptPem } from './fixtures/helpers.ts'
 import { legacyKeychains } from './fixtures/legacy-keychains.ts'
 
 describe('keychain migration', () => {
@@ -56,10 +58,12 @@ describe('keychain migration', () => {
     await all(open(migrated, withPassword).listKeys())
 
     // one entry rewritten, the rest legacy, no meta
-    await datastore.put(new Key('/pkcs8/self'), await migrated.get(new Key('/pkcs8/self')))
+    const self = await migrated.get(new Key('/pkcs8/self'))
+    await datastore.put(new Key('/pkcs8/self'), self)
 
     await expectKeys(open(datastore, withPassword), withPassword)
     expect(await entries(datastore)).to.have.property('/keychain/meta')
+    expect(await datastore.get(new Key('/pkcs8/self'))).to.equalBytes(self)
   })
 
   it('migrates a keychain with a customized dek', async () => {
@@ -85,9 +89,11 @@ describe('keychain migration', () => {
   it('an aborted caller does not cancel the migration', async () => {
     const datastore = await load(withPassword)
     const keychain = open(datastore, withPassword)
+    const batch = sinon.spy(datastore, 'batch')
 
     await expect(keychain.exportKey('self', { signal: AbortSignal.abort() })).to.eventually.be.rejected.with.property('name', 'AbortError')
     await expectKeys(keychain, withPassword)
+    expect(batch.callCount).to.equal(1)
   })
 
   it('renames and removes keys on a legacy store', async () => {
@@ -107,6 +113,32 @@ describe('keychain migration', () => {
     await all(open(datastore, withPassword).listKeys())
 
     expect(Object.keys(await entries(datastore))).to.deep.equal(['/keychain/meta'])
+  })
+
+  it('leaves a PEM-only store untouched when a PEM decrypts to a non-RSA key', async () => {
+    const pem = withPassword.entries['/pkcs8/rsa-key']
+    const datastore = await load({
+      ...withPassword,
+      entries: {
+        '/pkcs8/rsa-key': await reencryptPem(withPassword.derivedDek ?? '', pem, notRsaFor(pem)),
+        '/info/rsa-key': withPassword.entries['/info/rsa-key']
+      }
+    })
+    const before = await entries(datastore)
+
+    await expect(all(open(datastore, withPassword).listKeys())).to.eventually.be.rejected.with.property('name', 'KeychainMigrationError')
+    expect(await entries(datastore)).to.deep.equal(before)
+  })
+
+  it('does not migrate an entry that decrypts to something that is not a key', async () => {
+    const datastore = await load(withPassword)
+    // authenticates under the legacy dek but is an Ed25519 key with 3 bytes of data
+    const bogus = await encryptEntry(withPassword.derivedDek ?? '', Uint8Array.from([0x08, 0x01, 0x12, 0x03, 0x01, 0x02, 0x03]))
+    await datastore.put(new Key('/pkcs8/bogus'), uint8ArrayFromString(bogus))
+    const before = await entries(datastore)
+
+    await expect(all(open(datastore, withPassword).listKeys())).to.eventually.be.rejected.with.property('name', 'KeychainMigrationError')
+    expect(await entries(datastore)).to.deep.equal(before)
   })
 
   it('rotates the password of a legacy store', async () => {

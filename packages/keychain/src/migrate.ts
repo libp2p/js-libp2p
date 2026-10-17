@@ -1,9 +1,11 @@
+import { privateKeyFromProtobuf } from '@libp2p/crypto'
 import { Key } from 'interface-datastore/key'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { decryptEntry, encryptEntry } from './cipher.ts'
 import { KeychainMigrationError } from './errors.ts'
 import { decryptPem, isPem } from './legacy.ts'
+import type { CryptoLoader } from './index.ts'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 
@@ -22,11 +24,33 @@ async function tryDecrypt (dek: string, text: string): Promise<Uint8Array | unde
 }
 
 /**
+ * Decrypts with the legacy key and checks the result is a key the configured
+ * cryptos can load, so a lucky wrong-password decryption is never rewritten
+ */
+async function tryDecryptLegacy (dek: string, text: string, getCrypto: CryptoLoader, options?: AbortOptions): Promise<Uint8Array | undefined> {
+  const plainText = await tryDecrypt(dek, text)
+
+  if (plainText == null) {
+    return undefined
+  }
+
+  try {
+    await privateKeyFromProtobuf(plainText, { ...options, getCrypto })
+  } catch {
+    options?.signal?.throwIfAborted()
+
+    return undefined
+  }
+
+  return plainText
+}
+
+/**
  * Re-encrypts entries written by previous versions under `target`, then
  * records the new version. Entries already readable with `target` are left
  * alone so an interrupted run resumes.
  */
-export async function migrate (datastore: Datastore, target: string, legacy: string, options?: AbortOptions): Promise<void> {
+export async function migrate (datastore: Datastore, target: string, legacy: string, getCrypto: CryptoLoader, options?: AbortOptions): Promise<void> {
   if (await datastore.has(META_KEY, options)) {
     return
   }
@@ -40,7 +64,7 @@ export async function migrate (datastore: Datastore, target: string, legacy: str
       continue
     }
 
-    const plainText = await tryDecrypt(legacy, text)
+    const plainText = await tryDecryptLegacy(legacy, text, getCrypto, options)
 
     if (plainText == null) {
       throw new KeychainMigrationError(`Could not decrypt key "${key.baseNamespace()}", check the password and legacyDek options`)
