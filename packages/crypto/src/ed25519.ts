@@ -142,8 +142,9 @@ class Ed25519Crypto implements Crypto {
       throw new InvalidParametersError('Incorrect Type field in protobuf')
     }
 
-    if (message.Data.byteLength !== PRIVATE_KEY_LENGTH && message.Data.byteLength !== PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH) {
-      throw new InvalidParametersError(`Ed25519 private key must be ${PRIVATE_KEY_LENGTH} or ${PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH} bytes`)
+    // a seed, a seed + public key, or the go-libp2p legacy seed + public key + redundant public key
+    if (![PRIVATE_KEY_LENGTH, PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH, PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH * 2].includes(message.Data.byteLength)) {
+      throw new InvalidParametersError(`Ed25519 private key must be ${PRIVATE_KEY_LENGTH}, ${PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH} or ${PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH * 2} bytes`)
     }
 
     const privateKeyJwk = await derivePrivateJWK(message.Data, options)
