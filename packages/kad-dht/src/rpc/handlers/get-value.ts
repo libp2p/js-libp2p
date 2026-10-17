@@ -1,4 +1,3 @@
-import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, NotFoundError } from '@libp2p/interface'
 import { Libp2pRecord } from '@libp2p/record'
 import {
@@ -68,7 +67,7 @@ export class GetValueHandler implements DHTMessageHandler {
           throw new NotFoundError('No public key found in key book')
         }
 
-        pubKey = publicKeyToProtobuf(peer.id.publicKey)
+        pubKey = peer.id.publicKey
       } catch (err: any) {
         if (err.name !== 'NotFoundError') {
           throw err

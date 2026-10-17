@@ -135,7 +135,7 @@
 import { KadDHT as KadDHTClass } from './kad-dht.ts'
 import { MessageType } from './message/dht.ts'
 import { removePrivateAddressesMapper, removePublicAddressesMapper, passthroughMapper } from './utils.ts'
-import type { Libp2pEvents, ComponentLogger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey, AbortOptions } from '@libp2p/interface'
+import type { Libp2pEvents, ComponentLogger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions, PrivateKey, AbortOptions, CryptoLoader } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { Ping } from '@libp2p/ping'
 import type { AdaptiveTimeoutInit } from '@libp2p/utils'
@@ -406,7 +406,14 @@ export interface SelectFn {
  * and throws if the record is invalid
  */
 export interface ValidateFn {
-  (key: Uint8Array, value: Uint8Array, options?: AbortOptions): void | Promise<void>
+  (key: Uint8Array, value: Uint8Array, options?: ValidateOptions): void | Promise<void>
+}
+
+export interface ValidateOptions extends AbortOptions {
+  /**
+   * Resolves key types when validators need to decode public keys
+   */
+  getCrypto?: CryptoLoader
 }
 
 /**
@@ -745,6 +752,7 @@ export interface KadDHTComponents {
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
   ping: Ping
+  getCrypto?: CryptoLoader
 }
 
 /**

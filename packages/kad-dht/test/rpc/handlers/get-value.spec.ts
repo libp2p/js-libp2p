@@ -1,4 +1,4 @@
-import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { defaultLogger } from '@libp2p/logger'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { Libp2pRecord } from '@libp2p/record'
@@ -147,7 +147,7 @@ describe('rpc - handlers - GetValue', () => {
       }
 
       await peerStore.merge(targetPeer.peerId, {
-        publicKey: targetPeer.peerId.publicKey
+        publicKey: await publicKeyFromProtobuf(targetPeer.peerId.publicKey)
       })
 
       const response = await handler.handle(sourcePeer.peerId, msg)
@@ -162,7 +162,7 @@ describe('rpc - handlers - GetValue', () => {
 
       const responseRecord = Libp2pRecord.deserialize(response.record)
 
-      expect(responseRecord).to.have.property('value').that.equalBytes(publicKeyToProtobuf(targetPeer.peerId.publicKey))
+      expect(responseRecord).to.have.property('value').that.equalBytes(targetPeer.peerId.publicKey)
     })
 
     it('peer not in peer store', async () => {

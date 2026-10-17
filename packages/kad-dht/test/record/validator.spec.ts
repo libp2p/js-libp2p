@@ -1,5 +1,5 @@
 /* eslint max-nested-callbacks: ["error", 8] */
-import { generateKeyPair, publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair, publicKeyFromProtobuf } from '@libp2p/crypto'
 import { Libp2pRecord } from '@libp2p/record'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -7,7 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import * as validator from '../../src/record/validators.ts'
 import * as fixture from '../fixtures/record/go-key-records.ts'
 import type { Validators } from '../../src/index.ts'
-import type { RSAPrivateKey } from '@libp2p/interface'
+import type { PrivateKey } from '@libp2p/interface'
 
 interface Cases {
   valid: {
@@ -41,12 +41,12 @@ const generateCases = (hash: Uint8Array): Cases => {
 }
 
 describe('validator', () => {
-  let key: RSAPrivateKey
+  let key: PrivateKey
   let hash: Uint8Array
   let cases: Cases
 
   before(async () => {
-    key = await generateKeyPair('RSA', 1024)
+    key = await generateKeyPair('RSA', { bits: 1024 })
     hash = key.publicKey.toMultihash().bytes
     cases = generateCases(hash)
   })
@@ -110,7 +110,7 @@ describe('validator', () => {
 
       it('does not error on valid record', async () => {
         return Promise.all(cases.valid.publicKey.map(async (k) => {
-          await validator.validators.pk(k, publicKeyToProtobuf(key.publicKey))
+          await validator.validators.pk(k, key.publicKey.toProtobuf())
         }))
       })
 
@@ -118,7 +118,7 @@ describe('validator', () => {
         return Promise.all(cases.invalid.publicKey.map(async data => {
           try {
             //
-            await validator.validators.pk(data, publicKeyToProtobuf(key.publicKey))
+            await validator.validators.pk(data, key.publicKey.toProtobuf())
           } catch (err: any) {
             expect(err).to.have.property('name', 'InvalidParametersError')
             return
@@ -131,7 +131,7 @@ describe('validator', () => {
 
   describe('go interop', () => {
     it('record with key from from go', async () => {
-      const pubKey = publicKeyFromProtobuf(fixture.publicKey)
+      const pubKey = await publicKeyFromProtobuf(fixture.publicKey)
       const k = uint8ArrayConcat([
         uint8ArrayFromString('/pk/'),
         pubKey.toMultihash().bytes

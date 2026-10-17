@@ -80,7 +80,7 @@ export class ContentFetching {
 
     const rec = Libp2pRecord.deserialize(raw)
 
-    await verifyRecord(this.validators, rec, options)
+    await verifyRecord(this.validators, rec, { ...options, getCrypto: this.components.getCrypto })
 
     return rec
   }
