@@ -21,12 +21,13 @@
  * ```
  */
 
-import { publicKeyFromRaw } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities, ProtocolError } from '@libp2p/interface'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { pbStream } from '@libp2p/utils'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { Exchange, KeyType } from './pb/proto.ts'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
+import { Exchange } from './pb/proto.ts'
 import type { ComponentLogger, Logger, ConnectionEncrypter, SecuredConnection, PrivateKey, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
 
 const PROTOCOL = '/plaintext/2.0.0'
@@ -74,10 +75,7 @@ class Plaintext implements ConnectionEncrypter {
     // Encode the public key and write it to the remote peer
     await pb.write({
       id: publicKey.toMultihash().bytes,
-      pubkey: {
-        Type: KeyType[publicKey.type],
-        Data: publicKey.raw
-      }
+      pubkey: withArrayBuffer(publicKeyToProtobuf(publicKey))
     }, options)
 
     // Get the Exchange message
@@ -89,7 +87,7 @@ class Plaintext implements ConnectionEncrypter {
         throw new ProtocolError('Public key missing')
       }
 
-      if (response.pubkey.Data.byteLength === 0) {
+      if (response.pubkey.byteLength === 0) {
         throw new ProtocolError('Public key data too short')
       }
 
@@ -97,12 +95,13 @@ class Plaintext implements ConnectionEncrypter {
         throw new ProtocolError('Remote id missing')
       }
 
-      const pubKey = publicKeyFromRaw(response.pubkey.Data)
-      peerId = peerIdFromPublicKey(pubKey)
+      const pubKey = publicKeyFromProtobuf(response.pubkey)
 
-      if (!uint8ArrayEquals(peerId.toMultihash().bytes, response.id)) {
+      if (!uint8ArrayEquals(pubKey.toMultihash().bytes, response.id)) {
         throw new InvalidCryptoExchangeError('Public key did not match id')
       }
+
+      peerId = peerIdFromPublicKey(pubKey)
     } catch (err: any) {
       log.error('invalid public key - %e', err)
       throw new InvalidCryptoExchangeError(`Invalid public key - ${err.message}`)
