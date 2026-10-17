@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, byteStream, multiaddrConnectionPair } from '@libp2p/utils'
@@ -150,8 +150,8 @@ describe('Noise', () => {
         throw new Error('Public key missing from PeerId')
       }
 
-      expect(inbound.remotePeer.publicKey?.raw).to.equalBytes(localPeer.peerId.publicKey.raw)
-      expect(outbound.remotePeer.publicKey?.raw).to.equalBytes(remotePeer.peerId.publicKey.raw)
+      expect(inbound.remotePeer.publicKey).to.equalBytes(localPeer.peerId.publicKey)
+      expect(outbound.remotePeer.publicKey).to.equalBytes(remotePeer.peerId.publicKey)
     } catch (e) {
       const err = e as Error
       assert(false, err.message)
@@ -310,9 +310,9 @@ describe('Noise', () => {
     let otherRsaPeer: PeerId
 
     before(async () => {
-      const privateKey = await generateKeyPair('RSA', 512)
+      const privateKey = await generateKeyPair('RSA', { bits: 512 })
       rsaPeer = { peerId: peerIdFromPrivateKey(privateKey), privateKey }
-      otherRsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
+      otherRsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', { bits: 512 }))
     })
 
     async function dial (responder: { peerId: PeerId, privateKey: PrivateKey }, expected: PeerId): Promise<PeerId> {
