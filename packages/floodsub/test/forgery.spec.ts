@@ -71,6 +71,7 @@ describe('forged messages over the wire', () => {
   async function receive (message: PubSubRPCMessage): Promise<void> {
     // @ts-expect-error private method
     await pubsub['processRpc'](sender, { subscriptions: [], messages: [message] })
+    // @ts-expect-error private field
     await pubsub.queue.onIdle()
   }
 
