@@ -49,6 +49,13 @@ describe('publicKeyForPeer', function () {
       .with.property('name', 'InvalidPublicKeyError')
   })
 
+  it('rejects malformed key bytes', async () => {
+    const key = (await generateKeyPair('Ed25519')).publicKey
+
+    await expect(publicKeyForPeer(peerFor(key), uint8ArrayFromString('not a key'))).to.eventually.be.rejected
+      .with.property('name', 'InvalidPublicKeyError')
+  })
+
   describe('RSA peer id without a key', () => {
     let key: PublicKey
 

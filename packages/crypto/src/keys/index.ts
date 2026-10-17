@@ -160,18 +160,24 @@ export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
 }
 
 /**
- * Returns the public key of a peer that can be trusted to verify signatures it
- * made.
+ * Returns a public key for the peer that is safe for verifying its signatures.
  *
- * A supplied key (e.g. one sent alongside a message) is only returned if it
- * derives to the peer id, otherwise the key inlined in the peer id is used.
- * Throws if neither is available.
+ * A supplied key must derive to the peer id, otherwise `InvalidPublicKeyError`
+ * is thrown, even if the peer id inlines a key. With no supplied key the key
+ * inlined in the peer id is returned, or `InvalidPublicKeyError` is thrown if
+ * there is none. Malformed key bytes also throw `InvalidPublicKeyError`.
  */
 export async function publicKeyForPeer (peer: Pick<PeerId, 'publicKey' | 'toMultihash'>, key?: Uint8Array | PublicKey, options?: AbortOptions): Promise<PublicKey> {
   options?.signal?.throwIfAborted()
 
   if (key != null) {
-    const publicKey = key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
+    let publicKey: PublicKey
+
+    try {
+      publicKey = key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
+    } catch (err: any) {
+      throw new InvalidPublicKeyError(`Could not decode public key - ${err.message}`)
+    }
 
     if (!uint8ArrayEquals(publicKey.toMultihash().bytes, peer.toMultihash().bytes)) {
       throw new InvalidPublicKeyError('Public key does not match peer id')
