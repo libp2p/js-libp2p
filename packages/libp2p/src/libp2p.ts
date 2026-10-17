@@ -4,11 +4,13 @@ import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
+import { validateOptions } from '@libp2p/utils'
 import { CODE_P2P, isMultiaddr } from '@multiformats/multiaddr'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { array, boolean, function_ as func, looseObject, optional, record, string } from 'valibot'
 import { AddressManager } from './address-manager/index.ts'
 import { checkServiceDependencies, defaultComponents } from './components.ts'
 import { connectionGater } from './config/connection-gater.ts'
@@ -27,6 +29,30 @@ import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.ts'
 import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget, DialProtocolOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+const factories = optional(array(func()))
+
+/**
+ * The options the Libp2p class reads itself. Options passed on to other
+ * components (addresses, connectionManager, etc) are validated by them.
+ */
+const configSchema = looseObject({
+  nodeInfo: optional(looseObject({
+    name: optional(string()),
+    version: optional(string()),
+    userAgent: optional(string())
+  })),
+  transports: factories,
+  streamMuxers: factories,
+  connectionEncrypters: factories,
+  peerDiscovery: factories,
+  peerRouters: factories,
+  contentRouters: factories,
+  services: optional(record(string(), func())),
+  connectionMonitor: optional(looseObject({
+    enabled: optional(boolean())
+  }))
+})
+
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
   public peerStore: PeerStore
@@ -43,6 +69,8 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
   // eslint-disable-next-line complexity
   constructor (init: Libp2pInit<T> & { peerId: PeerId }) {
     super()
+
+    validateOptions(configSchema, init, 'libp2p')
 
     this.status = 'stopped'
 
