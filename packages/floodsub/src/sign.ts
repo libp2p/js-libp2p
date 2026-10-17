@@ -1,3 +1,4 @@
+import { publicKeyForPeer } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -59,39 +60,19 @@ export async function verifySignature (message: SignedMessage, encode: (rpc: Pub
     }).subarray()
   ])
 
-  // Get the public key
-  const pubKey = messagePublicKey(message)
+  let pubKey: PublicKey
+
+  try {
+    // only trust a supplied key if it derives to the author
+    pubKey = await publicKeyForPeer(message.from, message.key)
+  } catch (err: any) {
+    if (err.name === 'InvalidPublicKeyError') {
+      return false
+    }
+
+    throw err
+  }
 
   // verify the base message
   return pubKey.verify(bytes, message.signature)
-}
-
-/**
- * Returns the PublicKey associated with the given message.
- * If no valid PublicKey can be retrieved an error will be returned.
- */
-export function messagePublicKey (message: SignedMessage): PublicKey {
-  if (message.type !== 'signed') {
-    throw new Error('Message type must be "signed" to have a public key')
-  }
-
-  // should be available in the from property of the message (peer id)
-  if (message.from == null) {
-    throw new Error('Could not get the public key from the originator id')
-  }
-
-  // an Ed25519/secp256k1 peer id embeds its own public key, so a key recovered
-  // from `from` is provably the author's; trust it over the supplied message.key
-  if (message.from.publicKey != null) {
-    return message.from.publicKey
-  }
-
-  // otherwise the supplied key must derive to the from peer id, else a message
-  // could be signed by one key while claiming a different author
-  if (message.key != null && message.from.equals(message.key.toMultihash().bytes)) {
-    return message.key
-  }
-
-  // We couldn't validate pubkey is from the originator, error
-  throw new Error('Could not get the public key from the originator id')
 }

@@ -175,7 +175,7 @@ describe('author key binding', () => {
     it('rejects a message whose key does not derive to the author', async () => {
       const forged = await forge(author, await generateKeyPair('Ed25519'))
 
-      await expect(verifySignature(forged, encodeMessage)).to.be.rejectedWith('Could not get the public key from the originator id')
+      await expect(verifySignature(forged, encodeMessage)).to.eventually.equal(false)
     })
   })
 })
