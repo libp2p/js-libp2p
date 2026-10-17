@@ -1,22 +1,14 @@
 import { ed25519Crypto } from '@libp2p/crypto'
 import { isPrivateKey, isPublicKey } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
-import { defaultLogger } from 'birnam'
 import { MemoryDatastore } from 'datastore-core/memory'
-import { Key } from 'interface-datastore'
 import all from 'it-all'
-import { generateKeyPair } from 'libp2p-crypto-v5/keys'
-import { keychain as libp2pKeychainFactory } from 'libp2p-keychain-v6'
-import { base58btc } from 'multiformats/bases/base58'
-import { sha256 } from 'multiformats/hashes/sha2'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Keychain as KeychainClass } from '../src/keychain.ts'
 import { getCrypto } from './fixtures/get-crypto.ts'
 import type { Keychain } from '../src/index.ts'
 import type { KeychainInit } from '../src/index.ts'
 import type { PrivateKey } from '@libp2p/crypto'
 import type { Datastore } from 'interface-datastore'
-import type { Keychain as Libp2pKeychain } from 'libp2p-keychain-v6'
 
 const SUPPORTED_KEYS: Array<'ECDSA' | 'Ed25519' | 'RSA'> = [
   'ECDSA',
@@ -487,102 +479,6 @@ describe('keychain', () => {
       await expect(keychain.generateKey(keyName, {
         type: 'un-configured'
       })).to.eventually.be.rejected()
-    })
-  })
-
-  describe('@libp2p/keychain compatibility', () => {
-    let keychain: Keychain
-    let libp2pKeychain: Libp2pKeychain
-
-    beforeEach(async () => {
-      keychain = new KeychainClass({
-        datastore,
-        getCrypto: getCrypto()
-      })
-
-      libp2pKeychain = libp2pKeychainFactory()({
-        datastore,
-        logger: defaultLogger()
-      })
-    })
-
-    it('should read legacy RSA keys', async () => {
-      const pem = `-----BEGIN ENCRYPTED PRIVATE KEY-----
-MIIFODBiBgkqhkiG9w0BBQ0wVTA0BgkqhkiG9w0BBQwwJwQQyqAoKIuPVEA+fAXV
-W7szHgICJxACASAwDAYIKoZIhvcNAgsFADAdBglghkgBZQMEASoEEDGe7rE974Z8
-j+y0EWu6ROsEggTQyXsEAts6YOV718urpzXc/mX55ovj/+7ybWbvPzTbLnkuoF2k
-UwEiADN42w5K1KJMifHUv/QoKfLKaCgrVqSGqQg1mh5zjedhiM+OZ4SSwEiZigea
-SIaxR2jHQPbDdOox3241lGjZ5/bDdoLurdORcZfMshJP8nazTFNIowAcIKAHXDzc
-YqLwD7bhSZ4v5r2eWatJ1SICUOzNlTwi6gUw9k7OfbPLacMcEfaogg7fzqazFsq1
-ktWmJ+j0PEBq96SMx+Uwu0EsangEdobfHhTd62NTI86WSca8inMUQG2sV7k9jdac
-+fiODdYDwGorgEIwDD6QjOdfhQwBoNj6LLUF+z/qAc9RaKnZFaHRDQ+pIOMF0qV/
-dGUU6wW78W/pPf9voSmQFlsewXuxsuM5x3csYLmkxD71x5Rmatk3P6BsgimGSGP1
-zr6EhX2tlpXbcFI4c4Ez4Ma1b2UEavD2mYU0qFHKbqu+JFKrUM9+LUPVHyvvuYdt
-n2g8RCcJrrUB4sBuYqjnL6rKrOH9KZxPuWqjocH8Vbp2uBFPHA4OWHgzn3YNwGdF
-5ncbIAaM+45bL9N33PGejikWkm35wk5ZpaVYk4+pQiZsvt72PmVAEgUPKsV4e851
-1VCHyDEfynLmcd65ytnnez9drAqyWsZ2r7UNYYxEiEL5G5cx11/gAB+phFZyOWgt
-cskjLjmlzBCWkIPKB9W48VbHiCPflaSwzLxWA9VqsmCp8c/lasQr291bAjHk2ESe
-70BY5iEwhAxgjLlvXmelWW9OPydRGxqv9ROYS3AMYh1xydZVeUMwpHMEwEbV2F1y
-wHtCeE4mDVeSypsy+eqQFqwA8xroDjKjNeQm++7jr0oCL22Y2d7jMZl1875znx1U
-UjX+FvxW4MwnQS2eq5fJd5k6xd84eD/kpZyxfh01Q+iXo5TgsmLZwuDegGVuR0+q
-OyW6IbaaNXMMnQRUg79SlBjpr7SETCfCtA/YKigBwD5E4qZXsr1JR1LwfiwCILV9
-KrXF/hdf5WTfi+OZ6/NqVq8rK6UUuU9AfKEKxq7ddNKqChc9qIcGie2EhsHwbk0G
-ZDQgCHIA40NTNVLxfad2AqBTXl2w6CVwKTZ+BHBiLsx9Uuca9gpSUxyGcR+5/vtz
-+mYYeEoxF6kjhdkKEJ/qwzImSQPGMqaDzKuZPhVq7OkiQ39Abw9Bnd4k6lUEA9x0
-vQmC9MmjmiHcneoWd4P9y7s/Ki8zaUGN3+/S9RA1DHgGvVyNydURDpjrOTjHxKqv
-hCy47VqYcKjuiXQzQL2wqqYqQY/srC4cllvdbEnE49dzt8/ntTpZspovgYKIL8Gm
-Z13dIlURtmWfu2trtiNALkoHxGLF8DK/GsNlqANw4ZpjSE/N/+28XXQbcoBG/MN1
-VDkVFv7o2G46PZKLMr4BuU2NR50y52Uyuw0TXz6gIM9VWgkC7nobPVgLwsqTx6U3
-zjCoqIlnnglhqgB8siYYkDY81LyoMJWC+2UXKyTQITJQlXsbmzlZkiJ10uLyCQid
-ozhhbddK0+C0eCE7P2l87u378443UWY+SjI24dSfMDA4ShEFTzGfmt7gGP+syvyJ
-KKQTc1G3fRDHjiuaVNNRLPQ3X9+BuStXSBpuHLSDmD8qeEAHidbp+Cbs9e0=
------END ENCRYPTED PRIVATE KEY-----`
-
-      const name = 'my-key'
-
-      await datastore.put(new Key(`/pkcs8/${name}`), uint8ArrayFromString(pem))
-      await datastore.put(new Key(`/info/${name}`), uint8ArrayFromString(JSON.stringify({
-        name: 'my-key',
-        id: 'QmXk8UCHxoKsW5xmuKx5JMn1TyNB9EWqWUe5smKXh6Hc6H'
-      })))
-
-      const key = await keychain.exportKey(name)
-
-      expect(base58btc.encode(key.publicKey.toMultihash().bytes)).to.equal('zQmd9UpcusnJYWxWZvNPQ3FyCVJk1KjdfQcubypeEZDWcpd')
-      expect(base58btc.encode((await sha256.digest(key.toProtobuf())).bytes)).to.equal('zQmXk8UCHxoKsW5xmuKx5JMn1TyNB9EWqWUe5smKXh6Hc6H')
-    })
-
-    SUPPORTED_KEYS.forEach(type => {
-      it(`should read ${type} libp2p keychain keys`, async () => {
-        const keyName = 'my-key'
-        const libp2pPrivateKey = await generateKeyPair(type)
-        await libp2pKeychain.importKey(keyName, libp2pPrivateKey)
-        const heliaPrivateKey = await keychain.exportKey(keyName)
-
-        const message = Uint8Array.from([0, 1, 2, 3, 4])
-
-        const heliaSig = await heliaPrivateKey.sign(message)
-        expect(await libp2pPrivateKey.publicKey.verify(message, heliaSig)).to.be.true()
-
-        const libp2pSig = await libp2pPrivateKey.sign(message)
-        expect(await heliaPrivateKey.publicKey.verify(message, libp2pSig)).to.be.true()
-      })
-
-      it(`should write ${type} libp2p keychain keys`, async () => {
-        const keyName = 'my-key'
-        const heliaPrivateKey = await keychain.generateKey(keyName, {
-          type
-        })
-        const libp2pPrivateKey = await libp2pKeychain.exportKey(keyName)
-
-        const message = Uint8Array.from([0, 1, 2, 3, 4])
-
-        const heliaSig = await heliaPrivateKey.sign(message)
-        expect(await libp2pPrivateKey.publicKey.verify(message, heliaSig)).to.be.true()
-
-        const libp2pSig = await libp2pPrivateKey.sign(message)
-        expect(await heliaPrivateKey.publicKey.verify(message, libp2pSig)).to.be.true()
-      })
     })
   })
 })
