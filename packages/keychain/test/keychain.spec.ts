@@ -3,6 +3,7 @@ import { isPrivateKey, isPublicKey } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import all from 'it-all'
+import { isKeychain, keychain } from '../src/index.ts'
 import { Keychain as KeychainClass } from '../src/keychain.ts'
 import { getCrypto } from './fixtures/get-crypto.ts'
 import type { Keychain } from '../src/index.ts'
@@ -26,6 +27,26 @@ describe('keychain', () => {
 
   beforeEach(() => {
     datastore = new MemoryDatastore()
+  })
+
+  it('is a keychain', () => {
+    expect(isKeychain(keychain()({ datastore, getCrypto: getCrypto() }))).to.be.true()
+  })
+
+  it('should not be a keychain', () => {
+    expect(isKeychain()).to.be.false()
+    expect(isKeychain({})).to.be.false()
+    expect(isKeychain(true)).to.be.false()
+    expect(isKeychain({
+      findKeyById: () => {},
+      findKeyByName: () => {},
+      importKey: () => {},
+      exportKey: () => {},
+      removeKey: () => {},
+      renameKey: () => {},
+      listKeys: () => {},
+      rotateKeychainPass: () => {}
+    })).to.be.false()
   })
 
   it('can override the self key name', async () => {

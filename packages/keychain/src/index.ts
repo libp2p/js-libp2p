@@ -204,3 +204,17 @@ export type { LegacyDek }
 export function keychain (init?: KeychainInit): (components: KeychainComponents) => Keychain {
   return (components) => new KeychainClass(components, init)
 }
+
+export function isKeychain (obj?: any): obj is Keychain {
+  if (obj == null) {
+    return false
+  }
+
+  return typeof obj.generateKey === 'function' &&
+    typeof obj.importKey === 'function' &&
+    typeof obj.exportKey === 'function' &&
+    typeof obj.removeKey === 'function' &&
+    typeof obj.renameKey === 'function' &&
+    typeof obj.listKeys === 'function' &&
+    typeof obj.rotateKeychainPass === 'function'
+}
