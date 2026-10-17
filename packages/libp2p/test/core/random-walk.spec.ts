@@ -67,13 +67,15 @@ describe('random-walk', () => {
 
   it('should break out of a random walk', async () => {
     let yielded = 0
+    const peers = await Promise.all(Array.from({ length: 100 }, async () => createRandomPeerInfo()))
 
     peerRouting.getClosestPeers
       .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
-        for (let i = 0; i < 100; i++) {
+        for (const peer of peers) {
           options?.signal?.throwIfAborted()
           yielded++
-          yield await createRandomPeerInfo()
+          await delay(0)
+          yield peer
         }
       })
       .onSecondCall().returns(slowIterator())
@@ -141,13 +143,15 @@ describe('random-walk', () => {
 
   it('should continue random walk until all consumers satisfied', async () => {
     let yielded = 0
+    const peers = await Promise.all(Array.from({ length: 100 }, async () => createRandomPeerInfo()))
 
     peerRouting.getClosestPeers
       .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
-        for (let i = 0; i < 100; i++) {
+        for (const peer of peers) {
           options?.signal?.throwIfAborted()
           yielded++
-          yield await createRandomPeerInfo()
+          await delay(0)
+          yield peer
         }
       })
       .onSecondCall().returns(slowIterator())
@@ -157,20 +161,20 @@ describe('random-walk', () => {
       drain(take(randomWalk.walk(), 2))
     ])
 
-    // the walk may start one more peer before the last consumer finishes,
-    // depending on how long key generation takes
-    expect(yielded).to.be.within(2, 3)
+    expect(yielded).to.equal(2)
   })
 
   it('should not block walk on slow consumers', async () => {
     let yielded = 0
+    const peers = await Promise.all(Array.from({ length: 100 }, async () => createRandomPeerInfo()))
 
     peerRouting.getClosestPeers
       .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
-        for (let i = 0; i < 100; i++) {
+        for (const peer of peers) {
           options?.signal?.throwIfAborted()
           yielded++
-          yield await createRandomPeerInfo()
+          await delay(0)
+          yield peer
         }
       })
       .onSecondCall().returns(slowIterator())
@@ -183,7 +187,7 @@ describe('random-walk', () => {
       }))
     ])
 
-    expect(yielded).to.be.within(7, 8)
+    expect(yielded).to.equal(7)
   })
 
   it('should unpause query if second consumer requires peers', async () => {
