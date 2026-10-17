@@ -131,11 +131,10 @@ export async function validateToRawMessage (
 
       let publicKey: PublicKey
       try {
-        // a supplied key must derive to the `from` peer id. Malformed key bytes
-        // reject rather than throw, so an attacker sending them is still scored
-        // as delivering an invalid message
         publicKey = await publicKeyForPeer(fromPeerId, msg.key)
       } catch {
+        // mismatched, missing or malformed keys are invalid, not thrown, so the
+        // peer is still scored
         return { valid: false, error: ValidateError.InvalidPeerId }
       }
 

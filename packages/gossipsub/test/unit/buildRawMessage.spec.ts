@@ -101,6 +101,14 @@ describe('buildRawMessage', () => {
       const result = await validateToRawMessage(StrictSign, raw)
       expect(result).to.deep.equal({ valid: false, error: ValidateError.InvalidPeerId })
     })
+
+    it('rejects a message from an RSA author without a key', async () => {
+      const victim = peerIdFromPrivateKey(victimKey)
+      const { raw } = await buildRawMessage(getPublishConfigFromPeerId(StrictSign, victim, victimKey), topic, data, data)
+      raw.key = undefined
+
+      await expect(validateToRawMessage(StrictSign, raw)).to.eventually.deep.equal({ valid: false, error: ValidateError.InvalidPeerId })
+    })
   })
 
   describe('Ed25519 author key binding', () => {
