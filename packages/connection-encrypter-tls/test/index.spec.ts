@@ -70,7 +70,7 @@ describe('tls', () => {
     expect(outboundErr).to.have.property('name', 'UnexpectedPeerError')
   })
 
-  it('should fail if the peer does not provide its public key', async () => {
+  it('should reject an RSA peer when a different peer is expected', async () => {
     const keyPair = await generateKeyPair('RSA', 512)
     const peer = peerIdFromPrivateKey(keyPair)
     remotePeer = peerIdFromMultihash(peer.toMultihash())

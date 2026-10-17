@@ -1,9 +1,9 @@
 import 'reflect-metadata'
 import { Duplex } from 'node:stream'
 import tls from 'node:tls'
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidCryptoExchangeError, UnexpectedPeerError, StreamMessageEvent } from '@libp2p/interface'
-import { peerIdFromCID } from '@libp2p/peer-id'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { AbstractMessageStream } from '@libp2p/utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import * as asn1X509 from '@peculiar/asn1-x509'
@@ -17,7 +17,6 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidCertificateError } from './errors.ts'
-import { KeyType, PublicKey } from './pb/index.ts'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions, MessageStream, StreamCloseEvent } from '@libp2p/interface'
 import type { SendResult } from '@libp2p/utils'
 
@@ -84,7 +83,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
     throw new InvalidCryptoExchangeError('Could not verify signature')
   }
 
-  const remotePeerId = peerIdFromCID(remoteLibp2pPublicKey.toCID())
+  const remotePeerId = peerIdFromPublicKey(remoteLibp2pPublicKey)
 
   if (expectedPeerId?.equals(remotePeerId) === false) {
     log?.error('invalid peer id - expected %p got %p', expectedPeerId, remotePeerId)
@@ -127,10 +126,7 @@ export async function generateCertificate (privateKey: PrivateKey, options?: Abo
         value: [
           // publicKey
           new asn1js.OctetString({
-            valueHex: PublicKey.encode({
-              type: KeyType[privateKey.type],
-              data: privateKey.publicKey.raw
-            })
+            valueHex: publicKeyToProtobuf(privateKey.publicKey)
           }),
           // signature
           new asn1js.OctetString({
