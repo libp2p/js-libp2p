@@ -36,7 +36,7 @@ import { pubSubSymbol } from './constants.ts'
 import { FloodSub as FloodSubClass } from './floodsub.ts'
 import type { DecodeRPCLimits } from './decodeRpc.ts'
 import type { PubSubRPC } from './floodsub.ts'
-import type { ComponentLogger, PeerId, PrivateKey, PublicKey, TypedEventTarget } from '@libp2p/interface'
+import type { ComponentLogger, CryptoLoader, PeerId, PrivateKey, PublicKey, TypedEventTarget } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
 
 export const protocol = '/floodsub/1.0.0'
@@ -251,6 +251,7 @@ export interface FloodSubComponents {
   privateKey: PrivateKey
   registrar: Registrar
   logger: ComponentLogger
+  getCrypto?: CryptoLoader
 }
 
 export interface FloodSubInit {

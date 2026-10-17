@@ -1,4 +1,4 @@
-import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromMultihash, peerIdFromPublicKey } from '@libp2p/peer-id'
 import * as Digest from 'multiformats/hashes/digest'
@@ -7,6 +7,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { PubSubRPCMessage } from './floodsub.ts'
 import type { Message } from './index.ts'
+import type { CryptoLoaderOptions } from '@libp2p/crypto'
 import type { PublicKey } from '@libp2p/interface'
 
 /**
@@ -21,7 +22,7 @@ export function randomSeqno (): bigint {
  */
 export const msgId = (key: PublicKey, seqno: bigint): Uint8Array => {
   const seqnoBytes = uint8ArrayFromString(seqno.toString(16).padStart(16, '0'), 'base16')
-  const keyBytes = publicKeyToProtobuf(key)
+  const keyBytes = key.toProtobuf()
 
   const msgId = new Uint8Array(keyBytes.byteLength + seqnoBytes.length)
   msgId.set(keyBytes, 0)
@@ -58,7 +59,7 @@ export const anyMatch = (a: Set<number> | number[], b: Set<number> | number[]): 
   return false
 }
 
-const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
+const isSigned = async (message: PubSubRPCMessage, options?: CryptoLoaderOptions): Promise<boolean> => {
   if ((message.sequenceNumber == null) || (message.from == null) || (message.signature == null)) {
     return false
   }
@@ -70,7 +71,7 @@ const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
 
   if (message.key != null) {
     const signingKey = message.key
-    const signingID = peerIdFromPublicKey(publicKeyFromProtobuf(signingKey))
+    const signingID = peerIdFromPublicKey(await publicKeyFromProtobuf(signingKey, options))
 
     return signingID.equals(fromID)
   }
@@ -78,12 +79,12 @@ const isSigned = async (message: PubSubRPCMessage): Promise<boolean> => {
   return false
 }
 
-export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => {
+export const toMessage = async (message: PubSubRPCMessage, options?: CryptoLoaderOptions): Promise<Message> => {
   if (message.from == null) {
     throw new InvalidMessageError('RPC message was missing from')
   }
 
-  if (!await isSigned(message)) {
+  if (!await isSigned(message, options)) {
     return {
       type: 'unsigned',
       topic: message.topic ?? '',
@@ -105,7 +106,7 @@ export const toMessage = async (message: PubSubRPCMessage): Promise<Message> => 
     sequenceNumber: bigIntFromBytes(message.sequenceNumber ?? new Uint8Array(0)),
     data: message.data ?? new Uint8Array(0),
     signature: message.signature ?? new Uint8Array(0),
-    key: key instanceof Uint8Array ? publicKeyFromProtobuf(key) : key
+    key: await publicKeyFromProtobuf(key, options)
   }
 
   return msg
@@ -120,7 +121,7 @@ export const toRpcMessage = (message: Message): PubSubRPCMessage => {
       topic: message.topic,
       signature: message.signature,
 
-      key: message.key ? publicKeyToProtobuf(message.key) : undefined
+      key: message.key ? message.key.toProtobuf() : undefined
     }
   }
 
