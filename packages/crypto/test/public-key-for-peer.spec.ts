@@ -103,6 +103,25 @@ describe('publicKeyForPeer', function () {
       .with.property('name', 'AbortError')
   })
 
+  it('rejects secp256k1 key bytes supplied for an Ed25519 peer as invalid, not unsupported', async () => {
+    const victim = (await generateKeyPair('Ed25519')).publicKey
+    const secp = (await generateKeyPair('secp256k1', { getCrypto })).publicKey
+
+    await expect(publicKeyForPeer(peerFor(victim), secp.toProtobuf())).to.eventually.be.rejected
+      .with.property('name', 'InvalidPublicKeyError')
+  })
+
+  it('rejects a Type 99 key protobuf supplied for an Ed25519 or RSA peer as invalid', async () => {
+    const bogus = Uint8Array.from([0x08, 99, 0x12, 4, 1, 2, 3, 4])
+    const ed = (await generateKeyPair('Ed25519')).publicKey
+    const rsa = (await generateKeyPair('RSA', { bits: 2048 })).publicKey
+
+    for (const peer of [ed, rsa]) {
+      await expect(publicKeyForPeer(peerFor(peer), bogus)).to.eventually.be.rejected
+        .with.property('name', 'InvalidPublicKeyError')
+    }
+  })
+
   it('reports an unsupported key type instead of an invalid key', async () => {
     const key = (await generateKeyPair('secp256k1', { getCrypto })).publicKey
 
