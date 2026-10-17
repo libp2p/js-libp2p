@@ -121,11 +121,12 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
     })
 
     describe('remote peer id parsed from a string', () => {
+      let rsaKey: PrivateKey
       let rsaPeer: PeerId
       let cryptoRsa: ConnectionEncrypter
 
       before(async () => {
-        const rsaKey = await generateKeyPair('RSA', 512)
+        rsaKey = await generateKeyPair('RSA', 512)
         rsaPeer = peerIdFromPrivateKey(rsaKey)
         cryptoRsa = await common.setup({
           privateKey: rsaKey
@@ -169,6 +170,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
 
         const { outbound } = await secure({ initiator: crypto, responder: cryptoRsa, expectedByInitiator: expected })
         expect(outbound.equals(rsaPeer)).to.be.true()
+        expect(outbound.publicKey?.equals(rsaKey.publicKey)).to.be.true()
       })
 
       it('should not match an RSA peer id against a different key on outbound connections', async () => {
@@ -185,6 +187,13 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
 
         const { inbound } = await secure({ initiator: cryptoRsa, responder: cryptoRemote, expectedByResponder: expected })
         expect(inbound.equals(rsaPeer)).to.be.true()
+        expect(inbound.publicKey?.equals(rsaKey.publicKey)).to.be.true()
+      })
+
+      it('should return the key of an RSA peer on inbound connections without an expected peer', async () => {
+        const { inbound } = await secure({ initiator: cryptoRsa, responder: cryptoRemote })
+        expect(inbound.equals(rsaPeer)).to.be.true()
+        expect(inbound.publicKey?.equals(rsaKey.publicKey)).to.be.true()
       })
 
       it('should not match an RSA peer id against a different key on inbound connections', async () => {
