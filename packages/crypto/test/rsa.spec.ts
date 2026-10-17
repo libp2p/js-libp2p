@@ -29,7 +29,7 @@ describe('RSA', function () {
     })
     const start = Date.now()
 
-    await expect(publicKeyFromProtobuf(buf)).to.eventually.be.rejected()
+    await expect(publicKeyFromProtobuf(buf)).to.eventually.be.rejected.with.property('name', 'InvalidPublicKeyError')
     expect(Date.now() - start).to.be.lessThan(1000)
   })
 
@@ -39,6 +39,8 @@ describe('RSA', function () {
       Data: new Uint8Array(1062)
     })
 
+    await expect(rsaCrypto().publicKeyFromProtobuf(buf)).to.eventually.be.rejected
+      .with.property('name', 'InvalidPublicKeyError')
     await expect(rsaCrypto().publicKeyFromProtobuf(buf)).to.eventually.be.rejected
       .with.property('message').that.matches(/Key size is too large/)
   })

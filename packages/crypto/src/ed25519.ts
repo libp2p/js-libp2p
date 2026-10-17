@@ -4,7 +4,7 @@ import { base64url } from 'multiformats/bases/base64'
 import { identity } from 'multiformats/hashes/identity'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
-import { InvalidParametersError } from './errors.ts'
+import { InvalidParametersError, withKeyErrors } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
 import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
@@ -155,7 +155,7 @@ class Ed25519Crypto implements Crypto {
 }
 
 export function ed25519Crypto (): Crypto {
-  return new Ed25519Crypto()
+  return withKeyErrors(new Ed25519Crypto())
 }
 
 async function derivePrivateJWK (raw: Uint8Array, options?: AbortOptions): Promise<JsonWebKey> {

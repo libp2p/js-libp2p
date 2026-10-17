@@ -5,7 +5,7 @@ import { identity } from 'multiformats/hashes/identity'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { decodeDer, encodeBitString, encodeInteger, encodeOctetString, encodeSequence } from './der.ts'
-import { InvalidParametersError } from './errors.ts'
+import { InvalidParametersError, withKeyErrors } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
 import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
@@ -192,7 +192,7 @@ class ECDSACrypto implements Crypto {
 }
 
 export function ecdsaCrypto (): Crypto {
-  return new ECDSACrypto()
+  return withKeyErrors(new ECDSACrypto())
 }
 
 function privateJWKToPublicJWK (jwk: JsonWebKey): JsonWebKey {

@@ -6,14 +6,14 @@ describe('Ed25519 key lengths', () => {
   for (const length of [0, 31, 33, 64]) {
     it(`rejects a ${length} byte public key`, async () => {
       const buf = PublicKeyMessage.encode({ Type: 1, Data: new Uint8Array(length) })
-      await expect(ed25519Crypto().publicKeyFromProtobuf(buf)).to.eventually.be.rejected()
+      await expect(ed25519Crypto().publicKeyFromProtobuf(buf)).to.eventually.be.rejected.with.property('name', 'InvalidPublicKeyError')
     })
   }
 
   for (const length of [0, 31, 33, 63, 65, 95, 97]) {
     it(`rejects a ${length} byte private key`, async () => {
       const buf = PrivateKeyMessage.encode({ Type: 1, Data: new Uint8Array(length) })
-      await expect(ed25519Crypto().privateKeyFromProtobuf(buf)).to.eventually.be.rejected()
+      await expect(ed25519Crypto().privateKeyFromProtobuf(buf)).to.eventually.be.rejected.with.property('name', 'InvalidPrivateKeyError')
     })
   }
 

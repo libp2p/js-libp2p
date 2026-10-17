@@ -4,7 +4,7 @@ import { base64url } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { decodeDer, encodeBitString, encodeInteger, encodeSequence } from './der.ts'
-import { InvalidParametersError } from './errors.ts'
+import { InvalidParametersError, withKeyErrors } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
 import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
@@ -188,7 +188,7 @@ class RSACrypto implements Crypto {
 }
 
 export function rsaCrypto (): Crypto {
-  return new RSACrypto()
+  return withKeyErrors(new RSACrypto())
 }
 
 /**

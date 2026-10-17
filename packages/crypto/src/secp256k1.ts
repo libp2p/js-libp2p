@@ -5,7 +5,7 @@ import { base64url } from 'multiformats/bases/base64'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
-import { InvalidParametersError } from './errors.ts'
+import { InvalidParametersError, withKeyErrors } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
 import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
@@ -134,5 +134,5 @@ class Secp256k1Crypto implements Crypto {
 }
 
 export function secp256k1Crypto (): Crypto {
-  return new Secp256k1Crypto()
+  return withKeyErrors(new Secp256k1Crypto())
 }

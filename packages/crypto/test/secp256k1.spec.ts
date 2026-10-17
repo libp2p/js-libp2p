@@ -41,7 +41,7 @@ describe('secp256k1', () => {
 
   it('rejects an invalid point', async () => {
     const buf = PublicKeyMessage.encode({ Type: 2, Data: new Uint8Array(33) })
-    await expect(impl.publicKeyFromProtobuf(buf)).to.eventually.be.rejected()
+    await expect(impl.publicKeyFromProtobuf(buf)).to.eventually.be.rejected.with.property('name', 'InvalidPublicKeyError')
   })
 
   it('exports a JWK', async () => {

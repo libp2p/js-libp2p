@@ -1,4 +1,5 @@
 import { InvalidPrivateKeyError, InvalidPublicKeyError } from '@libp2p/interface'
+import { rethrowAs } from './errors.ts'
 import { defaultCryptoLoader } from './loader.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
 import type { AbortOptions, CryptoLoader, PrivateKey, PublicKey } from '@libp2p/interface'
@@ -32,14 +33,14 @@ export async function publicKeyFromProtobuf (buf: Uint8Array, options: CryptoLoa
   const type = keyType(() => PublicKeyMessage.decode(buf), InvalidPublicKeyError)
   const crypto = await (options.getCrypto ?? defaultCryptoLoader())(type, options)
 
-  return crypto.publicKeyFromProtobuf(buf, options)
+  return rethrowAs(InvalidPublicKeyError, () => crypto.publicKeyFromProtobuf(buf, options))
 }
 
 export async function privateKeyFromProtobuf (buf: Uint8Array, options: CryptoLoaderOptions = {}): Promise<PrivateKey> {
   const type = keyType(() => PrivateKeyMessage.decode(buf), InvalidPrivateKeyError)
   const crypto = await (options.getCrypto ?? defaultCryptoLoader())(type, options)
 
-  return crypto.privateKeyFromProtobuf(buf, options)
+  return rethrowAs(InvalidPrivateKeyError, () => crypto.privateKeyFromProtobuf(buf, options))
 }
 
 export async function generateKeyPair (type: string, options: CryptoLoaderOptions & Record<string, any> = {}): Promise<PrivateKey> {
