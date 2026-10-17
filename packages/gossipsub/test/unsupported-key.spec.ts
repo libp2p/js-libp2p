@@ -12,6 +12,7 @@ import { RejectReason } from '../src/types.ts'
 import { buildRawMessage, validateToRawMessage } from '../src/utils/buildRawMessage.ts'
 import { msgIdFnStrictSign } from '../src/utils/msgIdFn.ts'
 import { getPublishConfigFromPeerId } from '../src/utils/publishConfig.ts'
+import type { DataTransform } from '../src/types.ts'
 import type { CryptoLoader, PeerId, PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
 
@@ -21,7 +22,7 @@ describe('messages signed with an unsupported key type', () => {
   const secpLoader = createCryptoLoader([secp256k1Crypto()])
   let forwarder: PeerId
 
-  async function createNode (getCrypto?: CryptoLoader): Promise<GossipSubClass> {
+  async function createNode (getCrypto?: CryptoLoader, dataTransform?: DataTransform): Promise<GossipSubClass> {
     const privateKey = await generateKeyPair('Ed25519')
     const node = new GossipSubClass({
       privateKey,
@@ -31,7 +32,7 @@ describe('messages signed with an unsupported key type', () => {
       connectionManager: stubInterface<ConnectionManager>(),
       logger: defaultLogger(),
       getCrypto
-    }, { emitSelf: false })
+    }, { emitSelf: false, dataTransform })
     // @ts-expect-error private field
     node.subscriptions.add(topic)
 
@@ -117,6 +118,56 @@ describe('messages signed with an unsupported key type', () => {
     // advertised again, no further iwant
     // @ts-expect-error private method
     expect(node.handleIHave(forwarderStr, ihave)).to.have.lengthOf(0)
+  })
+
+  it('applies the data transform before computing the id of an ignored message', async () => {
+    const dataTransform: DataTransform = {
+      inboundTransform: (topic, data) => data.map(b => b ^ 0xff),
+      outboundTransform: (topic, data) => data.map(b => b ^ 0xff)
+    }
+    const node = await createNode(undefined, dataTransform)
+    const raw = await secpMessage()
+    const valid = await validateToRawMessage(StrictSign, raw, { getCrypto: secpLoader })
+
+    if (!valid.valid) {
+      throw new Error('message should be valid with secp256k1 configured')
+    }
+
+    // peers advertise the id of the transformed data
+    valid.message.data = dataTransform.inboundTransform(topic, valid.message.data)
+    const msgId = msgIdFnStrictSign(valid.message)
+    // @ts-expect-error private field
+    const msgIdStr = node.msgIdToStrFn(msgId)
+    const forwarderStr = forwarder.toString()
+    const ihave = [{ topicID: topic, messageIDs: [msgId] }]
+
+    node.mesh.set(topic, new Set())
+    // @ts-expect-error private method
+    expect(node.handleIHave(forwarderStr, ihave)).to.have.lengthOf(1)
+    node.gossipTracer.addPromise(forwarderStr, [msgId])
+
+    const scoreBefore = node.score.score(forwarderStr)
+    const result = await receive(node, raw)
+
+    expect(result.delivered).to.equal(0)
+    // @ts-expect-error private field
+    expect(node.seenCache.has(msgIdStr)).to.be.true()
+    expect(node.gossipTracer.size).to.equal(0)
+    expect(node.gossipTracer.getBrokenPromises().size).to.equal(0)
+    expect(node.score.score(forwarderStr)).to.equal(scoreBefore)
+    // @ts-expect-error private method
+    expect(node.handleIHave(forwarderStr, ihave)).to.have.lengthOf(0)
+  })
+
+  it('drops an ignored message without penalty when its id cannot be computed', async () => {
+    const node = await createNode()
+    // @ts-expect-error private readonly field
+    node.msgIdFn = () => { throw new Error('boom') }
+    const result = await receive(node, await secpMessage())
+
+    expect(result.delivered).to.equal(0)
+    expect(result.rejectInvalid.called).to.be.false()
+    expect(result.reject.called).to.be.false()
   })
 
   for (const [name, keyBytes] of [

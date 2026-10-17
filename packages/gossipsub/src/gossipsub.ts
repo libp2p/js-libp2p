@@ -1128,7 +1128,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
           const msgIdStr = validationResult.msgIdStr
           this.score.rejectMessage(from.toString(), msgIdStr, rpcMsg.topic, validationResult.reason)
           this.gossipTracer.rejectMessage(msgIdStr, validationResult.reason)
-        } else {
+        } else if (validationResult.reason !== RejectReason.Ignore) {
           this.score.rejectInvalidMessage(from.toString(), rpcMsg.topic)
         }
 
@@ -1201,7 +1201,27 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       if (validationResult.error === ValidateError.UnsupportedKeyType && validationResult.message != null) {
         // we cannot check the signature but the key is bound to the author, so
         // record the message as seen and ignore it without penalising the sender
-        const msgId = await this.msgIdFn(validationResult.message)
+        const ignored = validationResult.message
+        let msgId: Uint8Array
+
+        try {
+          // use the same id as the valid path, which hashes the transformed data
+          if (this.dataTransform != null) {
+            ignored.data = this.dataTransform.inboundTransform(rpcMsg.topic, ignored.data)
+          }
+        } catch (e) {
+          this.log('Invalid message, transform failed', e)
+          return { code: MessageStatus.invalid, reason: RejectReason.Error, error: ValidateError.TransformFailed }
+        }
+
+        try {
+          msgId = await this.msgIdFn(ignored)
+        } catch (e) {
+          // the id cannot be computed, drop the message without penalising the sender
+          this.log('could not compute the id of an ignored message', e)
+          return { code: MessageStatus.invalid, reason: RejectReason.Ignore }
+        }
+
         const msgIdStr = this.msgIdToStrFn(msgId)
 
         if (fastMsgIdStr !== undefined && (this.fastMsgIdCache != null)) {

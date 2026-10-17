@@ -164,7 +164,12 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
   /** For a single RPC, await processing each message before processing the next */
   awaitRpcMessageHandler: boolean
 
-  /** message id function */
+  /**
+   * Message id function.
+   *
+   * For messages signed with a key type this node has no crypto for, `key` is
+   * an opaque key that only exposes `toProtobuf()` and `toMultihash()`.
+   */
   msgIdFn: MsgIdFn
   /** fast message id function */
   fastMsgIdFn: FastMsgIdFn
