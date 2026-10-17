@@ -95,7 +95,7 @@ export async function buildRawMessage (
   }
 }
 
-export type ValidationResult = { valid: true, message: Message } | { valid: false, error: ValidateError }
+export type ValidationResult = { valid: true, message: Message } | { valid: false, error: ValidateError, message?: Message }
 
 export async function validateToRawMessage (
   signaturePolicy: typeof StrictNoSign | typeof StrictSign,
@@ -136,7 +136,24 @@ export async function validateToRawMessage (
         publicKey = await publicKeyForPeer(fromPeerId, msg.key, options)
       } catch (err: any) {
         if (err.name === 'UnknownCryptoError') {
-          return { valid: false, error: ValidateError.UnsupportedKeyType }
+          // the key is bound to the author but cannot be decoded, return the
+          // message with a key that only exposes its bytes so an id can be computed
+          const keyBytes = msg.key ?? fromPeerId.publicKey
+          const key = { type: 'unsupported', toProtobuf: () => keyBytes, toMultihash: () => fromPeerId.toMultihash() } as unknown as PublicKey
+
+          return {
+            valid: false,
+            error: ValidateError.UnsupportedKeyType,
+            message: {
+              type: 'signed',
+              from: fromPeerId,
+              data: msg.data ?? new Uint8Array(0),
+              sequenceNumber: BigInt(`0x${uint8ArrayToString(msg.seqno, 'base16')}`),
+              topic: msg.topic,
+              signature: msg.signature,
+              key
+            }
+          }
         }
 
         // mismatched, missing or malformed keys are invalid, not thrown, so the

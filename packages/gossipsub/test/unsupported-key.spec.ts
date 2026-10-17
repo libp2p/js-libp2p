@@ -8,7 +8,9 @@ import { stubInterface } from 'sinon-ts'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { GossipSub as GossipSubClass } from '../src/gossipsub.ts'
 import { StrictSign } from '../src/index.ts'
-import { buildRawMessage } from '../src/utils/buildRawMessage.ts'
+import { RejectReason } from '../src/types.ts'
+import { buildRawMessage, validateToRawMessage } from '../src/utils/buildRawMessage.ts'
+import { msgIdFnStrictSign } from '../src/utils/msgIdFn.ts'
 import { getPublishConfigFromPeerId } from '../src/utils/publishConfig.ts'
 import type { CryptoLoader, PeerId, PeerStore } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
@@ -66,7 +68,9 @@ describe('messages signed with an unsupported key type', () => {
 
     expect(result.delivered).to.equal(0)
     expect(result.rejectInvalid.called).to.be.false()
-    expect(result.reject.called).to.be.false()
+    // recorded with the Ignore reason, which never penalises the sender
+    expect(result.reject.calledOnce).to.be.true()
+    expect(result.reject.firstCall.args[3]).to.equal(RejectReason.Ignore)
   })
 
   it('delivers the message when the node supports the key type', async () => {
@@ -77,6 +81,62 @@ describe('messages signed with an unsupported key type', () => {
     expect(result.rejectInvalid.called).to.be.false()
     expect(result.reject.called).to.be.false()
   })
+
+  it('marks the message as seen and resolves the iwant promise', async () => {
+    const node = await createNode()
+    const raw = await secpMessage()
+    const valid = await validateToRawMessage(StrictSign, raw, { getCrypto: secpLoader })
+
+    if (!valid.valid) {
+      throw new Error('message should be valid with secp256k1 configured')
+    }
+
+    const msgId = msgIdFnStrictSign(valid.message)
+    // @ts-expect-error private field
+    const msgIdStr = node.msgIdToStrFn(msgId)
+    const forwarderStr = forwarder.toString()
+    const ihave = [{ topicID: topic, messageIDs: [msgId] }]
+
+    node.mesh.set(topic, new Set())
+
+    // @ts-expect-error private method
+    const iwant = node.handleIHave(forwarderStr, ihave)
+    expect(iwant).to.have.lengthOf(1)
+    node.gossipTracer.addPromise(forwarderStr, [msgId])
+    expect(node.gossipTracer.size).to.equal(1)
+
+    const scoreBefore = node.score.score(forwarderStr)
+    await receive(node, raw)
+
+    // @ts-expect-error private field
+    expect(node.seenCache.has(msgIdStr)).to.be.true()
+    expect(node.gossipTracer.size).to.equal(0)
+    expect(node.gossipTracer.getBrokenPromises().size).to.equal(0)
+    expect(node.score.score(forwarderStr)).to.equal(scoreBefore)
+
+    // advertised again, no further iwant
+    // @ts-expect-error private method
+    expect(node.handleIHave(forwarderStr, ihave)).to.have.lengthOf(0)
+  })
+
+  for (const [name, keyBytes] of [
+    ['a secp256k1', async () => (await generateKeyPair('secp256k1', { getCrypto: secpLoader })).publicKey.toProtobuf()],
+    ['a Type 99', async () => Uint8Array.from([0x08, 99, 0x12, 4, 1, 2, 3, 4])]
+  ] as const) {
+    it(`rejects and penalises an Ed25519 author carrying ${name} key`, async () => {
+      const node = await createNode()
+      const author = await generateKeyPair('Ed25519')
+      const config = getPublishConfigFromPeerId(StrictSign, peerIdFromPrivateKey(author), author)
+      const data = uint8ArrayFromString('hello')
+      const { raw } = await buildRawMessage(config, topic, data, data)
+      raw.key = await keyBytes()
+
+      const result = await receive(node, raw)
+
+      expect(result.delivered).to.equal(0)
+      expect(result.rejectInvalid.calledOnce).to.be.true()
+    })
+  }
 
   it('still penalises a forged message from a supported key type', async () => {
     const node = await createNode()

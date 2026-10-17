@@ -158,7 +158,6 @@ export enum ValidateError {
 export enum MessageStatus {
   duplicate = 'duplicate',
   invalid = 'invalid',
-  ignored = 'ignored',
   valid = 'valid'
 }
 
