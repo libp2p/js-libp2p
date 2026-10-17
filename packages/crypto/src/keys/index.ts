@@ -163,7 +163,7 @@ export function publicKeyToProtobuf (key: PublicKey): Uint8Array {
  * Returns a public key for the peer that is safe for verifying its signatures.
  *
  * A supplied key must derive to the peer id, otherwise `InvalidPublicKeyError`
- * is thrown, even if the peer id inlines a key. With no supplied key the key
+ * is thrown, even if the peer id embeds a key. With no supplied key the key
  * inlined in the peer id is returned, or `InvalidPublicKeyError` is thrown if
  * there is none. Malformed key bytes also throw `InvalidPublicKeyError`.
  */
