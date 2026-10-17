@@ -11,6 +11,7 @@ import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
 
 const PRIVATE_KEY_LENGTH = 32
+const PUBLIC_KEY_LENGTH = 32
 
 class Ed25519PublicKey implements PublicKey {
   public type = 'Ed25519'
@@ -120,6 +121,10 @@ class Ed25519Crypto implements Crypto {
       throw new InvalidParametersError('Incorrect Type field in protobuf')
     }
 
+    if (message.Data.byteLength !== PUBLIC_KEY_LENGTH) {
+      throw new InvalidParametersError(`Ed25519 public key must be ${PUBLIC_KEY_LENGTH} bytes`)
+    }
+
     options?.signal?.throwIfAborted()
 
     const publicKeyJwk = x5519ToPublicJWK(message.Data)
@@ -136,6 +141,10 @@ class Ed25519Crypto implements Crypto {
 
     if (message.Type !== this.code) {
       throw new InvalidParametersError('Incorrect Type field in protobuf')
+    }
+
+    if (message.Data.byteLength !== PRIVATE_KEY_LENGTH && message.Data.byteLength !== PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH) {
+      throw new InvalidParametersError(`Ed25519 private key must be ${PRIVATE_KEY_LENGTH} or ${PRIVATE_KEY_LENGTH + PUBLIC_KEY_LENGTH} bytes`)
     }
 
     const privateKeyJwk = await derivePrivateJWK(message.Data, options)
