@@ -3,7 +3,7 @@
 
 import { generateKeyPair } from '@libp2p/crypto'
 import { defaultLogger } from '@libp2p/logger'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
@@ -33,6 +33,16 @@ describe('patch', () => {
       datastore: new MemoryDatastore(),
       logger: defaultLogger()
     })
+  })
+
+  it('stores the public key of an RSA peer id when patching with no data', async () => {
+    const rsaKey = await generateKeyPair('RSA', { bits: 512 })
+    const rsaPeer = peerIdFromPrivateKey(rsaKey)
+
+    await peerStore.patch(rsaPeer, {})
+
+    const peer = await peerStore.get(peerIdFromMultihash(rsaPeer.toMultihash()))
+    expect(peer.id.publicKey).to.equalBytes(rsaKey.publicKey.toProtobuf())
   })
 
   it('emits peer:update event on patch', async () => {
