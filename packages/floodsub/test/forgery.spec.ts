@@ -80,6 +80,22 @@ describe('forged messages over the wire', () => {
     expect(delivered).to.equal(1)
   })
 
+  it('delivers a message relayed from a different Ed25519 author', async () => {
+    const authorKey = await generateKeyPair('Ed25519')
+
+    await receive(await wireMessage(peerIdFromPrivateKey(authorKey), authorKey, authorKey.publicKey))
+
+    expect(delivered).to.equal(1)
+  })
+
+  it('delivers a message from an RSA author carrying its key', async () => {
+    const authorKey = await generateKeyPair('RSA', 2048)
+
+    await receive(await wireMessage(peerIdFromPrivateKey(authorKey), authorKey, authorKey.publicKey))
+
+    expect(delivered).to.equal(1)
+  })
+
   it('drops a message signed by the attacker claiming an Ed25519 author', async () => {
     const victim = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
 
@@ -88,6 +104,8 @@ describe('forged messages over the wire', () => {
     expect(delivered).to.equal(0)
   })
 
+  // dropped as unsigned by `isSigned` before signature verification, since the
+  // key does not derive to the author
   it('drops a message signed by the attacker claiming an RSA author', async () => {
     const victim = peerIdFromPrivateKey(await generateKeyPair('RSA', 2048))
 

@@ -10,7 +10,7 @@ import type { PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
 
 /**
- * Signs the provided message with the given `peerId`
+ * Signs the provided message with the given private key
  */
 export async function signMessage (privateKey: PrivateKey, message: { from: PeerId, topic: string, data: Uint8Array, sequenceNumber: bigint }, encode: (rpc: PubSubRPCMessage) => Uint8Array): Promise<SignedMessage> {
   // @ts-expect-error signature field is missing, added below
@@ -35,7 +35,8 @@ export async function signMessage (privateKey: PrivateKey, message: { from: Peer
 }
 
 /**
- * Verifies the signature of the given message
+ * Verifies the signature of the given message, returning false if its key does
+ * not belong to the author
  */
 export async function verifySignature (message: SignedMessage, encode: (rpc: PubSubRPCMessage) => Uint8Array): Promise<boolean> {
   if (message.type !== 'signed') {

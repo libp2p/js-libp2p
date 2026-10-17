@@ -150,9 +150,8 @@ describe('author key binding', () => {
     await expect(verifySignature(forged, encodeMessage)).to.eventually.equal(false)
   })
 
-  // an RSA peer id does not carry its public key, so `from.publicKey` is
-  // undefined and verification goes through the derive-to-author check rather
-  // than the authoritative-key branch that the inlined types above exercise
+  // an RSA peer id does not carry its public key, so the message key is the only
+  // source and must derive to the author
   describe('peer id without an inline public key (RSA)', () => {
     let rsaKey: PrivateKey
     let author: PeerId
