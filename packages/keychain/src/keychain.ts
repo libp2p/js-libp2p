@@ -171,8 +171,10 @@ export class Keychain implements KeychainInterface {
     this.cipher = createAESCipher(init.password ?? '', this.salt, this.keychainDekOptions, this.privateKeyDekOptions)
   }
 
+  readonly [Symbol.toStringTag] = '@libp2p/keychain'
+
   readonly [serviceCapabilities]: string[] = [
-    '@ipshipyard/keychain'
+    '@libp2p/keychain'
   ]
 
   async generateKey (name: string, options?: GenerateKeyOptions): Promise<PrivateKey> {
