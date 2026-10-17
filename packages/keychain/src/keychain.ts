@@ -1,18 +1,19 @@
-import { rsaCrypto } from '@libp2p/crypto'
 import { PrivateKeyMessage, PublicKeyMessage } from '@libp2p/crypto/pb'
 import { Key } from 'interface-datastore/key'
 import { base58btc } from 'multiformats/bases/base58'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { raceSignal } from 'race-signal'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { KEY_LENGTHS, decryptEntry, deriveDek, encryptEntry } from './cipher.ts'
 import { DecryptionFailedError, InvalidParametersError } from './errors.ts'
-import { decryptPem, isPem } from './legacy.ts'
+import { DEFAULT_LEGACY_DEK, deriveLegacyDek } from './legacy.ts'
+import { migrate } from './migrate.ts'
 import type { DekOptions } from './cipher.ts'
 import type { Keychain as KeychainInterface, KeyInfo, GenerateKeyOptions, KeychainComponents, KeychainInit } from './index.ts'
-import type { Crypto, PrivateKey, PublicKey } from '@libp2p/crypto'
+import type { PrivateKey, PublicKey } from '@libp2p/crypto'
 import type { AbortOptions } from 'abort-error'
 import type { Batch } from 'interface-datastore'
 
@@ -97,18 +98,19 @@ function getSalt (salt?: string | Uint8Array): Uint8Array<ArrayBuffer> | undefin
  */
 export class Keychain implements KeychainInterface {
   private readonly components: KeychainComponents
+  private readonly init: KeychainInit
   private readonly self: string
-  private dek: Promise<string> | undefined
-  private password: string
   private readonly dekOptions: DekOptions
+  private dek?: string
+  private opening?: Promise<void>
 
   /**
    * Creates a new instance of a key chain
    */
   constructor (components: KeychainComponents, init: KeychainInit = {}) {
     this.components = components
+    this.init = init
     this.self = init.selfKey ?? 'self'
-    this.password = init.password ?? ''
     this.dekOptions = {
       salt: getSalt(init.salt) ?? KEYCHAIN_DEK_INIT.salt,
       iterations: init.iterations ?? KEYCHAIN_DEK_INIT.iterations,
@@ -137,13 +139,31 @@ export class Keychain implements KeychainInterface {
     }
   }
 
-  private async getDek (): Promise<string> {
-    this.dek ??= deriveDek(this.password, this.dekOptions).catch(err => {
-      this.dek = undefined
+  /**
+   * Migrates entries written by previous versions on first use. Concurrent
+   * callers share one run, and a failed run is retried by the next caller.
+   */
+  private async ready (options?: AbortOptions): Promise<string> {
+    this.opening ??= this.open().catch(err => {
+      this.opening = undefined
       throw err
     })
 
+    await raceSignal(this.opening, options?.signal)
+
+    if (this.dek == null) {
+      throw new Error('Keychain did not open')
+    }
+
     return this.dek
+  }
+
+  private async open (): Promise<void> {
+    const target = await deriveDek(this.init.password ?? '', this.dekOptions)
+    const legacy = deriveLegacyDek(this.init.password, this.dekOptions.salt, this.dekOptions.iterations, this.init.legacyDek ?? DEFAULT_LEGACY_DEK)
+
+    await migrate(this.components.datastore, target, legacy)
+    this.dek = target
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/keychain'
@@ -153,6 +173,7 @@ export class Keychain implements KeychainInterface {
   ]
 
   async generateKey (name: string, options?: GenerateKeyOptions): Promise<PrivateKey> {
+    await this.ready(options)
     const crypto = await this.components.getCrypto(options?.type ?? 'Ed25519', options)
     const key = await crypto.generatePrivateKey(options)
 
@@ -168,6 +189,7 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError('Key is required')
     }
 
+    const dek = await this.ready(options)
     const exists = await this.components.datastore.has(dsName(name), options)
 
     if (exists) {
@@ -175,7 +197,7 @@ export class Keychain implements KeychainInterface {
     }
 
     const batch = this.components.datastore.batch()
-    await this._importKey(name, key, await this.getDek(), batch, options)
+    await this._importKey(name, key, dek, batch, options)
     await batch.commit(options)
 
     return key
@@ -200,47 +222,32 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    return this._exportKey(name, await this.getDek(), options)
+    const dek = await this.ready(options)
+
+    return this._exportKey(name, dek, options)
   }
 
   private async _exportKey (name: string, dek: string, options?: AbortOptions): Promise<PrivateKey> {
     const keyBuf = await this.components.datastore.get(dsName(name), options)
-    const keyText = uint8ArrayToString(keyBuf)
-    let cryptoImpl: Crypto | undefined
+    const plainText = await decryptEntry(dek, uint8ArrayToString(keyBuf))
+    options?.signal?.throwIfAborted()
+    const pb = PrivateKeyMessage.decode(plainText)
 
-    // if the stored key is encrypted PEM it's legacy RSA, otherwise derive
-    // from the protobuf data
-    if (isPem(keyText)) {
-      const pb = await decryptPem(dek, keyText)
-      options?.signal?.throwIfAborted()
-
-      return rsaCrypto().privateKeyFromProtobuf(pb)
+    if (pb.Type == null) {
+      throw new DecryptionFailedError('Unknown key type')
     }
 
-    try {
-      const plainText = await decryptEntry(dek, keyText)
-      options?.signal?.throwIfAborted()
-      const pb = PrivateKeyMessage.decode(plainText)
+    const crypto = await this.components.getCrypto(pb.Type, options)
 
-      if (pb.Type == null) {
-        throw new DecryptionFailedError('Unknown key type')
-      }
-
-      cryptoImpl = await this.components.getCrypto(pb.Type, options)
-      return await cryptoImpl.privateKeyFromProtobuf(plainText)
-    } catch (err: any) {
-      if (err.name === 'OperationError') {
-        throw new DecryptionFailedError(err.message)
-      }
-
-      throw err
-    }
+    return crypto.privateKeyFromProtobuf(plainText, options)
   }
 
   async removeKey (name: string, options?: AbortOptions): Promise<void> {
     if (!validateKeyName(name) || name === this.self) {
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
+
+    await this.ready(options)
 
     const batch = this.components.datastore.batch()
     batch.delete(dsName(name))
@@ -252,6 +259,8 @@ export class Keychain implements KeychainInterface {
    * List all the keys
    */
   async * listKeys (options?: AbortOptions): AsyncGenerator <KeyInfo> {
+    await this.ready(options)
+
     const query = {
       prefix: infoPrefix
     }
@@ -276,6 +285,8 @@ export class Keychain implements KeychainInterface {
     if (!validateKeyName(newName) || newName === this.self) {
       throw new InvalidParametersError(`Invalid new key name '${newName}'`)
     }
+
+    await this.ready(options)
 
     const oldDatastoreName = dsName(oldName)
     const newDatastoreName = dsName(newName)
@@ -315,21 +326,20 @@ export class Keychain implements KeychainInterface {
       throw new InvalidParametersError(`Invalid pass length ${password.length}, must be at least ${MIN_PASS_LENGTH}`)
     }
 
-    const oldDek = await this.getDek()
-    this.password = password
-    this.dek = undefined
-    const newDek = await this.getDek()
+    const oldDek = await this.ready(options)
+    const newDek = await deriveDek(password, this.dekOptions)
 
     const batch = this.components.datastore.batch()
 
     for await (const info of this.listKeys(options)) {
-      const key = await this._exportKey(info.name, oldDek)
+      const key = await this._exportKey(info.name, oldDek, options)
 
       // Update stored key
       await this._importKey(info.name, key, newDek, batch, options)
     }
 
     await batch.commit(options)
+    this.dek = newDek
   }
 
   async loadPublicKeyFromProtobuf (buf: Uint8Array, options?: AbortOptions): Promise<PublicKey> {

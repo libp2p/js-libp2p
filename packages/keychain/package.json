@@ -58,6 +58,7 @@
     "abort-error": "^1.0.2",
     "interface-datastore": "^10.0.1",
     "multiformats": "^14.0.0",
+    "race-signal": "^2.0.0",
     "sanitize-filename": "^1.6.4",
     "uint8arrays": "^6.1.1"
   },

@@ -10,30 +10,13 @@
  * instances.
  */
 import { Keychain as KeychainClass } from './keychain.ts'
+import type { LegacyDek } from './legacy.ts'
 import type { Crypto, PrivateKey, PublicKey } from '@libp2p/crypto'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 
 export interface CryptoLoader {
   (codeOrName: number | string, options?: AbortOptions): Crypto | Promise<Crypto>
-}
-
-export interface CipherOptions extends AbortOptions {
-  iterations?: number
-  hash?: string
-  keyLength?: number
-  algorithm?: string
-}
-
-export interface EncryptionResult {
-  salt: Uint8Array<ArrayBuffer>
-  iv: Uint8Array<ArrayBuffer>
-  cipherText: Uint8Array<ArrayBuffer>
-}
-
-export interface Cipher {
-  encrypt(data: Uint8Array, options?: AbortOptions): Promise<EncryptionResult>
-  decrypt(salt: Uint8Array, iv: Uint8Array, cipherText: Uint8Array, options?: CipherOptions): Promise<Uint8Array<ArrayBuffer>>
 }
 
 export interface KeyInfo {
@@ -64,9 +47,9 @@ export interface KeychainInit {
   password?: string
 
   /**
-   * Specify a non-default PBK2 function salt
+   * Specify a non-default PBKDF2 salt
    */
-  salt?: string
+  salt?: string | Uint8Array
 
   /**
    * How many iterations to use when deriving a key from the password
@@ -81,6 +64,14 @@ export interface KeychainInit {
    * @default SHA2-512
    */
   hash?: 'SHA-256' | 'SHA-384' | 'SHA-512'
+
+  /**
+   * Only needed if keys were stored by a previous version that was configured
+   * with a non-default `dek.keyLength` or `dek.hash`, so they can be migrated
+   *
+   * @default { keyLength: 64, hash: 'sha2-512' }
+   */
+  legacyDek?: LegacyDek
 
   /**
    * The 'self' key is the private key of the node from which the peer id is
@@ -195,6 +186,8 @@ export interface Keychain {
    */
   loadPublicKeyFromProtobuf (buf: Uint8Array, options?: AbortOptions): Promise<PublicKey>
 }
+
+export type { LegacyDek }
 
 export function keychain (init?: KeychainInit): (components: KeychainComponents) => Keychain {
   return (components) => new KeychainClass(components, init)
