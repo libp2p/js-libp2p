@@ -16,7 +16,7 @@
 
 import type { Connection, NewStreamOptions, NewStreamProgressEvents } from './connection.ts'
 import type { ContentRouting } from './content-routing.ts'
-import type { PublicKey } from './keys.ts'
+import type { CryptoLoader, PublicKey } from './keys.ts'
 import type { Metrics } from './metrics.ts'
 import type { PeerId } from './peer-id.ts'
 import type { PeerInfo } from './peer-info.ts'
@@ -522,6 +522,19 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * ````
    */
   peerId: PeerId
+
+  /**
+   * Loads the key implementations this node was configured with, the defaults
+   * (Ed25519, RSA and ECDSA) plus any passed as `cryptos`. Pass it as the
+   * `getCrypto` option to `@libp2p/crypto` functions to handle those key types.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * const crypto = await libp2p.getCrypto('Ed25519')
+   * ```
+   */
+  getCrypto: CryptoLoader
 
   /**
    * The peer store holds information we know about other peers on the network.

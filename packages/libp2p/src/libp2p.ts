@@ -1,4 +1,4 @@
-import { publicKeyForPeer, publicKeyFromProtobuf } from '@libp2p/crypto'
+import { publicKeyForPeer } from '@libp2p/crypto'
 import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -24,11 +24,12 @@ import { userAgent } from './user-agent.ts'
 import * as pkg from './version.ts'
 import type { Components } from './components.ts'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.ts'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget, DialProtocolOptions } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget, DialProtocolOptions, CryptoLoader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
+  public getCrypto: CryptoLoader
   public peerStore: PeerStore
   public contentRouting: ContentRouting
   public peerRouting: PeerRouting
@@ -41,7 +42,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
   private readonly log: Logger
 
   // eslint-disable-next-line complexity
-  constructor (init: Libp2pInit<T> & { peerId: PeerId }) {
+  constructor (init: Libp2pInit<T> & { peerId: PeerId, getCrypto: CryptoLoader }) {
     super()
 
     this.status = 'stopped'
@@ -63,6 +64,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     setMaxListeners(Infinity, events)
 
     this.peerId = init.peerId
+    this.getCrypto = init.getCrypto
     this.logger = init.logger ?? defaultLogger()
     this.log = this.logger.forComponent('libp2p')
     // @ts-expect-error {} may not be of type T
@@ -75,6 +77,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     const components = this.components = defaultComponents({
       peerId: init.peerId,
       privateKey: init.privateKey,
+      getCrypto: init.getCrypto,
       nodeInfo: {
         name: nodeInfoName,
         version: nodeInfoVersion,
@@ -329,16 +332,17 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
    */
   async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<PublicKey> {
     this.log('getPublicKey %p', peer)
+    const cryptoOptions = { ...options, getCrypto: this.getCrypto }
 
     if (peer.publicKey != null) {
-      return publicKeyFromProtobuf(peer.publicKey, options)
+      return publicKeyForPeer(peer, undefined, cryptoOptions)
     }
 
     try {
       const peerInfo = await this.peerStore.get(peer, options)
 
       if (peerInfo.id.publicKey != null) {
-        return await publicKeyFromProtobuf(peerInfo.id.publicKey, options)
+        return await publicKeyForPeer(peerInfo.id, undefined, cryptoOptions)
       }
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {
@@ -355,7 +359,7 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     const bytes = await this.contentRouting.get(peerKey, options)
 
     // ensure the returned key belongs to the requested peer
-    const publicKey = await publicKeyForPeer(peer, bytes, options)
+    const publicKey = await publicKeyForPeer(peer, bytes, cryptoOptions)
 
     await this.peerStore.patch(peer, {
       publicKey

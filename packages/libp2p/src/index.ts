@@ -14,7 +14,7 @@
  * ```
  */
 
-import { generateKeyPair } from '@libp2p/crypto'
+import { createCryptoLoader, generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { validateConfig } from './config.ts'
 import { Libp2p as Libp2pClass } from './libp2p.ts'
@@ -23,7 +23,7 @@ import type { Components } from './components.ts'
 import type { ConnectionManagerInit } from './connection-manager/index.ts'
 import type { ConnectionMonitorInit } from './connection-monitor.ts'
 import type { TransportManagerInit } from './transport-manager.ts'
-import type { Libp2p, ServiceMap, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerRouting, StreamMuxerFactory, Transport, PrivateKey } from '@libp2p/interface'
+import type { Libp2p, ServiceMap, ComponentLogger, NodeInfo, ConnectionProtector, ConnectionEncrypter, ConnectionGater, ContentRouting, Metrics, PeerDiscovery, PeerRouting, StreamMuxerFactory, Transport, PrivateKey, Crypto } from '@libp2p/interface'
 import type { PersistentPeerStoreInit } from '@libp2p/peer-store'
 import type { DNS } from '@multiformats/dns'
 import type { Datastore } from 'interface-datastore'
@@ -48,6 +48,20 @@ export interface Libp2pInit<T extends ServiceMap = ServiceMap> {
    * If this is not passed a new Ed25519 private key will be generated.
    */
   privateKey?: PrivateKey
+
+  /**
+   * Key implementations added to the defaults (Ed25519, RSA and ECDSA). An entry
+   * with the same type as a default replaces it.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
+   *
+   * const node = await createLibp2p({ cryptos: [secp256k1Crypto()] })
+   * ```
+   */
+  cryptos?: Crypto[]
 
   /**
    * Metadata about the node - implementation name, version number, etc
@@ -199,11 +213,13 @@ export type Libp2pOptions<T extends ServiceMap = ServiceMap> = Libp2pInit<T> & {
  * ```
  */
 export async function createLibp2p <T extends ServiceMap = ServiceMap> (options: Libp2pOptions<T> = {}): Promise<Libp2p<T>> {
-  options.privateKey ??= await generateKeyPair('Ed25519')
+  const getCrypto = createCryptoLoader(options.cryptos)
+  options.privateKey ??= await generateKeyPair('Ed25519', { getCrypto })
 
   const node = new Libp2pClass({
     ...await validateConfig(options),
-    peerId: peerIdFromPrivateKey(options.privateKey)
+    peerId: peerIdFromPrivateKey(options.privateKey),
+    getCrypto
   })
 
   if (options.start !== false) {
