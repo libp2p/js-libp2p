@@ -1,3 +1,4 @@
+import { defaultCryptoLoader } from '@libp2p/crypto'
 import { serviceCapabilities, serviceDependencies, isStartable } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { MissingServiceError, UnmetServiceDependenciesError } from './errors.ts'
@@ -67,6 +68,8 @@ class DefaultComponents implements Startable {
     if (this.components.logger == null) {
       this.components.logger = defaultLogger()
     }
+
+    this.components.getCrypto ??= defaultCryptoLoader()
   }
 
   isStarted (): boolean {
