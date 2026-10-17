@@ -68,6 +68,26 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [12.0.31](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.30...peer-store-v12.0.31) (2026-10-17)
+
+
+### Bug Fixes
+
+* share the key encoding across encrypters and keep RSA peer keys ([#3669](https://github.com/libp2p/js-libp2p/issues/3669)) ([95392ef](https://github.com/libp2p/js-libp2p/commit/95392efdf052c8a01f2df182b7b2b56356702c40))
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/peer-collections bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-record bumped from ^9.0.18 to ^9.0.19
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+
 ## [12.0.30](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.29...peer-store-v12.0.30) (2026-10-16)
 
 

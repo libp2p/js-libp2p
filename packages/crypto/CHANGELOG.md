@@ -17,6 +17,13 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.2.0](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.25...crypto-v5.2.0) (2026-10-17)
+
+
+### Features
+
+* **crypto:** add publicKeyForPeer to bind keys to peer ids ([#3667](https://github.com/libp2p/js-libp2p/issues/3667)) ([f0e64b9](https://github.com/libp2p/js-libp2p/commit/f0e64b9b82bd29078c9aaf8d73304a227ba9afc7))
+
 ## [5.1.25](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.24...crypto-v5.1.25) (2026-10-16)
 
 
