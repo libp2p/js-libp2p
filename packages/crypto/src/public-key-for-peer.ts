@@ -6,7 +6,12 @@ import type { PeerId, PublicKey } from '@libp2p/interface'
 
 /**
  * Returns the public key of a peer, either the passed key, which must derive
- * to the peer's multihash, or the key embedded in the peer id
+ * to the peer's multihash, or the key embedded in the peer id.
+ *
+ * Throws `InvalidPublicKeyError` for missing, malformed or mismatched keys.
+ * `AbortError` and `UnknownCryptoError` (no crypto for the key type) are
+ * rethrown unchanged so callers can tell an unsupported key type from a
+ * forged one.
  */
 export async function publicKeyForPeer (peer: Pick<PeerId, 'publicKey' | 'toMultihash'>, key?: Uint8Array, options?: CryptoLoaderOptions): Promise<PublicKey> {
   options?.signal?.throwIfAborted()
@@ -22,7 +27,7 @@ export async function publicKeyForPeer (peer: Pick<PeerId, 'publicKey' | 'toMult
   try {
     publicKey = await publicKeyFromProtobuf(bytes, options)
   } catch (err: any) {
-    if (err.name === 'AbortError') {
+    if (err.name === 'AbortError' || err.name === 'UnknownCryptoError') {
       throw err
     }
 

@@ -102,4 +102,11 @@ describe('publicKeyForPeer', function () {
     await expect(publicKeyForPeer(peerFor(key), undefined, { signal: AbortSignal.abort() })).to.eventually.be.rejected
       .with.property('name', 'AbortError')
   })
+
+  it('reports an unsupported key type instead of an invalid key', async () => {
+    const key = (await generateKeyPair('secp256k1', { getCrypto })).publicKey
+
+    await expect(publicKeyForPeer(peerFor(key), key.toProtobuf())).to.eventually.be.rejected
+      .with.property('name', 'UnknownCryptoError')
+  })
 })
