@@ -1,5 +1,5 @@
-import { generateKeyPair, privateKeyFromProtobuf, privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
+import { generateKeyPair, privateKeyFromProtobuf, privateKeyToProtobuf } from 'libp2p-crypto-v5/keys'
 import { ecdsaCrypto } from '../src/ecdsa.ts'
 import { ed25519Crypto } from '../src/index.ts'
 import { isPrivateKey, isPublicKey, rsaCrypto } from '../src/index.ts'

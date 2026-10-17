@@ -1,20 +1,27 @@
 {
   "name": "@libp2p/crypto",
   "version": "5.1.25",
-  "description": "Cryptographic primitives for Helia and friends",
+  "description": "Crypto primitives for libp2p",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/ipshipyard/js-crypto#readme",
+  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/crypto#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ipshipyard/js-crypto.git"
+    "url": "git+https://github.com/libp2p/js-libp2p.git"
   },
   "bugs": {
-    "url": "https://github.com/ipshipyard/js-crypto/issues"
+    "url": "https://github.com/libp2p/js-libp2p/issues"
   },
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
+  "keywords": [
+    "IPFS",
+    "crypto",
+    "libp2p",
+    "rsa",
+    "secp256k1"
+  ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
@@ -56,117 +63,21 @@
       "module-sync": "./dist/src/pb.js"
     }
   },
-  "release": {
-    "branches": [
-      "main"
-    ],
-    "plugins": [
-      [
-        "@semantic-release/commit-analyzer",
-        {
-          "preset": "conventionalcommits",
-          "releaseRules": [
-            {
-              "breaking": true,
-              "release": "major"
-            },
-            {
-              "revert": true,
-              "release": "patch"
-            },
-            {
-              "type": "feat",
-              "release": "minor"
-            },
-            {
-              "type": "fix",
-              "release": "patch"
-            },
-            {
-              "type": "docs",
-              "release": "patch"
-            },
-            {
-              "type": "test",
-              "release": "patch"
-            },
-            {
-              "type": "deps",
-              "release": "patch"
-            },
-            {
-              "scope": "no-release",
-              "release": false
-            }
-          ]
-        }
-      ],
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "conventionalcommits",
-          "presetConfig": {
-            "types": [
-              {
-                "type": "feat",
-                "section": "Features"
-              },
-              {
-                "type": "fix",
-                "section": "Bug Fixes"
-              },
-              {
-                "type": "chore",
-                "section": "Trivial Changes"
-              },
-              {
-                "type": "docs",
-                "section": "Documentation"
-              },
-              {
-                "type": "deps",
-                "section": "Dependencies"
-              },
-              {
-                "type": "test",
-                "section": "Tests"
-              }
-            ]
-          }
-        }
-      ],
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "CHANGELOG.md",
-            "package.json"
-          ]
-        }
-      ]
-    ]
-  },
   "scripts": {
-    "build": "aegir build",
-    "generate": "protons src/**/*.proto",
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "doc-check": "aegir doc-check",
-    "spell-check": "aegir spell-check",
-    "docs": "aegir docs",
+    "build": "aegir build",
     "test": "aegir test",
-    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome": "aegir test -t browser",
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:webkit": "aegir test -t browser -- --browser webkit",
     "test:node": "aegir test -t node --cov",
     "test:electron-main": "aegir test -t electron-main",
-    "test:deno": "aegir test -t deno",
-    "release": "aegir release"
+    "generate": "protons src/**/*.proto"
   },
   "dependencies": {
     "abort-error": "^1.0.2",
@@ -176,14 +87,11 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.1.15",
-    "@libp2p/interface": "^3.2.2",
+    "@libp2p/interface": "^3.4.0",
     "@types/sinon": "^21.0.1",
     "aegir": "^48.0.4",
+    "libp2p-crypto-v5": "npm:@libp2p/crypto@^5.1.25",
     "protons": "^9.0.1"
-  },
-  "overrides": {
-    "interface-datastore": "^10.0.1"
   },
   "sideEffects": false
 }
