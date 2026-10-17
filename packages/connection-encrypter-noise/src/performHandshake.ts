@@ -35,7 +35,7 @@ export async function performHandshakeInitiator (init: HandshakeParams, options?
   logRemoteStaticKey(xx.rs, log)
 
   log.trace("Initiator going to check remote's signature...")
-  const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remotePeer)
+  const received = await decodeHandshakePayload(plaintext, xx.rs, remotePeer)
   log.trace('All good with the signature!')
 
   log.trace('Stage 2 - Initiator sending third handshake message.')
@@ -46,7 +46,8 @@ export async function performHandshakeInitiator (init: HandshakeParams, options?
   logCipherState(cs1, cs2, log)
 
   return {
-    payload: receivedPayload,
+    payload: received.payload,
+    remotePeer: received.remotePeer,
     encrypt: (plaintext) => cs1.encryptWithAd(ZEROLEN, plaintext),
     decrypt: (ciphertext, dst) => cs2.decryptWithAd(ZEROLEN, ciphertext, dst)
   }
@@ -78,13 +79,14 @@ export async function performHandshakeResponder (init: HandshakeParams, options?
   log.trace('Stage 2 - Responder waiting for third handshake message...')
   const plaintext = xx.readMessageC(await connection.read(options))
   log.trace('Stage 2 - Responder received the message, finished handshake.')
-  const receivedPayload = await decodeHandshakePayload(plaintext, xx.rs, remotePeer)
+  const received = await decodeHandshakePayload(plaintext, xx.rs, remotePeer)
 
   const [cs1, cs2] = xx.ss.split()
   logCipherState(cs1, cs2, log)
 
   return {
-    payload: receivedPayload,
+    payload: received.payload,
+    remotePeer: received.remotePeer,
     encrypt: (plaintext) => cs2.encryptWithAd(ZEROLEN, plaintext),
     decrypt: (ciphertext, dst) => cs1.decryptWithAd(ZEROLEN, ciphertext, dst)
   }

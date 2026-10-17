@@ -31,6 +31,7 @@ export interface HandshakeParams {
 
 export interface HandshakeResult {
   payload: NoiseHandshakePayload
+  remotePeer: PeerId
   encrypt (plaintext: Uint8Array | Uint8ArrayList): Uint8Array | Uint8ArrayList
   decrypt (ciphertext: Uint8Array | Uint8ArrayList, dst?: Uint8Array): Uint8Array | Uint8ArrayList
 }

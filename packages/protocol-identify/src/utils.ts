@@ -1,6 +1,6 @@
 import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
-import { peerIdFromCID, peerIdFromPublicKey } from '@libp2p/peer-id'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -90,7 +90,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     let peerRecordEnvelope = message.signedPeerRecord
     const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
     let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
-    const envelopePeer = peerIdFromCID(envelope.publicKey.toCID())
+    const envelopePeer = peerIdFromPublicKey(envelope.publicKey)
 
     // Verify peerId
     if (!peerRecord.peerId.equals(envelopePeer)) {

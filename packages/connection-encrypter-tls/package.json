@@ -56,7 +56,6 @@
     "build": "aegir build --bundle false",
     "test": "aegir test -t node",
     "clean": "aegir clean",
-    "generate": "protons ./src/pb/index.proto",
     "lint": "aegir lint",
     "test:node": "aegir test -t node --cov",
     "dep-check": "aegir dep-check",
@@ -73,7 +72,6 @@
     "@peculiar/x509": "^2.0.0",
     "asn1js": "^3.0.6",
     "p-event": "^8.0.1",
-    "protons-runtime": "^7.0.0",
     "reflect-metadata": "^0.2.2",
     "uint8arraylist": "^3.0.2",
     "uint8arrays": "^6.1.1"
@@ -81,7 +79,6 @@
   "devDependencies": {
     "@libp2p/logger": "^6.2.15",
     "aegir": "^48.1.1",
-    "protons": "^9.0.1",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0"
   },

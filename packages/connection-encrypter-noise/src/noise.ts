@@ -1,6 +1,4 @@
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidCryptoExchangeError, serviceCapabilities } from '@libp2p/interface'
-import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { lpStream } from '@libp2p/utils'
 import { alloc as uint8ArrayAlloc } from 'uint8arrays/alloc'
 import { NOISE_MSG_MAX_LENGTH_BYTES } from './constants.ts'
@@ -95,12 +93,10 @@ export class Noise implements INoiseConnection {
       options?.remotePeer,
       options
     )
-    const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey)
-
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
       remoteExtensions: handshake.payload.extensions,
-      remotePeer: peerIdFromPublicKey(publicKey),
+      remotePeer: handshake.remotePeer,
       streamMuxer: options?.skipStreamMuxerNegotiation === true ? undefined : this.getStreamMuxer(handshake.payload.extensions?.streamMuxers)
     }
   }
@@ -150,12 +146,10 @@ export class Noise implements INoiseConnection {
       options?.remotePeer,
       options
     )
-    const publicKey = publicKeyFromProtobuf(handshake.payload.identityKey)
-
     return {
       connection: toMessageStream(wrappedConnection.unwrap(), handshake, this.metrics),
       remoteExtensions: handshake.payload.extensions,
-      remotePeer: peerIdFromPublicKey(publicKey),
+      remotePeer: handshake.remotePeer,
       streamMuxer: options?.skipStreamMuxerNegotiation === true ? undefined : this.getStreamMuxer(handshake.payload.extensions?.streamMuxers)
     }
   }
