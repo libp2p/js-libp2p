@@ -62,7 +62,7 @@
     "main-event": "^1.0.5",
     "multiformats": "^14.0.0",
     "p-defer": "^4.0.1",
-    "p-event": "^7.0.0",
+    "p-event": "^8.0.1",
     "p-retry": "^8.0.0",
     "p-wait-for": "^6.0.0",
     "progress-events": "^1.1.0",

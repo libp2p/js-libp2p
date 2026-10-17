@@ -49,7 +49,7 @@
     "@libp2p/logger": "^6.2.15",
     "@libp2p/utils": "^7.4.3",
     "aegir": "^48.1.1",
-    "p-event": "^7.0.0"
+    "p-event": "^8.0.1"
   },
   "sideEffects": false
 }

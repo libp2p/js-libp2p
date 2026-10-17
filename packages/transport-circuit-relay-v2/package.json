@@ -71,7 +71,7 @@
     "delay": "^7.0.0",
     "it-all": "^3.0.9",
     "it-protobuf-stream": "^3.0.0",
-    "p-event": "^7.0.0",
+    "p-event": "^8.0.1",
     "p-wait-for": "^6.0.0",
     "protons": "^9.0.1",
     "sinon": "^22.0.0",
