@@ -10,6 +10,7 @@ import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interf
 import type { MultihashDigest } from 'multiformats'
 
 export const MAX_RSA_KEY_SIZE = 8192
+const MAX_RSA_JWK_SIZE = 1062
 
 class RSAPublicKey implements PublicKey {
   public type = 'RSA'
@@ -150,6 +151,10 @@ class RSACrypto implements Crypto {
 
     if (message.Type !== this.code) {
       throw new InvalidParametersError('Incorrect Type field in protobuf')
+    }
+
+    if (message.Data.byteLength >= MAX_RSA_JWK_SIZE) {
+      throw new InvalidParametersError('Key size is too large')
     }
 
     const publicKeyJwk = pkixMessageToJwk(message.Data)
