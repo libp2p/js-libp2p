@@ -537,14 +537,16 @@ const node = await createLibp2p({
 
 #### Setup with Keychain
 
-Libp2p allows you to setup a secure keychain to manage your keys. The keychain configuration object should have the following properties:
+Libp2p allows you to setup a secure keychain to manage your keys by adding the `@libp2p/keychain` service. The `keychain` function accepts these options:
 
-| Name       | Type     | Description                                                                                   |
-| ---------- | -------- | --------------------------------------------------------------------------------------------- |
-| password   | `string` | Password used to derive the key that encrypts the keychain at rest (minimum of 20 characters) |
-| salt       | `string` | Optional non-default PBKDF2 salt                                                              |
-| iterations | `number` | Optional number of PBKDF2 iterations                                                          |
-| legacyDek  | `object` | Optional `{ keyLength, hash }`, only needed to migrate 6.x keychains with a customized `dek`  |
+| Name       | Type     | Description                                                                                         |
+| ---------- | -------- | --------------------------------------------------------------------------------------------------- |
+| password   | `string` | Password used to derive the key that encrypts the keychain at rest (minimum of 20 characters)       |
+| salt       | `string` | Optional non-default PBKDF2 salt                                                                    |
+| iterations | `number` | Optional number of PBKDF2 iterations                                                                |
+| hash       | `string` | Optional PBKDF2 hash, one of `'SHA-256'`, `'SHA-384'` or `'SHA-512'` (the default)                  |
+| legacyDek  | `object` | Optional `{ keyLength, hash }`, only needed to migrate 6.x keychains with a customized `dek`        |
+| selfKey    | `string` | Optional name of the key the peer id is derived from, which cannot be renamed or removed (`'self'`) |
 
 See the [@libp2p/keychain README](https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#upgrading-from-6x) for upgrading from 6.x.
 
@@ -555,8 +557,8 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@libp2p/yamux'
 import { noise } from '@libp2p/noise'
-import { FsDatastore } from 'datastore-fs';
-
+import { keychain } from '@libp2p/keychain'
+import { FsDatastore } from 'datastore-fs'
 
 const datastore = new FsDatastore('path/to/store')
 await datastore.open()
@@ -571,11 +573,15 @@ const node = await createLibp2p({
   connectionEncrypters: [
     noise()
   ],
-  keychain: {
-    password: 'not-safe-password-123456789',
+  services: {
+    keychain: keychain({
+      password: 'not-safe-password-123456789'
+    })
   },
   datastore
 })
+
+const key = await node.services.keychain.generateKey('my-key')
 ```
 
 
