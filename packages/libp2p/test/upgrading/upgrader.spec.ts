@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -546,7 +546,7 @@ describe('upgrader', () => {
     let rsaPeer: PeerId
 
     before(async () => {
-      rsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
+      rsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', { bits: 512 }))
     })
 
     async function upgradeOutboundTo (remoteAddr: string): Promise<{ connection: Promise<Connection>, maConn: MultiaddrConnection }> {

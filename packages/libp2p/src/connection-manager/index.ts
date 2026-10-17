@@ -1,3 +1,4 @@
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { ConnectionClosedError, InvalidMultiaddrError, InvalidParametersError, InvalidPeerIdError, NotStartedError, start, stop } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { getNetConfig, isNetworkAddress, RateLimiter } from '@libp2p/utils'
@@ -483,7 +484,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
     // only need to store RSA public keys, all other types are embedded in the peer id
     if (peerId.publicKey != null && peerId.type === 'RSA') {
       await this.peerStore.patch(peerId, {
-        publicKey: peerId.publicKey
+        publicKey: await publicKeyFromProtobuf(peerId.publicKey)
       })
     }
 

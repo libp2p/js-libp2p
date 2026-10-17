@@ -1,4 +1,4 @@
-import { publicKeyForPeer } from '@libp2p/crypto/keys'
+import { publicKeyForPeer, publicKeyFromProtobuf } from '@libp2p/crypto'
 import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -24,7 +24,7 @@ import { userAgent } from './user-agent.ts'
 import * as pkg from './version.ts'
 import type { Components } from './components.ts'
 import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.ts'
-import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget, DialProtocolOptions } from '@libp2p/interface'
+import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget, DialProtocolOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
@@ -327,23 +327,18 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
   /**
    * Get the public key for the given peer id
    */
-  async getPublicKey (peer: Ed25519PeerId, options?: AbortOptions): Promise<Ed25519PublicKey>
-  async getPublicKey (peer: Secp256k1PeerId, options?: AbortOptions): Promise<Secp256k1PublicKey>
-  async getPublicKey (peer: RSAPeerId, options?: AbortOptions): Promise<RSAPublicKey>
-  async getPublicKey (peer: URLPeerId, options?: AbortOptions): Promise<never>
-  async getPublicKey (peer: PeerId, options?: AbortOptions): Promise<PublicKey>
   async getPublicKey (peer: PeerId, options: AbortOptions = {}): Promise<PublicKey> {
     this.log('getPublicKey %p', peer)
 
     if (peer.publicKey != null) {
-      return peer.publicKey
+      return publicKeyFromProtobuf(peer.publicKey, options)
     }
 
     try {
       const peerInfo = await this.peerStore.get(peer, options)
 
       if (peerInfo.id.publicKey != null) {
-        return peerInfo.id.publicKey
+        return await publicKeyFromProtobuf(peerInfo.id.publicKey, options)
       }
     } catch (err: any) {
       if (err.name !== 'NotFoundError') {

@@ -14,7 +14,7 @@
  * ```
  */
 
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { validateConfig } from './config.ts'
 import { Libp2p as Libp2pClass } from './libp2p.ts'

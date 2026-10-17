@@ -111,6 +111,7 @@ class DefaultComponents implements Startable {
 const OPTIONAL_SERVICES = [
   'metrics',
   'connectionProtector',
+  'getCrypto',
   'dns'
 ]
 

@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { persistentPeerStore } from '@libp2p/peer-store'
 import { expect } from 'aegir/chai'
