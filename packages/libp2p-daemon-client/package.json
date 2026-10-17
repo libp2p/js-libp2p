@@ -58,7 +58,7 @@
     "@libp2p/kad-dht": "^16.4.7",
     "aegir": "^48.1.1",
     "it-all": "^3.0.9",
-    "p-event": "^7.0.0",
+    "p-event": "^8.0.1",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
     "uint8arraylist": "^3.0.2",

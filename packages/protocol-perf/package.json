@@ -50,7 +50,7 @@
     "@libp2p/interface-internal": "^3.2.0",
     "@multiformats/multiaddr": "^13.0.3",
     "it-pushable": "^3.2.3",
-    "p-event": "^7.0.0",
+    "p-event": "^8.0.1",
     "uint8arraylist": "^3.0.2"
   },
   "devDependencies": {
