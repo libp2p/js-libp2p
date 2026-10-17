@@ -32,15 +32,14 @@ export async function decodeHandshakePayload (
   payloadBytes: Uint8Array | Uint8ArrayList,
   remoteStaticKey?: Uint8Array | Uint8ArrayList,
   remotePeer?: PeerId
-): Promise<NoiseHandshakePayload> {
+): Promise<{ payload: NoiseHandshakePayload, remotePeer: PeerId }> {
   try {
     const payload = NoiseHandshakePayload.decode(payloadBytes)
     const publicKey = publicKeyFromProtobuf(payload.identityKey)
+    const payloadPeer = peerIdFromPublicKey(publicKey)
 
     // compare peer ids, an expected peer id may not carry its public key (e.g. RSA)
     if (remotePeer != null) {
-      const payloadPeer = peerIdFromPublicKey(publicKey)
-
       if (!remotePeer.equals(payloadPeer)) {
         throw new Error(`Payload peer id ${payloadPeer} does not match expected remote peer id ${remotePeer}`)
       }
@@ -56,7 +55,7 @@ export async function decodeHandshakePayload (
       throw new Error('Invalid payload signature')
     }
 
-    return payload
+    return { payload, remotePeer: payloadPeer }
   } catch (e) {
     throw new UnexpectedPeerError((e as Error).message)
   }
