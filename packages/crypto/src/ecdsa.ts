@@ -7,8 +7,7 @@ import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-a
 import { decodeDer, encodeBitString, encodeInteger, encodeOctetString, encodeSequence } from './der.ts'
 import { InvalidParametersError } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
-import type { Crypto, PrivateKey, PublicKey } from './index.ts'
-import type { AbortOptions } from 'abort-error'
+import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
 
 // 1.2.840.10045.3.1.7 prime256v1 (ANSI X9.62 named elliptic curve)

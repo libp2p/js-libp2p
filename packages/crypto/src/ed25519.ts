@@ -6,8 +6,7 @@ import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidParametersError } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
-import type { Crypto, PrivateKey, PublicKey } from './index.ts'
-import type { AbortOptions } from 'abort-error'
+import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
 
 const PRIVATE_KEY_LENGTH = 32

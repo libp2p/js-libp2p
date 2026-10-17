@@ -6,8 +6,7 @@ import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-a
 import { decodeDer, encodeBitString, encodeInteger, encodeSequence } from './der.ts'
 import { InvalidParametersError } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
-import type { Crypto, PrivateKey, PublicKey } from './index.ts'
-import type { AbortOptions } from 'abort-error'
+import type { AbortOptions, Crypto, PrivateKey, PublicKey } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats'
 
 export const MAX_RSA_KEY_SIZE = 8192

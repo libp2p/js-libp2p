@@ -1,4 +1,4 @@
-import type { Ed25519PublicKey, KeyType, RSAPublicKey, Secp256k1PublicKey } from './keys.ts'
+import type { KeyType } from './keys.ts'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
@@ -22,8 +22,10 @@ export interface RSAPeerId {
    * refer to peers, so this will only be defined if the public key has
    * previously been found through a routing query or during normal protocol
    * operations
+   *
+   * This is the protobuf-encoded public key.
    */
-  readonly publicKey?: RSAPublicKey
+  readonly publicKey?: Uint8Array<ArrayBuffer>
 
   /**
    * Returns the multihash from `toMultihash()` as a base58btc encoded string
@@ -54,8 +56,10 @@ export interface Ed25519PeerId {
   /**
    * This will always be defined as the public key is embedded in the multihash
    * of this PeerId
+   *
+   * This is the protobuf-encoded public key.
    */
-  readonly publicKey: Ed25519PublicKey
+  readonly publicKey: Uint8Array<ArrayBuffer>
 
   /**
    * Returns the multihash from `toMultihash()` as a base58btc encoded string
@@ -86,8 +90,10 @@ export interface Secp256k1PeerId {
   /**
    * This will always be defined as the public key is embedded in the multihash
    * of this PeerId
+   *
+   * This is the protobuf-encoded public key.
    */
-  readonly publicKey: Secp256k1PublicKey
+  readonly publicKey: Uint8Array<ArrayBuffer>
 
   /**
    * Returns the multihash from `toMultihash()` as a base58btc encoded string
