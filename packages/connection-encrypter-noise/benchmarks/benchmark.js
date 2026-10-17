@@ -5,14 +5,14 @@ import benchmark from 'benchmark'
 import { duplexPair } from 'it-pair/duplex'
 import { base64pad } from 'multiformats/bases/base64'
 import { defaultLogger } from '@libp2p/logger'
-import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { privateKeyFromProtobuf } from '@libp2p/crypto'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 
 const bench = async function () {
   console.log('Initializing handshake benchmark')
 
   const initiatorPeer = 'CAESYBtKXrMwawAARmLScynQUuSwi/gGSkwqDPxi15N3dqDHa4T4iWupkMe5oYGwGH3Hyfvd/QcgSTqg71oYZJadJ6prhPiJa6mQx7mhgbAYfcfJ+939ByBJOqDvWhhklp0nqg=='
-  const initiatorPrivateKey = privateKeyFromProtobuf(base64pad.decode(`M${initiatorPeer}`))
+  const initiatorPrivateKey = await privateKeyFromProtobuf(base64pad.decode(`M${initiatorPeer}`))
   const initiatorPeerId = peerIdFromPublicKey(initiatorPrivateKey.publicKey)
   const initiator = noise()({
     privateKey: initiatorPrivateKey,
@@ -21,7 +21,7 @@ const bench = async function () {
   })
 
   const responderPeer = 'CAESYPxO3SHyfc2578hDmfkGGBY255JjiLuVavJWy+9ivlpsxSyVKf36ipyRGL6szGzHuFs5ceEuuGVrPMg/rW2Ch1bFLJUp/fqKnJEYvqzMbMe4Wzlx4S64ZWs8yD+tbYKHVg=='
-  const responderPrivateKey = privateKeyFromProtobuf(base64pad.decode(`M${responderPeer}`))
+  const responderPrivateKey = await privateKeyFromProtobuf(base64pad.decode(`M${responderPeer}`))
   const responderPeerId = peerIdFromPublicKey(responderPrivateKey.publicKey)
   const responder = noise()({
     privateKey: responderPrivateKey,
