@@ -6,7 +6,7 @@ export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1' | 'ECDSA'
 
 export interface PublicKey {
   /**
-   * The type of the crypto implementation, e.g. `Ed15519`
+   * The type of the crypto implementation, e.g. `Ed25519`
    */
   readonly type: string
 
@@ -52,7 +52,7 @@ export function isPublicKey (obj?: any): obj is PublicKey {
 
 export interface PrivateKey {
   /**
-   * The type of the crypto implementation, e.g. `Ed15519`
+   * The type of the crypto implementation, e.g. `Ed25519`
    */
   readonly type: string
 
@@ -93,7 +93,7 @@ export function isPrivateKey (obj?: any): obj is PrivateKey {
 
 export interface Crypto {
   /**
-   * The type of the crypto implementation, e.g. `Ed15519`
+   * The type of the crypto implementation, e.g. `Ed25519`
    */
   readonly type: string
 
@@ -109,14 +109,14 @@ export interface Crypto {
   generatePrivateKey(options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
 
   /**
-   * Convert the passed bytes into a public key. The bytes come from the `.Data`
-   * field of a `PublicKey` protobuf message.
+   * Decode a public key from a whole `PublicKey` protobuf message, as returned
+   * by `PublicKey.toProtobuf()`
    */
   publicKeyFromProtobuf(buf: Uint8Array, options?: AbortOptions): PublicKey | Promise<PublicKey>
 
   /**
-   * Convert the passed bytes into a public key. The bytes come from the `.Data`
-   * field of a `PublicKey` protobuf message.
+   * Decode a private key from a whole `PrivateKey` protobuf message, as
+   * returned by `PrivateKey.toProtobuf()`
    */
   privateKeyFromProtobuf(buf: Uint8Array, options?: AbortOptions): PrivateKey | Promise<PrivateKey>
 }

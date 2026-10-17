@@ -1,7 +1,55 @@
 /**
  * @packageDocumentation
  *
- * A WebCrypto-first keychain implementation for use with Helia and libp2p.
+ * A WebCrypto-first keychain that stores private keys encrypted at rest.
+ *
+ * ## Example
+ *
+ * Configure the keychain as a libp2p service:
+ *
+ * ```TypeScript
+ * import { keychain } from '@libp2p/keychain'
+ * import { createLibp2p } from 'libp2p'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     keychain: keychain({
+ *       password: 'a password of at least 20 characters'
+ *     })
+ *   }
+ * })
+ *
+ * const key = await node.services.keychain.generateKey('my-key', { type: 'ECDSA' })
+ *
+ * for await (const { id, name } of node.services.keychain.listKeys()) {
+ *   console.info(name, id)
+ * }
+ *
+ * const exported = await node.services.keychain.exportKey('my-key')
+ * const signature = await exported.sign(Uint8Array.from([0, 1, 2, 3]))
+ * ```
+ *
+ * ## Standalone use
+ *
+ * Outside libp2p, pass a datastore and a `CryptoLoader`:
+ *
+ * ```TypeScript
+ * import { defaultCryptoLoader, generateKeyPair } from '@libp2p/crypto'
+ * import { keychain } from '@libp2p/keychain'
+ * import { MemoryDatastore } from 'datastore-core'
+ *
+ * const kc = keychain({
+ *   password: 'a password of at least 20 characters'
+ * })({
+ *   datastore: new MemoryDatastore(),
+ *   getCrypto: defaultCryptoLoader()
+ * })
+ *
+ * await kc.importKey('imported', await generateKeyPair('Ed25519'))
+ * await kc.renameKey('imported', 'renamed')
+ * await kc.rotateKeychainPass('a new password of at least 20 characters')
+ * await kc.removeKey('renamed')
+ * ```
  *
  * ## Configuring additional implementations
  *
@@ -72,7 +120,7 @@ export interface KeychainInit {
   /**
    * The hash type
    *
-   * @default SHA2-512
+   * @default 'SHA-512'
    */
   hash?: 'SHA-256' | 'SHA-384' | 'SHA-512'
 
@@ -109,85 +157,40 @@ export interface Keychain {
    * cryptography implementation must be configured for the key type (defaults
    * to Ed25519).
    */
-  generateKey (name: string, options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
+  generateKey (name: string, options?: GenerateKeyOptions): Promise<PrivateKey>
 
   /**
-   * Import a new private key.
+   * Import a private key and store it under the specified name.
    *
-   * The `type` parameter must match a supported cryptography implementation.
-   *
-   * The default supported key types are `Ed25519` and `RSA`, others may be
-   * added through configuration.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * const key = await crypto.subtle.generateKey('Ed25519', true, ['sign', 'verify'])
-   * const raw = await crypto.subtle.exportKey('raw', key)
-   * await helia.keychain.importKey('my-key', 'Ed25519', raw)
-   * ```
+   * The default supported key types are `ECDSA`, `Ed25519` and `RSA`, others
+   * may be added by passing a `getCrypto` component that can load them.
    */
   importKey(name: string, key: PrivateKey, options?: AbortOptions): Promise<PrivateKey>
 
   /**
    * Export an existing private key.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * const raw = await helia.exportKey('my-key')
-   * const key = await crypto.subtle.importKey('raw', raw, {
-   *   name: 'Ed25519'
-   * }, true, ['sign', 'verify'])
-   * ```
    */
   exportKey(name: string, options?: AbortOptions): Promise<PrivateKey>
 
   /**
    * Removes a key from the keychain.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await helia.keychain.removeKey('keyTest')
-   * ```
    */
   removeKey(name: string, options?: AbortOptions): Promise<void>
 
   /**
    * Rename a key in the keychain. This is done in a batch commit with rollback
    * so errors thrown during the operation will not cause key loss.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await helia.keychain.renameKey('oldName', 'newName')
-   * ```
    */
   renameKey(oldName: string, newName: string, options?: AbortOptions): Promise<void>
 
   /**
    * List all the keys.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * for await (const name of helia.keychain.listKeys()) {
-   *   // ...
-   * }
-   * ```
    */
   listKeys(options?: AbortOptions): AsyncGenerator<KeyInfo>
 
   /**
-   * Re-encrypt all keys in the keychain using a crypto graphic key derived
+   * Re-encrypt all keys in the keychain using a cryptographic key derived
    * from the password
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await helia.keychain.rotateKeychainPass('newPassword')
-   * ```
    */
   rotateKeychainPass(password: string, options?: AbortOptions): Promise<void>
 

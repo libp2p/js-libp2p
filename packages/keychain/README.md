@@ -24,7 +24,55 @@ repo and examine the changes made.
 
 -->
 
-A WebCrypto-first keychain implementation for use with Helia and libp2p.
+A WebCrypto-first keychain that stores private keys encrypted at rest.
+
+## Example
+
+Configure the keychain as a libp2p service:
+
+```TypeScript
+import { keychain } from '@libp2p/keychain'
+import { createLibp2p } from 'libp2p'
+
+const node = await createLibp2p({
+  services: {
+    keychain: keychain({
+      password: 'a password of at least 20 characters'
+    })
+  }
+})
+
+const key = await node.services.keychain.generateKey('my-key', { type: 'ECDSA' })
+
+for await (const { id, name } of node.services.keychain.listKeys()) {
+  console.info(name, id)
+}
+
+const exported = await node.services.keychain.exportKey('my-key')
+const signature = await exported.sign(Uint8Array.from([0, 1, 2, 3]))
+```
+
+## Standalone use
+
+Outside libp2p, pass a datastore and a `CryptoLoader`:
+
+```TypeScript
+import { defaultCryptoLoader, generateKeyPair } from '@libp2p/crypto'
+import { keychain } from '@libp2p/keychain'
+import { MemoryDatastore } from 'datastore-core'
+
+const kc = keychain({
+  password: 'a password of at least 20 characters'
+})({
+  datastore: new MemoryDatastore(),
+  getCrypto: defaultCryptoLoader()
+})
+
+await kc.importKey('imported', await generateKeyPair('Ed25519'))
+await kc.renameKey('imported', 'renamed')
+await kc.rotateKeychainPass('a new password of at least 20 characters')
+await kc.removeKey('renamed')
+```
 
 ## Configuring additional implementations
 
