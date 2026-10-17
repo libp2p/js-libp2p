@@ -145,6 +145,15 @@ describe('author key binding', () => {
     await expect(verifySignature(forged, encodeMessage)).to.eventually.equal(false)
   })
 
+  it('does not verify a message from an unsupported key type', async () => {
+    const getCrypto = createCryptoLoader([secp256k1Crypto()])
+    const secPrivateKey = await generateKeyPair('secp256k1', { getCrypto })
+    const signed = await signMessage(secPrivateKey, { from: peerIdFromPrivateKey(secPrivateKey), topic, data, sequenceNumber: randomSeqno() }, encodeMessage)
+
+    await expect(verifySignature(signed, encodeMessage)).to.eventually.equal(false)
+    await expect(verifySignature(signed, encodeMessage, { getCrypto })).to.eventually.equal(true)
+  })
+
   it('rejects a message whose key does not derive to the secp256k1 author', async () => {
     const getCrypto = createCryptoLoader([secp256k1Crypto()])
     const victim = peerIdFromPrivateKey(await generateKeyPair('secp256k1', { getCrypto }))

@@ -68,7 +68,7 @@ export async function verifySignature (message: SignedMessage, encode: (rpc: Pub
     // only trust a supplied key if it derives to the author
     pubKey = await publicKeyForPeer(message.from, message.key?.toProtobuf(), options)
   } catch (err: any) {
-    if (err.name === 'InvalidPublicKeyError') {
+    if (err.name === 'InvalidPublicKeyError' || err.name === 'UnknownCryptoError') {
       return false
     }
 
