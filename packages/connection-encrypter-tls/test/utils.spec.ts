@@ -1,6 +1,8 @@
 import 'reflect-metadata'
 import { EventEmitter } from 'node:events'
 import tls from 'node:tls'
+import { createCryptoLoader } from '@libp2p/crypto'
+import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
 import { logger } from '@libp2p/logger'
 import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
 import { Crypto } from '@peculiar/webcrypto'
@@ -31,7 +33,9 @@ describe('utils', () => {
   })
 
   it('should verify correct Secp256k1 certificate', async () => {
-    const peerId = await verifyPeerCertificate(testVectors.validSecp256k1Certificate.cert)
+    const peerId = await verifyPeerCertificate(testVectors.validSecp256k1Certificate.cert, undefined, undefined, {
+      getCrypto: createCryptoLoader([secp256k1Crypto()])
+    })
 
     expect(peerId.toString()).to.equal(testVectors.validSecp256k1Certificate.peerId.toString())
   })
