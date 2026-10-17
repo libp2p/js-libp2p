@@ -103,6 +103,16 @@ describe('buildRawMessage', () => {
     })
   })
 
+  describe('Ed25519 author key binding', () => {
+    it('rejects a message whose signing key does not derive to the Ed25519 author', async () => {
+      const victim = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const attackerKey = await generateKeyPair('Ed25519')
+      const { raw } = await buildRawMessage(getPublishConfigFromPeerId(StrictSign, victim, attackerKey), 'test-topic', uint8ArrayFromString('hello'), uint8ArrayFromString('hello'))
+
+      await expect(validateToRawMessage(StrictSign, raw)).to.eventually.deep.equal({ valid: false, error: ValidateError.InvalidPeerId })
+    })
+  })
+
   describe('malformed message fields', () => {
     const topic = 'test-topic'
     const data = uint8ArrayFromString('hello')
