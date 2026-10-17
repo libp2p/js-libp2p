@@ -99,6 +99,7 @@ interface AcceptFromWhitelistEntry {
 
 type ReceivedMessageResult =
   | { code: MessageStatus.duplicate, msgIdStr: MsgIdStr }
+  | { code: MessageStatus.ignored }
   | ({ code: MessageStatus.invalid, msgIdStr?: MsgIdStr } & RejectReasonObj)
   | { code: MessageStatus.valid, messageId: MessageId, msg: Message }
 
@@ -1119,6 +1120,12 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         this.mcache.observeDuplicate(validationResult.msgIdStr, from.toString())
         return
 
+      case MessageStatus.ignored:
+        // the author's key type is not supported by this node: drop the message
+        // without penalising the propagation source
+        this.log('ignoring message from %p, unsupported author key type', from)
+        return
+
       case MessageStatus.invalid:
         // invalid messages received
         // metrics.register_invalid_message(&raw_message.topic)
@@ -1198,6 +1205,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     const validationResult = await validateToRawMessage(this.globalSignaturePolicy, rpcMsg, { getCrypto: this.components.getCrypto })
 
     if (!validationResult.valid) {
+      if (validationResult.error === ValidateError.UnsupportedKeyType) {
+        return { code: MessageStatus.ignored }
+      }
+
       return { code: MessageStatus.invalid, reason: RejectReason.Error, error: validationResult.error }
     }
 

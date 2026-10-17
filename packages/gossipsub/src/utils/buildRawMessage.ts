@@ -134,7 +134,11 @@ export async function validateToRawMessage (
       let publicKey: PublicKey
       try {
         publicKey = await publicKeyForPeer(fromPeerId, msg.key, options)
-      } catch {
+      } catch (err: any) {
+        if (err.name === 'UnknownCryptoError') {
+          return { valid: false, error: ValidateError.UnsupportedKeyType }
+        }
+
         // mismatched, missing or malformed keys are invalid, not thrown, so the
         // peer is still scored
         return { valid: false, error: ValidateError.InvalidPeerId }
