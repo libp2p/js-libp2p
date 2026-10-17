@@ -42,6 +42,11 @@
     "aegir": "^48.1.1",
     "npm-run-all": "^4.1.5"
   },
+  "overrides": {
+    "libp2p-keychain-v6": {
+      "@libp2p/crypto": "5.1.24"
+    }
+  },
   "workspaces": [
     "doc",
     "interop",

@@ -1,12 +1,12 @@
-import { ed25519Crypto } from '@ipshipyard/crypto'
-import { isPrivateKey, isPublicKey } from '@ipshipyard/crypto'
-import { generateKeyPair } from '@libp2p/crypto/keys'
-import { keychain as libp2pKeychainFactory } from '@libp2p/keychain'
+import { ed25519Crypto } from '@libp2p/crypto'
+import { isPrivateKey, isPublicKey } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { defaultLogger } from 'birnam'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { Key } from 'interface-datastore'
 import all from 'it-all'
+import { generateKeyPair } from 'libp2p-crypto-v5/keys'
+import { keychain as libp2pKeychainFactory } from 'libp2p-keychain-v6'
 import { base58btc } from 'multiformats/bases/base58'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -14,9 +14,9 @@ import { Keychain as KeychainClass } from '../src/keychain.ts'
 import { getCrypto } from './fixtures/get-crypto.ts'
 import type { Keychain } from '../src/index.ts'
 import type { KeychainInit } from '../src/index.ts'
-import type { PrivateKey } from '@ipshipyard/crypto'
-import type { Keychain as Libp2pKeychain } from '@libp2p/keychain'
+import type { PrivateKey } from '@libp2p/crypto'
 import type { Datastore } from 'interface-datastore'
+import type { Keychain as Libp2pKeychain } from 'libp2p-keychain-v6'
 
 const SUPPORTED_KEYS: Array<'ECDSA' | 'Ed25519' | 'RSA'> = [
   'ECDSA',
@@ -501,7 +501,6 @@ describe('keychain', () => {
       })
 
       libp2pKeychain = libp2pKeychainFactory()({
-        // @ts-expect-error @libp2p/keychain needs new interface-datastore
         datastore,
         logger: defaultLogger()
       })

@@ -1,7 +1,9 @@
-# @ipshipyard/keychain
+# @libp2p/keychain
 
-[![codecov](https://img.shields.io/codecov/c/github/ipshipyard/js-keychain.svg?style=flat-square)](https://codecov.io/gh/ipshipyard/js-keychain)
-[![CI](https://img.shields.io/github/actions/workflow/status/ipshipyard/js-keychain/js-test-and-release.yml?branch=main\&style=flat-square)](https://github.com/ipshipyard/js-keychain/actions/workflows/js-test-and-release.yml?query=branch%3Amain)
+[![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
+[![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
+[![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
+[![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
 > Generate and securely store private keys at rest
 
@@ -33,27 +35,27 @@ instances.
 # Install
 
 ```console
-$ npm i @ipshipyard/keychain
+$ npm i @libp2p/keychain
 ```
 
 ## Browser `<script>` tag
 
-Loading this module through a script tag will make its exports available as `IpshipyardKeychain` in the global namespace.
+Loading this module through a script tag will make its exports available as `Libp2pKeychain` in the global namespace.
 
 ```html
-<script src="https://unpkg.com/@ipshipyard/keychain/dist/index.min.js"></script>
+<script src="https://unpkg.com/@libp2p/keychain/dist/index.min.js"></script>
 ```
 
 # API Docs
 
-- <https://ipshipyard.github.io/js-keychain>
+- <https://libp2p.github.io/js-libp2p/modules/_libp2p_keychain.html>
 
 # License
 
 Licensed under either of
 
-- Apache 2.0, ([LICENSE-APACHE](https://github.com/ipshipyard/js-keychain/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT ([LICENSE-MIT](https://github.com/ipshipyard/js-keychain/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
+- Apache 2.0, ([LICENSE-APACHE](https://github.com/libp2p/js-libp2p/blob/main/packages/keychain/LICENSE-APACHE) / <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT ([LICENSE-MIT](https://github.com/libp2p/js-libp2p/blob/main/packages/keychain/LICENSE-MIT) / <http://opensource.org/licenses/MIT>)
 
 # Contribution
 

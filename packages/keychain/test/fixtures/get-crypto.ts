@@ -1,6 +1,6 @@
-import { ecdsaCrypto, ed25519Crypto, rsaCrypto } from '@ipshipyard/crypto'
+import { ecdsaCrypto, ed25519Crypto, rsaCrypto } from '@libp2p/crypto'
 import type { CryptoLoader } from '../../src/index.ts'
-import type { Crypto } from '@ipshipyard/crypto'
+import type { Crypto } from '@libp2p/crypto'
 
 function isPromise <T = any> (obj?: any): obj is Promise<T> {
   return typeof obj?.then === 'function'

@@ -10,7 +10,7 @@
  * instances.
  */
 import { Keychain as KeychainClass } from './keychain.ts'
-import type { Crypto, PrivateKey, PublicKey } from '@ipshipyard/crypto'
+import type { Crypto, PrivateKey, PublicKey } from '@libp2p/crypto'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 

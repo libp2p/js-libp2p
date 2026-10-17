@@ -1,8 +1,8 @@
-import { rsaCrypto } from '@ipshipyard/crypto'
-import { decodeDer } from '@ipshipyard/crypto/der'
-import { PrivateKeyMessage } from '@ipshipyard/crypto/pb'
+import { rsaCrypto } from '@libp2p/crypto'
+import { decodeDer } from '@libp2p/crypto/der'
+import { PrivateKeyMessage } from '@libp2p/crypto/pb'
 import { base64 } from 'multiformats/bases/base64'
-import type { PrivateKey } from '@ipshipyard/crypto'
+import type { PrivateKey } from '@libp2p/crypto'
 import type { AbortOptions } from 'abort-error'
 
 /**
