@@ -1,3 +1,4 @@
+import { createCryptoLoader } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import { Key } from 'interface-datastore/key'
@@ -5,6 +6,7 @@ import all from 'it-all'
 import sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { encryptEntry } from '../src/cipher.ts'
+import { Keychain } from '../src/keychain.ts'
 import { entries, expectKeys, load, notRsaFor, open, reencryptPem } from './fixtures/helpers.ts'
 import { legacyKeychains } from './fixtures/legacy-keychains.ts'
 
@@ -132,13 +134,45 @@ describe('keychain migration', () => {
 
   it('does not migrate an entry that decrypts to something that is not a key', async () => {
     const datastore = await load(withPassword)
-    // authenticates under the legacy dek but is an Ed25519 key with 3 bytes of data
-    const bogus = await encryptEntry(withPassword.derivedDek ?? '', Uint8Array.from([0x08, 0x01, 0x12, 0x03, 0x01, 0x02, 0x03]))
+    // authenticates under the legacy dek but is a key protobuf without a type
+    const bogus = await encryptEntry(withPassword.derivedDek ?? '', Uint8Array.from([0x12, 0x03, 0x01, 0x02, 0x03]))
     await datastore.put(new Key('/pkcs8/bogus'), uint8ArrayFromString(bogus))
     const before = await entries(datastore)
 
     await expect(all(open(datastore, withPassword).listKeys())).to.eventually.be.rejected.with.property('name', 'KeychainMigrationError')
     expect(await entries(datastore)).to.deep.equal(before)
+  })
+
+  it('migrates keys whose type is not configured', async () => {
+    const datastore = await load(withPassword)
+    const keychain = new Keychain({ datastore, getCrypto: createCryptoLoader() }, { password: withPassword.init.pass })
+
+    expect(withPassword.keys.map(k => k.name)).to.include('secp256k1-key')
+    expect((await all(keychain.listKeys())).map(k => k.name)).to.have.members(withPassword.keys.map(k => k.name))
+
+    const after = await entries(datastore)
+    expect(after).to.have.property('/keychain/meta')
+
+    for (const [key, value] of Object.entries(withPassword.entries)) {
+      if (key.startsWith('/pkcs8/')) {
+        expect(after[key]).to.not.equal(value)
+      }
+    }
+
+    for (const expected of withPassword.keys) {
+      if (expected.type === 'secp256k1') {
+        await expect(keychain.exportKey(expected.name)).to.eventually.be.rejected.with.property('name', 'UnknownCryptoError')
+        continue
+      }
+
+      const key = await keychain.exportKey(expected.name)
+      const data = uint8ArrayFromString('hello world')
+
+      expect(key.type).to.equal(expected.type)
+      expect(await key.publicKey.verify(data, await key.sign(data))).to.be.true()
+    }
+
+    await expectKeys(open(datastore, withPassword), withPassword)
   })
 
   it('rotates the password of a legacy store', async () => {

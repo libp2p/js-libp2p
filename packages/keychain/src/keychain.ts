@@ -162,7 +162,7 @@ export class Keychain implements KeychainInterface {
     const target = await deriveDek(this.init.password ?? '', this.dekOptions)
     const legacy = deriveLegacyDek(this.init.password, this.dekOptions.salt, this.dekOptions.iterations, this.init.legacyDek ?? DEFAULT_LEGACY_DEK)
 
-    await migrate(this.components.datastore, target, legacy, this.components.getCrypto)
+    await migrate(this.components.datastore, target, legacy)
     this.dek = target
   }
 
