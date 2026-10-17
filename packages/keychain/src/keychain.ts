@@ -331,11 +331,13 @@ export class Keychain implements KeychainInterface {
 
     const batch = this.components.datastore.batch()
 
-    for await (const info of this.listKeys(options)) {
-      const key = await this._exportKey(info.name, oldDek, options)
+    // re-encrypt the stored bytes without loading the keys, so keys of types
+    // that are not configured rotate too and /info entries are unchanged
+    for await (const { key, value } of this.components.datastore.query({ prefix: keyPrefix }, options)) {
+      const plainText = await decryptEntry(oldDek, uint8ArrayToString(value))
+      options?.signal?.throwIfAborted()
 
-      // Update stored key
-      await this._importKey(info.name, key, newDek, batch, options)
+      batch.put(key, uint8ArrayFromString(await encryptEntry(newDek, plainText)))
     }
 
     await batch.commit(options)

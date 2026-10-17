@@ -1,8 +1,14 @@
-import { ed25519Crypto } from '@libp2p/crypto'
-import { isPrivateKey, isPublicKey } from '@libp2p/crypto'
+import { createCryptoLoader, ed25519Crypto, isPrivateKey, isPublicKey } from '@libp2p/crypto'
+import { PrivateKeyMessage } from '@libp2p/crypto/pb'
+import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
 import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
+import { Key } from 'interface-datastore/key'
 import all from 'it-all'
+import { base58btc } from 'multiformats/bases/base58'
+import { sha256 } from 'multiformats/hashes/sha2'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { deriveDek, encryptEntry } from '../src/cipher.ts'
 import { isKeychain, keychain } from '../src/index.ts'
 import { Keychain as KeychainClass } from '../src/keychain.ts'
 import { getCrypto } from './fixtures/get-crypto.ts'
@@ -408,6 +414,47 @@ describe('keychain', () => {
       })
 
       await expect(keychainWithNewPassword.exportKey(keyName)).to.eventually.deep.equal(key)
+    })
+
+    it('rotates keys whose type is not configured', async () => {
+      const newPassword = 'a new password of at least 20 characters'
+      const withSecp = (password: string): KeychainClass => new KeychainClass({
+        datastore,
+        getCrypto: createCryptoLoader([secp256k1Crypto()])
+      }, { ...options, password })
+      const key = await withSecp(oldPass).generateKey('secp', { type: 'secp256k1' })
+
+      await new KeychainClass({ datastore, getCrypto: createCryptoLoader() }, options).rotateKeychainPass(newPassword)
+
+      const exported = await withSecp(newPassword).exportKey('secp')
+      expect(exported.publicKey.toProtobuf()).to.equalBytes(key.publicKey.toProtobuf())
+    })
+
+    it('keeps key ids when rotating', async () => {
+      // a 96 byte go-libp2p Ed25519 key, whose id was derived from these bytes
+      const generated = await ed25519Crypto().generatePrivateKey()
+      const data = PrivateKeyMessage.decode(generated.toProtobuf()).Data!
+      const legacy = new Uint8Array(96)
+      legacy.set(data, 0)
+      legacy.set(data.subarray(32), 64)
+      const plainText = PrivateKeyMessage.encode({ Type: 1, Data: legacy })
+      const id = base58btc.encode((await sha256.digest(plainText)).bytes).substring(1)
+      const dek = await deriveDek(oldPass, {
+        salt: uint8ArrayFromString(options.salt as string),
+        iterations: options.iterations!,
+        hash: options.hash!
+      })
+
+      await all(keychain.listKeys())
+      await datastore.put(new Key('/pkcs8/legacy'), uint8ArrayFromString(await encryptEntry(dek, plainText)))
+      await datastore.put(new Key('/info/legacy'), uint8ArrayFromString(JSON.stringify({ name: 'legacy', id })))
+      await keychain.generateKey('generated')
+      const before = await all(keychain.listKeys())
+
+      await keychain.rotateKeychainPass('a new password of at least 20 characters')
+
+      expect(await all(keychain.listKeys())).to.deep.equal(before)
+      expect(before.find(k => k.name === 'legacy')).to.have.property('id', id)
     })
   })
 
