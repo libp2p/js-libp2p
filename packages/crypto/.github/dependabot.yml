@@ -1,0 +1,29 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  open-pull-requests-limit: 20
+  commit-message:
+    prefix: "deps"
+    prefix-development: "chore"
+  groups:
+    interplanetary-deps: # Helia/libp2p deps
+      patterns:
+        - "*helia*"
+        - "*libp2p*"
+        - "*multiformats*"
+        - "*blockstore*"
+        - "*datastore*"
+    kubo-deps: # kubo deps
+      patterns:
+        - "*kubo*"
+        - "ipfsd-ctl"
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "weekly"
+  commit-message:
+    prefix: chore

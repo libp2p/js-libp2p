@@ -1,144 +1,124 @@
-/* eslint max-nested-callbacks: ["error", 8] */
-/* eslint-env mocha */
+import { generateKeyPair, privateKeyFromProtobuf, privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
-import { base58btc } from 'multiformats/bases/base58'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import { generateKeyPair, generateKeyPairFromSeed, privateKeyFromProtobuf, privateKeyToProtobuf, publicKeyFromProtobuf, publicKeyToProtobuf } from '../src/keys/index.ts'
-import pbkdf2 from '../src/pbkdf2.ts'
-import fixtures from './fixtures/go-key-rsa.ts'
-import type { RSAPrivateKey } from '@libp2p/interface'
+import { ecdsaCrypto } from '../src/ecdsa.ts'
+import { ed25519Crypto } from '../src/index.ts'
+import { isPrivateKey, isPublicKey, rsaCrypto } from '../src/index.ts'
+import type { Crypto, PrivateKey } from '../src/index.ts'
+import type { PrivateKey as Libp2pPrivateKey } from '@libp2p/interface'
 
-describe('libp2p-crypto', function () {
-  this.timeout(20 * 1000)
-  let key: RSAPrivateKey
+interface CryptoKey {
+  type: string
+  getImplementation(): Crypto
+  generateKey(): Promise<PrivateKey>
+  generateLibp2pKey(): Promise<Libp2pPrivateKey>
+}
 
-  before(async () => {
-    key = await generateKeyPair('RSA', 512)
-  })
-
-  it('marshalPublicKey and unmarshalPublicKey', async () => {
-    const key2 = publicKeyFromProtobuf(publicKeyToProtobuf(key.publicKey))
-
-    expect(key2).to.have.property('type', 'RSA')
-    expect(key2.equals(key.publicKey)).to.be.eql(true)
-  })
-
-  it('marshalPrivateKey and unmarshalPrivateKey', async () => {
-    const key2 = privateKeyFromProtobuf(privateKeyToProtobuf(key))
-
-    expect(key2).to.have.property('type', 'RSA')
-    expect(key2.equals(key)).to.be.true()
-    expect(key2.publicKey.equals(key.publicKey)).to.be.true()
-  })
-
-  it('generateKeyPair', () => {
-    // @ts-expect-error key type is invalid
-    return expect(generateKeyPair('invalid-key-type', 512)).to.eventually.be.rejected
-      .with.property('name', 'UnsupportedKeyTypeError')
-  })
-
-  it('generateKeyPairFromSeed', () => {
-    const seed = crypto.getRandomValues(new Uint8Array(32))
-
-    // @ts-expect-error key type is invalid
-    return expect(generateKeyPairFromSeed('invalid-key-type', seed, 512)).to.eventually.be.rejected
-      .with.property('name', 'UnsupportedKeyTypeError')
-  })
-
-  // https://github.com/libp2p/js-libp2p-crypto/issues/314
-  function isSafari (): boolean {
-    return typeof navigator !== 'undefined' && navigator.userAgent.includes('AppleWebKit') && !navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Mac')
+const SUPPORTED_KEYS: CryptoKey[] = [{
+  type: 'Ed25519',
+  getImplementation: ed25519Crypto,
+  generateKey: () => {
+    return ed25519Crypto().generatePrivateKey()
+  },
+  generateLibp2pKey () {
+    return generateKeyPair('Ed25519')
   }
+}, {
+  type: 'RSA',
+  getImplementation: rsaCrypto,
+  generateKey: () => {
+    return rsaCrypto().generatePrivateKey()
+  },
+  generateLibp2pKey () {
+    return generateKeyPair('RSA')
+  }
+}, {
+  type: 'ECDSA',
+  getImplementation: ecdsaCrypto,
+  generateKey: () => {
+    return ecdsaCrypto().generatePrivateKey()
+  },
+  generateLibp2pKey () {
+    return generateKeyPair('ECDSA')
+  }
+}]
 
-  // marshaled keys seem to be slightly different
-  // unsure as to if this is just a difference in encoding
-  // or a bug
-  describe.skip('go interop', () => {
-    it.skip('unmarshals private key', async () => {
-      if (isSafari()) {
-        // eslint-disable-next-line no-console
-        console.warn('Skipping test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
-        return
-      }
+describe('crypto', () => {
+  SUPPORTED_KEYS.forEach(key => {
+    describe(`${key.type} keys`, () => {
+      it(`can create a ${key.type} key`, async () => {
+        const privateKey = await key.generateKey()
 
-      const key = privateKeyFromProtobuf(fixtures.private.key)
-      expect(fixtures.private.key).to.equalBytes(key.raw)
+        expect(privateKey).to.be.ok()
+        expect(privateKey).to.have.property('code').that.is.a('number')
+        expect(privateKey).to.have.property('type', key.type)
 
-      const hash = fixtures.private.hash
-      const digest = key.publicKey.toCID().multihash
-      expect(base58btc.encode(digest.bytes)).to.equal(hash)
-    })
+        expect(isPrivateKey(privateKey)).to.be.true()
+        expect(isPublicKey(privateKey.publicKey)).to.be.true()
+      })
 
-    it('unmarshals public key', async () => {
-      const key = publicKeyFromProtobuf(fixtures.public.key)
-      const hash = fixtures.public.hash
-      expect(publicKeyToProtobuf(key)).to.equalBytes(fixtures.public.key)
+      it('can sign and verify', async () => {
+        const privateKey = await key.generateKey()
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+        const sig = await privateKey.sign(message)
 
-      const digest = key.toCID().multihash
-      expect(base58btc.encode(digest.bytes)).to.equal(hash)
-    })
+        await expect(privateKey.publicKey.verify(message, sig)).to.eventually.be.true()
+      })
 
-    it.skip('unmarshal -> marshal, private key', async () => {
-      const key = privateKeyFromProtobuf(fixtures.private.key)
-      const marshaled = privateKeyToProtobuf(key)
+      it('can round-trip public key to protobuf', async () => {
+        const privateKey = await key.generateKey()
 
-      if (isSafari()) {
-        // eslint-disable-next-line no-console
-        console.warn('Running different test in Safari. Known bug: https://github.com/libp2p/js-libp2p-crypto/issues/314')
-        const key2 = privateKeyFromProtobuf(marshaled)
-        expect(key2.raw).to.equalBytes(key.raw)
-        return
-      }
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+        const sig = await privateKey.sign(message)
 
-      expect(marshaled).to.equalBytes(fixtures.private.key)
-    })
+        const pb = privateKey.publicKey.toProtobuf()
+        const publicKey = await key.getImplementation().publicKeyFromProtobuf(pb)
 
-    it('unmarshal -> marshal, public key', async () => {
-      const key = publicKeyFromProtobuf(fixtures.public.key)
-      const marshaled = publicKeyToProtobuf(key)
-      expect(uint8ArrayEquals(fixtures.public.key, marshaled)).to.be.true()
-    })
-  })
+        await expect(publicKey.verify(message, sig)).to.eventually.be.true()
+      })
 
-  describe('pbkdf2', () => {
-    it('generates a derived password using sha1', () => {
-      const p1 = pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha1')
-      expect(p1).to.exist()
-      expect(p1).to.be.a('string')
-    })
+      it('can round-trip private key to protobuf', async () => {
+        const privateKey = await key.generateKey()
 
-    it('generates a derived password using sha2-512', () => {
-      const p1 = pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'sha2-512')
-      expect(p1).to.exist()
-      expect(p1).to.be.a('string')
-    })
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+        const sig = await privateKey.sign(message)
 
-    it('generates the same derived password with the same options', () => {
-      const p1 = pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
-      const p2 = pbkdf2('password', 'at least 16 character salt', 10, 512 / 8, 'sha1')
-      const p3 = pbkdf2('password', 'at least 16 character salt', 11, 512 / 8, 'sha1')
-      expect(p2).to.equal(p1)
-      expect(p3).to.not.equal(p2)
-    })
+        const pb = privateKey.toProtobuf()
+        const deserializedPrivateKey = await key.getImplementation().privateKeyFromProtobuf(pb)
 
-    it('throws on invalid hash name', () => {
-      const fn = (): string => pbkdf2('password', 'at least 16 character salt', 500, 512 / 8, 'shaX-xxx')
-      expect(fn).to.throw().with.property('name', 'InvalidParametersError')
+        await expect(deserializedPrivateKey.publicKey.verify(message, sig)).to.eventually.be.true()
+      })
     })
   })
 
-  describe('randomBytes', () => {
-    it('throws with invalid number passed', () => {
-      expect(() => {
-        crypto.getRandomValues(new Uint8Array(-1))
-      }).to.throw()
-    })
+  describe('@libp2p/crypto compatibility', () => {
+    SUPPORTED_KEYS.forEach(key => {
+      it(`Helia keys should be compatible with ${key.type} libp2p keys`, async () => {
+        const libp2pPrivateKey = await key.generateLibp2pKey()
+        const pb = privateKeyToProtobuf(libp2pPrivateKey)
+        const heliaPrivateKey = await key.getImplementation().privateKeyFromProtobuf(pb)
 
-    it('generates different random things', () => {
-      const buf1 = crypto.getRandomValues(new Uint8Array(10))
-      expect(buf1.length).to.equal(10)
-      const buf2 = crypto.getRandomValues(new Uint8Array(10))
-      expect(buf1).to.not.eql(buf2)
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+
+        const heliaSig = await heliaPrivateKey.sign(message)
+        expect(await libp2pPrivateKey.publicKey.verify(message, heliaSig)).to.be.true('libp2p key could not verify Helia signature')
+
+        const libp2pSig = await libp2pPrivateKey.sign(message)
+        expect(await heliaPrivateKey.publicKey.verify(message, libp2pSig)).to.be.true('Helia key could not verify libp2p signature')
+      })
+
+      it(`libp2p keys should be compatible with ${key.type} Helia keys`, async () => {
+        const heliaPrivateKey = await key.getImplementation().generatePrivateKey()
+        const pb = heliaPrivateKey.toProtobuf()
+        const libp2pPrivateKey = privateKeyFromProtobuf(pb)
+
+        const message = Uint8Array.from([0, 1, 2, 3, 4])
+
+        const heliaSig = await heliaPrivateKey.sign(message)
+        expect(await libp2pPrivateKey.publicKey.verify(message, heliaSig)).to.be.true('libp2p key could not verify Helia signature')
+
+        const libp2pSig = await libp2pPrivateKey.sign(message)
+        expect(await heliaPrivateKey.publicKey.verify(message, libp2pSig)).to.be.true('Helia key could not verify libp2p signature')
+      })
     })
   })
 })
