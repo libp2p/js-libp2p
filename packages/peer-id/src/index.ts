@@ -14,7 +14,6 @@
  * ```
  */
 
-import { publicKeyFromMultihash } from '@libp2p/crypto/keys'
 import { InvalidCIDError, InvalidMultihashError, InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
@@ -22,12 +21,15 @@ import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { decodePublicKeyHeader } from './key.ts'
 import { RSAPeerId as RSAPeerIdClass, Ed25519PeerId as Ed25519PeerIdClass, Secp256k1PeerId as Secp256k1PeerIdClass, URLPeerId as URLPeerIdClass } from './peer-id.ts'
-import type { Ed25519PeerId, RSAPeerId, URLPeerId, Secp256k1PeerId, PeerId, PublicKey, Ed25519PublicKey, Secp256k1PublicKey, RSAPublicKey, Ed25519PrivateKey, Secp256k1PrivateKey, RSAPrivateKey, PrivateKey } from '@libp2p/interface'
+import type { Ed25519PeerId, RSAPeerId, URLPeerId, Secp256k1PeerId, PeerId, PublicKey, PrivateKey } from '@libp2p/interface'
 import type { MultibaseDecoder } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 // these values are from https://github.com/multiformats/multicodec/blob/master/table.csv
+const ED25519 = 1
+const SECP256K1 = 2
 const LIBP2P_KEY_CODE = 0x72
 const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 
@@ -52,57 +54,35 @@ export function peerIdFromString (str: string, decoder?: MultibaseDecoder<any>):
   return peerIdFromMultihash(multihash)
 }
 
-export function peerIdFromPublicKey (publicKey: Ed25519PublicKey): Ed25519PeerId
-export function peerIdFromPublicKey (publicKey: Secp256k1PublicKey): Secp256k1PeerId
-export function peerIdFromPublicKey (publicKey: RSAPublicKey): RSAPeerId
-export function peerIdFromPublicKey (publicKey: PublicKey): PeerId
 export function peerIdFromPublicKey (publicKey: PublicKey): PeerId {
-  if (publicKey.type === 'Ed25519') {
-    return new Ed25519PeerIdClass({
-      multihash: publicKey.toCID().multihash,
-      publicKey
-    })
-  } else if (publicKey.type === 'secp256k1') {
-    return new Secp256k1PeerIdClass({
-      multihash: publicKey.toCID().multihash,
-      publicKey
-    })
-  } else if (publicKey.type === 'RSA') {
-    return new RSAPeerIdClass({
-      multihash: publicKey.toCID().multihash,
-      publicKey
-    })
+  if (publicKey.type !== 'Ed25519' && publicKey.type !== 'secp256k1' && publicKey.type !== 'RSA') {
+    throw new UnsupportedKeyTypeError()
   }
 
-  throw new UnsupportedKeyTypeError()
+  return peerIdFromMultihash(publicKey.toMultihash(), publicKey.toProtobuf())
 }
 
-export function peerIdFromPrivateKey (privateKey: Ed25519PrivateKey): Ed25519PeerId
-export function peerIdFromPrivateKey (privateKey: Secp256k1PrivateKey): Secp256k1PeerId
-export function peerIdFromPrivateKey (privateKey: RSAPrivateKey): RSAPeerId
-export function peerIdFromPrivateKey (privateKey: PrivateKey): PeerId
 export function peerIdFromPrivateKey (privateKey: PrivateKey): PeerId {
   return peerIdFromPublicKey(privateKey.publicKey)
 }
 
-export function peerIdFromMultihash (multihash: MultihashDigest): PeerId {
+export function peerIdFromMultihash (multihash: MultihashDigest, publicKey?: Uint8Array): PeerId {
   if (isSha256Multihash(multihash)) {
-    return new RSAPeerIdClass({ multihash })
-  } else if (isIdentityMultihash(multihash)) {
-    try {
-      const publicKey = publicKeyFromMultihash(multihash)
+    return new RSAPeerIdClass({ multihash, publicKey })
+  }
 
-      if (publicKey.type === 'Ed25519') {
-        return new Ed25519PeerIdClass({ multihash, publicKey })
-      } else if (publicKey.type === 'secp256k1') {
-        return new Secp256k1PeerIdClass({ multihash, publicKey })
-      }
-    } catch (err) {
-      // was not Ed or secp key, try URL
-      const url = uint8ArrayToString(multihash.digest)
+  if (isIdentityMultihash(multihash)) {
+    const key = decodePublicKeyHeader(multihash.digest)
 
-      return new URLPeerIdClass(new URL(url))
+    if (key?.type === ED25519 && key.data.byteLength === 32) {
+      return new Ed25519PeerIdClass({ multihash, publicKey: multihash.digest })
     }
+
+    if (key?.type === SECP256K1) {
+      return new Secp256k1PeerIdClass({ multihash, publicKey: multihash.digest })
+    }
+
+    return new URLPeerIdClass(new URL(uint8ArrayToString(multihash.digest)))
   }
 
   throw new InvalidMultihashError('Supplied PeerID Multihash is invalid')
