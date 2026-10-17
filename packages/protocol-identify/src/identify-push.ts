@@ -146,7 +146,7 @@ export class IdentifyPush extends AbstractIdentify implements Startable, Identif
 
     const messages = await readIdentifyMessages(stream, this.maxMessageSize, options, log)
 
-    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, mergeIdentifyMessages(messages))
+    await consumeIdentifyMessage(this.components.peerStore, this.components.events, log, connection, mergeIdentifyMessages(messages), { ...options, getCrypto: this.components.getCrypto })
 
     log.trace('handled push from %p', connection.remotePeer)
   }

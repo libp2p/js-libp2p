@@ -1,4 +1,4 @@
-import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -129,7 +129,7 @@ describe('identify (push)', () => {
 
     const pb = pbStream(outgoingStream).pb(IdentifyMessage)
     await pb.write({
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       protocols: [
         updatedProtocol
       ],
@@ -178,7 +178,7 @@ describe('identify (push)', () => {
 
     const pb = pbStream(outgoingStream).pb(IdentifyMessage)
     await pb.write({
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       listenAddrs: [addr1.bytes],
       protocols: [protocol1, sharedProtocol]
     })
@@ -234,7 +234,7 @@ describe('identify (push)', () => {
 
     const pb = pbStream(outgoingStream).pb(IdentifyMessage)
     await pb.write({
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       protocols: ['/foo/1.0'],
       listenAddrs: []
     })
