@@ -170,6 +170,28 @@ describe('PeerId', () => {
     expect(peerId.publicKey).to.be.undefined()
   })
 
+  it('rejects identity multihashes of well-formed unsupported keys', async () => {
+    const key = await generateKeyPair('ECDSA')
+
+    expect(() => peerIdFromMultihash(identity.digest(key.publicKey.toProtobuf())))
+      .to.throw().with.property('name', 'InvalidMultihashError')
+  })
+
+  it('rejects a mismatched public key for identity multihashes', async () => {
+    const key = await generateKeyPair('Ed25519')
+    const other = await generateKeyPair('Ed25519')
+
+    expect(() => peerIdFromMultihash(key.publicKey.toMultihash(), other.publicKey.toProtobuf()))
+      .to.throw().with.property('name', 'InvalidPublicKeyError')
+  })
+
+  it('rejects non-canonical Ed25519 headers', () => {
+    const buf = new Uint8Array(36)
+    buf.set([0x08, 0x01, 0x12, 0xA0, 0x80, 0x00])
+
+    expect(() => peerIdFromMultihash(identity.digest(buf))).to.throw()
+  })
+
   it('rejects ECDSA public keys', async () => {
     const key = await generateKeyPair('ECDSA')
 

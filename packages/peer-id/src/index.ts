@@ -14,12 +14,13 @@
  * ```
  */
 
-import { InvalidCIDError, InvalidMultihashError, InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
+import { InvalidCIDError, InvalidPublicKeyError, InvalidMultihashError, InvalidParametersError, UnsupportedKeyTypeError } from '@libp2p/interface'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import * as Digest from 'multiformats/hashes/digest'
 import { identity } from 'multiformats/hashes/identity'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { decodePublicKeyHeader } from './key.ts'
 import { RSAPeerId as RSAPeerIdClass, Ed25519PeerId as Ed25519PeerIdClass, Secp256k1PeerId as Secp256k1PeerIdClass, URLPeerId as URLPeerIdClass } from './peer-id.ts'
@@ -72,17 +73,23 @@ export function peerIdFromMultihash (multihash: MultihashDigest, publicKey?: Uin
   }
 
   if (isIdentityMultihash(multihash)) {
+    if (publicKey != null && !uint8ArrayEquals(publicKey, multihash.digest)) {
+      throw new InvalidPublicKeyError('Public key does not match peer id')
+    }
+
     const key = decodePublicKeyHeader(multihash.digest)
 
-    if (key?.type === ED25519 && key.data.byteLength === 32) {
+    if (key == null) {
+      return new URLPeerIdClass(new URL(uint8ArrayToString(multihash.digest)))
+    }
+
+    if (key.type === ED25519 && key.data.byteLength === 32) {
       return new Ed25519PeerIdClass({ multihash, publicKey: multihash.digest })
     }
 
-    if (key?.type === SECP256K1) {
+    if (key.type === SECP256K1 && (key.data.byteLength === 33 || key.data.byteLength === 65)) {
       return new Secp256k1PeerIdClass({ multihash, publicKey: multihash.digest })
     }
-
-    return new URLPeerIdClass(new URL(uint8ArrayToString(multihash.digest)))
   }
 
   throw new InvalidMultihashError('Supplied PeerID Multihash is invalid')
