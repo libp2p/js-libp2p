@@ -8,6 +8,18 @@
  * ECDSA, Ed25519 and RSA keys are supported out of the box but other schemes
  * are configurable by passing a `CryptoLoader` that can return `Crypto`
  * instances.
+ *
+ * ## Upgrading from 6.x
+ *
+ * - The `pass` option is now `password`
+ * - `dek.salt` and `dek.iterationCount` are now `salt` and `iterations`
+ * - A customized `dek.keyLength` or `dek.hash` goes in `legacyDek: { keyLength, hash }` (defaults are `64` and `'sha2-512'`). It is only used to read keys written by 6.x
+ * - A `getCrypto` component is required. libp2p passes `libp2p.getCrypto`, for standalone use pass `defaultCryptoLoader()` or `createCryptoLoader([...])` from `@libp2p/crypto`
+ * - Stores written by 6.x are migrated the first time the keychain is used. The migration is resumable and `/keychain/meta` is written last. Once migrated a store cannot be opened by 6.x
+ * - `findKeyById` and `findKeyByName` have been removed
+ * - `listKeys()` is an async generator
+ * - `importKey` returns the imported key and `removeKey` returns nothing
+ * - `rotateKeychainPass(password)` takes only the new password and changes the password at runtime
  */
 import { Keychain as KeychainClass } from './keychain.ts'
 import type { LegacyDek } from './legacy.ts'

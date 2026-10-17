@@ -539,10 +539,14 @@ const node = await createLibp2p({
 
 Libp2p allows you to setup a secure keychain to manage your keys. The keychain configuration object should have the following properties:
 
-| Name | Type        | Description                                                                                                                                                                                       |
-| ---- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| pass | `string`    | Passphrase to use in the keychain (minimum of 20 characters).                                                                                                                                     |
-| dek  | `DEKConfig` | the default options for generating the derived encryption key, which, along with the passphrase are input to the PBKDF2 function. For more info see: https://github.com/libp2p/js-libp2p-keychain |
+| Name       | Type     | Description                                                                                   |
+| ---------- | -------- | --------------------------------------------------------------------------------------------- |
+| password   | `string` | Password used to derive the key that encrypts the keychain at rest (minimum of 20 characters) |
+| salt       | `string` | Optional non-default PBKDF2 salt                                                              |
+| iterations | `number` | Optional number of PBKDF2 iterations                                                          |
+| legacyDek  | `object` | Optional `{ keyLength, hash }`, only needed to migrate 6.x keychains with a customized `dek`  |
+
+See the [@libp2p/keychain README](https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#upgrading-from-6x) for upgrading from 6.x.
 
 The keychain will store keys encrypted in the datastore which default is an in memory datastore. If you want to store the keys on disc you need to initialize libp2p with a suitable datastore implementation.
 
@@ -568,12 +572,27 @@ const node = await createLibp2p({
     noise()
   ],
   keychain: {
-    pass: 'not-safe-password-123456789',
+    password: 'not-safe-password-123456789',
   },
   datastore
 })
 ```
 
+
+#### Configuring key types
+
+Ed25519, RSA and ECDSA keys are supported by default. Pass `cryptos` to add others, e.g. secp256k1. The configured loader is available as `libp2p.getCrypto`.
+
+```js
+import { createLibp2p } from 'libp2p'
+import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
+
+const node = await createLibp2p({
+  cryptos: [secp256k1Crypto()]
+})
+```
+
+Without secp256k1 a node cannot complete handshakes with peers that use secp256k1 identities and cannot verify their identify or pubsub keys.
 
 #### Configuring Connection Manager
 
