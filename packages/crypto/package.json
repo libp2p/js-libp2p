@@ -57,6 +57,11 @@
       "import": "./dist/src/der.js",
       "module-sync": "./dist/src/der.js"
     },
+    "./secp256k1": {
+      "types": "./dist/src/secp256k1.d.ts",
+      "import": "./dist/src/secp256k1.js",
+      "module-sync": "./dist/src/secp256k1.js"
+    },
     "./pb": {
       "types": "./dist/src/pb.d.ts",
       "import": "./dist/src/pb.js",
@@ -81,6 +86,8 @@
   },
   "dependencies": {
     "@libp2p/interface": "^3.4.0",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1",
     "multiformats": "^14.0.0",
     "protons-runtime": "^7.0.0",
     "uint8arraylist": "^3.0.2",

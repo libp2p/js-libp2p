@@ -3,6 +3,7 @@
   "entryPoints": [
     "./src/index.ts",
     "./src/der.ts",
-    "./src/pb.ts"
+    "./src/pb.ts",
+    "./src/secp256k1.ts"
   ]
 }
