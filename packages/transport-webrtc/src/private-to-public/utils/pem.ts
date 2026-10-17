@@ -1,4 +1,3 @@
-import { privateKeyToCryptoKeyPair } from '@libp2p/crypto/keys'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import type { PrivateKey } from '@libp2p/interface'
 
@@ -7,8 +6,8 @@ export function toBuffer (uint8Array: Uint8Array): Buffer {
 }
 
 export async function formatAsPem (privateKey: PrivateKey): Promise<string> {
-  const keyPair = await privateKeyToCryptoKeyPair(privateKey)
-  const exported = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
+  const key = await crypto.subtle.importKey('jwk', privateKey.toJWK(), { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign'])
+  const exported = await crypto.subtle.exportKey('pkcs8', key)
 
   return [
     '-----BEGIN PRIVATE KEY-----',

@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { defaultCryptoLoader, generateKeyPair } from '@libp2p/crypto'
 import { start, stop } from '@libp2p/interface'
 import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
@@ -43,7 +43,7 @@ describe('WebRTCDirect Transport - certificates', () => {
       datastore,
       keychain: keychain()({
         datastore,
-        logger
+        getCrypto: defaultCryptoLoader()
       })
     }
 
