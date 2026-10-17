@@ -23,13 +23,12 @@
  */
 import { Keychain as KeychainClass } from './keychain.ts'
 import type { LegacyDek } from './legacy.ts'
-import type { Crypto, PrivateKey, PublicKey } from '@libp2p/crypto'
+import type { CryptoLoader, PrivateKey, PublicKey } from '@libp2p/crypto'
 import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 
-export interface CryptoLoader {
-  (codeOrName: number | string, options?: AbortOptions): Crypto | Promise<Crypto>
-}
+export { DecryptionFailedError, InvalidParametersError, KeychainMigrationError } from './errors.ts'
+export type { CryptoLoader }
 
 export interface KeyInfo {
   /**
