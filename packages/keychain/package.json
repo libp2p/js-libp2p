@@ -1,28 +1,20 @@
 {
   "name": "@libp2p/keychain",
   "version": "6.1.9",
-  "description": "Key management and cryptographically protected messages",
+  "description": "Generate and securely store private keys at rest",
   "license": "Apache-2.0 OR MIT",
-  "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/keychain#readme",
+  "homepage": "https://github.com/ipshipyard/js-keychain#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/libp2p/js-libp2p.git"
+    "url": "git+https://github.com/ipshipyard/js-keychain.git"
   },
   "bugs": {
-    "url": "https://github.com/libp2p/js-libp2p/issues"
+    "url": "https://github.com/ipshipyard/js-keychain/issues"
   },
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
-  "keywords": [
-    "IPFS",
-    "crypto",
-    "encryption",
-    "keys",
-    "libp2p",
-    "secure"
-  ],
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "files": [
@@ -38,34 +30,133 @@
       "module-sync": "./dist/src/index.js"
     }
   },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "breaking": true,
+              "release": "major"
+            },
+            {
+              "revert": true,
+              "release": "patch"
+            },
+            {
+              "type": "feat",
+              "release": "minor"
+            },
+            {
+              "type": "fix",
+              "release": "patch"
+            },
+            {
+              "type": "docs",
+              "release": "patch"
+            },
+            {
+              "type": "test",
+              "release": "patch"
+            },
+            {
+              "type": "deps",
+              "release": "patch"
+            },
+            {
+              "scope": "no-release",
+              "release": false
+            }
+          ]
+        }
+      ],
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "conventionalcommits",
+          "presetConfig": {
+            "types": [
+              {
+                "type": "feat",
+                "section": "Features"
+              },
+              {
+                "type": "fix",
+                "section": "Bug Fixes"
+              },
+              {
+                "type": "chore",
+                "section": "Trivial Changes"
+              },
+              {
+                "type": "docs",
+                "section": "Documentation"
+              },
+              {
+                "type": "deps",
+                "section": "Dependencies"
+              },
+              {
+                "type": "test",
+                "section": "Tests"
+              }
+            ]
+          }
+        }
+      ],
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "CHANGELOG.md",
+            "package.json"
+          ]
+        }
+      ]
+    ]
+  },
   "scripts": {
+    "build": "aegir build",
     "clean": "aegir clean",
     "lint": "aegir lint",
     "dep-check": "aegir dep-check",
     "doc-check": "aegir doc-check",
-    "build": "aegir build",
+    "spell-check": "aegir spell-check",
+    "docs": "aegir docs",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
     "test:firefox": "aegir test -t browser -- --browser firefox",
     "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
     "test:node": "aegir test -t node --cov",
-    "test:electron-main": "aegir test -t electron-main"
+    "test:electron-main": "aegir test -t electron-main",
+    "test:deno": "aegir test -t deno",
+    "release": "aegir release"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.1.25",
-    "@libp2p/interface": "^3.4.0",
-    "@noble/hashes": "^2.0.1",
-    "asn1js": "^3.0.6",
+    "@ipshipyard/crypto": "^1.1.0",
+    "abort-error": "^1.0.2",
     "interface-datastore": "^10.0.1",
     "multiformats": "^14.0.0",
-    "sanitize-filename": "^1.6.3",
+    "sanitize-filename": "^1.6.4",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.15",
-    "aegir": "^48.1.1",
-    "datastore-core": "^12.0.1"
+    "@libp2p/crypto": "^5.1.15",
+    "@libp2p/keychain": "^6.1.1",
+    "@types/sinon": "^21.0.1",
+    "aegir": "^48.0.4",
+    "birnam": "^1.0.0",
+    "datastore-core": "^12.0.1",
+    "it-all": "^3.0.11"
   },
   "sideEffects": false
 }

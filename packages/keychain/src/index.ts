@@ -1,76 +1,86 @@
 /**
  * @packageDocumentation
  *
- * - Manages the life cycle of a key
- * - Keys are encrypted at rest
- * - Enforces the use of safe key names
- * - Uses encrypted PKCS 8 for key storage
- * - Uses PBKDF2 for a "stretched" key encryption key
- * - Enforces NIST SP 800-131A and NIST SP 800-132
- * - Delays reporting errors to slow down brute force attacks
+ * A WebCrypto-first keychain implementation for use with Helia and libp2p.
  *
- * ## KeyInfo
+ * ## Configuring additional implementations
  *
- * The key management and naming service API all return a `KeyInfo` object.  The `id` is a universally unique identifier for the key.  The `name` is local to the key chain.
- *
- * ```JSON
- * {
- *   "name": "rsa-key",
- *   "id": "QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW"
- * }
- * ```
- *
- * The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multihash) of its public key.
- *
- * The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
- *
- * ## Private key storage
- *
- * A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *pass phrase* using **PBKDF2**.
- *
- * The default options for generating the derived encryption key are in the `dek` object.  This, along with the pass phrase, is the input to a `PBKDF2` function.
- *
- * ```TypeScript
- * const defaultOptions = {
- *   // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
- *   dek: {
- *     keyLength: 512 / 8,
- *     iterationCount: 1000,
- *     salt: 'at least 16 characters long',
- *     hash: 'sha2-512'
- *   }
- * }
- * ```
- *
- * ## Physical storage
- *
- * The actual physical storage of an encrypted key is left to implementations of [interface-datastore](https://github.com/ipfs/interface-datastore/).
- *
- * A key benefit is that now the key chain can be used in browser with the [js-datastore-level](https://github.com/ipfs/js-datastore-level) implementation.
+ * ECDSA, Ed25519 and RSA keys are supported out of the box but other schemes
+ * are configurable by passing a `CryptoLoader` that can return `Crypto`
+ * instances.
  */
-
 import { Keychain as KeychainClass } from './keychain.ts'
-import type { ComponentLogger, PrivateKey } from '@libp2p/interface'
+import type { Crypto, PrivateKey, PublicKey } from '@ipshipyard/crypto'
+import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 
-export interface DEKConfig {
-  hash: string
-  salt: string
-  iterationCount: number
-  keyLength: number
+export interface CryptoLoader {
+  (codeOrName: number | string, options?: AbortOptions): Crypto | Promise<Crypto>
+}
+
+export interface CipherOptions extends AbortOptions {
+  iterations?: number
+  hash?: string
+  keyLength?: number
+  algorithm?: string
+}
+
+export interface EncryptionResult {
+  salt: Uint8Array<ArrayBuffer>
+  iv: Uint8Array<ArrayBuffer>
+  cipherText: Uint8Array<ArrayBuffer>
+}
+
+export interface Cipher {
+  encrypt(data: Uint8Array, options?: AbortOptions): Promise<EncryptionResult>
+  decrypt(salt: Uint8Array, iv: Uint8Array, cipherText: Uint8Array, options?: CipherOptions): Promise<Uint8Array<ArrayBuffer>>
+}
+
+export interface KeyInfo {
+  /**
+   * The hash of the key
+   */
+  id: string
+
+  /**
+   * The key name
+   */
+  name: string
+}
+
+export interface GenerateKeyOptions extends AbortOptions, Record<string, any> {
+  /**
+   * The type of key to generate
+   *
+   * @default 'Ed25519'
+   */
+  type?: 'ECDSA' | 'Ed25519' | 'RSA' | string
 }
 
 export interface KeychainInit {
   /**
    * The password is used to derive a key which encrypts the keychain at rest
    */
-  pass?: string
+  password?: string
 
   /**
-   * This key configures how the keychain encryption key is derived from the
-   * configured password
+   * Specify a non-default PBK2 function salt
    */
-  dek?: DEKConfig
+  salt?: string
+
+  /**
+   * How many iterations to use when deriving a key from the password
+   *
+   * @default 10_000
+   */
+  iterations?: number
+
+  /**
+   * The hash type
+   *
+   * @default SHA2-512
+   */
+  hash?: 'SHA-256' | 'SHA-384' | 'SHA-512'
 
   /**
    * The 'self' key is the private key of the node from which the peer id is
@@ -88,65 +98,34 @@ export interface KeychainInit {
 
 export interface KeychainComponents {
   datastore: Datastore
-  logger: ComponentLogger
-}
-
-export interface KeyInfo {
-  /**
-   * The universally unique key id
-   */
-  id: string
-
-  /**
-   * The local key name
-   */
-  name: string
+  getCrypto: CryptoLoader
 }
 
 export interface Keychain {
   /**
-   * Find a key by name
-   *
-   * @example
-   *
-   * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
-   * const keyInfo2 = await libp2p.keychain.findKeyByName(keyInfo.name)
-   * ```
+   * Create a key of the passed type and store it under the specified name. A
+   * cryptography implementation must be configured for the key type (defaults
+   * to Ed25519).
    */
-  findKeyByName(name: string): Promise<KeyInfo>
-
-  /**
-   * Find a key by id
-   *
-   * @example
-   *
-   * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
-   * const keyInfo2 = await libp2p.keychain.findKeyById(keyInfo.id)
-   * ```
-   */
-  findKeyById (id: string): Promise<KeyInfo>
+  generateKey (name: string, options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
 
   /**
    * Import a new private key.
    *
+   * The `type` parameter must match a supported cryptography implementation.
+   *
+   * The default supported key types are `Ed25519` and `RSA`, others may be
+   * added through configuration.
+   *
    * @example
    *
    * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
+   * const key = await crypto.subtle.generateKey('Ed25519', true, ['sign', 'verify'])
+   * const raw = await crypto.subtle.exportKey('raw', key)
+   * await helia.keychain.importKey('my-key', 'Ed25519', raw)
    * ```
    */
-  importKey(name: string, key: PrivateKey): Promise<KeyInfo>
+  importKey(name: string, key: PrivateKey, options?: AbortOptions): Promise<PrivateKey>
 
   /**
    * Export an existing private key.
@@ -154,14 +133,13 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
-   * const key = await libp2p.keychain.exportKey(keyInfo.id)
+   * const raw = await helia.exportKey('my-key')
+   * const key = await crypto.subtle.importKey('raw', raw, {
+   *   name: 'Ed25519'
+   * }, true, ['sign', 'verify'])
    * ```
    */
-  exportKey(name: string): Promise<PrivateKey>
+  exportKey(name: string, options?: AbortOptions): Promise<PrivateKey>
 
   /**
    * Removes a key from the keychain.
@@ -169,11 +147,10 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.services.keychain.removeKey('keyTest')
+   * await helia.keychain.removeKey('keyTest')
    * ```
    */
-  removeKey(name: string): Promise<KeyInfo>
+  removeKey(name: string, options?: AbortOptions): Promise<void>
 
   /**
    * Rename a key in the keychain. This is done in a batch commit with rollback
@@ -182,11 +159,10 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewTest')
+   * await helia.keychain.renameKey('oldName', 'newName')
    * ```
    */
-  renameKey(oldName: string, newName: string): Promise<KeyInfo>
+  renameKey(oldName: string, newName: string, options?: AbortOptions): Promise<void>
 
   /**
    * List all the keys.
@@ -194,40 +170,32 @@ export interface Keychain {
    * @example
    *
    * ```TypeScript
-   * const keyInfos = await libp2p.keychain.listKeys()
+   * for await (const name of helia.keychain.listKeys()) {
+   *   // ...
+   * }
    * ```
    */
-  listKeys(): Promise<KeyInfo[]>
+  listKeys(options?: AbortOptions): AsyncGenerator<KeyInfo>
 
   /**
-   * Rotate keychain password and re-encrypt all associated keys
+   * Re-encrypt all keys in the keychain using a crypto graphic key derived
+   * from the password
    *
    * @example
    *
    * ```TypeScript
-   * await libp2p.services.keychain.rotateKeychainPass('oldPassword', 'newPassword')
+   * await helia.keychain.rotateKeychainPass('newPassword')
    * ```
    */
-  rotateKeychainPass(oldPass: string, newPass: string): Promise<void>
+  rotateKeychainPass(password: string, options?: AbortOptions): Promise<void>
+
+  /**
+   * Attempts to load a public key from a serialized protobuf message conforming
+   * to the `PublicKey` message.
+   */
+  loadPublicKeyFromProtobuf (buf: Uint8Array, options?: AbortOptions): Promise<PublicKey>
 }
 
-export function keychain (init: KeychainInit = {}): (components: KeychainComponents) => Keychain {
-  return (components: KeychainComponents) => {
-    return new KeychainClass(components, init)
-  }
-}
-
-export function isKeychain (obj?: any): obj is Keychain {
-  if (obj == null) {
-    return false
-  }
-
-  return typeof obj.findKeyByName === 'function' &&
-    typeof obj.findKeyById === 'function' &&
-    typeof obj.importKey === 'function' &&
-    typeof obj.exportKey === 'function' &&
-    typeof obj.removeKey === 'function' &&
-    typeof obj.renameKey === 'function' &&
-    typeof obj.listKeys === 'function' &&
-    typeof obj.rotateKeychainPass === 'function'
+export function keychain (init?: KeychainInit): (components: KeychainComponents) => Keychain {
+  return (components) => new KeychainClass(components, init)
 }

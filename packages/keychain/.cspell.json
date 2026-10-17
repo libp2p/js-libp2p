@@ -1,0 +1,11 @@
+{
+  "import": [
+    "./node_modules/aegir/cspell.json"
+  ],
+  "dictionaries": ["project"],
+  "dictionaryDefinitions": [{
+    "name": "project",
+    "path": "./.github/dictionary.txt",
+    "addWords": true
+  }]
+}
