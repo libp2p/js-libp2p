@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.1.7](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.1.6...autonat-v2-v2.1.7) (2026-10-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/peer-collections bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+
 ## [2.1.6](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.1.5...autonat-v2-v2.1.6) (2026-10-16)
 
 
