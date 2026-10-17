@@ -1,4 +1,4 @@
-import { publicKeyForPeer, publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyForPeer } from '@libp2p/crypto'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -9,6 +9,7 @@ import { RPC } from '../message/rpc.ts'
 import { PublishConfigType, ValidateError } from '../types.ts'
 import type { Message } from '../index.ts'
 import type { PublishConfig, TopicStr } from '../types.ts'
+import type { CryptoLoaderOptions } from '@libp2p/crypto'
 import type { PublicKey, PeerId } from '@libp2p/interface'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
@@ -63,7 +64,7 @@ export async function buildRawMessage (
         sequenceNumber: BigInt(`0x${uint8ArrayToString(rpcMsg.seqno ?? new Uint8Array(0), 'base16')}`),
         topic,
         signature: rpcMsg.signature,
-        key: publicKeyFromProtobuf(rpcMsg.key)
+        key: publishConfig.privateKey.publicKey
       }
       return {
         raw: rpcMsg,
@@ -98,7 +99,8 @@ export type ValidationResult = { valid: true, message: Message } | { valid: fals
 
 export async function validateToRawMessage (
   signaturePolicy: typeof StrictNoSign | typeof StrictSign,
-  msg: RPC.Message
+  msg: RPC.Message,
+  options?: CryptoLoaderOptions
 ): Promise<ValidationResult> {
   // If strict-sign, verify all
   // If anonymous (no-sign), ensure no signature, key, from or seqno is present
@@ -131,7 +133,7 @@ export async function validateToRawMessage (
 
       let publicKey: PublicKey
       try {
-        publicKey = await publicKeyForPeer(fromPeerId, msg.key)
+        publicKey = await publicKeyForPeer(fromPeerId, msg.key, options)
       } catch {
         // mismatched, missing or malformed keys are invalid, not thrown, so the
         // peer is still scored

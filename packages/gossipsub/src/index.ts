@@ -46,6 +46,7 @@ import type { MsgIdFn, MsgIdStr, FastMsgIdFn, AddrInfo, DataTransform, MsgIdToSt
 import type {
   PeerId, PeerStore,
   ComponentLogger,
+  CryptoLoader,
   PrivateKey,
   PublicKey,
   TypedEventTarget,
@@ -334,6 +335,7 @@ export interface GossipSubComponents {
   registrar: Registrar
   connectionManager: ConnectionManager
   logger: ComponentLogger
+  getCrypto?: CryptoLoader
 }
 
 export interface GossipSub extends TypedEventTarget<GossipSubEvents> {

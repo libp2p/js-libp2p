@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import type { RPC } from '../../src/message/rpc.ts'

@@ -1195,7 +1195,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
 
     // Perform basic validation on message and convert to RawGossipsubMessage for fastMsgIdFn()
-    const validationResult = await validateToRawMessage(this.globalSignaturePolicy, rpcMsg)
+    const validationResult = await validateToRawMessage(this.globalSignaturePolicy, rpcMsg, { getCrypto: this.components.getCrypto })
 
     if (!validationResult.valid) {
       return { code: MessageStatus.invalid, reason: RejectReason.Error, error: validationResult.error }
