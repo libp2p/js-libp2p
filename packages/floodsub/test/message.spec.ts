@@ -10,7 +10,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { floodsub } from '../src/index.ts'
 import { RPC } from '../src/message/rpc.ts'
 import { SignPrefix } from '../src/sign.ts'
-import { randomSeqno, toMessage, toRpcMessage } from '../src/utils.ts'
+import { nextSeqno, toMessage, toRpcMessage } from '../src/utils.ts'
 import type { FloodSub, SignedMessage } from '../src/index.ts'
 import type { PeerId } from '@libp2p/interface'
 import type { Registrar } from '@libp2p/interface-internal'
@@ -43,7 +43,7 @@ describe('pubsub base messages', () => {
       from: peerId,
       data: uint8ArrayFromString('hello'),
       topic: 'test-topic',
-      sequenceNumber: randomSeqno()
+      sequenceNumber: nextSeqno()
     }
 
     // @ts-expect-error private method
@@ -58,7 +58,7 @@ describe('pubsub base messages', () => {
       from: peerId,
       data: uint8ArrayFromString('hello'),
       topic: 'test-topic',
-      sequenceNumber: randomSeqno()
+      sequenceNumber: nextSeqno()
     }
 
     sinon.stub(pubsub, 'globalSignaturePolicy').value('StrictSign')
@@ -92,7 +92,7 @@ describe('pubsub base messages', () => {
       from: peerId,
       data: uint8ArrayFromString('hello'),
       topic: 'test-topic',
-      sequenceNumber: randomSeqno()
+      sequenceNumber: nextSeqno()
     }
 
     sinon.stub(pubsub, 'globalSignaturePolicy').value('StrictNoSign')
@@ -127,7 +127,7 @@ describe('pubsub base messages', () => {
       from: victim,
       data: uint8ArrayFromString('hello'),
       topic: 'test-topic',
-      sequenceNumber: randomSeqno()
+      sequenceNumber: nextSeqno()
     }
     const bytes = uint8ArrayConcat([SignPrefix, RPC.Message.encode(toRpcMessage(forged)).subarray()])
     forged.signature = await attackerKey.sign(bytes)

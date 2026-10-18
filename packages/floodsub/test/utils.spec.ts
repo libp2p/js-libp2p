@@ -6,13 +6,17 @@ import type { PubSubRPCMessage } from '../src/floodsub.ts'
 import type { Message } from '../src/index.ts'
 
 describe('utils', () => {
-  it('randomSeqno', () => {
-    const first = utils.randomSeqno()
-    const second = utils.randomSeqno()
+  it('nextSeqno', () => {
+    const first = utils.nextSeqno()
+    const second = utils.nextSeqno()
 
     expect(first).to.be.a('BigInt')
     expect(second).to.be.a('BigInt')
-    expect(first).to.not.equal(second)
+    expect(second > first).to.be.true()
+  })
+
+  it('encodes sequence numbers as 8 bytes', () => {
+    expect(utils.bigIntToBytes(utils.nextSeqno())).to.have.lengthOf(8)
   })
 
   it('msgId should not generate same ID for two different Uint8Arrays', async () => {
