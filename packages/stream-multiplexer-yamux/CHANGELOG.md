@@ -4,6 +4,45 @@
 
 * make sendReset synchronous to avoid unhandled rejections ([#113](https://github.com/ChainSafe/js-libp2p-yamux/issues/113)) ([232fb1b](https://github.com/ChainSafe/js-libp2p-yamux/commit/232fb1b6aec679d61a31f4b97deeed135ef6f5c4))
 
+## [8.0.6](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.5...yamux-v8.0.6) (2026-10-17)
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.34 to ^7.0.35
+    * @libp2p/mplex bumped from ^12.0.34 to ^12.0.35
+
+## [8.0.5](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.4...yamux-v8.0.5) (2026-10-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.33 to ^7.0.34
+    * @libp2p/mplex bumped from ^12.0.33 to ^12.0.34
+
+## [8.0.4](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.3...yamux-v8.0.4) (2026-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.32 to ^7.0.33
+    * @libp2p/mplex bumped from ^12.0.32 to ^12.0.33
+
 ## [8.0.3](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.2...yamux-v8.0.3) (2026-09-02)
 
 

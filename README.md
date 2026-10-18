@@ -7,7 +7,6 @@
 [![libp2p.io](https://img.shields.io/badge/project-libp2p-yellow.svg?style=flat-square)](http://libp2p.io/)
 [![npm](https://img.shields.io/npm/dm/libp2p.svg?style=flat-square)](https://www.npmjs.com/package/libp2p)
 [![Discuss](https://img.shields.io/discourse/https/discuss.libp2p.io/posts.svg?style=flat-square)](https://discuss.libp2p.io)
-[![Matrix](https://img.shields.io/badge/matrix-%23libp2p--implementers%3Aipfs.io-blue.svg?style=flat-square)](http://webchat.freenode.net/?channels=%23libp2p)
 [![Discord](https://img.shields.io/discord/806902334369824788?color=blueviolet&label=discord&style=flat-square)](https://discord.com/invite/Ae4TbahHaT)
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
@@ -33,7 +32,7 @@ libp2p is the product of a long and arduous quest to understand the evolution of
 We are in the process of writing better documentation, blog posts, tutorials and a formal specification. Today you can find:
 
 - [libp2p.io](https://libp2p.io)
-- [docs.libp2p.io](https://docs.libp2p.io)
+- [libp2p.io/docs](https://libp2p.io/docs/)
 - [Specification (WIP)](https://github.com/libp2p/specs)
 - [Discussion Forums](https://discuss.libp2p.io)
 - [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p)
@@ -99,7 +98,6 @@ You can find multiple examples on the [examples repo](https://github.com/libp2p/
 - [`/packages/peer-store`](https://github.com/libp2p/js-libp2p/tree/main/packages/peer-store) Stores information about peers libp2p knows on the network
 - [`/packages/protocol-echo`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-echo) Implementation of an Echo protocol
 - [`/packages/protocol-perf`](https://github.com/libp2p/js-libp2p/tree/main/packages/protocol-perf) Implementation of the Perf protocol
-- [`/packages/pubsub`](https://github.com/libp2p/js-libp2p/tree/main/packages/pubsub) libp2p pubsub base class
 - [`/packages/floodsub`](https://github.com/libp2p/js-libp2p/tree/main/packages/floodsub) libp2p-floodsub, also known as pubsub-flood or just dumbsub, this implementation of pubsub focused on delivering an API for Publish/Subscribe, but with no CastTree Forming (it just floods the network).
 - [`/packages/record`](https://github.com/libp2p/js-libp2p/tree/main/packages/record) libp2p record implementation
 - [`/packages/stream-multiplexer-mplex`](https://github.com/libp2p/js-libp2p/tree/main/packages/stream-multiplexer-mplex) JavaScript implementation of <https://github.com/libp2p/mplex>
@@ -179,7 +177,7 @@ List of packages currently in existence for libp2p
 | [`@libp2p/peer-record`](//github.com/libp2p/js-libp2p/tree/main/packages/peer-record) | [![npm](https://img.shields.io/npm/v/%40libp2p%2Fpeer-record.svg?maxAge=86400&style=flat-square)](//npmjs.com/package/@libp2p/peer-record) | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Fpeer-record?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40libp2p%2Fpeer-record) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main&label=ci&style=flat-square)](//github.com/libp2p/js-libp2p/actions?query=branch%3Amain+workflow%3Aci+) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/peer-record/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/peer-record) |
 | **pubsub** |
 | [`@libp2p/gossipsub`](//github.com/libp2p/js-libp2p/tree/main/packages/gossipsub) | [![npm](https://img.shields.io/npm/v/%40libp2p%2Fgossipsub.svg?maxAge=86400&style=flat-square)](//npmjs.com/package/@libp2p/gossipsub) | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Fgossipsub?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40libp2p%2Fgossipsub) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main&label=ci&style=flat-square)](//github.com/libp2p/js-libp2p/actions?query=branch%3Amain+workflow%3Aci+) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/gossipsub/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/gossipsub) |
-| [`@libp2p/floodsub`](//github.com/libp2p/js-libp2p/tree/main/packages/floodsub) | [![npm](https://img.shields.io/npm/v/%40libp2p%2Ffloodsub.svg?maxAge=86400&style=flat-square)](//github.com/libp2p/js-libp2p/tree/main/packages/floodsub/releases) | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Ffloodsub?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40libp2p%2Ffloodsub) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main&label=ci&style=flat-square)](//github.com/libp2p/js-libp2p/actions?query=branch%3Amain+workflow%3Aci+) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/floodsub/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/floodsub) |
+| [`@libp2p/floodsub`](//github.com/libp2p/js-libp2p/tree/main/packages/floodsub) | [![npm](https://img.shields.io/npm/v/%40libp2p%2Ffloodsub.svg?maxAge=86400&style=flat-square)](//npmjs.com/package/@libp2p/floodsub) | [![Deps](https://img.shields.io/librariesio/release/npm/%40libp2p%2Ffloodsub?logo=Libraries.io&logoColor=white&style=flat-square)](//libraries.io/npm/%40libp2p%2Ffloodsub) | [![GitHub CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main&label=ci&style=flat-square)](//github.com/libp2p/js-libp2p/actions?query=branch%3Amain+workflow%3Aci+) | [![codecov](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/floodsub/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p/tree/main/packages/floodsub) |
 
 ## Used by
 

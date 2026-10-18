@@ -24,7 +24,8 @@ export const UFRAG_ALPHABET = Array.from('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKL
 /**
  * Used to detect the version of the WebRTC Direct connection protocol in use
  */
-export const UFRAG_PREFIX = 'libp2p+webrtc+v1/'
+export const UFRAG_PREFIX_V1 = 'libp2p+webrtc+v1/'
+export const UFRAG_PREFIX_V2 = 'libp2p+webrtc+v2/'
 
 /**
  * How much can be buffered to the DataChannel at once

@@ -23,7 +23,7 @@ const defaultInit: AutoNATv2ServiceInit = {
   protocolPrefix: 'libp2p',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
-  timeout: 100,
+  timeout: 1000,
   startupDelay: 120000,
   refreshInterval: 120000
 }
@@ -1034,7 +1034,14 @@ describe('autonat v2 - client', () => {
       .to.be.true('Did not attempt verification despite valid remote address')
   })
 
-  it('should time out when verifying an observed address', async () => {
+  it('should abort verification when the remote does not respond', async () => {
+    await stop(service)
+    service = new AutoNATv2Service(components, {
+      ...defaultInit,
+      timeout: 100
+    })
+    await start(service)
+
     const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([{
       multiaddr: observedAddress,
@@ -1043,64 +1050,41 @@ describe('autonat v2 - client', () => {
       expires: 0
     }])
 
-    // The network says OK
-    const connections = [
-      await stubPeerResponse({
-        host: '124.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '125.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '126.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '127.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      })
-    ]
-
-    for (const conn of connections) {
-      await service.client.verifyExternalAddresses(conn)
-      await delay(100)
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peer: Peer = {
+      id: peerId,
+      addresses: [{
+        multiaddr: multiaddr('/ip4/124.124.124.124/tcp/28319'),
+        isCertified: true
+      }],
+      protocols: [
+        '/libp2p/autonat/2/dial-request',
+        '/libp2p/autonat/2/dial-back'
+      ],
+      metadata: new Map(),
+      tags: new Map()
     }
 
-    expect(addressManager.addObservedAddr.called)
-      .to.be.false('Verify external multiaddr when we should have timed out')
+    peerStore.get.withArgs(peerId).resolves(peer)
+
+    const connection = stubInterface<Connection>()
+    connection.remoteAddr = multiaddr(`/ip4/124.124.124.124/tcp/28319/p2p/${peerId.toString()}`)
+    connection.remotePeer = peerId
+
+    // the remote accepts the stream but never sends a dial response
+    const [outgoingStream] = await streamPair()
+    connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/dial-request`).resolves(outgoingStream)
+
+    await service.client.verifyExternalAddresses(connection)
+
+    // the job only finishes once the verification request has been aborted
+    await service.client.queue.onIdle()
+
+    expect(connection.newStream.calledOnce).to.be.true('Did not open a dial-request stream')
+    expect(outgoingStream.status)
+      .to.equal('aborted', 'Verification was not aborted after the timeout elapsed')
+    expect(service.client.nonces.size).to.equal(0, 'Did not clean up the nonce')
+    expect(addressManager.confirmObservedAddr.called)
+      .to.be.false('Confirmed an address the remote never verified')
   })
 })

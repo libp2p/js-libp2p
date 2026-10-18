@@ -1,5 +1,58 @@
 # Changelog
 
+## [2.1.7](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.1.6...autonat-v2-v2.1.7) (2026-10-17)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/peer-collections bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+
+## [2.1.6](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.1.5...autonat-v2-v2.1.6) (2026-10-16)
+
+
+### Bug Fixes
+
+* **autonat-v2:** apply timeout to verification requests ([#3658](https://github.com/libp2p/js-libp2p/issues/3658)) ([974e63f](https://github.com/libp2p/js-libp2p/commit/974e63f20688fdce0ab99c03aaaa1851013084c6))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/interface-internal bumped from ^3.1.14 to ^3.2.0
+    * @libp2p/peer-collections bumped from ^7.0.29 to ^7.0.30
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.24 to ^5.1.25
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/peer-id bumped from ^6.0.16 to ^6.0.17
+
+## [2.1.5](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.1.4...autonat-v2-v2.1.5) (2026-10-10)
+
+
+### Dependencies
+
+* require main-event ^1.0.5 ([#3641](https://github.com/libp2p/js-libp2p/issues/3641)) ([e7359e5](https://github.com/libp2p/js-libp2p/commit/e7359e5f6291c56e2704d812ab1975c33c91ff3d))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/interface-internal bumped from ^3.1.13 to ^3.1.14
+    * @libp2p/peer-collections bumped from ^7.0.28 to ^7.0.29
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.23 to ^5.1.24
+    * @libp2p/logger bumped from ^6.2.13 to ^6.2.14
+    * @libp2p/peer-id bumped from ^6.0.15 to ^6.0.16
+
 ## [2.1.4](https://github.com/libp2p/js-libp2p/compare/autonat-v2-v2.1.3...autonat-v2-v2.1.4) (2026-08-31)
 
 

@@ -1,6 +1,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
+import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { encode } from 'it-length-prefixed'
@@ -11,7 +12,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Upgrader } from '../../src/upgrader.ts'
 import { createDefaultUpgraderComponents } from './utils.ts'
 import type { UpgraderComponents, UpgraderInit } from '../../src/upgrader.ts'
-import type { ConnectionEncrypter, StreamMuxerFactory, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Connection } from '@libp2p/interface'
+import type { ConnectionEncrypter, StreamMuxerFactory, StreamMuxer, ConnectionProtector, PeerId, SecuredConnection, Connection, MultiaddrConnection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 
 describe('upgrader', () => {
@@ -539,6 +540,111 @@ describe('upgrader', () => {
       .with.property('name', 'ConnectionDeniedError')
 
     expect(components.connectionManager.afterUpgradeInbound).to.have.property('called', false)
+  })
+
+  describe('expected remote peer', () => {
+    let rsaPeer: PeerId
+
+    before(async () => {
+      rsaPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
+    })
+
+    async function upgradeOutboundTo (remoteAddr: string): Promise<{ connection: Promise<Connection>, maConn: MultiaddrConnection }> {
+      const upgrader = new Upgrader(components, init)
+      const [outbound, inbound] = multiaddrConnectionPair({
+        outbound: {
+          remoteAddr: multiaddr(remoteAddr)
+        }
+      })
+
+      handshake.forEach(buf => {
+        inbound.send(buf)
+      })
+
+      return {
+        connection: upgrader.upgradeOutbound(outbound, {
+          signal: AbortSignal.timeout(5_000)
+        }),
+        maConn: outbound
+      }
+    }
+
+    async function upgradeInboundFrom (remoteAddr: string): Promise<{ connection: Promise<void>, maConn: MultiaddrConnection }> {
+      const upgrader = new Upgrader(components, init)
+      const [outbound, inbound] = multiaddrConnectionPair({
+        inbound: {
+          remoteAddr: multiaddr(remoteAddr)
+        }
+      })
+
+      const connection = upgrader.upgradeInbound(inbound, {
+        signal: AbortSignal.timeout(5_000)
+      })
+      connection.catch(() => {})
+
+      await delay(10)
+
+      handshake.forEach(buf => {
+        outbound.send(buf)
+      })
+
+      return { connection, maConn: inbound }
+    }
+
+    it('should reject an outbound connection to a different peer than the expected RSA peer id', async () => {
+      expect(peerIdFromString(rsaPeer.toString()).publicKey).to.be.undefined()
+
+      const { connection, maConn } = await upgradeOutboundTo(`/ip4/127.0.0.1/tcp/4001/p2p/${rsaPeer}`)
+
+      await expect(connection).to.eventually.be.rejected
+        .with.property('name', 'UnexpectedPeerError')
+      expect(maConn).to.have.property('status', 'aborted')
+    })
+
+    it('should reject an outbound connection to a different peer than the expected Ed25519 peer id', async () => {
+      const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const { connection, maConn } = await upgradeOutboundTo(`/ip4/127.0.0.1/tcp/4001/p2p/${otherPeer}`)
+
+      await expect(connection).to.eventually.be.rejected
+        .with.property('name', 'UnexpectedPeerError')
+      expect(maConn).to.have.property('status', 'aborted')
+    })
+
+    it('should accept an outbound connection to the expected RSA peer id', async () => {
+      remotePeer = rsaPeer
+
+      const { connection } = await upgradeOutboundTo(`/ip4/127.0.0.1/tcp/4001/p2p/${rsaPeer}`)
+      const conn = await connection
+      expect(conn.remotePeer.equals(rsaPeer)).to.be.true()
+    })
+
+    it('should accept an outbound connection to the expected Ed25519 peer id', async () => {
+      const { connection } = await upgradeOutboundTo(`/ip4/127.0.0.1/tcp/4001/p2p/${remotePeer}`)
+      const conn = await connection
+      expect(conn.remotePeer.equals(remotePeer)).to.be.true()
+    })
+
+    it('should use the last peer id in a relayed address', async () => {
+      const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const { connection } = await upgradeOutboundTo(`/ip4/127.0.0.1/tcp/4001/p2p/${relayPeer}/p2p-circuit/p2p/${remotePeer}`)
+      const conn = await connection
+      expect(conn.remotePeer.equals(remotePeer)).to.be.true()
+    })
+
+    it('should reject an inbound connection from a different peer than the expected peer id', async () => {
+      const otherPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const { connection, maConn } = await upgradeInboundFrom(`/ip4/127.0.0.1/tcp/4001/p2p-circuit/p2p/${otherPeer}`)
+
+      await expect(connection).to.eventually.be.rejected
+        .with.property('name', 'UnexpectedPeerError')
+      expect(maConn).to.have.property('status', 'aborted')
+    })
+
+    it('should accept an inbound connection from the expected peer id', async () => {
+      const { connection } = await upgradeInboundFrom(`/ip4/127.0.0.1/tcp/4001/p2p-circuit/p2p/${remotePeer}`)
+
+      await expect(connection).to.eventually.be.fulfilled()
+    })
   })
 
   describe('early muxer selection', () => {

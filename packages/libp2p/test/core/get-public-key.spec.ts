@@ -88,7 +88,7 @@ describe('getPublicKey', () => {
     // key is fetched from content routing
     const otherPeerWithoutPublicKey = peerIdFromMultihash(otherPeer.toMultihash())
 
-    await expect(node.getPublicKey(otherPeerWithoutPublicKey)).to.eventually.be.rejectedWith(/did not match requested peer/)
+    await expect(node.getPublicKey(otherPeerWithoutPublicKey)).to.eventually.be.rejected.with.property('name', 'InvalidPublicKeyError')
     expect(patchSpy.called).to.be.false()
   })
 })

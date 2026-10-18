@@ -35,7 +35,7 @@ describe('performHandshake', () => {
         crypto: wrapCrypto(defaultCrypto),
         privateKey: peerA.privateKey,
         prologue,
-        remoteIdentityKey: peerB.privateKey.publicKey,
+        remotePeer: peerB.peerId,
         s: staticKeysInitiator
       }),
       performHandshakeResponder({
@@ -44,7 +44,7 @@ describe('performHandshake', () => {
         crypto: wrapCrypto(defaultCrypto),
         privateKey: peerB.privateKey,
         prologue,
-        remoteIdentityKey: peerA.privateKey.publicKey,
+        remotePeer: peerA.peerId,
         s: staticKeysResponder
       })
     ])
@@ -72,7 +72,7 @@ describe('performHandshake', () => {
           crypto: wrapCrypto(defaultCrypto),
           privateKey: peerA.privateKey,
           prologue,
-          remoteIdentityKey: fakePeer.privateKey.publicKey, // <----- look here
+          remotePeer: fakePeer.peerId, // <----- look here
           s: staticKeysInitiator
         }),
         performHandshakeResponder({
@@ -81,14 +81,14 @@ describe('performHandshake', () => {
           crypto: wrapCrypto(defaultCrypto),
           privateKey: peerB.privateKey,
           prologue,
-          remoteIdentityKey: peerA.privateKey.publicKey,
+          remotePeer: peerA.peerId,
           s: staticKeysResponder
         })
       ])
 
       assert(false, 'Should throw exception')
     } catch (e) {
-      expect((e as Error).message).equals(`Payload identity key ${peerB.privateKey.publicKey} does not match expected remote identity key ${fakePeer.privateKey.publicKey}`)
+      expect((e as Error).message).equals(`Payload peer id ${peerB.peerId} does not match expected remote peer id ${fakePeer.peerId}`)
     }
   })
 
@@ -109,7 +109,7 @@ describe('performHandshake', () => {
           crypto: wrapCrypto(defaultCrypto),
           privateKey: peerA.privateKey,
           prologue,
-          remoteIdentityKey: peerB.privateKey.publicKey,
+          remotePeer: peerB.peerId,
           s: staticKeysInitiator
         }),
         performHandshakeResponder({
@@ -118,14 +118,14 @@ describe('performHandshake', () => {
           crypto: wrapCrypto(defaultCrypto),
           privateKey: peerB.privateKey,
           prologue,
-          remoteIdentityKey: fakePeer.privateKey.publicKey,
+          remotePeer: fakePeer.peerId,
           s: staticKeysResponder
         })
       ])
 
       assert(false, 'Should throw exception')
     } catch (e) {
-      expect((e as Error).message).equals(`Payload identity key ${peerA.privateKey.publicKey} does not match expected remote identity key ${fakePeer.privateKey.publicKey}`)
+      expect((e as Error).message).equals(`Payload peer id ${peerA.peerId} does not match expected remote peer id ${fakePeer.peerId}`)
     }
   })
 })

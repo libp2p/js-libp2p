@@ -1,6 +1,6 @@
 import type { Nonce } from './nonce.ts'
 import type { NoiseExtensions, NoiseHandshakePayload } from './proto/payload.ts'
-import type { ConnectionEncrypter, Logger, PrivateKey, PublicKey } from '@libp2p/interface'
+import type { ConnectionEncrypter, Logger, PeerId, PrivateKey } from '@libp2p/interface'
 import type { LengthPrefixedStream } from '@libp2p/utils'
 import type { Uint8ArrayList } from 'uint8arraylist'
 
@@ -25,12 +25,13 @@ export interface HandshakeParams {
   prologue: Uint8Array
   /** static keypair */
   s: KeyPair
-  remoteIdentityKey?: PublicKey
+  remotePeer?: PeerId
   extensions?: NoiseExtensions
 }
 
 export interface HandshakeResult {
   payload: NoiseHandshakePayload
+  remotePeer: PeerId
   encrypt (plaintext: Uint8Array | Uint8ArrayList): Uint8Array | Uint8ArrayList
   decrypt (ciphertext: Uint8Array | Uint8ArrayList, dst?: Uint8Array): Uint8Array | Uint8ArrayList
 }

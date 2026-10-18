@@ -14,7 +14,7 @@ import { isNode, isElectronMain } from 'wherearewe'
 import { WebRTCDirectTransport } from '../src/private-to-public/transport.ts'
 import { supportsIpV6 } from './util.ts'
 import type { WebRTCDirectTransportComponents } from '../src/private-to-public/transport.ts'
-import type { Upgrader, Listener, Transport } from '@libp2p/interface'
+import type { Connection, Upgrader, Listener, Transport } from '@libp2p/interface'
 import type { TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
@@ -33,6 +33,32 @@ function assertAllMultiaddrsHaveSamePort (addrs: Multiaddr[]): void {
 }
 
 const LISTEN_SUPPORTED = isNode || isElectronMain
+
+async function createTransportComponents (): Promise<WebRTCDirectTransportComponents> {
+  const privateKey = await generateKeyPair('Ed25519')
+  const datastore = new MemoryDatastore()
+  const logger = defaultLogger()
+
+  return {
+    peerId: peerIdFromPrivateKey(privateKey),
+    logger,
+    transportManager: stubInterface<TransportManager>(),
+    privateKey,
+    upgrader: stubInterface<Upgrader>({
+      createInboundAbortSignal: (signal) => {
+        return anySignal([
+          AbortSignal.timeout(5_000),
+          signal
+        ])
+      }
+    }),
+    datastore,
+    keychain: keychain()({
+      datastore,
+      logger
+    })
+  }
+}
 
 describe('WebRTCDirect Transport', () => {
   let components: WebRTCDirectTransportComponents
@@ -301,5 +327,115 @@ describe('WebRTCDirect Transport', () => {
 
     await listener.close()
     await otherListener.close()
+  })
+
+  it('rejects an unknown dialer version', () => {
+    expect(() => new WebRTCDirectTransport(components, {
+      // @ts-expect-error not a known version
+      dialerVersion: 3
+    })).to.throw().with.property('name', 'InvalidParametersError')
+  })
+
+  /**
+   * Dial a listener that accepts both versions and return the server ufrag the
+   * listener saw, which carries the version prefix
+   */
+  async function dialDualServer (clientTransport: WebRTCDirectTransport): Promise<string> {
+    let serverUfrag: string | undefined
+    let outboundCalled = false
+    const outboundConnection = stubInterface<Connection>()
+
+    const serverListener = transport.createListener({
+      upgrader: stubInterface<Upgrader>({
+        upgradeInbound: async () => {
+          // listener connections are keyed by host:port:serverUfrag:clientUfrag
+          const [key] = [...(serverListener as any).connections.keys()]
+          serverUfrag = key.split(':')[2]
+        }
+      })
+    })
+
+    await start(clientTransport)
+
+    try {
+      await serverListener.listen(multiaddr('/ip4/127.0.0.1/udp/0'))
+      const addrs = serverListener.getAddrs()
+      const serverAddr = addrs.find(addr => getNetConfig(addr).host === '127.0.0.1') ?? addrs[0]
+
+      const conn = await clientTransport.dial(serverAddr, {
+        upgrader: stubInterface<Upgrader>({
+          upgradeOutbound: async () => {
+            outboundCalled = true
+            return outboundConnection
+          }
+        }),
+        signal: AbortSignal.timeout(15_000)
+      })
+
+      expect(conn).to.equal(outboundConnection)
+      expect(outboundCalled).to.be.true()
+      expect(serverUfrag).to.be.a('string')
+
+      return serverUfrag ?? ''
+    } finally {
+      await serverListener.close()
+      await stop(clientTransport)
+    }
+  }
+
+  it('v1 client can dial dual server', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    const serverUfrag = await dialDualServer(new WebRTCDirectTransport(await createTransportComponents()))
+
+    expect(serverUfrag.startsWith('libp2p+webrtc+v1/')).to.be.true()
+  })
+
+  it('v2 client can dial dual server', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    const serverUfrag = await dialDualServer(new WebRTCDirectTransport(await createTransportComponents(), {
+      dialerVersion: 2
+    }))
+
+    expect(serverUfrag.startsWith('libp2p+webrtc+v2/')).to.be.true()
+  })
+
+  it('starts at v2 once the runtime is known not to apply munged credentials', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    const clientTransport = new WebRTCDirectTransport(await createTransportComponents())
+    ;(clientTransport as any).mungeable = false
+
+    const serverUfrag = await dialDualServer(clientTransport)
+
+    expect(serverUfrag.startsWith('libp2p+webrtc+v2/')).to.be.true()
+  })
+
+  it('remembers munging support after a failed dial', async function () {
+    if (!LISTEN_SUPPORTED) {
+      return this.skip()
+    }
+
+    const clientTransport = new WebRTCDirectTransport(await createTransportComponents())
+    await start(clientTransport)
+
+    try {
+      // nothing is listening so the dial times out after the offer is set
+      await expect(clientTransport.dial(multiaddr('/ip4/127.0.0.1/udp/9/webrtc-direct/certhash/uEiC5P6FL6EZzCG9zUT4nnVa3KWdMSriNIe-_5roWN7psKg'), {
+        upgrader: stubInterface<Upgrader>(),
+        signal: AbortSignal.timeout(500)
+      })).to.eventually.be.rejected()
+
+      expect((clientTransport as any).mungeable).to.be.true()
+    } finally {
+      await stop(clientTransport)
+    }
   })
 })

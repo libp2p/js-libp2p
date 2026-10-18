@@ -43,6 +43,7 @@ microtask
 misbehaviour
 Msgids
 multihops
+mungeable
 mytopic
 nothrow
 opgraft
@@ -79,6 +80,7 @@ tosend
 tparams
 tstats
 Typesafe
+ufrags
 unscored
 unsubcribe
 unsubscriptions

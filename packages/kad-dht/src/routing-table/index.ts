@@ -394,7 +394,14 @@ export class RoutingTable extends TypedEventEmitter<RoutingTableEvents> implemen
           setMaxListeners(Infinity, signal, signals)
 
           try {
-            return await this.pingContact(oldContact, options)
+            // pass `signals` and not the job's own signal, which only
+            // aborts once every caller waiting on the job has aborted.
+            // without the timeout, a contact that accepts the ping stream
+            // and never sends a pong wedges the job
+            return await this.pingContact(oldContact, {
+              ...options,
+              signal: signals
+            })
           } catch {
             this.metrics?.kadBucketEvents.increment({ ping_old_contact_error: true })
             return true

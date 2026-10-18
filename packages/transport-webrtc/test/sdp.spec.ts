@@ -85,4 +85,11 @@ a=end-of-candidates`
 
     expect(output.toString()).to.equal('/certhash/uEiC5P6FL6EZzCG9zUT4nnVa3KWdMSriNIe-_5roWN7psKg')
   })
+
+  it('renders the client offer ice-pwd verbatim', () => {
+    const result = underTest.clientOfferFromMultiAddr(sampleMultiAddr, 'short-ufrag')
+
+    expect(result.sdp).to.contain('a=ice-ufrag:short-ufrag')
+    expect(result.sdp).to.contain('a=ice-pwd:short-ufrag\n')
+  })
 })

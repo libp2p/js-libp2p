@@ -1,4 +1,4 @@
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyForPeer, publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -101,13 +101,13 @@ export async function validateToRawMessage (
   msg: RPC.Message
 ): Promise<ValidationResult> {
   // If strict-sign, verify all
-  // If anonymous (no-sign), ensure no signature, key or seqno is present
+  // If anonymous (no-sign), ensure no signature, key, from or seqno is present
 
   switch (signaturePolicy) {
     case StrictNoSign:
       if (msg.signature != null) { return { valid: false, error: ValidateError.SignaturePresent } }
       if (msg.seqno != null) { return { valid: false, error: ValidateError.SeqnoPresent } }
-      if (msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
+      if (msg.from != null || msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
 
       return { valid: true, message: { type: 'unsigned', topic: msg.topic, data: msg.data ?? new Uint8Array(0) } }
 
@@ -129,32 +129,13 @@ export async function validateToRawMessage (
         return { valid: false, error: ValidateError.InvalidPeerId }
       }
 
-      // - check from defined
-      // - transform source to PeerId
-      // - parse signature
-      // - get .key, else from source
-      // - check key == source if present
-      // - verify sig
-
       let publicKey: PublicKey
-      if (msg.key != null) {
-        // malformed key bytes must reject rather than throw, so an attacker
-        // sending them is still scored as delivering an invalid message
-        try {
-          publicKey = publicKeyFromProtobuf(msg.key)
-        } catch {
-          return { valid: false, error: ValidateError.InvalidPeerId }
-        }
-
-        // the message key must derive to the `from` peer id
-        if (!fromPeerId.equals(publicKey.toMultihash().bytes)) {
-          return { valid: false, error: ValidateError.InvalidPeerId }
-        }
-      } else {
-        if (fromPeerId.publicKey == null) {
-          return { valid: false, error: ValidateError.InvalidPeerId }
-        }
-        publicKey = fromPeerId.publicKey
+      try {
+        publicKey = await publicKeyForPeer(fromPeerId, msg.key)
+      } catch {
+        // mismatched, missing or malformed keys are invalid, not thrown, so the
+        // peer is still scored
+        return { valid: false, error: ValidateError.InvalidPeerId }
       }
 
       const rpcMsgPreSign: RPC.Message = {

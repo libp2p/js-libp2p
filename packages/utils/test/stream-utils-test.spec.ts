@@ -287,6 +287,32 @@ describe('byte-stream', () => {
       Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7])
     )
   })
+
+  it('should not buffer data after unwrap if the message listener is not removed', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    // main-event@1.0.4 removeEventListener did not detach listeners
+    Sinon.stub(incoming, 'removeEventListener')
+
+    const maxBufferSize = 1024
+    const incomingBytes = byteStream(incoming, { maxBufferSize })
+    const unwrapped = incomingBytes.unwrap()
+
+    const [read] = await Promise.all([
+      all(unwrapped),
+      (async () => {
+        for (let i = 0; i < 4; i++) {
+          outgoing.send(new Uint8Array(512).fill(i + 1))
+          await delay(10)
+        }
+
+        await outgoing.close()
+      })()
+    ])
+
+    expect(new Uint8ArrayList(...read).byteLength).to.equal(maxBufferSize * 2)
+    expect(incoming.status).to.not.equal('aborted')
+  })
 })
 
 describe('stream-pair', () => {

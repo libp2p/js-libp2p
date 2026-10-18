@@ -106,6 +106,66 @@
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
     * @libp2p/peer-store bumped from ^10.0.9 to ^10.0.10
 
+## [16.4.8](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.7...kad-dht-v16.4.8) (2026-10-17)
+
+
+### Bug Fixes
+
+* **kad-dht:** apply the timeout signal when pinging old contacts ([#3671](https://github.com/libp2p/js-libp2p/issues/3671)) ([2d4c93e](https://github.com/libp2p/js-libp2p/commit/2d4c93ed6813392cb7de268aceca145f90246c81))
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/interface-internal bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/peer-collections bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/ping bumped from ^3.1.15 to ^3.1.16
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+    * @libp2p/peer-store bumped from ^12.0.30 to ^12.0.31
+
+## [16.4.7](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.6...kad-dht-v16.4.7) (2026-10-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.24 to ^5.1.25
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/interface-internal bumped from ^3.1.14 to ^3.2.0
+    * @libp2p/peer-collections bumped from ^7.0.29 to ^7.0.30
+    * @libp2p/peer-id bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/ping bumped from ^3.1.14 to ^3.1.15
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/peer-store bumped from ^12.0.29 to ^12.0.30
+
+## [16.4.6](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.5...kad-dht-v16.4.6) (2026-10-10)
+
+
+### Dependencies
+
+* require main-event ^1.0.5 ([#3641](https://github.com/libp2p/js-libp2p/issues/3641)) ([e7359e5](https://github.com/libp2p/js-libp2p/commit/e7359e5f6291c56e2704d812ab1975c33c91ff3d))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.23 to ^5.1.24
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/interface-internal bumped from ^3.1.13 to ^3.1.14
+    * @libp2p/peer-collections bumped from ^7.0.28 to ^7.0.29
+    * @libp2p/peer-id bumped from ^6.0.15 to ^6.0.16
+    * @libp2p/ping bumped from ^3.1.13 to ^3.1.14
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.13 to ^6.2.14
+    * @libp2p/peer-store bumped from ^12.0.28 to ^12.0.29
+
 ## [16.4.5](https://github.com/libp2p/js-libp2p/compare/kad-dht-v16.4.4...kad-dht-v16.4.5) (2026-08-31)
 
 
