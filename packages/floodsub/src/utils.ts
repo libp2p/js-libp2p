@@ -9,11 +9,15 @@ import type { PubSubRPCMessage } from './floodsub.ts'
 import type { Message } from './index.ts'
 import type { PublicKey } from '@libp2p/interface'
 
+// monotonic sequence number seeded from the wall clock in nanoseconds, the
+// pubsub spec requires a linearly increasing 64-bit big-endian uint
+let seqnoCounter = BigInt(Date.now()) * 1_000_000n
+
 /**
- * Generate a random sequence number
+ * Generate the next sequence number
  */
-export function randomSeqno (): bigint {
-  return BigInt(`0x${uint8ArrayToString(crypto.getRandomValues(new Uint8Array(8)), 'base16')}`)
+export function nextSeqno (): bigint {
+  return ++seqnoCounter
 }
 
 /**
