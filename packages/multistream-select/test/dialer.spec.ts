@@ -3,13 +3,12 @@
 
 import { streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
-import randomBytes from 'iso-random-stream/src/random.js'
 import all from 'it-all'
 import { pEvent } from 'p-event'
 import pTimeout from 'p-timeout'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import * as mss from '../src/index.js'
+import * as mss from '../src/index.ts'
 
 describe('Dialer', () => {
   describe('dialer.select', () => {
@@ -23,7 +22,7 @@ describe('Dialer', () => {
       expect(selection).to.equal(protocol)
 
       // Ensure stream is usable after selection - send data outgoing -> incoming
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
 
       for (const buf of input) {
         if (!outgoingStream.send(buf)) {
@@ -48,9 +47,9 @@ describe('Dialer', () => {
       const protocol = '/foo/1.0.0'
       const [outgoingStream, incomingStream] = await streamPair()
       const input = new Uint8ArrayList(
-        randomBytes(10),
-        randomBytes(64),
-        randomBytes(3)
+        crypto.getRandomValues(new Uint8Array(10)),
+        crypto.getRandomValues(new Uint8Array(64)),
+        crypto.getRandomValues(new Uint8Array(3))
       )
       const receivedAllData = Promise.withResolvers<void>()
 
@@ -122,7 +121,7 @@ describe('Dialer', () => {
       const output = all(incomingStream)
 
       // Ensure stream is usable after selection
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
       for (const buf of input) {
         if (!outgoingStream.send(buf)) {
           await pEvent(outgoingStream, 'drain')
@@ -159,7 +158,7 @@ describe('Dialer', () => {
       expect(selection).to.equal(protocol)
 
       // Ensure stream is usable after selection
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
       const output = all(incomingStream)
 
       for (const buf of input) {
@@ -190,7 +189,7 @@ describe('Dialer', () => {
       expect(selection).to.equal(selectedProtocol)
 
       // Ensure stream is usable after selection
-      const input = [randomBytes(10), randomBytes(64), randomBytes(3)]
+      const input = [crypto.getRandomValues(new Uint8Array(10)), crypto.getRandomValues(new Uint8Array(64)), crypto.getRandomValues(new Uint8Array(3))]
       const output = all(incomingStream)
 
       for (const buf of input) {

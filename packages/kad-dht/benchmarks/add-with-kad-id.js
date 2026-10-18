@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { randomBytes } from 'node:crypto'
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import Benchmark from 'benchmark'
@@ -16,7 +15,7 @@ import { convertPeerId } from '../dist/src/utils.js'
 // simulate roughly full routing table
 const peers = 6_000
 const capacity = 20
-const originDhtKey = (await sha256.digest(randomBytes(32))).digest
+const originDhtKey = (await sha256.digest(crypto.getRandomValues(new Uint8Array(32)))).digest
 const toAdd = await Promise.all(
   new Array(peers).fill(0).map(async () => {
     const privateKey = await generateKeyPair('Ed25519')

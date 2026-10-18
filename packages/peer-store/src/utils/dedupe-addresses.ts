@@ -1,7 +1,7 @@
 import { InvalidParametersError } from '@libp2p/interface'
 import { CODE_P2P, isMultiaddr, multiaddr } from '@multiformats/multiaddr'
-import type { AddressFilter } from '../index.js'
-import type { Address as AddressPB } from '../pb/peer.js'
+import type { AddressFilter } from '../index.ts'
+import type { Address as AddressPB } from '../pb/peer.ts'
 import type { PeerId, Address, AbortOptions } from '@libp2p/interface'
 
 export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>, existingAddresses?: AddressPB[], options?: AbortOptions): Promise<AddressPB[]> {

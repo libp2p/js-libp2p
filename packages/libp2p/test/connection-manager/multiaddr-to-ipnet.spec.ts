@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { multiaddrToIpNet } from '../../src/connection-manager/utils.js'
+import { multiaddrToIpNet } from '../../src/connection-manager/utils.ts'
 
 describe('multiaddrToIpNet', () => {
   it('should convert a simple IPv4 multiaddr to an IpNet', () => {

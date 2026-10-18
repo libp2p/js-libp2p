@@ -1,4 +1,4 @@
-import { isPrivateIp } from '../private-ip.js'
+import { isPrivateIp } from '../private-ip.ts'
 import { getNetConfig } from './get-net-config.ts'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

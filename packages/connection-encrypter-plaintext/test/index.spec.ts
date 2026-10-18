@@ -1,10 +1,13 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { streamPair } from '@libp2p/utils'
+import { pbStream, streamPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import sinon from 'sinon'
-import { plaintext } from '../src/index.js'
+import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
+import { plaintext } from '../src/index.ts'
+import { Exchange } from '../src/pb/proto.ts'
 import type { ConnectionEncrypter, PeerId } from '@libp2p/interface'
 
 describe('plaintext', () => {
@@ -33,7 +36,7 @@ describe('plaintext', () => {
     sinon.restore()
   })
 
-  it('should verify the public key and id match', async () => {
+  it('should reject a peer other than the expected one', async () => {
     const [inbound, outbound] = await streamPair()
 
     await Promise.all([
@@ -47,7 +50,41 @@ describe('plaintext', () => {
     })
   })
 
-  it('should fail if the peer does not provide its public key', async () => {
+  it('should reject a public key whose type does not match its data', async () => {
+    const remoteKey = await generateKeyPair('secp256k1')
+    const [inbound, outbound] = await streamPair()
+
+    const result = encrypter.secureInbound(inbound)
+
+    // a secp256k1 key labelled as Ed25519: Type (field 1) = 1, Data (field 2)
+    const data = remoteKey.publicKey.raw
+    await pbStream(outbound).pb(Exchange).write({
+      id: remoteKey.publicKey.toMultihash().bytes,
+      pubkey: uint8ArrayConcat([Uint8Array.from([0x08, 0x01, 0x12, data.byteLength]), data])
+    })
+
+    const err = await result.catch(err => err)
+    expect(err).to.have.property('name', 'InvalidCryptoExchangeError')
+    expect(err.message).to.not.include('did not match id')
+  })
+
+  it('should reject a public key that does not match the exchanged id', async () => {
+    const remoteKey = await generateKeyPair('Ed25519')
+    const [inbound, outbound] = await streamPair()
+
+    const result = encrypter.secureInbound(inbound)
+
+    await pbStream(outbound).pb(Exchange).write({
+      id: wrongPeer.toMultihash().bytes,
+      pubkey: withArrayBuffer(publicKeyToProtobuf(remoteKey.publicKey))
+    })
+
+    const err = await result.catch(err => err)
+    expect(err).to.have.property('name', 'InvalidCryptoExchangeError')
+    expect(err.message).to.include('did not match id')
+  })
+
+  it('should reject an RSA peer when a different peer is expected', async () => {
     const keyPair = await generateKeyPair('RSA', 512)
 
     encrypter = plaintext()({

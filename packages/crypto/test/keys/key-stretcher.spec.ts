@@ -1,9 +1,9 @@
 /* eslint max-nested-callbacks: ["error", 8] */
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
-import { keyStretcher, generateEphemeralKeyPair } from '../../src/keys/index.js'
-import fixtures from '../fixtures/go-stretch-key.js'
-import type { ECDHKey } from '../../src/keys/interface.js'
+import { keyStretcher, generateEphemeralKeyPair } from '../../src/keys/index.ts'
+import fixtures from '../fixtures/go-stretch-key.ts'
+import type { ECDHKey } from '../../src/keys/interface.ts'
 
 describe('keyStretcher', () => {
   describe('generate', () => {

@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { isGlobalUnicast } from '../../src/multiaddr/is-global-unicast.js'
+import { isGlobalUnicast } from '../../src/multiaddr/is-global-unicast.ts'
 
 describe('multiaddr isGlobalUnicast', () => {
   it('identifies ip4 multiaddrs as non-global unicast', () => {

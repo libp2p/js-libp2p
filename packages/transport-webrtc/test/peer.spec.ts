@@ -5,23 +5,20 @@ import { streamPair, pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { detect } from 'detect-browser'
 import { TypedEventEmitter } from 'main-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { SIGNALING_PROTOCOL } from '../src/constants.js'
-import { initiateConnection } from '../src/private-to-private/initiate-connection.js'
-import { Message } from '../src/private-to-private/pb/message.js'
-import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.js'
-import { WebRTCTransport, splitAddr } from '../src/private-to-private/transport.js'
-import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.js'
+import { SIGNALING_PROTOCOL } from '../src/constants.ts'
+import { initiateConnection } from '../src/private-to-private/initiate-connection.ts'
+import { Message } from '../src/private-to-private/pb/message.ts'
+import { handleIncomingStream } from '../src/private-to-private/signaling-stream-handler.ts'
+import { WebRTCTransport, splitAddr } from '../src/private-to-private/transport.ts'
+import { RTCPeerConnection, RTCSessionDescription } from '../src/webrtc/index.ts'
 import type { Logger, Connection, Stream, ComponentLogger, Upgrader } from '@libp2p/interface'
 import type { ConnectionManager, Registrar, TransportManager } from '@libp2p/interface-internal'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { StubbedInstance } from 'sinon-ts'
-
-const browser = detect()
 
 interface Initiator {
   multiaddr: Multiaddr
@@ -80,7 +77,6 @@ async function getComponents (): Promise<PrivateToPrivateComponents> {
 }
 
 describe('webrtc basic', () => {
-  const isFirefox = ((browser != null) && browser.name === 'firefox')
   let initiator: Initiator
   let recipient: Recipient
   let initiatorPeerConnection: RTCPeerConnection
@@ -110,11 +106,6 @@ describe('webrtc basic', () => {
     ).to.eventually.be.fulfilled()
 
     await pRetry(async () => {
-      if (isFirefox) {
-        expect(initiatorPeerConnection.iceConnectionState).eq('connected')
-        expect(recipient.peerConnection.iceConnectionState).eq('connected')
-        return
-      }
       expect(initiatorPeerConnection.connectionState).eq('connected')
       expect(recipient.peerConnection.connectionState).eq('connected')
     })

@@ -4,7 +4,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
-import { memory } from '../src/index.js'
+import { memory } from '../src/index.ts'
 import type { Upgrader, Connection } from '@libp2p/interface'
 
 describe('memory', () => {

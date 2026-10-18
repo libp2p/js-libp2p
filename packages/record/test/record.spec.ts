@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { Libp2pRecord } from '../src/index.js'
+import { Libp2pRecord } from '../src/index.ts'
 import * as fixture from './fixtures/go-record.ts'
 
 const date = new Date()

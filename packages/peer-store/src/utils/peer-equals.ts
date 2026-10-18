@@ -1,5 +1,5 @@
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
-import type { Peer, Address, Tag } from '../pb/peer.js'
+import type { Peer, Address, Tag } from '../pb/peer.ts'
 
 export function peerEquals (peerA: Peer, peerB: Peer): boolean {
   return addressesEqual(peerA.addresses, peerB.addresses) &&

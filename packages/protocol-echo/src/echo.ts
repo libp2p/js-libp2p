@@ -118,7 +118,9 @@ export class Echo implements Startable, EchoInterface {
     log('sending %d bytes', buf.byteLength)
     stream.send(buf)
 
-    await stream.close(options)
+    await stream.close(options).catch(err => {
+      output.reject(err)
+    })
 
     return output.promise
   }

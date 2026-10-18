@@ -1,7 +1,7 @@
-import { itBench } from '@dapplion/benchmark'
 import { abortableSource } from 'abortable-iterator'
 import all from 'it-all'
 import { pipe } from 'it-pipe'
+import { runBenchmark } from '../utils/benchmark.ts'
 
 describe('abortableSource cost', function () {
   const n = 10000
@@ -16,21 +16,18 @@ describe('abortableSource cost', function () {
   }
 
   for (let k = 0; k < 5; k++) {
-    itBench({
-      id: `async iterate abortable x${k} bytesSource ${n}`,
-      beforeEach: () => {
+    it(`async iterate abortable x${k} bytesSource ${n}`, async () => {
+      await runBenchmark(`async iterate abortable x${k} bytesSource ${n}`, async () => {
         let source = bytesSource()
         for (let i = 0; i < k; i++) {
           source = abortableSource(source, controller.signal)
         }
-        return source
-      },
-      fn: async (source) => {
+
         for await (const chunk of source) {
           // eslint-disable-next-line @typescript-eslint/no-unused-expressions
           chunk
         }
-      }
+      })
     })
   }
 })
@@ -51,35 +48,31 @@ describe('pipe extra iterables cost', function () {
     }
   }
 
-  itBench({
-    id: `async iterate pipe x0 transforms ${n}`,
-    fn: async () => {
+  it(`async iterate pipe x0 transforms ${n}`, async () => {
+    await runBenchmark(`async iterate pipe x0 transforms ${n}`, async () => {
       await pipe(numberSource, all)
-    }
+    })
   })
 
-  itBench({
-    id: `async iterate pipe x1 transforms ${n}`,
-    fn: async () => {
+  it(`async iterate pipe x1 transforms ${n}`, async () => {
+    await runBenchmark(`async iterate pipe x1 transforms ${n}`, async () => {
       await pipe(numberSource, numberTransform, all)
-    }
+    })
   })
 
-  itBench({
-    id: `async iterate pipe x2 transforms ${n}`,
-    fn: async () => {
+  it(`async iterate pipe x2 transforms ${n}`, async () => {
+    await runBenchmark(`async iterate pipe x2 transforms ${n}`, async () => {
       await pipe(
         numberSource,
         numberTransform,
         numberTransform,
         all
       )
-    }
+    })
   })
 
-  itBench({
-    id: `async iterate pipe x4 transforms ${n}`,
-    fn: async () => {
+  it(`async iterate pipe x4 transforms ${n}`, async () => {
+    await runBenchmark(`async iterate pipe x4 transforms ${n}`, async () => {
       await pipe(
         numberSource,
         numberTransform,
@@ -88,12 +81,11 @@ describe('pipe extra iterables cost', function () {
         numberTransform,
         all
       )
-    }
+    })
   })
 
-  itBench({
-    id: `async iterate pipe x8 transforms ${n}`,
-    fn: async () => {
+  it(`async iterate pipe x8 transforms ${n}`, async () => {
+    await runBenchmark(`async iterate pipe x8 transforms ${n}`, async () => {
       await pipe(
         numberSource,
         numberTransform,
@@ -106,6 +98,6 @@ describe('pipe extra iterables cost', function () {
         numberTransform,
         all
       )
-    }
+    })
   })
 })

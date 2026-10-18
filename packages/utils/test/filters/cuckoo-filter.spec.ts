@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { CuckooFilter } from '../../src/filters/cuckoo-filter.ts'
 
@@ -17,7 +16,7 @@ describe('cuckoo-filter', () => {
 
   it('add 1500 keys', () => {
     for (let i = 0; i < 1500; i++) {
-      const rand = randomBytes(36)
+      const rand = crypto.getRandomValues(new Uint8Array(36))
       keys.push(rand)
 
       expect(cuckoo.add(rand)).to.be.true()
@@ -43,7 +42,7 @@ describe('cuckoo-filter', () => {
 
   it('becomes unreliable', () => {
     while (true) {
-      cuckoo.add(randomBytes(36))
+      cuckoo.add(crypto.getRandomValues(new Uint8Array(36)))
 
       if (!cuckoo.reliable) {
         break

@@ -10,8 +10,8 @@ import { expect } from 'aegir/chai'
 import { MemoryDatastore } from 'datastore-core/memory'
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
-import { persistentPeerStore } from '../src/index.js'
-import type { PersistentPeerStoreComponents } from '../src/index.js'
+import { persistentPeerStore } from '../src/index.ts'
+import type { PersistentPeerStoreComponents } from '../src/index.ts'
 import type { Libp2pEvents, PeerId, PrivateKey, PeerStore } from '@libp2p/interface'
 import type { TypedEventTarget } from 'main-event'
 
@@ -19,6 +19,7 @@ const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')
 
 describe('PersistentPeerStore', () => {
   let key: PrivateKey
+  let otherKey: PrivateKey
   let peerId: PeerId
   let otherPeerId: PeerId
   let peerStore: PeerStore
@@ -28,7 +29,8 @@ describe('PersistentPeerStore', () => {
   beforeEach(async () => {
     key = await generateKeyPair('Ed25519')
     peerId = peerIdFromPrivateKey(key)
-    otherPeerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    otherKey = await generateKeyPair('Ed25519')
+    otherPeerId = peerIdFromPrivateKey(otherKey)
     events = new TypedEventEmitter()
     components = {
       peerId,
@@ -273,6 +275,61 @@ describe('PersistentPeerStore', () => {
       await expect(peerStore.has(peerId)).to.eventually.be.false()
     })
 
+    it('ignores record where the signing key does not match the peer in the record', async () => {
+      const signingKey = await generateKeyPair('Ed25519')
+      const signingPeerId = peerIdFromPrivateKey(signingKey)
+
+      // the record names `otherPeerId` but is signed by `signingPeerId`
+      const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+        peerId: otherPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/4567')
+        ]
+      }), signingKey)
+
+      await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal(), {
+        expectedPeer: signingPeerId
+      })).to.eventually.equal(false)
+      await expect(peerStore.has(otherPeerId)).to.eventually.be.false()
+    })
+
+    it('does not overwrite addresses with a record signed by another peer', async () => {
+      const signingKey = await generateKeyPair('Ed25519')
+
+      const signedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+        peerId: otherPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/1234')
+        ],
+        seqNumber: 2n
+      }), otherKey)
+
+      await expect(peerStore.consumePeerRecord(signedPeerRecord.marshal())).to.eventually.equal(true)
+
+      // the record names `otherPeerId` but is signed by `signingKey` - the sequence
+      // number is higher than the stored one so it cannot be what rejects the record
+      const mismatchedSignedPeerRecord = await RecordEnvelope.seal(new PeerRecord({
+        peerId: otherPeerId,
+        multiaddrs: [
+          multiaddr('/ip4/127.0.0.1/tcp/4567')
+        ],
+        seqNumber: 10n
+      }), signingKey)
+
+      await expect(peerStore.consumePeerRecord(mismatchedSignedPeerRecord.marshal())).to.eventually.equal(false)
+
+      const peer = await peerStore.get(otherPeerId)
+      expect(peer.addresses.map(({ multiaddr, isCertified }) => ({
+        isCertified,
+        multiaddr: multiaddr.toString()
+      }))).to.deep.equal([{
+        isCertified: true,
+        multiaddr: '/ip4/127.0.0.1/tcp/1234'
+      }])
+      expect(peer).to.have.property('peerRecordEnvelope')
+        .that.deep.equals(signedPeerRecord.marshal())
+    })
+
     it('allows queries', async () => {
       await peerStore.save(otherPeerId, {
         multiaddrs: [
@@ -317,6 +374,37 @@ describe('PersistentPeerStore', () => {
 
       await expect(peerStore.get(otherPeerId)).to.eventually.have.property('addresses')
         .with.lengthOf(0, 'did not expire multiaddrs')
+    })
+
+    it('should not expire a newly added multiaddr early', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 1500
+      })
+
+      await peerStore.merge(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      // age the first multiaddr but keep it alive, so it is still present
+      // when the second is added
+      await delay(1000)
+
+      // the second multiaddr is observed now, so should outlive the first
+      await peerStore.merge(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/5678')
+        ]
+      })
+
+      // enough to expire the first multiaddr, but not the second
+      await delay(1000)
+
+      const peer = await peerStore.get(otherPeerId)
+      expect(peer.addresses.map(({ multiaddr }) => multiaddr.toString())).to.deep.equal([
+        '/ip4/123.123.123.123/tcp/5678'
+      ], 'expired a newly added multiaddr')
     })
 
     it('should not expire self peer multiaddrs', async () => {
@@ -501,10 +589,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should return peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [
@@ -521,10 +606,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should not include peer id in multiaddrs in returned peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [
@@ -541,10 +623,7 @@ describe('PersistentPeerStore', () => {
   })
 
   it('should serialize peerInfo', async () => {
-    const peerStore = persistentPeerStore(components, {
-      maxAddressAge: 50,
-      maxPeerAge: 200
-    })
+    const peerStore = persistentPeerStore(components)
 
     await peerStore.save(otherPeerId, {
       multiaddrs: [

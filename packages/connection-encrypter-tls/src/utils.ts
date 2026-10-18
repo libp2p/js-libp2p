@@ -1,10 +1,9 @@
 import 'reflect-metadata'
-import net from 'node:net'
 import { Duplex } from 'node:stream'
 import tls from 'node:tls'
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidCryptoExchangeError, UnexpectedPeerError, StreamMessageEvent } from '@libp2p/interface'
-import { peerIdFromCID } from '@libp2p/peer-id'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { AbstractMessageStream } from '@libp2p/utils'
 import { AsnConvert } from '@peculiar/asn1-schema'
 import * as asn1X509 from '@peculiar/asn1-x509'
@@ -16,8 +15,8 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidCertificateError } from './errors.ts'
-import { KeyType, PublicKey } from './pb/index.ts'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions, MessageStream, StreamCloseEvent } from '@libp2p/interface'
 import type { SendResult } from '@libp2p/utils'
 
@@ -34,7 +33,7 @@ const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
 
 export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger): Promise<PeerId> {
   const now = Date.now()
-  const x509Cert = new x509.X509Certificate(rawCertificate)
+  const x509Cert = new x509.X509Certificate(withArrayBuffer(rawCertificate))
 
   if (x509Cert.notBefore.getTime() > now) {
     log?.error('the certificate was not valid yet')
@@ -84,7 +83,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
     throw new InvalidCryptoExchangeError('Could not verify signature')
   }
 
-  const remotePeerId = peerIdFromCID(remoteLibp2pPublicKey.toCID())
+  const remotePeerId = peerIdFromPublicKey(remoteLibp2pPublicKey)
 
   if (expectedPeerId?.equals(remotePeerId) === false) {
     log?.error('invalid peer id - expected %p got %p', expectedPeerId, remotePeerId)
@@ -127,10 +126,7 @@ export async function generateCertificate (privateKey: PrivateKey, options?: Abo
         value: [
           // publicKey
           new asn1js.OctetString({
-            valueHex: PublicKey.encode({
-              type: KeyType[privateKey.type],
-              data: privateKey.publicKey.raw
-            })
+            valueHex: publicKeyToProtobuf(privateKey.publicKey)
           }),
           // signature
           new asn1js.OctetString({
@@ -266,7 +262,9 @@ export function toNodeDuplex (stream: MessageStream): Duplex {
 }
 
 class EncryptedMultiaddrConnection extends AbstractMessageStream {
-  private socket: net.Socket
+  private socket: tls.TLSSocket
+  private stream: MessageStream
+  private closing?: Promise<void>
 
   /**
    * @param stream - The maConn that encrypted data is transferred over
@@ -281,6 +279,13 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
     })
 
     this.socket = socket
+    this.stream = stream
+
+    // the socket closed before this stream was created, so there is nothing
+    // left to tear down
+    if (socket.closed) {
+      this.closing = Promise.resolve()
+    }
 
     // accept decrypted data
     this.socket.on('data', (buf) => {
@@ -290,7 +295,7 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
       stream.abort(err)
     })
     this.socket.on('close', () => {
-      stream.close()
+      this.closing = stream.close()
         .catch(err => {
           stream.abort(err)
         })
@@ -301,16 +306,35 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
       this.safeDispatchEvent('drain')
     })
 
-    stream.addEventListener('close', () => {
+    stream.addEventListener('close', (evt) => {
       socket.destroy()
-      this.onTransportClosed()
+
+      // mirror the transport's close reason, otherwise a local failure, a
+      // remote reset and a clean close all reach the application as a clean
+      // close
+      if (evt.error != null) {
+        if (evt.local) {
+          this.abort(evt.error)
+        } else {
+          this.onRemoteReset()
+        }
+      } else {
+        this.onTransportClosed()
+      }
     })
   }
 
   async close (options?: AbortOptions): Promise<void> {
-    this.socket.destroySoon()
+    // the socket only emits 'close' once, so if it has already been emitted
+    // wait for the teardown it started instead of for the event itself
+    if (this.closing == null) {
+      this.socket.destroySoon()
 
-    await pEvent(this.socket, 'close', options)
+      await pEvent(this.socket, 'close', options)
+    }
+
+    // the socket closing does not mean the transport has finished closing
+    await this.closing
   }
 
   sendPause (): void {
@@ -321,13 +345,15 @@ class EncryptedMultiaddrConnection extends AbstractMessageStream {
     this.socket.resume()
   }
 
-  async sendClose (options?: AbortOptions): Promise<void> {
-    this.socket.destroySoon()
-    options?.signal?.throwIfAborted()
-  }
+  sendReset (err: Error): void {
+    // a TLSSocket's handle is a TLSWrap and not a TCP handle, so
+    // resetAndDestroy() throws ERR_INVALID_HANDLE_TYPE here
+    // https://nodejs.org/api/net.html#socketresetanddestroy
+    this.socket.destroy()
 
-  sendReset (): void {
-    this.socket.resetAndDestroy()
+    // destroying the socket only closes the transport gracefully, so reset the
+    // transport too
+    this.stream.abort(err)
   }
 
   sendData (data: Uint8ArrayList): SendResult {

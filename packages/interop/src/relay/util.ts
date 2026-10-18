@@ -1,6 +1,6 @@
 import { pbStream, echo } from '@libp2p/utils'
 import { HopMessage } from './pb/index.ts'
-import type { Daemon } from '../index.js'
+import type { Daemon } from '../index.ts'
 import type { PeerId, Stream } from '@libp2p/interface'
 
 const RELAY_V2_HOP = '/libp2p/circuit/relay/0.2.0/hop'

@@ -1,6 +1,6 @@
 /* eslint max-nested-callbacks: ["error", 5] */
 
-import { pbkdf2, randomBytes } from '@libp2p/crypto'
+import { pbkdf2 } from '@libp2p/crypto'
 import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
 import { Key } from 'interface-datastore/key'
@@ -142,7 +142,7 @@ export class Keychain implements KeychainInterface {
     const saltLength = Math.ceil(NIST.minSaltLength / 3) * 3 // no base64 padding
 
     if (options.dek != null) {
-      options.dek.salt = uint8ArrayToString(randomBytes(saltLength), 'base64')
+      options.dek.salt = uint8ArrayToString(crypto.getRandomValues(new Uint8Array(saltLength)), 'base64')
     }
 
     return options

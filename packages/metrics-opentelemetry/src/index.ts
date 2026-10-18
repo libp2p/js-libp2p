@@ -597,6 +597,9 @@ function wrapGenerator (gen: Generator, span: Span, attributes: TraceAttributes,
     },
     [Symbol.iterator]: () => {
       return wrapped
+    },
+    [Symbol.dispose]: () => {
+      iter[Symbol.dispose]?.()
     }
   }
 
@@ -637,6 +640,9 @@ function wrapAsyncGenerator (gen: AsyncGenerator, span: Span, attributes: TraceA
     },
     [Symbol.asyncIterator]: () => {
       return wrapped
+    },
+    [Symbol.asyncDispose]: async () => {
+      await iter[Symbol.asyncDispose]?.()
     }
   }
 

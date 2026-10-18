@@ -4,6 +4,303 @@
 
 * bump aegir from 46.0.5 to 47.0.21 ([#343](https://github.com/libp2p/js-libp2p-daemon/issues/343)) ([704c22f](https://github.com/libp2p/js-libp2p-daemon/commit/704c22f102362c6036642a73979d262e1214baa5))
 
+## [9.0.42](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.41...daemon-server-v9.0.42) (2026-10-17)
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/gossipsub bumped from ^17.1.4 to ^17.2.0
+    * @libp2p/kad-dht bumped from ^16.4.7 to ^16.4.8
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/tcp bumped from ^11.0.30 to ^11.0.31
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+
+## [9.0.41](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.40...daemon-server-v9.0.41) (2026-10-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.24 to ^5.1.25
+    * @libp2p/daemon-protocol bumped from ^8.0.12 to ^8.0.13
+    * @libp2p/gossipsub bumped from ^17.1.3 to ^17.1.4
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+    * @libp2p/kad-dht bumped from ^16.4.6 to ^16.4.7
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/peer-id bumped from ^6.0.16 to ^6.0.17
+    * @libp2p/tcp bumped from ^11.0.29 to ^11.0.30
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+
+## [9.0.40](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.39...daemon-server-v9.0.40) (2026-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.23 to ^5.1.24
+    * @libp2p/daemon-protocol bumped from ^8.0.11 to ^8.0.12
+    * @libp2p/gossipsub bumped from ^17.1.2 to ^17.1.3
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+    * @libp2p/kad-dht bumped from ^16.4.5 to ^16.4.6
+    * @libp2p/logger bumped from ^6.2.13 to ^6.2.14
+    * @libp2p/peer-id bumped from ^6.0.15 to ^6.0.16
+    * @libp2p/tcp bumped from ^11.0.28 to ^11.0.29
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+
+## [9.0.39](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.38...daemon-server-v9.0.39) (2026-09-23)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^17.1.1 to ^17.1.2
+
+## [9.0.38](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.37...daemon-server-v9.0.38) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^17.1.0 to ^17.1.1
+    * @libp2p/kad-dht bumped from ^16.4.4 to ^16.4.5
+    * @libp2p/tcp bumped from ^11.0.27 to ^11.0.28
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [9.0.37](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.36...daemon-server-v9.0.37) (2026-08-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^17.0.1 to ^17.1.0
+
+## [9.0.36](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.35...daemon-server-v9.0.36) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.22 to ^5.1.23
+    * @libp2p/daemon-protocol bumped from ^8.0.10 to ^8.0.11
+    * @libp2p/gossipsub bumped from ^17.0.0 to ^17.0.1
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+    * @libp2p/kad-dht bumped from ^16.4.3 to ^16.4.4
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+    * @libp2p/peer-id bumped from ^6.0.14 to ^6.0.15
+    * @libp2p/tcp bumped from ^11.0.26 to ^11.0.27
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+
+## [9.0.35](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.34...daemon-server-v9.0.35) (2026-08-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^16.1.1 to ^17.0.0
+    * @libp2p/kad-dht bumped from ^16.4.2 to ^16.4.3
+
+## [9.0.34](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.33...daemon-server-v9.0.34) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.21 to ^5.1.22
+    * @libp2p/gossipsub bumped from ^16.1.0 to ^16.1.1
+    * @libp2p/kad-dht bumped from ^16.4.1 to ^16.4.2
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+    * @libp2p/peer-id bumped from ^6.0.13 to ^6.0.14
+    * @libp2p/tcp bumped from ^11.0.25 to ^11.0.26
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [9.0.33](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.32...daemon-server-v9.0.33) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^16.0.5 to ^16.1.0
+    * @libp2p/kad-dht bumped from ^16.4.0 to ^16.4.1
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/peer-id bumped from ^6.0.12 to ^6.0.13
+    * @libp2p/tcp bumped from ^11.0.24 to ^11.0.25
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [9.0.32](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.31...daemon-server-v9.0.32) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^16.0.4 to ^16.0.5
+    * @libp2p/kad-dht bumped from ^16.3.4 to ^16.4.0
+    * @libp2p/tcp bumped from ^11.0.23 to ^11.0.24
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [9.0.31](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.30...daemon-server-v9.0.31) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.20 to ^5.1.21
+    * @libp2p/daemon-protocol bumped from ^8.0.9 to ^8.0.10
+    * @libp2p/gossipsub bumped from ^16.0.3 to ^16.0.4
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+    * @libp2p/kad-dht bumped from ^16.3.3 to ^16.3.4
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/peer-id bumped from ^6.0.11 to ^6.0.12
+    * @libp2p/tcp bumped from ^11.0.22 to ^11.0.23
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
+## [9.0.30](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.29...daemon-server-v9.0.30) (2026-06-13)
+
+
+### Dependencies
+
+* update uint8array related deps ([#3542](https://github.com/libp2p/js-libp2p/issues/3542)) ([54ec417](https://github.com/libp2p/js-libp2p/commit/54ec417ec40d62cacd75a4789384344bdb4777d9))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.19 to ^5.1.20
+    * @libp2p/daemon-protocol bumped from ^8.0.8 to ^8.0.9
+    * @libp2p/gossipsub bumped from ^16.0.2 to ^16.0.3
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/kad-dht bumped from ^16.3.2 to ^16.3.3
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/peer-id bumped from ^6.0.10 to ^6.0.11
+    * @libp2p/tcp bumped from ^11.0.21 to ^11.0.22
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
+## [9.0.29](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.28...daemon-server-v9.0.29) (2026-06-06)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^16.0.1 to ^16.0.2
+    * @libp2p/kad-dht bumped from ^16.3.1 to ^16.3.2
+
+## [9.0.28](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.27...daemon-server-v9.0.28) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade multiformats to 14 and multiaddr to 13.0.3 ([#3526](https://github.com/libp2p/js-libp2p/issues/3526)) ([5b8813a](https://github.com/libp2p/js-libp2p/commit/5b8813abcbca3fd59e6d137f2a42ff53e115cf99))
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.18 to ^5.1.19
+    * @libp2p/daemon-protocol bumped from ^8.0.7 to ^8.0.8
+    * @libp2p/gossipsub bumped from ^16.0.0 to ^16.0.1
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/kad-dht bumped from ^16.3.0 to ^16.3.1
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/peer-id bumped from ^6.0.9 to ^6.0.10
+    * @libp2p/tcp bumped from ^11.0.20 to ^11.0.21
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+
+## [9.0.27](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.26...daemon-server-v9.0.27) (2026-05-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^15.0.23 to ^16.0.0
+
+## [9.0.26](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.25...daemon-server-v9.0.26) (2026-05-18)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/kad-dht bumped from ^16.2.7 to ^16.3.0
+
+## [9.0.25](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.24...daemon-server-v9.0.25) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^15.0.22 to ^15.0.23
+    * @libp2p/kad-dht bumped from ^16.2.6 to ^16.2.7
+    * @libp2p/tcp bumped from ^11.0.19 to ^11.0.20
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
+## [9.0.24](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.23...daemon-server-v9.0.24) (2026-05-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/kad-dht bumped from ^16.2.5 to ^16.2.6
+
+## [9.0.23](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.22...daemon-server-v9.0.23) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.17 to ^5.1.18
+    * @libp2p/gossipsub bumped from ^15.0.21 to ^15.0.22
+    * @libp2p/kad-dht bumped from ^16.2.4 to ^16.2.5
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+    * @libp2p/peer-id bumped from ^6.0.8 to ^6.0.9
+    * @libp2p/tcp bumped from ^11.0.18 to ^11.0.19
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
+## [9.0.22](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.21...daemon-server-v9.0.22) (2026-05-04)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^15.0.20 to ^15.0.21
+
+## [9.0.21](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.20...daemon-server-v9.0.21) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/gossipsub bumped from ^15.0.19 to ^15.0.20
+    * @libp2p/kad-dht bumped from ^16.2.3 to ^16.2.4
+    * @libp2p/tcp bumped from ^11.0.17 to ^11.0.18
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
+## [9.0.20](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.19...daemon-server-v9.0.20) (2026-04-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/kad-dht bumped from ^16.2.2 to ^16.2.3
+
 ## [9.0.19](https://github.com/libp2p/js-libp2p/compare/daemon-server-v9.0.18...daemon-server-v9.0.19) (2026-04-16)
 
 

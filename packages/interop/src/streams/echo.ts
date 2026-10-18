@@ -2,7 +2,7 @@ import { lpStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { echoHandler } from '../relay/util.ts'
-import type { Daemon, DaemonFactory, SpawnOptions } from '../index.js'
+import type { Daemon, DaemonFactory, SpawnOptions } from '../index.ts'
 
 export function echoStreamTests (name: string, factory: DaemonFactory, optionsA: SpawnOptions, optionsB: SpawnOptions): void {
   describe(name, () => {

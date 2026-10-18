@@ -2,7 +2,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { dedupeFilterAndSortAddresses } from '../../src/utils/dedupe-addresses.js'
+import { dedupeFilterAndSortAddresses } from '../../src/utils/dedupe-addresses.ts'
 import type { PeerId } from '@libp2p/interface'
 
 const addr1 = multiaddr('/ip4/127.0.0.1/tcp/8000')

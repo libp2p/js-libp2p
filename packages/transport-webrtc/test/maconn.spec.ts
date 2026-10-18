@@ -9,7 +9,7 @@ import { stubObject } from 'sinon-ts'
 import { Message } from '../src/private-to-private/pb/message.js'
 import { readCandidatesUntilConnected } from '../src/private-to-private/util.js'
 import { toMultiaddrConnection } from '../src/rtcpeerconnection-to-conn.ts'
-import { RTCPeerConnection } from '../src/webrtc/index.js'
+import { RTCPeerConnection } from '../src/webrtc/index.ts'
 import type { CounterGroup } from '@libp2p/interface'
 
 describe('Multiaddr Connection', () => {

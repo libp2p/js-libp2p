@@ -56,7 +56,6 @@
  * ```
  */
 
-import { randomBytes } from '@libp2p/crypto'
 import { InvalidParametersError } from '@libp2p/interface'
 import { byteStream } from '@libp2p/utils'
 import { BoxMessageStream, decodeV1PSK } from './crypto.ts'
@@ -115,7 +114,7 @@ class PreSharedKeyConnectionProtector implements ConnectionProtector {
     // Exchange nonces
     const log = connection.log.newScope('pnet')
     log('protecting the connection')
-    const localNonce = randomBytes(NONCE_LENGTH)
+    const localNonce = crypto.getRandomValues(new Uint8Array(NONCE_LENGTH))
 
     if (options == null) {
       options = {

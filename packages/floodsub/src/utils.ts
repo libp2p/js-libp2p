@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromMultihash, peerIdFromPublicKey } from '@libp2p/peer-id'
@@ -14,7 +13,7 @@ import type { PublicKey } from '@libp2p/interface'
  * Generate a random sequence number
  */
 export function randomSeqno (): bigint {
-  return BigInt(`0x${uint8ArrayToString(randomBytes(8), 'base16')}`)
+  return BigInt(`0x${uint8ArrayToString(crypto.getRandomValues(new Uint8Array(8)), 'base16')}`)
 }
 
 /**

@@ -23,7 +23,7 @@ const defaultInit: AutoNATv2ServiceInit = {
   protocolPrefix: 'libp2p',
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
-  timeout: 100,
+  timeout: 1000,
   startupDelay: 120000,
   refreshInterval: 120000
 }
@@ -911,7 +911,32 @@ describe('autonat v2 - client', () => {
       .to.be.true('Did not verify external multiaddr')
   })
 
-  it('should time out when verifying an observed address', async () => {
+  it('should skip non-network addresses', async () => {
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const nonNetworkAddress = multiaddr(`/p2p/${peerId.toString()}`)
+
+    addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: nonNetworkAddress,
+      verified: false,
+      type: 'observed',
+      expires: 0
+    }])
+
+    const connection = await stubPeerResponse({
+      host: '123.123.123.123',
+      messages: {}
+    })
+
+    await service.client.verifyExternalAddresses(connection)
+    await delay(100)
+
+    expect((connection.newStream as sinon.SinonStub).called)
+      .to.be.false('Opened a stream for a non-network local address')
+    expect(addressManager.confirmObservedAddr.called)
+      .to.be.false('Attempted to verify a non-network address')
+  })
+
+  it('should skip verification when the remote address is not a network address', async () => {
     const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
     addressManager.getAddressesWithMetadata.returns([{
       multiaddr: observedAddress,
@@ -920,64 +945,146 @@ describe('autonat v2 - client', () => {
       expires: 0
     }])
 
-    // The network says OK
-    const connections = [
-      await stubPeerResponse({
-        host: '124.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '125.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '126.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      }),
-      await stubPeerResponse({
-        host: '127.124.124.124',
-        messages: {
-          [observedAddress.toString()]: {
-            dialResponse: {
-              addrIdx: 0,
-              status: DialResponse.ResponseStatus.OK,
-              dialStatus: DialStatus.OK
-            }
-          }
-        }
-      })
-    ]
+    const connection = await stubPeerResponse({
+      host: '124.124.124.124',
+      messages: {}
+    })
 
-    for (const conn of connections) {
-      await service.client.verifyExternalAddresses(conn)
-      await delay(100)
+    // override with a p2p-circuit remote addr - no IP component, so no network
+    // segment can be derived
+    connection.remoteAddr = multiaddr(`/p2p/${connection.remotePeer.toString()}/p2p-circuit/p2p/${connection.remotePeer.toString()}`)
+
+    await service.client.verifyExternalAddresses(connection)
+    await delay(100)
+
+    expect((connection.newStream as sinon.SinonStub).called)
+      .to.be.false('Opened a stream for a non-network remote address')
+    expect(addressManager.confirmObservedAddr.called).to.be.false()
+  })
+
+  it('should skip verification when the remote address is not an IP address', async () => {
+    const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: observedAddress,
+      verified: false,
+      type: 'observed',
+      expires: 0
+    }])
+
+    const connection = await stubPeerResponse({
+      host: '124.124.124.124',
+      messages: {}
+    })
+
+    // DNS remote addrs are network addresses but cannot be mapped to a stable
+    // network segment
+    connection.remoteAddr = multiaddr(`/dns4/example.com/tcp/443/p2p/${connection.remotePeer.toString()}`)
+
+    await service.client.verifyExternalAddresses(connection)
+    await delay(100)
+
+    expect((connection.newStream as sinon.SinonStub).called)
+      .to.be.false('Opened a stream for a DNS remote address')
+    expect(addressManager.confirmObservedAddr.called).to.be.false()
+  })
+
+  it('should skip non-network entries in peer addresses when checking IPv6 support', async () => {
+    const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: observedAddress,
+      verified: false,
+      type: 'observed',
+      expires: 0
+    }])
+
+    const connection = await stubPeerResponse({
+      host: '124.124.124.124',
+      messages: {
+        [observedAddress.toString()]: {
+          dialResponse: {
+            addrIdx: 0,
+            status: DialResponse.ResponseStatus.OK,
+            dialStatus: DialStatus.OK
+          }
+        }
+      }
+    })
+
+    // override peer.addresses to include a non-network multiaddr - computing
+    // supportsIPv6 must not throw when it encounters it
+    peerStore.get.withArgs(connection.remotePeer).resolves({
+      id: connection.remotePeer,
+      addresses: [
+        { multiaddr: multiaddr(`/p2p/${connection.remotePeer.toString()}`), isCertified: false },
+        { multiaddr: multiaddr('/ip4/124.124.124.124/tcp/28319'), isCertified: true }
+      ],
+      protocols: [
+        '/libp2p/autonat/2/dial-request',
+        '/libp2p/autonat/2/dial-back'
+      ],
+      metadata: new Map(),
+      tags: new Map()
+    })
+
+    // should not throw - verification should proceed normally
+    await service.client.verifyExternalAddresses(connection)
+    await delay(100)
+
+    expect((connection.newStream as sinon.SinonStub).called)
+      .to.be.true('Did not attempt verification despite valid remote address')
+  })
+
+  it('should abort verification when the remote does not respond', async () => {
+    await stop(service)
+    service = new AutoNATv2Service(components, {
+      ...defaultInit,
+      timeout: 100
+    })
+    await start(service)
+
+    const observedAddress = multiaddr('/ip4/123.123.123.123/tcp/28319')
+    addressManager.getAddressesWithMetadata.returns([{
+      multiaddr: observedAddress,
+      verified: false,
+      type: 'observed',
+      expires: 0
+    }])
+
+    const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const peer: Peer = {
+      id: peerId,
+      addresses: [{
+        multiaddr: multiaddr('/ip4/124.124.124.124/tcp/28319'),
+        isCertified: true
+      }],
+      protocols: [
+        '/libp2p/autonat/2/dial-request',
+        '/libp2p/autonat/2/dial-back'
+      ],
+      metadata: new Map(),
+      tags: new Map()
     }
 
-    expect(addressManager.addObservedAddr.called)
-      .to.be.false('Verify external multiaddr when we should have timed out')
+    peerStore.get.withArgs(peerId).resolves(peer)
+
+    const connection = stubInterface<Connection>()
+    connection.remoteAddr = multiaddr(`/ip4/124.124.124.124/tcp/28319/p2p/${peerId.toString()}`)
+    connection.remotePeer = peerId
+
+    // the remote accepts the stream but never sends a dial response
+    const [outgoingStream] = await streamPair()
+    connection.newStream.withArgs(`/${PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/dial-request`).resolves(outgoingStream)
+
+    await service.client.verifyExternalAddresses(connection)
+
+    // the job only finishes once the verification request has been aborted
+    await service.client.queue.onIdle()
+
+    expect(connection.newStream.calledOnce).to.be.true('Did not open a dial-request stream')
+    expect(outgoingStream.status)
+      .to.equal('aborted', 'Verification was not aborted after the timeout elapsed')
+    expect(service.client.nonces.size).to.equal(0, 'Did not clean up the nonce')
+    expect(addressManager.confirmObservedAddr.called)
+      .to.be.false('Confirmed an address the remote never verified')
   })
 })

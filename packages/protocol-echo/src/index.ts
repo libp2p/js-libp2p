@@ -8,8 +8,8 @@
  * @example
  *
  * ```TypeScript
- * import { noise } from '@chainsafe/libp2p-noise'
- * import { yamux } from '@chainsafe/libp2p-yamux'
+ * import { noise } from '@libp2p/noise'
+ * import { yamux } from '@libp2p/yamux'
  * import { echo } from '@libp2p/echo'
  * import { peerIdFromString } from '@libp2p/peer-id'
  * import { createLibp2p } from 'libp2p'

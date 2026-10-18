@@ -1,4 +1,4 @@
-import type { MessageType, SendQueryEvent, PeerResponseEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent, DisjointPath, PathEndedEvent, DialPeerEvent } from '../index.js'
+import type { MessageType, SendQueryEvent, PeerResponseEvent, AddPeerEvent, ValueEvent, ProviderEvent, QueryErrorEvent, FinalPeerEvent, DisjointPath, PathEndedEvent, DialPeerEvent } from '../index.ts'
 import type { PeerId, PeerInfo } from '@libp2p/interface'
 import type { Libp2pRecord } from '@libp2p/record'
 import type { ProgressOptions } from 'progress-events'

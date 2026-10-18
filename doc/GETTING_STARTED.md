@@ -69,7 +69,7 @@ Start by installing `@libp2p/websockets`:
 npm install @libp2p/websockets
 ```
 
-Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`Libp2p.create`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#create) method, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `modules.transport` array:
+Now that we have the module installed, let's configure libp2p to use the Transport. We'll use the [`createLibp2p`](https://libp2p.github.io/js-libp2p/functions/libp2p.index.createLibp2p.html) function, which takes a single configuration object as its only parameter. We can add the Transport by passing it into the `transports` array:
 
 ```js
 import { createLibp2p } from 'libp2p'
@@ -80,12 +80,12 @@ const node = await createLibp2p({
 })
 ```
 
-There are multiple libp2p transports available, you should evaluate the needs of your application and select the Transport(s) that best suit your requirements. You can add as many transports as you like to `modules.transport` in order to establish connections with as many peers as possible.
+There are multiple libp2p transports available, you should evaluate the needs of your application and select the Transport(s) that best suit your requirements. You can add as many transports as you like to `transports` in order to establish connections with as many peers as possible.
 
 <details><summary>Read More</summary>
 If you want to know more about libp2p transports, you should read the following content:
 
-- https://docs.libp2p.io/concepts/transports
+- https://libp2p.io/docs/transports-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 </details>
 
@@ -93,18 +93,18 @@ If you want to know more about libp2p transports, you should read the following 
 
 Encryption is an important part of communicating on the libp2p network. Every connection must be encrypted to help ensure security for everyone. As such, Connection Encryption (Crypto) is a required component of libp2p.
 
-There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `@chainsafe/libp2p-noise` module.
+There are a growing number of Crypto modules being developed for libp2p. As those are released they will be tracked in the [Connection Encryption section of the configuration readme](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#connection-encryption). For now, we are going to configure our node to use the `@libp2p/noise` module.
 
 ```sh
-npm install @chainsafe/libp2p-noise
+npm install @libp2p/noise
 ```
 
-With `@chainsafe/libp2p-noise` installed, we can add it to our existing configuration by importing it and adding it to the `modules.connEncryption` array:
+With `@libp2p/noise` installed, we can add it to our existing configuration by importing it and adding it to the `connectionEncrypters` array:
 
 ```js
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
+import { noise } from '@libp2p/noise'
 
 const node = await createLibp2p({
   transports: [webSockets()],
@@ -125,17 +125,17 @@ While multiplexers are not strictly required, they are highly recommended as the
 
 Looking at the [available stream multiplexing](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#stream-multiplexing) modules. Bear in mind that future libp2p Transports might have `multiplexing` capabilities already built-in (such as `QUIC`).
 
-You can install `@chainsafe/libp2p-yamux` and add it to your libp2p node as follows in the next example.
+You can install `@libp2p/yamux` and add it to your libp2p node as follows in the next example.
 
 ```sh
-npm install @chainsafe/libp2p-yamux
+npm install @libp2p/yamux
 ```
 
 ```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@libp2p/noise'
+import { yamux } from '@libp2p/yamux'
 
 const node = await createLibp2p({
   transports: [webSockets()],
@@ -147,20 +147,20 @@ const node = await createLibp2p({
 <details><summary>Read More</summary>
 If you want to know more about libp2p stream multiplexing, you should read the following content:
 
-- https://docs.libp2p.io/concepts/stream-multiplexing
+- https://libp2p.io/docs/multiplexing-overview/
 - https://github.com/libp2p/specs/tree/master/connections
 - https://github.com/libp2p/specs/tree/master/yamux
 </details>
 
 #### Running Libp2p
 
-Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**][streamMuxer] module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#start) and [`libp2p.stop()`](https://github.com/libp2p/js-libp2p/blob/main/doc/API.md#stop) methods.
+Now that you have configured a [**Transport**][transport], [**Crypto**][crypto] and [**Stream Multiplexer**][streamMuxer] module, you can start your libp2p node. We can start and stop libp2p using the [`libp2p.start()`](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.Libp2p.html#start) and [`libp2p.stop()`](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.Libp2p.html#stop) methods.
 
 ```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@libp2p/noise'
+import { yamux } from '@libp2p/yamux'
 
 const node = await createLibp2p({
   // libp2p nodes are started by default, pass false to override this
@@ -193,7 +193,7 @@ Once your libp2p node is running, it is time to get it connected to the public n
 
 Peer discovery is an important part of creating a well connected libp2p node. A static list of peers will often be used to join the network, but it's useful to couple other discovery mechanisms to ensure you're able to discover other peers that are important to your application.
 
-For each discovered peer libp2p will emit a `peer:discovery` event which includes metadata about that peer. You can read the [Events](https://github.com/libp2p/js-libp2p/tree/main/doc/API.md#events) in the API doc to learn more.
+For each discovered peer libp2p will emit a `peer:discovery` event which includes metadata about that peer. You can read the [Events](https://libp2p.github.io/js-libp2p/interfaces/_libp2p_interface.Libp2pEvents.html) in the API doc to learn more.
 
 Looking at the [available peer discovery](https://github.com/libp2p/js-libp2p/blob/main/doc/CONFIGURATION.md#peer-discovery) protocols, there are several options to be considered:
 - If you already know the addresses of some other network peers, you should consider using `@libp2p/bootstrap` as this is the easiest way of getting your peer into the network.
@@ -213,8 +213,8 @@ We can provide specific configurations for each protocol within a `config.peerDi
 ```ts
 import { createLibp2p } from 'libp2p'
 import { webSockets } from '@libp2p/websockets'
-import { noise } from '@chainsafe/libp2p-noise'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { noise } from '@libp2p/noise'
+import { yamux } from '@libp2p/yamux'
 import { bootstrap } from '@libp2p/bootstrap'
 
 // Known peers addresses
@@ -332,10 +332,10 @@ There are a lot of other concepts within `libp2p`, that are not covered in this 
 
 ### Additional Resources
 
-- [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p) — Interactive tutorial covering libp2p fundamentals
-- [libp2p Concepts](https://docs.libp2p.io/concepts/introduction/overview/) — Overview of core concepts and architecture
-- [libp2p Connectivity](https://connectivity.libp2p.io/) — Interoperability matrix across libp2p implementations
-- [Universal Connectivity](https://github.com/libp2p/universal-connectivity) — Demo application showcasing cross-implementation connectivity
+- [ProtoSchool: Introduction to libp2p](https://proto.school/introduction-to-libp2p): Interactive tutorial covering libp2p fundamentals
+- [libp2p Concepts](https://libp2p.io/docs/): Overview of core concepts and architecture
+- [libp2p Connectivity](https://connectivity.libp2p.io/): Interoperability matrix across libp2p implementations
+- [Universal Connectivity](https://github.com/libp2p/universal-connectivity): Demo application showcasing cross-implementation connectivity
 
 [transport]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/transport.ts
 [crypto]: https://github.com/libp2p/js-libp2p/blob/main/packages/interface/src/keys.ts

@@ -1,18 +1,31 @@
-import { randomBytes } from '@libp2p/crypto'
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyForPeer, publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { StrictSign, StrictNoSign } from '../index.ts'
-import { RPC } from '../message/rpc.js'
-import { PublishConfigType, ValidateError } from '../types.js'
+import { RPC } from '../message/rpc.ts'
+import { PublishConfigType, ValidateError } from '../types.ts'
 import type { Message } from '../index.ts'
-import type { PublishConfig, TopicStr } from '../types.js'
+import type { PublishConfig, TopicStr } from '../types.ts'
 import type { PublicKey, PeerId } from '@libp2p/interface'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
+
+// Monotonic seqno counter seeded from the wall clock in nanoseconds, matching
+// go-libp2p-pubsub and rust-libp2p. The pubsub spec requires a "linearly
+// increasing 64-bit big-endian uint" seqno, and kubo's BasicSeqnoValidator
+// (default since kubo 0.40) drops messages whose seqno isn't strictly greater
+// than the previously-seen max from that peer.
+let seqnoCounter = BigInt(Date.now()) * 1_000_000n
+
+function nextSeqno (): Uint8Array {
+  const v = ++seqnoCounter
+  const out = new Uint8Array(8)
+  new DataView(out.buffer).setBigUint64(0, v, false)
+  return out
+}
 
 export interface RawMessageAndMessage {
   raw: RPC.Message
@@ -30,7 +43,7 @@ export async function buildRawMessage (
       const rpcMsg: RPC.Message = {
         from: publishConfig.author.toMultihash().bytes,
         data: transformedData,
-        seqno: randomBytes(8),
+        seqno: nextSeqno(),
         topic,
         signature: undefined, // Exclude signature field for signing
         key: undefined // Exclude key field for signing
@@ -88,13 +101,13 @@ export async function validateToRawMessage (
   msg: RPC.Message
 ): Promise<ValidationResult> {
   // If strict-sign, verify all
-  // If anonymous (no-sign), ensure no preven
+  // If anonymous (no-sign), ensure no signature, key, from or seqno is present
 
   switch (signaturePolicy) {
     case StrictNoSign:
       if (msg.signature != null) { return { valid: false, error: ValidateError.SignaturePresent } }
       if (msg.seqno != null) { return { valid: false, error: ValidateError.SeqnoPresent } }
-      if (msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
+      if (msg.from != null || msg.key != null) { return { valid: false, error: ValidateError.FromPresent } }
 
       return { valid: true, message: { type: 'unsigned', topic: msg.topic, data: msg.data ?? new Uint8Array(0) } }
 
@@ -116,25 +129,13 @@ export async function validateToRawMessage (
         return { valid: false, error: ValidateError.InvalidPeerId }
       }
 
-      // - check from defined
-      // - transform source to PeerId
-      // - parse signature
-      // - get .key, else from source
-      // - check key == source if present
-      // - verify sig
-
       let publicKey: PublicKey
-      if (msg.key != null) {
-        publicKey = publicKeyFromProtobuf(msg.key)
-        // TODO: Should `fromPeerId.pubKey` be optional?
-        if (fromPeerId.publicKey !== undefined && !publicKey.equals(fromPeerId.publicKey)) {
-          return { valid: false, error: ValidateError.InvalidPeerId }
-        }
-      } else {
-        if (fromPeerId.publicKey == null) {
-          return { valid: false, error: ValidateError.InvalidPeerId }
-        }
-        publicKey = fromPeerId.publicKey
+      try {
+        publicKey = await publicKeyForPeer(fromPeerId, msg.key)
+      } catch {
+        // mismatched, missing or malformed keys are invalid, not thrown, so the
+        // peer is still scored
+        return { valid: false, error: ValidateError.InvalidPeerId }
       }
 
       const rpcMsgPreSign: RPC.Message = {
@@ -150,7 +151,17 @@ export async function validateToRawMessage (
       // the signature is over the bytes "libp2p-pubsub:<protobuf-message>"
       const bytes = uint8ArrayConcat([SignPrefix, RPC.Message.encode(rpcMsgPreSign)])
 
-      if (!(await publicKey.verify(bytes, msg.signature))) {
+      // a malformed signature (e.g. the wrong length) makes verify throw for
+      // some key types; treat that as an invalid signature so the peer is still
+      // scored rather than the message escaping to the unscored error path
+      let validSignature: boolean
+      try {
+        validSignature = await publicKey.verify(bytes, msg.signature)
+      } catch {
+        validSignature = false
+      }
+
+      if (!validSignature) {
         return { valid: false, error: ValidateError.InvalidSignature }
       }
 
@@ -163,7 +174,7 @@ export async function validateToRawMessage (
           sequenceNumber: BigInt(`0x${uint8ArrayToString(msg.seqno, 'base16')}`),
           topic: msg.topic,
           signature: msg.signature,
-          key: msg.key != null ? publicKeyFromProtobuf(msg.key) : publicKey
+          key: publicKey
         }
       }
     }

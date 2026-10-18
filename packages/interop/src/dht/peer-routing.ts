@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import pRetry from 'p-retry'
-import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.js'
+import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.ts'
 import type { PeerInfo } from '@libp2p/interface'
 
 export function peerRoutingTests (factory: DaemonFactory): void {

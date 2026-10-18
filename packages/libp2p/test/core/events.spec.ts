@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
-import { createLibp2p } from '../../src/index.js'
+import { createLibp2p } from '../../src/index.ts'
 import type { Libp2p } from '@libp2p/interface'
 
 describe('events', () => {

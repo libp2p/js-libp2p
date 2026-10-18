@@ -1,7 +1,7 @@
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { Message } from '../index.js'
+import type { Message } from '../index.ts'
 import type { PublicKey } from '@libp2p/interface'
 
 /**

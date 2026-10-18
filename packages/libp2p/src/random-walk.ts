@@ -1,4 +1,3 @@
-import { randomBytes } from '@libp2p/crypto'
 import { anySignal } from 'any-signal'
 import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import pDefer from 'p-defer'
@@ -116,7 +115,7 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
       // find peers until no more consumers are interested
       while (this.walkers > 0) {
         try {
-          const data = randomBytes(32)
+          const data = crypto.getRandomValues(new Uint8Array(32))
           let s = Date.now()
 
           for await (const peer of this.peerRouting.getClosestPeers(data, { signal })) {

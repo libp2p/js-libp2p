@@ -1,7 +1,7 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import { isNode, isElectronMain } from 'wherearewe'
-import { getThinWaistAddresses } from '../src/get-thin-waist-addresses.js'
+import { getThinWaistAddresses } from '../src/get-thin-waist-addresses.ts'
 
 describe('get-thin-waist-addresses', () => {
   it('should not return addresses when not passed anything', () => {

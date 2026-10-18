@@ -7,9 +7,9 @@ import pRetry from 'p-retry'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { connectPubsubNodes, createComponents } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
-import type { SubscriptionChangeData, Message } from '../src/index.js'
+import type { SubscriptionChangeData, Message } from '../src/index.ts'
 
-describe.skip('gossipsub fallbacks to floodsub', () => {
+describe('gossipsub fallbacks to floodsub', () => {
   describe('basics', () => {
     let nodeGs: GossipSubAndComponents
     let nodeFs: GossipSubAndComponents
@@ -34,7 +34,7 @@ describe.skip('gossipsub fallbacks to floodsub', () => {
       )
     })
 
-    it.skip('Dial event happened from nodeGs to nodeFs', async () => {
+    it('Dial event happened from nodeGs to nodeFs', async () => {
       await connectPubsubNodes(nodeGs, nodeFs)
 
       await pRetry(() => {
@@ -71,12 +71,14 @@ describe.skip('gossipsub fallbacks to floodsub', () => {
     })
 
     it('Dial event happened from nodeGs to nodeFs, but nodeGs does not support floodsub', async () => {
-      try {
-        await connectPubsubNodes(nodeGs, nodeFs)
-        expect.fail('Dial should not have succeed')
-      } catch (err) {
-        expect(err).to.have.property('name', 'UnsupportedProtocolError')
-      }
+      await connectPubsubNodes(nodeGs, nodeFs)
+
+      await pRetry(() => {
+        // eslint-disable-next-line max-nested-callbacks
+        expect(nodeGs.pubsub.getPeers().map((s) => s.toString())).to.not.include(nodeFs.components.peerId.toString())
+        // eslint-disable-next-line max-nested-callbacks
+        expect(nodeFs.pubsub.getPeers().map((s) => s.toString())).to.not.include(nodeGs.components.peerId.toString())
+      })
     })
   })
 

@@ -1,22 +1,26 @@
 import { serviceCapabilities, serviceDependencies, start, stop } from '@libp2p/interface'
+import { TypedEventEmitter } from 'main-event'
 import { AutoNATv2Client } from './client.ts'
 import { DIAL_BACK, DIAL_REQUEST, PROTOCOL_NAME, PROTOCOL_PREFIX, PROTOCOL_VERSION } from './constants.ts'
 import { AutoNATv2Server } from './server.ts'
-import type { AutoNATv2Components, AutoNATv2ServiceInit } from './index.ts'
+import type { AutoNATv2Components, AutoNATv2Events, AutoNATv2ServiceInit } from './index.ts'
 import type { Startable } from '@libp2p/interface'
 
-export class AutoNATv2Service implements Startable {
+export class AutoNATv2Service extends TypedEventEmitter<AutoNATv2Events> implements Startable {
   private readonly client: AutoNATv2Client
   private readonly server: AutoNATv2Server
 
   constructor (components: AutoNATv2Components, init: AutoNATv2ServiceInit) {
+    super()
+
     const dialRequestProtocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/${DIAL_REQUEST}`
     const dialBackProtocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}/${DIAL_BACK}`
 
     this.client = new AutoNATv2Client(components, {
       ...init,
       dialRequestProtocol,
-      dialBackProtocol
+      dialBackProtocol,
+      safeDispatchEvent: this.safeDispatchEvent.bind(this)
     })
     this.server = new AutoNATv2Server(components, {
       ...init,

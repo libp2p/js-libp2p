@@ -1,7 +1,7 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import { debounce } from '../src/debounce.js'
+import { debounce } from '../src/debounce.ts'
 
 describe('debounce', () => {
   it('should debounce function', async () => {

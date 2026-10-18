@@ -12,7 +12,7 @@ import {
 
 } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
-import type { Message, SubscriptionChangeData } from '../src/index.js'
+import type { Message, SubscriptionChangeData } from '../src/index.ts'
 
 const shouldNotHappen = (): never => expect.fail()
 

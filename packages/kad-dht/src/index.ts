@@ -327,6 +327,16 @@ export interface KadDHT {
   readonly d: number
 
   /**
+   * Validators validate DHT records that are found
+   */
+  readonly validators: Record<string, ValidateFn>
+
+  /**
+   * When multiple records for a DHT key are found, selectors choose one record
+   */
+  readonly selectors: Record<string, SelectFn>
+
+  /**
    * Get a value from the DHT, the final ValueEvent will be the best value
    */
   get(key: Uint8Array, options?: RoutingOptions): AsyncIterable<QueryEvent>
@@ -387,13 +397,17 @@ export interface SingleKadDHT extends KadDHT {
  * A selector function takes a DHT key and a list of records and returns the
  * index of the best record in the list
  */
-export interface SelectFn { (key: Uint8Array, records: Uint8Array[]): number }
+export interface SelectFn {
+  (key: Uint8Array, records: Uint8Array[]): number | Promise<number>
+}
 
 /**
  * A validator function takes a DHT key and the value of the record for that key
  * and throws if the record is invalid
  */
-export interface ValidateFn { (key: Uint8Array, value: Uint8Array, options?: AbortOptions): Promise<void> }
+export interface ValidateFn {
+  (key: Uint8Array, value: Uint8Array, options?: AbortOptions): void | Promise<void>
+}
 
 /**
  * Selectors are a map of key prefixes to selector functions
@@ -487,7 +501,7 @@ export interface KadDHTInit {
   /**
    * How many peers are queried in parallel during a query.
    *
-   * @default 3
+   * @default 10
    */
   alpha?: number
 
@@ -499,6 +513,20 @@ export interface KadDHTInit {
    * @default alpha
    */
   disjointPaths?: number
+
+  /**
+   * Concurrency for background routing table updates from query responses.
+   *
+   * @default min(alpha * 2, 16)
+   */
+  routingTableUpdateQueueConcurrency?: number
+
+  /**
+   * Maximum number of pending routing table updates from query responses.
+   *
+   * @default 16384
+   */
+  routingTableUpdateMaxQueueSize?: number
 
   /**
    * How many bits of the KAD-ID of peers to use when creating the routing
@@ -688,8 +716,9 @@ export interface KadDHTInit {
 
   /**
    * When a peer that supports the KAD-DHT protocol connects we try to add it to
-   * the routing table. This setting is how long we will try to do that for in
-   * ms.
+   * the routing table. This setting is how long an active routing table update
+   * may run for in ms once it starts processing. Time spent waiting in the
+   * routing table update queue does not count towards this timeout.
    *
    * @default 10_000
    */

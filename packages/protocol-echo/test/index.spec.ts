@@ -1,14 +1,16 @@
 import { start, stop } from '@libp2p/interface'
-import { streamPair } from '@libp2p/utils'
+import { streamPair, UnexpectedEOFError } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import all from 'it-all'
+import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { Echo } from '../src/echo.js'
+import { Echo } from '../src/echo.ts'
 import type { Connection } from '@libp2p/interface'
 import type { ConnectionManager, Registrar } from '@libp2p/interface-internal'
+import type { AbstractStream } from '@libp2p/utils'
 import type { StubbedInstance } from 'sinon-ts'
 
 interface StubbedFetchComponents {
@@ -76,5 +78,21 @@ describe('echo', () => {
     const output = await echo.echo(ma, input)
 
     expect(output.subarray()).to.equalBytes(input)
+  })
+
+  it('should handle the stream closing mid-echo', async () => {
+    const [outgoingStream] = await streamPair()
+    const stream = outgoingStream as AbstractStream
+    stream.sendData = () => ({ sentBytes: 0, canSendMore: false })
+
+    const ma = multiaddr('/ip4/123.123.123.123/tcp/1234')
+    components.connectionManager.openStream.withArgs(ma).resolves(stream)
+
+    const echoPromise = echo.echo(ma, Uint8Array.from([0, 1, 2, 3]))
+
+    await pWaitFor(() => stream.writeStatus === 'closing')
+    stream.onTransportClosed()
+
+    await expect(echoPromise).to.eventually.be.rejectedWith(UnexpectedEOFError)
   })
 })

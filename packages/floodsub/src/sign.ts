@@ -1,3 +1,4 @@
+import { publicKeyForPeer } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -9,7 +10,7 @@ import type { PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
 
 /**
- * Signs the provided message with the given `peerId`
+ * Signs the provided message with the given private key
  */
 export async function signMessage (privateKey: PrivateKey, message: { from: PeerId, topic: string, data: Uint8Array, sequenceNumber: bigint }, encode: (rpc: PubSubRPCMessage) => Uint8Array): Promise<SignedMessage> {
   // @ts-expect-error signature field is missing, added below
@@ -34,7 +35,8 @@ export async function signMessage (privateKey: PrivateKey, message: { from: Peer
 }
 
 /**
- * Verifies the signature of the given message
+ * Verifies the signature of the given message, returning false if its key does
+ * not belong to the author
  */
 export async function verifySignature (message: SignedMessage, encode: (rpc: PubSubRPCMessage) => Uint8Array): Promise<boolean> {
   if (message.type !== 'signed') {
@@ -59,35 +61,19 @@ export async function verifySignature (message: SignedMessage, encode: (rpc: Pub
     }).subarray()
   ])
 
-  // Get the public key
-  const pubKey = messagePublicKey(message)
+  let pubKey: PublicKey
+
+  try {
+    // only trust a supplied key if it derives to the author
+    pubKey = await publicKeyForPeer(message.from, message.key)
+  } catch (err: any) {
+    if (err.name === 'InvalidPublicKeyError') {
+      return false
+    }
+
+    throw err
+  }
 
   // verify the base message
   return pubKey.verify(bytes, message.signature)
-}
-
-/**
- * Returns the PublicKey associated with the given message.
- * If no valid PublicKey can be retrieved an error will be returned.
- */
-export function messagePublicKey (message: SignedMessage): PublicKey {
-  if (message.type !== 'signed') {
-    throw new Error('Message type must be "signed" to have a public key')
-  }
-
-  // should be available in the from property of the message (peer id)
-  if (message.from == null) {
-    throw new Error('Could not get the public key from the originator id')
-  }
-
-  if (message.key != null) {
-    return message.key
-  }
-
-  if (message.from.publicKey != null) {
-    return message.from.publicKey
-  }
-
-  // We couldn't validate pubkey is from the originator, error
-  throw new Error('Could not get the public key from the originator id')
 }

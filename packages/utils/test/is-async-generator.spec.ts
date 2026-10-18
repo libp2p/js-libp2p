@@ -1,5 +1,5 @@
 import { expect } from 'aegir/chai'
-import { isAsyncGenerator } from '../src/is-async-generator.js'
+import { isAsyncGenerator } from '../src/is-async-generator.ts'
 
 describe('is-async-generator', () => {
   it('should return true if the value is an async generator', () => {

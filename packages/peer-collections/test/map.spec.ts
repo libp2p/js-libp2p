@@ -1,7 +1,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
-import { PeerMap } from '../src/index.js'
+import { PeerMap } from '../src/index.ts'
 
 describe('peer-map', () => {
   it('should return a map', async () => {

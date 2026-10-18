@@ -1,4 +1,4 @@
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyForPeer } from '@libp2p/crypto/keys'
 import { contentRoutingSymbol, peerDiscoverySymbol, peerRoutingSymbol, InvalidParametersError } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { PeerSet } from '@libp2p/peer-collections'
@@ -359,8 +359,8 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     // search any available content routing methods
     const bytes = await this.contentRouting.get(peerKey, options)
 
-    // ensure the returned key is valid
-    const publicKey = publicKeyFromProtobuf(bytes)
+    // ensure the returned key belongs to the requested peer
+    const publicKey = await publicKeyForPeer(peer, bytes, options)
 
     await this.peerStore.patch(peer, {
       publicKey
@@ -401,11 +401,29 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.registrar.unregister(id)
   }
 
-  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void {
+  use (middleware: StreamMiddleware): void
+  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
+  use (protocol: string | StreamMiddleware, middleware?: StreamMiddleware | StreamMiddleware[]): void {
+    if (typeof protocol === 'function') {
+      this.components.registrar.use(protocol)
+      return
+    }
+
+    if (middleware == null) {
+      throw new InvalidParametersError('Protocol middleware is required')
+    }
+
     this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware])
   }
 
-  unuse (protocol: string): void {
+  unuse (middleware: StreamMiddleware): void
+  unuse (protocol: string): void
+  unuse (protocol: string | StreamMiddleware): void {
+    if (typeof protocol === 'function') {
+      this.components.registrar.unuse(protocol)
+      return
+    }
+
     this.components.registrar.unuse(protocol)
   }
 

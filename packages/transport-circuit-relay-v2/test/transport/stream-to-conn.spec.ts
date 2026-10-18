@@ -6,7 +6,7 @@ import all from 'it-all'
 import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { streamToMaConnection } from '../../src/transport/stream-to-conn.js'
+import { streamToMaConnection } from '../../src/transport/stream-to-conn.ts'
 
 describe('Convert stream into a multiaddr connection', () => {
   const localAddr = multiaddr('/ip4/101.45.75.219/tcp/6000')

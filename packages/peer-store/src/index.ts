@@ -5,7 +5,7 @@
  */
 
 import { isPeerId } from '@libp2p/interface'
-import { peerIdFromCID } from '@libp2p/peer-id'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore } from './store.ts'
@@ -175,7 +175,7 @@ class PersistentPeerStore implements PeerStore {
     const options: AbortOptions | undefined = isPeerId(arg1) ? arg2 : arg1 === undefined ? arg2 : arg1
 
     const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN, options)
-    const peerId = peerIdFromCID(envelope.publicKey.toCID())
+    const peerId = peerIdFromPublicKey(envelope.publicKey)
 
     if (expectedPeer?.equals(peerId) === false) {
       this.log('envelope peer id was not the expected peer id - expected: %p received: %p', expectedPeer, peerId)
@@ -183,6 +183,12 @@ class PersistentPeerStore implements PeerStore {
     }
 
     const peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
+
+    if (!peerRecord.peerId.equals(peerId)) {
+      this.log('signing key did not match peer id in the peer record - signer: %p record: %p', peerId, peerRecord.peerId)
+      return false
+    }
+
     let peer: Peer | undefined
 
     try {

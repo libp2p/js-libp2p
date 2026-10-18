@@ -81,6 +81,157 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [5.0.32](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.31...prometheus-metrics-v5.0.32) (2026-10-17)
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+
+## [5.0.31](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.30...prometheus-metrics-v5.0.31) (2026-10-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.1 to ^3.4.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.14 to ^6.2.15
+    * @libp2p/utils bumped from ^7.4.2 to ^7.4.3
+
+## [5.0.30](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.29...prometheus-metrics-v5.0.30) (2026-10-10)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.3.0 to ^3.3.1
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.13 to ^6.2.14
+    * @libp2p/utils bumped from ^7.4.1 to ^7.4.2
+
+## [5.0.29](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.28...prometheus-metrics-v5.0.29) (2026-08-31)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/utils bumped from ^7.4.0 to ^7.4.1
+
+## [5.0.28](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.27...prometheus-metrics-v5.0.28) (2026-08-22)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.5 to ^3.3.0
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.12 to ^6.2.13
+    * @libp2p/utils bumped from ^7.3.2 to ^7.4.0
+
+## [5.0.27](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.26...prometheus-metrics-v5.0.27) (2026-07-30)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.11 to ^6.2.12
+    * @libp2p/utils bumped from ^7.3.1 to ^7.3.2
+
+## [5.0.26](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.25...prometheus-metrics-v5.0.26) (2026-07-26)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.10 to ^6.2.11
+    * @libp2p/utils bumped from ^7.3.0 to ^7.3.1
+
+## [5.0.25](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.24...prometheus-metrics-v5.0.25) (2026-07-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/utils bumped from ^7.2.4 to ^7.3.0
+
+## [5.0.24](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.23...prometheus-metrics-v5.0.24) (2026-07-07)
+
+
+### Dependencies
+
+* upgrade aegir to 48.1.1 ([#3549](https://github.com/libp2p/js-libp2p/issues/3549)) ([08898d7](https://github.com/libp2p/js-libp2p/commit/08898d7df679f45b543f188232883decd4535691))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.4 to ^3.2.5
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.9 to ^6.2.10
+    * @libp2p/utils bumped from ^7.2.3 to ^7.2.4
+
+## [5.0.23](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.22...prometheus-metrics-v5.0.23) (2026-06-13)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.3 to ^3.2.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.8 to ^6.2.9
+    * @libp2p/utils bumped from ^7.2.2 to ^7.2.3
+
+## [5.0.22](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.21...prometheus-metrics-v5.0.22) (2026-05-30)
+
+
+### Dependencies
+
+* upgrade to aegir v48 ([#3495](https://github.com/libp2p/js-libp2p/issues/3495)) ([29797a5](https://github.com/libp2p/js-libp2p/commit/29797a5bbbfc5b93d91fcdc244d7f65e2ce5e76c))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface bumped from ^3.2.2 to ^3.2.3
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.7 to ^6.2.8
+    * @libp2p/utils bumped from ^7.2.1 to ^7.2.2
+
+## [5.0.21](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.20...prometheus-metrics-v5.0.21) (2026-05-16)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/utils bumped from ^7.2.0 to ^7.2.1
+
+## [5.0.20](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.19...prometheus-metrics-v5.0.20) (2026-05-09)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.6 to ^6.2.7
+    * @libp2p/utils bumped from ^7.1.0 to ^7.2.0
+
+## [5.0.19](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.18...prometheus-metrics-v5.0.19) (2026-04-25)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/utils bumped from ^7.0.17 to ^7.1.0
+
 ## [5.0.18](https://github.com/libp2p/js-libp2p/compare/prometheus-metrics-v5.0.17...prometheus-metrics-v5.0.18) (2026-04-16)
 
 

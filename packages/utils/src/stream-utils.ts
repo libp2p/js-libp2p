@@ -1,4 +1,4 @@
-import { StreamMessageEvent, StreamCloseEvent, InvalidParametersError } from '@libp2p/interface'
+import { StreamMessageEvent, StreamCloseEvent, InvalidParametersError, StreamBufferError } from '@libp2p/interface'
 import { pipe as itPipe } from 'it-pipe'
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
@@ -8,6 +8,7 @@ import { Uint8ArrayList } from 'uint8arraylist'
 import { UnexpectedEOFError } from './errors.ts'
 import type { MessageStream, MultiaddrConnection, Stream, AbortOptions } from '@libp2p/interface'
 import type { Duplex, Source, Transform, Sink } from 'it-stream-types'
+import type { DecodeOptions } from 'protons-runtime'
 
 const DEFAULT_MAX_BUFFER_SIZE = 4_194_304
 
@@ -118,18 +119,43 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
 
   let hasBytes: PromiseWithResolvers<void> | undefined
   let unwrapped = false
+  let overflow: StreamBufferError | undefined
 
   if (!isValid(stream)) {
     throw new InvalidParametersError('Argument should be a Stream or a Multiaddr')
   }
 
   const byteStreamOnMessageListener = (evt: StreamMessageEvent): void => {
+    // the underlying stream owns incoming data once we have been unwrapped
+    if (unwrapped) {
+      return
+    }
+
+    if (overflow != null) {
+      // the stream is being aborted after a previous overflow, ignore any
+      // more data
+      return
+    }
+
     readBuffer.append(evt.data)
 
     if (readBuffer.byteLength > maxBufferSize) {
       const readBufferSize = readBuffer.byteLength
-      readBuffer.consume(readBuffer.byteLength)
-      hasBytes?.reject(new Error(`Read buffer overflow - ${readBufferSize} > ${maxBufferSize}`))
+      readBuffer.consume(readBufferSize)
+
+      // hasBytes only exists while a read is in flight and is already settled
+      // otherwise, so rejecting it reaches nobody between reads.
+      const err = new StreamBufferError(`Read buffer overflow - ${readBufferSize} > ${maxBufferSize}`)
+      overflow = err
+
+      hasBytes?.reject(err)
+
+      // let the current dispatch finish first
+      queueMicrotask(() => {
+        stream.abort(err)
+      })
+
+      return
     }
 
     hasBytes?.resolve()
@@ -157,6 +183,10 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
     async read (options?: ReadBytesOptions) {
       if (unwrapped === true) {
         throw new UnwrappedError('Stream was unwrapped')
+      }
+
+      if (overflow != null) {
+        throw overflow
       }
 
       if (isEOF(stream)) {
@@ -239,7 +269,8 @@ export function byteStream <T extends MessageStream> (stream: T, opts?: ByteStre
       // emit any unread data
       if (readBuffer.byteLength > 0) {
         stream.log('stream unwrapped with %d unread bytes', readBuffer.byteLength)
-        stream.push(readBuffer)
+        stream.unshift(readBuffer)
+        readBuffer.consume(readBuffer.byteLength)
       }
 
       return stream
@@ -378,7 +409,7 @@ export function lpStream <T extends MessageStream> (stream: T, opts: Partial<Len
  * A protobuf decoder - takes a byte array and returns an object
  */
 export interface ProtobufDecoder<T> {
-  (data: Uint8Array | Uint8ArrayList): T
+  (data: Uint8Array | Uint8ArrayList, opts?: DecodeOptions<T>): T
 }
 
 /**
@@ -395,7 +426,7 @@ export interface ProtobufStream<S extends MessageStream = MessageStream> {
   /**
    * Read the next length-prefixed byte array from the stream and decode it as the passed protobuf format
    */
-  read<T>(proto: { decode: ProtobufDecoder<T> }, options?: AbortOptions): Promise<T>
+  read<T>(proto: { decode: ProtobufDecoder<T> }, options?: AbortOptions & DecodeOptions<T>): Promise<T>
 
   /**
    * Encode the passed object as a protobuf message and write it's length-prefixed bytes to the stream
@@ -425,7 +456,7 @@ export interface ProtobufMessageStream <T, S extends MessageStream = MessageStre
   /**
    * Read a message from the stream
    */
-  read(options?: AbortOptions): Promise<T>
+  read(options?: AbortOptions & DecodeOptions<T>): Promise<T>
 
   /**
    * Write a message to the stream
@@ -451,11 +482,11 @@ export function pbStream <T extends MessageStream = Stream> (stream: T, opts?: P
   const lp = lpStream(stream, opts)
 
   const pbStream: ProtobufStream<T> = {
-    read: async (proto, options?: AbortOptions) => {
+    read: async (proto, options?) => {
       // readLP, decode
       const value = await lp.read(options)
 
-      return proto.decode(value)
+      return proto.decode(value, options)
     },
     write: async (message, proto, options?: AbortOptions) => {
       // encode, writeLP

@@ -1,6 +1,6 @@
 import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
-import { peerIdFromCID } from '@libp2p/peer-id'
+import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { isGlobalUnicast, isPrivate, pbStream } from '@libp2p/utils'
 import { CODE_IP6, CODE_IP6ZONE, CODE_P2P } from '@multiformats/multiaddr'
@@ -11,7 +11,7 @@ import {
   MULTICODEC_IDENTIFY_PROTOCOL_VERSION
 } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
-import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr } from './utils.ts'
+import { AbstractIdentify, consumeIdentifyMessage, defaultValues, getCleanMultiaddr, mergeIdentifyMessages, readIdentifyMessages } from './utils.ts'
 import type { Identify as IdentifyInterface, IdentifyComponents, IdentifyInit } from './index.ts'
 import type { IdentifyResult, AbortOptions, Connection, Stream, Startable, Logger, NewStreamOptions } from '@libp2p/interface'
 
@@ -60,14 +60,9 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       })
       log = stream.log.newScope('identify')
 
-      const pb = pbStream(stream, {
-        maxDataLength: this.maxMessageSize
-      }).pb(IdentifyMessage)
+      const messages = await readIdentifyMessages(stream, this.maxMessageSize, options, log)
 
-      const message = await pb.read(options)
-      await pb.unwrap().unwrap().close(options)
-
-      return message
+      return mergeIdentifyMessages(messages)
     } catch (err: any) {
       log?.error('identify failed - %e', err)
       stream?.abort(err)
@@ -88,7 +83,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     }
 
     const key = publicKeyFromProtobuf(publicKey)
-    const id = peerIdFromCID(key.toCID())
+    const id = peerIdFromPublicKey(key)
 
     if (!connection.remotePeer.equals(id)) {
       throw new InvalidMessageError('Identified peer does not match the expected peer')

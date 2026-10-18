@@ -4,7 +4,7 @@ import * as x509 from '@peculiar/x509'
 import { base64url } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { TransportCertificate } from '../../index.js'
+import type { TransportCertificate } from '../../index.ts'
 
 const crypto = new Crypto()
 x509.cryptoProvider.set(crypto)

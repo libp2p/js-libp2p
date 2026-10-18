@@ -2,7 +2,7 @@ import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Validators } from '../index.js'
+import type { Validators } from '../index.ts'
 import type { Libp2pRecord } from '@libp2p/record'
 import type { AbortOptions } from 'it-pushable'
 
@@ -17,8 +17,7 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
   const parts = keyString.split('/')
 
   if (parts.length < 3) {
-    // No validator available
-    return
+    throw new InvalidParametersError('Record key is missing a namespace')
   }
 
   const validator = validators[parts[1].toString()]

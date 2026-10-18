@@ -4,7 +4,7 @@ import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Status } from './pb/index.ts'
 import { echoHandler, reserve } from './util.ts'
-import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.js'
+import type { Daemon, DaemonFactory, NodeType, SpawnOptions } from '../index.ts'
 import type { IdentifyResult } from '@libp2p/daemon-client'
 import type { Multiaddr } from '@multiformats/multiaddr'
 

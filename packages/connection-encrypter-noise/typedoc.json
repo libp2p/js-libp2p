@@ -1,0 +1,7 @@
+{
+  "readme": "none",
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/crypto/index.ts"
+  ]
+}

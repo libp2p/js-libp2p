@@ -8,7 +8,7 @@ import { pEvent } from 'p-event'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { Message } from './fixtures/pb/message.ts'
-import type { TestSetup } from '../index.js'
+import type { TestSetup } from '../index.ts'
 import type { MultiaddrConnection, Stream, StreamCloseEvent, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 function randomBuffer (): Uint8Array {

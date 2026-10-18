@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
-import { itBench } from '@dapplion/benchmark'
-import { RPC } from '../../src/message/rpc.js'
+import { RPC } from '../../src/message/rpc.ts'
+import { runBenchmark } from '../utils/benchmark.ts'
 
 describe('protobuf', function () {
   const testCases: Array<{ name: string, length: number }> = [
@@ -30,24 +30,20 @@ describe('protobuf', function () {
 
     const runsFactor = 1000
 
-    itBench({
-      id: `decode ${name} message ${length} bytes`,
-      fn: () => {
+    it(`decode ${name} message ${length} bytes`, async () => {
+      await runBenchmark(`decode ${name} message ${length} bytes`, () => {
         for (let i = 0; i < runsFactor; i++) {
           RPC.decode(bytes)
         }
-      },
-      runsFactor
+      }, runsFactor)
     })
 
-    itBench({
-      id: `encode ${name} message ${length} bytes`,
-      fn: () => {
+    it(`encode ${name} message ${length} bytes`, async () => {
+      await runBenchmark(`encode ${name} message ${length} bytes`, () => {
         for (let i = 0; i < runsFactor; i++) {
           RPC.encode(rpc)
         }
-      },
-      runsFactor
+      }, runsFactor)
     })
   }
 })

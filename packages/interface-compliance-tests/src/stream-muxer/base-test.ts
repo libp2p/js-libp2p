@@ -2,7 +2,7 @@ import { multiaddrConnectionPair, byteStream } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
 import { pEvent } from 'p-event'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import type { TestSetup } from '../index.js'
+import type { TestSetup } from '../index.ts'
 import type { Stream, StreamMuxer, StreamMuxerFactory } from '@libp2p/interface'
 
 export default (common: TestSetup<StreamMuxerFactory>): void => {

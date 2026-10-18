@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import Sinon from 'sinon'
-import { AdaptiveTimeout, DEFAULT_MIN_TIMEOUT, DEFAULT_TIMEOUT_MULTIPLIER } from '../src/adaptive-timeout.js'
+import { AdaptiveTimeout, DEFAULT_MIN_TIMEOUT, DEFAULT_TIMEOUT_MULTIPLIER } from '../src/adaptive-timeout.ts'
 import type { SinonFakeTimers } from 'sinon'
 
 describe('adaptive-timeout', () => {

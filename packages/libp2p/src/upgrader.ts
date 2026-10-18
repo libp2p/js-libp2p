@@ -1,4 +1,4 @@
-import { InvalidMultiaddrError, InvalidPeerIdError } from '@libp2p/interface'
+import { InvalidMultiaddrError, InvalidPeerIdError, UnexpectedPeerError } from '@libp2p/interface'
 import * as mss from '@libp2p/multistream-select'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { trackedMap } from '@libp2p/utils'
@@ -309,6 +309,13 @@ export class Upgrader implements UpgraderInterface {
             remotePeer: remotePeerFromMultiaddr
           })
         ))
+
+        // do not rely on the encrypter to have verified the expected peer
+        if (remotePeerFromMultiaddr != null && !remotePeerFromMultiaddr.equals(remotePeer)) {
+          const err = new UnexpectedPeerError(`Expected remote peer ${remotePeerFromMultiaddr} but connected to ${remotePeer}`)
+          maConn.abort(err)
+          throw err
+        }
       }
 
       // this can happen if we dial a multiaddr without a peer id, we only find

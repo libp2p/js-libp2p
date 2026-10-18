@@ -1,4 +1,5 @@
-import webcrypto from '../webcrypto/index.js'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
+import webcrypto from '../webcrypto/index.ts'
 import lengths from './lengths.ts'
 
 const hashTypes = {
@@ -8,7 +9,7 @@ const hashTypes = {
 }
 
 const sign = async (key: CryptoKey, data: Uint8Array): Promise<Uint8Array> => {
-  const buf = await webcrypto.get().subtle.sign({ name: 'HMAC' }, key, data)
+  const buf = await webcrypto.get().subtle.sign({ name: 'HMAC' }, key, withArrayBuffer(data))
   return new Uint8Array(buf, 0, buf.byteLength)
 }
 
@@ -17,7 +18,7 @@ export async function create (hashType: 'SHA1' | 'SHA256' | 'SHA512', secret: Ui
 
   const key = await webcrypto.get().subtle.importKey(
     'raw',
-    secret,
+    withArrayBuffer(secret),
     {
       name: 'HMAC',
       hash: { name: hash }

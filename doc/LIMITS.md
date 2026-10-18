@@ -2,7 +2,7 @@
 
 In order to prevent excessive resource consumption by a libp2p node it's important to understand limits are applied and how to tune them to the needs of your application.
 
-This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_attack) attack mitigation - there is a more holistic discussion and general advice on that topic at [the main libp2p docs website](https://docs.libp2p.io/reference/dos-mitigation/).
+This is important for [DoS](https://en.wikipedia.org/wiki/Denial-of-service_attack) attack mitigation - there is a more holistic discussion and general advice on that topic at [the main libp2p docs website](https://libp2p.io/docs/dos-mitigation/).
 
 ## Table of contents <!-- omit in toc -->
 
@@ -102,13 +102,13 @@ These settings are done on a per-muxer basis, please see the README of the relev
 
 ### Yamux
 
-[@chainsafe/libp2p-yamux](https://github.com/Chainsafe/js-libp2p-yamux) supports the following.
+[@libp2p/yamux](https://github.com/Chainsafe/js-libp2p-yamux) supports the following.
 
-All fields are optional. The default values are defined in [@chainsafe/libp2p-yamux/src/config.ts](https://github.com/ChainSafe/js-libp2p-yamux/blob/master/src/config.ts) - please see that file for the current values.
+All fields are optional. The default values are defined in [@libp2p/yamux/src/config.ts](https://github.com/ChainSafe/js-libp2p-yamux/blob/master/src/config.ts) - please see that file for the current values.
 
 ```TypeScript
 import { createLibp2p } from 'libp2p'
-import { yamux } from '@chainsafe/libp2p-yamux'
+import { yamux } from '@libp2p/yamux'
 
 const node = await createLibp2p({
   streamMuxers: [

@@ -3,25 +3,25 @@ import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
 import { peerIdFromPublicKey, peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
 import * as Digest from 'multiformats/hashes/digest'
-import { QueryError, InvalidRecordError } from '../errors.js'
-import { MessageType } from '../message/dht.js'
-import { PeerDistanceList } from '../peer-distance-list.js'
+import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { QueryError, InvalidRecordError } from '../errors.ts'
+import { MessageType } from '../message/dht.ts'
+import { PeerDistanceList } from '../peer-distance-list.ts'
 import {
   queryErrorEvent,
   finalPeerEvent,
   valueEvent
-} from '../query/events.js'
-import { verifyRecord } from '../record/validators.js'
-import { convertBuffer, keyForPublicKey } from '../utils.js'
-import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.js'
-import type { Message } from '../message/dht.js'
-import type { Network, SendMessageOptions } from '../network.js'
-import type { QueryManager, QueryOptions } from '../query/manager.js'
-import type { QueryFunc } from '../query/types.js'
-import type { RoutingTable } from '../routing-table/index.js'
+} from '../query/events.ts'
+import { verifyRecord } from '../record/validators.ts'
+import { convertBuffer, keyForPublicKey } from '../utils.ts'
+import type { DHTRecord, FinalPeerEvent, QueryEvent, Validators } from '../index.ts'
+import type { Message } from '../message/dht.ts'
+import type { Network, SendMessageOptions } from '../network.ts'
+import type { QueryManager, QueryOptions } from '../query/manager.ts'
+import type { QueryFunc } from '../query/types.ts'
+import type { RoutingTable } from '../routing-table/index.ts'
 import type { GetClosestPeersOptions } from '../routing-table/k-bucket.ts'
 import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
-import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { AbortOptions } from 'it-pushable'
 
 export interface PeerRoutingComponents {
@@ -29,7 +29,6 @@ export interface PeerRoutingComponents {
   peerStore: PeerStore
   logger: ComponentLogger
   metrics?: Metrics
-  connectionManager: ConnectionManager
 }
 
 export interface PeerRoutingInit {
@@ -251,43 +250,41 @@ export class PeerRouting {
         key
       }
 
-      yield * self.network.sendRequest(peer.id, request, {
+      let responded = false
+
+      for await (const event of self.network.sendRequest(peer.id, request, {
         ...options,
         signal,
         path
-      })
+      })) {
+        if (event.name === 'PEER_RESPONSE') {
+          responded = true
+        }
 
-      // add the peer to the list if we've managed to contact it successfully
-      peers.addWithKadId(peer, peerKadId, path)
+        yield event
+      }
+
+      if (responded) {
+        // add the peer to the list if we've managed to contact it successfully
+        peers.addWithKadId(peer, peerKadId, path)
+      }
     }
 
     yield * this.queryManager.run(key, getCloserPeersQuery, options)
 
     this.log('found %d peers close to %b', peers.length, key)
 
-    for (let { peer, path } of peers.peers) {
-      try {
-        if (peer.multiaddrs.length === 0) {
-          peer = await self.components.peerStore.getInfo(peer.id, options)
+    for (const { peer, path } of peers.peers) {
+      yield finalPeerEvent({
+        from: this.components.peerId,
+        peer,
+        path: {
+          index: path.index,
+          queued: 0,
+          running: 0,
+          total: 0
         }
-
-        if (peer.multiaddrs.length === 0) {
-          continue
-        }
-
-        yield finalPeerEvent({
-          from: this.components.peerId,
-          peer: await self.components.peerStore.getInfo(peer.id, options),
-          path: {
-            index: path.index,
-            queued: 0,
-            running: 0,
-            total: 0
-          }
-        }, options)
-      } catch {
-        continue
-      }
+      }, options)
     }
   }
 
@@ -303,7 +300,7 @@ export class PeerRouting {
         if (event.record != null) {
           // We have a record
           try {
-            await this._verifyRecordOnline(event.record, options)
+            await this._verifyRecordOnline(event.record, key, options)
           } catch (err: any) {
             const errMsg = 'invalid record received, discarded'
             this.log(errMsg)
@@ -326,9 +323,14 @@ export class PeerRouting {
    * Verify a record, fetching missing public keys from the network.
    * Throws an error if the record is invalid.
    */
-  async _verifyRecordOnline (record: DHTRecord, options?: AbortOptions): Promise<void> {
+  async _verifyRecordOnline (record: DHTRecord, key: Uint8Array, options?: AbortOptions): Promise<void> {
     if (record.timeReceived == null) {
       throw new InvalidRecordError('invalid record received')
+    }
+
+    // the returned record must be for the key that was requested
+    if (!uint8ArrayEquals(record.key, key)) {
+      throw new InvalidRecordError('received record key did not match the requested key')
     }
 
     await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived), options)

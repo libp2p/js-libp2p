@@ -1,6 +1,6 @@
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
-import { defaultAddressSorter } from '../../src/connection-manager/address-sorter.js'
+import { defaultAddressSorter } from '../../src/connection-manager/address-sorter.ts'
 
 describe('address-sort', () => {
   describe('public addresses first', () => {

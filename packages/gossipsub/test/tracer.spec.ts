@@ -2,9 +2,9 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
-import * as constants from '../src/constants.js'
-import { IWantTracer } from '../src/tracer.js'
-import { messageIdToString } from '../src/utils/messageIdToString.js'
+import * as constants from '../src/constants.ts'
+import { IWantTracer } from '../src/tracer.ts'
+import { messageIdToString } from '../src/utils/messageIdToString.ts'
 import { makeTestMessage, getMsgId, getMsgIdStr } from './utils/index.ts'
 
 describe('IWantTracer', () => {

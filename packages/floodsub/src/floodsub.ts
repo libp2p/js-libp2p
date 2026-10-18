@@ -5,11 +5,13 @@ import Queue from 'p-queue'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { SimpleTimeCache } from './cache.ts'
 import { pubSubSymbol } from './constants.ts'
+import { createRPCDecodeLimits, defaultDecodeRpcLimits } from './decodeRpc.ts'
 import { protocol, StrictNoSign, TopicValidatorResult, StrictSign } from './index.ts'
 import { RPC } from './message/rpc.ts'
 import { PeerStreams } from './peer-streams.ts'
 import { signMessage, verifySignature } from './sign.ts'
 import { toMessage, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.ts'
+import type { RPCDecodeLimits } from './decodeRpc.ts'
 import type { FloodSubComponents, FloodSubEvents, FloodSubInit, FloodSub as FloodSubInterface, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.ts'
 import type { Logger, Connection, PeerId, Stream } from '@libp2p/interface'
 
@@ -79,6 +81,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
   private readonly maxInboundStreams: number
   private readonly maxOutboundStreams: number
   public seenCache: SimpleTimeCache<boolean>
+  private readonly decodeRpcLimits: RPCDecodeLimits
 
   constructor (components: FloodSubComponents, init: FloodSubInit) {
     super()
@@ -102,6 +105,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     this.seenCache = new SimpleTimeCache<boolean>({
       validityMs: init?.seenTTL ?? 30000
     })
+    this.decodeRpcLimits = createRPCDecodeLimits(init.decodeRpcLimits ?? defaultDecodeRpcLimits)
 
     this._onIncomingStream = this._onIncomingStream.bind(this)
     this._onPeerConnected = this._onPeerConnected.bind(this)
@@ -173,6 +177,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     }
 
     this.peers.clear()
+    this.topics.clear()
     this.subscriptions = new Set()
     this.started = false
     this.log('stopped')
@@ -187,7 +192,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
    */
   protected _onIncomingStream (stream: Stream, connection: Connection): void {
     const peerStreams = this.addPeer(connection.remotePeer, stream)
-    peerStreams.attachInboundStream(stream)
+    peerStreams.attachInboundStream(stream, undefined, this.decodeRpcLimits)
   }
 
   /**
@@ -295,8 +300,11 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     this.peers.delete(peerId)
 
     // remove peer from topics map
-    for (const peers of this.topics.values()) {
+    for (const [topic, peers] of this.topics) {
       peers.delete(peerId)
+      if (peers.size === 0) {
+        this.topics.delete(topic)
+      }
     }
   }
 
@@ -361,17 +369,21 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
     }
 
     let topicSet = this.topics.get(t)
-    if (topicSet == null) {
-      topicSet = new PeerSet()
-      this.topics.set(t, topicSet)
-    }
 
     if (subOpt.subscribe === true) {
+      if (topicSet == null) {
+        topicSet = new PeerSet()
+        this.topics.set(t, topicSet)
+      }
+
       // subscribe peer to new topic
       topicSet.add(id)
-    } else {
+    } else if (topicSet != null) {
       // unsubscribe from existing topic
       topicSet.delete(id)
+      if (topicSet.size === 0) {
+        this.topics.delete(t)
+      }
     }
   }
 

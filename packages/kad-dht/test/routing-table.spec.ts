@@ -12,16 +12,19 @@ import { TypedEventEmitter } from 'main-event'
 import { CID } from 'multiformats/cid'
 import { pEvent } from 'p-event'
 import { stubInterface } from 'sinon-ts'
-import { PROTOCOL } from '../src/constants.js'
-import { MessageType } from '../src/message/dht.js'
-import { peerResponseEvent } from '../src/query/events.js'
-import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable } from '../src/routing-table/index.js'
-import { isLeafBucket } from '../src/routing-table/k-bucket.js'
-import * as kadUtils from '../src/utils.js'
+import { PROTOCOL } from '../src/constants.ts'
+import { MessageType } from '../src/message/dht.ts'
+import { peerResponseEvent } from '../src/query/events.ts'
+import { KAD_PEER_TAG_NAME, KAD_PEER_TAG_VALUE, RoutingTable } from '../src/routing-table/index.ts'
+import { isLeafBucket } from '../src/routing-table/k-bucket.ts'
+import { RoutingTableRefresh } from '../src/routing-table/refresh.ts'
+import * as kadUtils from '../src/utils.ts'
 import { createPeerIdWithPrivateKey, createPeerIdsWithPrivateKey } from './utils/create-peer-id.ts'
-import type { Network } from '../src/network.js'
-import type { RoutingTableComponents } from '../src/routing-table/index.js'
-import type { Bucket } from '../src/routing-table/k-bucket.js'
+import type { QueryEvent } from '../src/index.ts'
+import type { Network } from '../src/network.ts'
+import type { PeerRouting } from '../src/peer-routing/index.ts'
+import type { RoutingTableComponents } from '../src/routing-table/index.ts'
+import type { Bucket } from '../src/routing-table/k-bucket.ts'
 import type { Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
 import type { Ping } from '@libp2p/ping'
 import type { StubbedInstance } from 'sinon-ts'
@@ -428,6 +431,68 @@ describe('Routing Table', () => {
     expect(table.kb.get(oldPeer.kadId)).to.be.undefined()
   })
 
+  it('does not hang when an old contact accepts the ping but never responds', async () => {
+    await stop(table)
+
+    table = new RoutingTable({
+      ...components,
+      peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
+    }, {
+      logPrefix: '',
+      metricsPrefix: '',
+      protocol: PROTOCOL,
+      kBucketSize: 1,
+      prefixLength: 1,
+      network,
+      lastPingThreshold: 1,
+      pingOldContactTimeout: {
+        minTimeout: 100,
+        maxTimeout: 200
+      }
+    })
+    await start(table)
+
+    const peerIds = [
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi1'),
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi2')
+    ]
+
+    for (const peerId of peerIds) {
+      await table.add(peerId)
+    }
+
+    const newPeerId = peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi5')
+    const oldPeer = {
+      kadId: await kadUtils.convertPeerId(peerIds[0]),
+      peerId: peerIds[0]
+    }
+
+    // ensure the lastPing threshold is passed
+    await delay(100)
+
+    // reset network stub so we can have specific behavior
+    table.network = network = stubInterface()
+
+    // the contact accepts the ping stream but never sends a pong, so only an
+    // abort can end the ping
+    ping.ping.withArgs(oldPeer.peerId).callsFake(async (peerId, options) => {
+      return new Promise((resolve, reject) => {
+        options?.signal?.addEventListener('abort', () => {
+          reject(options?.signal?.reason ?? new Error('aborted'))
+        })
+      })
+    })
+
+    await table.kb.add(oldPeer.peerId)
+
+    // the ping must be bounded by pingOldContactTimeout, otherwise the bucket
+    // waits on it forever and the job that runs it is never released
+    await expect(Promise.race([
+      table.kb.add(newPeerId).then(() => 'added'),
+      delay(2000).then(() => 'hung')
+    ])).to.eventually.equal('added')
+  })
+
   it('tags newly found kad-close peers', async () => {
     await stop(table)
 
@@ -570,6 +635,51 @@ describe('Routing Table', () => {
     expect(table.kb.root).to.have.property('depth', 0)
     expect(table.kb.root).to.have.property('prefix', '')
     expect(table.kb.root).to.have.property('peers').that.is.empty()
+  })
+
+  describe('refresh', () => {
+    let peerRouting: StubbedInstance<PeerRouting>
+    let refresh: RoutingTableRefresh
+    let queriedKeys: Uint8Array[]
+
+    beforeEach(() => {
+      queriedKeys = []
+      peerRouting = stubInterface<PeerRouting>()
+      peerRouting.getClosestPeers.callsFake((key: Uint8Array) => {
+        queriedKeys.push(key)
+        return (async function * (): AsyncGenerator<QueryEvent> {})()
+      })
+
+      refresh = new RoutingTableRefresh({ logger: defaultLogger() }, {
+        peerRouting,
+        routingTable: table,
+        logPrefix: ''
+      })
+    })
+
+    afterEach(async () => {
+      await refresh.stop()
+    })
+
+    it('issues refresh queries when run without force (the periodic refresh path)', async () => {
+      refresh.refreshTable(false)
+      await delay(200)
+
+      expect(queriedKeys.length).to.be.greaterThan(0)
+    })
+
+    it('does not re-query a common prefix length that was just refreshed', async () => {
+      refresh.refreshTable(false)
+      await delay(200)
+
+      const afterFirstRefresh = queriedKeys.length
+      expect(afterFirstRefresh).to.be.greaterThan(0)
+
+      refresh.refreshTable(false)
+      await delay(200)
+
+      expect(queriedKeys.length).to.equal(afterFirstRefresh)
+    })
   })
 
   describe('max size', () => {

@@ -7,7 +7,7 @@ import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { streamPair } from '../src/stream-pair.ts'
-import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.js'
+import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.ts'
 
 describe('messageStreamToDuplex', () => {
   it('should source all reads', async () => {
@@ -144,6 +144,46 @@ describe('pipe', () => {
 })
 
 describe('byte-stream', () => {
+  it('should not silently discard buffered bytes on overflow', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    const maxBufferSize = 1024
+    const incomingBytes = byteStream(incoming, { maxBufferSize })
+    const outgoingBytes = byteStream(outgoing)
+
+    // overflow the read buffer while nothing is reading. `hasBytes` is only
+    // created by read(), so with no read pending the overflow rejection has
+    // nowhere to go, while the buffer has already been discarded.
+    for (let i = 0; i < 4; i++) {
+      await outgoingBytes.write(new Uint8Array(512).fill(i + 1))
+    }
+    await delay(100)
+
+    // 2048 bytes were written and none were consumed, so a read must either
+    // produce them or fail. It must not quietly resume mid-stream.
+    let bytes: number | undefined
+    let error: Error | undefined
+
+    try {
+      const buf = await Promise.race([
+        incomingBytes.read(),
+        delay(500).then(async () => { throw new Error('read never settled') })
+      ])
+      bytes = buf?.byteLength
+    } catch (err: any) {
+      error = err
+    }
+
+    if (error != null) {
+      // failing loudly is fine: the caller learns the stream lost data
+      expect(error).to.have.property('message').that.includes('overflow')
+    } else {
+      expect(bytes, 'bytes were discarded without an error').to.equal(2048)
+    }
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
   it('should read bytes', async () => {
     const [outgoing, incoming] = await streamPair()
 
@@ -216,6 +256,62 @@ describe('byte-stream', () => {
     const readIncoming = await incomingBytes.read()
 
     expect(readIncoming).to.deep.equal(writtenOutgoing)
+  })
+
+  it('should preserve byte order on unwrap when the underlying stream has buffered data', async () => {
+    // Same reorder happens if external code calls stream.push() then unwrap()
+    // synchronously - push defers dispatch via setTimeout.
+    const [outgoing, incoming] = await streamPair()
+
+    const incomingBytes = byteStream(incoming)
+
+    outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    await delay(10)
+
+    // pause so subsequent data sits in stream.readBuffer instead of reaching
+    // the byteStream listener
+    incoming.pause()
+
+    outgoing.send(Uint8Array.from([4, 5, 6, 7]))
+    await delay(10)
+
+    const unwrapped = incomingBytes.unwrap()
+    unwrapped.resume()
+
+    const [read] = await Promise.all([
+      all(unwrapped),
+      outgoing.close()
+    ])
+
+    expect(new Uint8ArrayList(...read).subarray()).to.equalBytes(
+      Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7])
+    )
+  })
+
+  it('should not buffer data after unwrap if the message listener is not removed', async () => {
+    const [outgoing, incoming] = await streamPair()
+
+    // main-event@1.0.4 removeEventListener did not detach listeners
+    Sinon.stub(incoming, 'removeEventListener')
+
+    const maxBufferSize = 1024
+    const incomingBytes = byteStream(incoming, { maxBufferSize })
+    const unwrapped = incomingBytes.unwrap()
+
+    const [read] = await Promise.all([
+      all(unwrapped),
+      (async () => {
+        for (let i = 0; i < 4; i++) {
+          outgoing.send(new Uint8Array(512).fill(i + 1))
+          await delay(10)
+        }
+
+        await outgoing.close()
+      })()
+    ])
+
+    expect(new Uint8ArrayList(...read).byteLength).to.equal(maxBufferSize * 2)
+    expect(incoming.status).to.not.equal('aborted')
   })
 })
 
@@ -411,5 +507,65 @@ describe('stream-pair', () => {
 
     await expect(outgoing.onDrain()).to.eventually.be.rejected
       .with.property('name', 'StreamResetError')
+  })
+
+  it('should not throw uncaught error on drain event when stream is closed', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    outgoing.writeStatus = 'closed'
+
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
+  it('should catch StreamStateError from sendData during closing', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 100
+    })
+    const outgoingStream = outgoing as typeof outgoing & {
+      sendData(data: Uint8ArrayList): { sentBytes: number, canSendMore: boolean }
+    }
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    expect(outgoing.send(Uint8Array.from([4, 5, 6, 7]))).to.be.false()
+
+    const err = new Error('Cannot write to a stream that is closing')
+    err.name = 'StreamStateError'
+    Sinon.stub(outgoingStream, 'sendData').throws(err)
+
+    outgoing.writeStatus = 'closing'
+
+    expect(() => {
+      outgoing.dispatchEvent(new Event('drain'))
+    }).to.not.throw()
+
+    outgoing.abort(new Error('cleanup'))
+  })
+
+  it('should propagate StreamStateError from send() when sendData throws', async () => {
+    const [outgoing] = await streamPair()
+    const outgoingStream = outgoing as typeof outgoing & {
+      sendData(data: Uint8ArrayList): { sentBytes: number, canSendMore: boolean }
+    }
+
+    const err = new Error('Cannot write to a stream that is closing')
+    err.name = 'StreamStateError'
+    Sinon.stub(outgoingStream, 'sendData').throws(err)
+
+    expect(() => {
+      outgoing.send(Uint8Array.from([0, 1, 2, 3]))
+    }).to.throw().with.property('name', 'StreamStateError')
+
+    outgoing.abort(new Error('cleanup'))
   })
 })

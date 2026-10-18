@@ -1,6 +1,6 @@
 import { expect } from 'aegir/chai'
 import { isNode, isElectronMain, isBrowser, isWebWorker } from 'wherearewe'
-import { userAgent } from '../../src/user-agent.js'
+import { userAgent } from '../../src/user-agent.ts'
 
 describe('user-agent', () => {
   it('should include runtime in user agent', () => {

@@ -4,7 +4,7 @@ import { TypedEventEmitter, setMaxListeners } from 'main-event'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import {
   RELAY_V2_HOP_CODEC
-} from '../constants.js'
+} from '../constants.ts'
 import type { RelayDiscoveryComponents, RelayDiscoveryEvents, RelayDiscoveryInit } from '../index.ts'
 import type { Logger, Peer, PeerId, PeerInfo, Startable, TopologyFilter } from '@libp2p/interface'
 

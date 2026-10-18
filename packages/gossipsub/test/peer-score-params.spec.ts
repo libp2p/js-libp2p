@@ -1,11 +1,11 @@
 import { expect } from 'aegir/chai'
-import * as constants from '../src/constants.js'
+import * as constants from '../src/constants.ts'
 import {
   createTopicScoreParams,
   validateTopicScoreParams,
   createPeerScoreParams,
   validatePeerScoreParams
-} from '../src/score/index.js'
+} from '../src/score/index.ts'
 
 describe('TopicScoreParams validation', () => {
   it('should not throw on default TopicScoreParams', () => {

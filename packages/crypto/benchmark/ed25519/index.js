@@ -10,8 +10,6 @@ import supercopWasm from 'supercop.wasm'
 import ed25519WasmPro from 'ed25519-wasm-pro'
 import * as libp2pCrypto from '../../dist/src/index.js'
 
-const { randomBytes } = noble.utils
-
 const suite = new Benchmark.Suite('ed25519 implementations')
 
 suite.add('@libp2p/crypto', async (d) => {
@@ -58,7 +56,7 @@ suite.add('@stablelib/ed25519', async (d) => {
 
 suite.add('node-forge/ed25519', async (d) => {
   const message = Buffer.from('hello world ' + Math.random())
-  const seed = randomBytes(32)
+  const seed = crypto.getRandomValues(new Uint8Array(32))
   const key = await forge.pki.ed25519.generateKeyPair({ seed })
   const signature = await forge.pki.ed25519.sign({ message, privateKey: key.privateKey })
   const res = await forge.pki.ed25519.verify({ signature, message, publicKey: key.publicKey })
@@ -100,7 +98,7 @@ suite.add('ed25519-wasm-pro', async (d) => {
 
 suite.add('ed25519 (native module)', async (d) => {
   const message = Buffer.from('hello world ' + Math.random())
-  const seed = randomBytes(32)
+  const seed = crypto.getRandomValues(new Uint8Array(32))
   const key = native.MakeKeypair(seed)
   const signature = native.Sign(message, key)
   const res = native.Verify(message, signature, key.publicKey)

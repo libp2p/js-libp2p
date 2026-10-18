@@ -2,10 +2,10 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { base64urlToBuffer } from '../../util.js'
-import webcrypto from '../../webcrypto/index.js'
+import { base64urlToBuffer } from '../../util.ts'
+import webcrypto from '../../webcrypto/index.ts'
 import type { Curve } from './index.ts'
-import type { ECDHKey, ECDHKeyPair, JWKEncodedPrivateKey, JWKEncodedPublicKey } from '../interface.js'
+import type { ECDHKey, ECDHKeyPair, JWKEncodedPrivateKey, JWKEncodedPublicKey } from '../interface.ts'
 
 const curveLengths = {
   'P-256': 32,

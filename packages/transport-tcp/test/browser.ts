@@ -1,7 +1,7 @@
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
 import { isBrowser, isWebWorker } from 'wherearewe'
-import { tcp } from '../src/index.js'
+import { tcp } from '../src/index.ts'
 
 describe('browser non-support', () => {
   it('should throw in browsers', function () {

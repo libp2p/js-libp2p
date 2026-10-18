@@ -1,7 +1,7 @@
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { prometheusMetrics } from '../src/index.js'
+import { prometheusMetrics } from '../src/index.ts'
 import type { Metrics } from '@libp2p/interface'
 
 describe('simple-metrics', () => {
