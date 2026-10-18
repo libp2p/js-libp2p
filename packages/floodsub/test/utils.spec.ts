@@ -12,7 +12,7 @@ describe('utils', () => {
 
     expect(first).to.be.a('BigInt')
     expect(second).to.be.a('BigInt')
-    expect(second).to.be.greaterThan(first)
+    expect(second > first).to.be.true()
   })
 
   it('encodes sequence numbers as 8 bytes', () => {
