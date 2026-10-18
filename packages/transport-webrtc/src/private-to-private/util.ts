@@ -1,6 +1,7 @@
 import { ConnectionFailedError, InvalidMessageError, InvalidMultiaddrError } from '@libp2p/interface'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { CustomProgressEvent } from 'progress-events'
+import { raceSignal } from 'race-signal'
 import { RTCIceCandidate } from '../webrtc/index.ts'
 import { Message } from './pb/message.ts'
 import type { WebRTCDialEvents } from './transport.ts'
@@ -16,10 +17,10 @@ export interface ReadCandidatesOptions extends AbortOptions, LoggerOptions, Prog
 }
 
 export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream: MessageStream<Message, Stream>, options: ReadCandidatesOptions): Promise<void> => {
-  try {
-    const connectedPromise = Promise.withResolvers<void>()
-    resolveOnConnected(pc, connectedPromise)
+  const connectedPromise = Promise.withResolvers<void>()
+  resolveOnConnected(pc, connectedPromise)
 
+  try {
     // read candidates until we are connected or we reach the end of the stream
     while (true) {
       // if we connect, stop trying to read from the stream
@@ -66,10 +67,16 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
       }
     }
   } catch (err) {
-    options.log.error('%s error parsing ICE candidate - %e', options.direction, err)
+    options.log.error('%s error reading ICE candidates - %e', options.direction, err)
 
-    if (options.signal?.aborted === true && pc.connectionState !== 'connected') {
-      throw err
+    // the signaling stream can end just before the peer connection connects
+    if (pc.connectionState !== 'connected') {
+      try {
+        await raceSignal(connectedPromise.promise, options.signal)
+      } catch {
+        options.signal?.throwIfAborted()
+        throw err
+      }
     }
   }
 }
@@ -77,6 +84,11 @@ export const readCandidatesUntilConnected = async (pc: RTCPeerConnection, stream
 function resolveOnConnected (pc: RTCPeerConnection, promise: DeferredPromise<void>): void {
   if (pc.connectionState === 'connected') {
     promise.resolve()
+    return
+  }
+
+  if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+    promise.reject(new ConnectionFailedError(`RTCPeerConnection connection state was "${pc.connectionState}"`))
     return
   }
 
