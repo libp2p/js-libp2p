@@ -110,6 +110,28 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.5.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.4.0...libp2p-v3.5.0) (2026-10-17)
+
+
+### Features
+
+* **crypto:** add publicKeyForPeer to bind keys to peer ids ([#3667](https://github.com/libp2p/js-libp2p/issues/3667)) ([f0e64b9](https://github.com/libp2p/js-libp2p/commit/f0e64b9b82bd29078c9aaf8d73304a227ba9afc7))
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/interface-internal bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+    * @libp2p/multistream-select bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/peer-collections bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-store bumped from ^12.0.30 to ^12.0.31
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+
 ## [3.4.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.3.12...libp2p-v3.4.0) (2026-10-16)
 
 
