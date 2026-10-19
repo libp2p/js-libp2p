@@ -29,9 +29,9 @@ export async function stunListener (host: string, port: number, log: Logger, cb:
       port = candidate
       break
     } catch (err) {
-      // Another process can claim the port between releasing the probe and
-      // binding the native listener. Only ephemeral bind failures can reselect.
-      if (port !== 0 || attempt === MAX_EPHEMERAL_BIND_ATTEMPTS || !(err instanceof Error) || err.message !== 'Failed to register ICE UDP mux listener') {
+      // the probed port can be claimed before the native listener binds it, the
+      // native error does not say why so retry any failure on an ephemeral port
+      if (port !== 0 || attempt === MAX_EPHEMERAL_BIND_ATTEMPTS) {
         throw err
       }
     }
