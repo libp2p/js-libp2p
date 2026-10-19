@@ -324,11 +324,10 @@ export class Queue<JobReturnType = unknown, JobOptions extends AbortOptions & Pr
    * limit: `queue.size < limit`.
    *
    * If you want to avoid having the queue grow beyond a certain size you can
-   * `await queue.onSizeLessThan()` before adding a new item.
+   * `await queue.onSizeLessThan(limit)` before adding a new item.
    *
-   * Note that this only limits the number of items waiting to start. There
-   * could still be up to `concurrency` jobs already running that this call does
-   * not include in its calculation.
+   * The queue size includes both jobs waiting to start and jobs that are
+   * already running.
    */
   async onSizeLessThan (limit: number, options?: AbortOptions): Promise<void> {
     // Instantly resolve if the queue is empty.
