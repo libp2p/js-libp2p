@@ -734,7 +734,7 @@ import { createLibp2p } from 'libp2p'
 import { tcp } from '@libp2p/tcp'
 import { yamux } from '@libp2p/yamux'
 import { noise } from '@libp2p/noise'
-import { FaultTolerance } from '@libp2p/interface-transport'
+import { FaultTolerance } from '@libp2p/interface'
 
 const node = await createLibp2p({
   transports: [
