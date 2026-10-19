@@ -111,6 +111,23 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [7.0.2](https://github.com/libp2p/js-libp2p/compare/webrtc-v7.0.1...webrtc-v7.0.2) (2026-10-19)
+
+
+### Bug Fixes
+
+* **transport-webrtc:** fix EOF race in readCandidatesUntilConnected ([#3460](https://github.com/libp2p/js-libp2p/issues/3460)) ([b927d59](https://github.com/libp2p/js-libp2p/commit/b927d5921dcf3eb4e6b3e6c1075092d88b02e9ca))
+* **webrtc:** allocate UDP ports and clean up failed listeners ([#3630](https://github.com/libp2p/js-libp2p/issues/3630)) ([3da8bab](https://github.com/libp2p/js-libp2p/commit/3da8bab7cadf9669eb8ae00fcd49aa553bb74416))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/noise bumped from ^17.0.6 to ^17.0.7
+    * @libp2p/utils bumped from ^7.4.4 to ^7.4.5
+
 ## [7.0.1](https://github.com/libp2p/js-libp2p/compare/webrtc-v7.0.0...webrtc-v7.0.1) (2026-10-17)
 
 

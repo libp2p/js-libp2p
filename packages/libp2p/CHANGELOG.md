@@ -110,6 +110,24 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.5.1](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.5.0...libp2p-v3.5.1) (2026-10-19)
+
+
+### Documentation
+
+* correct queue capacity and dial overflow semantics ([#3674](https://github.com/libp2p/js-libp2p/issues/3674)) ([c57bf62](https://github.com/libp2p/js-libp2p/commit/c57bf62281c333d44dd3da74711bd15f602bdd1c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/multistream-select bumped from ^7.0.31 to ^7.0.32
+    * @libp2p/peer-collections bumped from ^7.0.31 to ^7.0.32
+    * @libp2p/peer-store bumped from ^12.0.31 to ^12.0.32
+    * @libp2p/utils bumped from ^7.4.4 to ^7.4.5
+
 ## [3.5.0](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.4.0...libp2p-v3.5.0) (2026-10-17)
 
 
