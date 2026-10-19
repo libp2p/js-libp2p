@@ -62,11 +62,6 @@ jobs:
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
           directories: ${{ env.CACHE_DIRS }}
-      - name: Report WebRTC native versions
-        working-directory: packages/transport-webrtc
-        run: |
-          npm ls node-datachannel
-          node --input-type=module -e "import { getLibraryVersion } from 'node-datachannel'; console.log('libdatachannel:', getLibraryVersion())"
       - run: npm run --if-present test:node
       - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
