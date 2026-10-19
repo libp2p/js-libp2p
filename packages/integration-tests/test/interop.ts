@@ -95,7 +95,11 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
   const deferred = pDefer<void>()
   const proc = execa(p2pd(), opts, {
     env: {
-      GOLOG_LOG_LEVEL: 'debug'
+      GOLOG_LOG_LEVEL: 'debug',
+      // daemons that dial each other at the same time from their listen ports
+      // share one TCP connection via simultaneous open and fail the handshake
+      // https://github.com/libp2p/go-libp2p/issues/2925
+      LIBP2P_TCP_REUSEPORT: 'false'
     }
   })
 
@@ -136,6 +140,10 @@ async function createGoPeer (options: SpawnOptions): Promise<Daemon> {
     client: createClient(controlMultiaddr),
     stop: async () => {
       proc.kill()
+
+      // wait for the daemon to exit so it releases its ports before the next
+      // test starts new daemons
+      await proc.catch(() => {})
     }
   }
 }
