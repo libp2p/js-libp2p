@@ -22,7 +22,7 @@ export async function stunListener (host: string, port: number, log: Logger, cb:
 
   for (let attempt = 1; ; attempt++) {
     // libjuice cannot allocate an ephemeral port itself. Probe UDP, not TCP.
-    const candidate = port === 0 ? await getUDPPort(isIPv4(host)) : port
+    const candidate = port === 0 ? await getUDPPort(host) : port
 
     try {
       listener = new IceUdpMuxListener(candidate, host)
@@ -59,12 +59,14 @@ export async function stunListener (host: string, port: number, log: Logger, cb:
   }
 }
 
-async function getUDPPort (ipv4: boolean): Promise<number> {
-  const socket = createSocket(ipv4 ? 'udp4' : 'udp6')
+// bind the address the native listener will use, a free wildcard port can
+// still be taken on a specific address on Windows
+async function getUDPPort (host: string): Promise<number> {
+  const socket = createSocket(isIPv4(host) ? 'udp4' : 'udp6')
 
   try {
     const listening = once(socket, 'listening')
-    socket.bind(0)
+    socket.bind(0, host)
     await listening
     return socket.address().port
   } finally {
