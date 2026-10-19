@@ -44,7 +44,7 @@ describe('connection monitor', () => {
 
     components.connectionManager.getConnections.returns([connection])
 
-    await delay(100)
+    await pWaitFor(() => typeof connection.rtt === 'number')
 
     expect(connection.rtt).to.be.gte(0)
   })
@@ -63,7 +63,7 @@ describe('connection monitor', () => {
 
     components.connectionManager.getConnections.returns([connection])
 
-    await delay(100)
+    await pWaitFor(() => typeof connection.rtt === 'number')
 
     expect(connection.rtt).to.be.gte(0)
   })
@@ -83,7 +83,7 @@ describe('connection monitor', () => {
 
     components.connectionManager.getConnections.returns([connection])
 
-    await delay(100)
+    await pWaitFor(() => cleanUpSpy.callCount >= 1)
 
     expect(cleanUpSpy.callCount).to.be.gte(1)
   })
@@ -103,7 +103,7 @@ describe('connection monitor', () => {
 
     components.connectionManager.getConnections.returns([connection])
 
-    await delay(100)
+    await pWaitFor(() => typeof connection.rtt === 'number')
 
     expect(connection.rtt).to.be.gte(0)
   })
