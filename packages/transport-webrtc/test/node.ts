@@ -12,6 +12,7 @@ import { TypedEventEmitter } from 'main-event'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { WebRTCDirectListener } from '../src/private-to-public/listener.ts'
+import { MAX_EPHEMERAL_BIND_ATTEMPTS } from '../src/private-to-public/utils/stun-listener.ts'
 import type { TransportCertificate } from '../src/index.ts'
 import type { WebRTCDirectListenerComponents } from '../src/private-to-public/listener.ts'
 import type { Upgrader } from '@libp2p/interface'
@@ -101,6 +102,25 @@ describe('WebRTC Direct UDP listener lifecycle', () => {
     ])
   })
 
+  it('allocates an ephemeral UDP port on IPv6', async function () {
+    const probe = createSocket('udp6')
+
+    try {
+      const listening = once(probe, 'listening')
+      probe.bind(0, '::1')
+      await listening
+    } catch {
+      this.skip()
+    } finally {
+      await probe[Symbol.asyncDispose]()
+    }
+
+    const listener = createListener()
+    await listener.listen(multiaddr('/ip6/::1/udp/0/webrtc-direct'))
+
+    expect(getNetConfig(listener.getAddrs()[0]).port).to.be.greaterThan(0)
+  })
+
   it('registers the actual ephemeral port before admitting another listener', async () => {
     const listener = createListener()
     await listener.listen(multiaddr('/ip4/127.0.0.1/udp/0/webrtc-direct'))
@@ -110,7 +130,7 @@ describe('WebRTC Direct UDP listener lifecycle', () => {
       .to.be.rejectedWith('There is already a listener')
   })
 
-  for (const collisions of [1, 5]) {
+  for (const collisions of [1, MAX_EPHEMERAL_BIND_ATTEMPTS]) {
     it(collisions === 1 ? 'retries after an ephemeral bind collision' : 'bounds ephemeral bind retries', async () => {
       const dispose = Socket.prototype[Symbol.asyncDispose]
       let probes = 0
@@ -134,7 +154,7 @@ describe('WebRTC Direct UDP listener lifecycle', () => {
         expect(getNetConfig(listener.getAddrs()[0]).port).to.not.equal(sockets[0].address().port)
       } else {
         await expect(listening).to.be.rejectedWith('Failed to register ICE UDP mux listener')
-        expect(probes).to.equal(5)
+        expect(probes).to.equal(MAX_EPHEMERAL_BIND_ATTEMPTS)
       }
     })
   }

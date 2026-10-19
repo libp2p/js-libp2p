@@ -12,6 +12,11 @@ export interface StunServer {
   address(): AddressInfo
 }
 
+/**
+ * How many ephemeral ports to try before giving up
+ */
+export const MAX_EPHEMERAL_BIND_ATTEMPTS = 5
+
 export async function stunListener (host: string, port: number, log: Logger, cb: StunRequestCallback): Promise<StunServer> {
   let listener: IceUdpMuxListener
 
@@ -26,7 +31,7 @@ export async function stunListener (host: string, port: number, log: Logger, cb:
     } catch (err) {
       // Another process can claim the port between releasing the probe and
       // binding the native listener. Only ephemeral bind failures can reselect.
-      if (port !== 0 || attempt === 5 || !(err instanceof Error) || err.message !== 'Failed to register ICE UDP mux listener') {
+      if (port !== 0 || attempt === MAX_EPHEMERAL_BIND_ATTEMPTS || !(err instanceof Error) || err.message !== 'Failed to register ICE UDP mux listener') {
         throw err
       }
     }
