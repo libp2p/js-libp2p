@@ -36,6 +36,13 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.5](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.4...utils-v7.4.5) (2026-10-19)
+
+
+### Documentation
+
+* correct queue capacity and dial overflow semantics ([#3674](https://github.com/libp2p/js-libp2p/issues/3674)) ([c57bf62](https://github.com/libp2p/js-libp2p/commit/c57bf62281c333d44dd3da74711bd15f602bdd1c))
+
 ## [7.4.4](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.3...utils-v7.4.4) (2026-10-17)
 
 

@@ -98,6 +98,22 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.1.1](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.1.0...floodsub-v11.1.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **floodsub:** use monotonic sequence numbers ([#3672](https://github.com/libp2p/js-libp2p/issues/3672)) ([aa5ba42](https://github.com/libp2p/js-libp2p/commit/aa5ba42d0e0be08373de48606cc223caaf1d338e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/peer-collections bumped from ^7.0.31 to ^7.0.32
+    * @libp2p/utils bumped from ^7.4.4 to ^7.4.5
+
 ## [11.1.0](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.32...floodsub-v11.1.0) (2026-10-17)
 
 
