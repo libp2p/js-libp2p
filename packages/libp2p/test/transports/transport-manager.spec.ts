@@ -211,6 +211,27 @@ describe('Transport Manager', () => {
     await connection.close()
   })
 
+  it('should stop listening on an address', async () => {
+    tm.add(transport)
+    await tm.listen(addrs)
+
+    expect(tm.getAddrs()).to.have.lengthOf(addrs.length)
+
+    await tm.unlisten([addrs[0]])
+
+    expect(tm.getListeners()).to.have.lengthOf(addrs.length - 1)
+    expect(tm.getAddrs().map(ma => ma.toString())).to.deep.equal([addrs[1].toString()])
+  })
+
+  it('should ignore addresses that are not being listened on', async () => {
+    tm.add(transport)
+    await tm.listen(addrs)
+
+    await tm.unlisten([multiaddr('/memory/address-3')])
+
+    expect(tm.getListeners()).to.have.lengthOf(addrs.length)
+  })
+
   it('should remove listeners when they stop listening', async () => {
     tm.add(transport)
 
