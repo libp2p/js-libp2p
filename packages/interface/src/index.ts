@@ -621,6 +621,32 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   getMultiaddrs(): Multiaddr[]
 
   /**
+   * Start listening on the passed multiaddrs using the configured transports.
+   *
+   * This can be used to listen on addresses after the node has started, for
+   * example a circuit relay address once the relay has been dialed.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * await libp2p.listen(multiaddr('/ip4/123.123.123.123/tcp/1234/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1/p2p-circuit'))
+   * ```
+   */
+  listen(addrs: Multiaddr | Multiaddr[]): Promise<void>
+
+  /**
+   * Stop listening on the passed multiaddrs. Any listeners that were started
+   * for these addresses, or that are listening on them, will be closed.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * await libp2p.unlisten(multiaddr('/ip4/123.123.123.123/tcp/1234/p2p/12D3KooWSExt8hTzoaHEhn435BTK6BPNSY1LpTc1j2o9Gw53tXE1/p2p-circuit'))
+   * ```
+   */
+  unlisten(addrs: Multiaddr | Multiaddr[]): Promise<void>
+
+  /**
    * Returns a list of supported protocols
    *
    * @example
