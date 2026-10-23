@@ -199,6 +199,12 @@ export const GossipsubPrunePeers = 16
 export const GossipsubPruneBackoff = minute
 
 /**
+ * GossipsubMaxPruneBackoff is the maximum backoff time we accept from a peer in a PRUNE message.
+ * Larger values are clamped to this.
+ */
+export const GossipsubMaxPruneBackoff = 60 * minute
+
+/**
  * Backoff to use when unsubscribing from a topic. Should not resubscribe to this topic before it expired.
  */
 export const GossipsubUnsubscribeBackoff = 10 * second
