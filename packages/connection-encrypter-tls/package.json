@@ -70,7 +70,7 @@
     "@peculiar/asn1-x509": "^2.4.0",
     "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^2.0.0",
-    "asn1js": "^3.0.6",
+    "asn1js": "^4.0.0",
     "p-event": "^8.0.1",
     "reflect-metadata": "^0.2.2",
     "uint8arraylist": "^3.0.2",
