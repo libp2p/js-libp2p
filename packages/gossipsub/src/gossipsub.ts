@@ -1619,7 +1619,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
       const peersInMesh = this.mesh.get(topicID)
       if (peersInMesh == null) {
-        return
+        continue
       }
 
       this.log('PRUNE: Remove mesh link to %s in %s', id, topicID)
@@ -1631,7 +1631,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
       // is there a backoff specified by the peer? if so obey it
       if (typeof backoff === 'number' && backoff > 0) {
-        this.doAddBackoff(id, topicID, backoff * 1000)
+        this.doAddBackoff(id, topicID, Math.min(backoff * 1000, constants.GossipsubMaxPruneBackoff))
       } else {
         this.addBackoff(id, topicID)
       }
