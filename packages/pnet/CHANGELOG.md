@@ -1,5 +1,24 @@
 # Changelog
 
+## [3.0.33](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.32...pnet-v3.0.33) (2026-10-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.4 to ^7.4.5
+
+## [3.0.32](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.31...pnet-v3.0.32) (2026-10-17)
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+
 ## [3.0.31](https://github.com/libp2p/js-libp2p/compare/pnet-v3.0.30...pnet-v3.0.31) (2026-10-16)
 
 

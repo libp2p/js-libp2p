@@ -1,3 +1,5 @@
+import { createSocket } from 'node:dgram'
+import { once } from 'node:events'
 import { isIPv4 } from '@chainsafe/is-ip'
 import { IceUdpMuxListener } from 'node-datachannel'
 import { handleStunRequest } from './stun.ts'
@@ -10,8 +12,30 @@ export interface StunServer {
   address(): AddressInfo
 }
 
+/**
+ * How many ephemeral ports to try before giving up
+ */
+export const MAX_EPHEMERAL_BIND_ATTEMPTS = 5
+
 export async function stunListener (host: string, port: number, log: Logger, cb: StunRequestCallback): Promise<StunServer> {
-  const listener = new IceUdpMuxListener(port, host)
+  let listener: IceUdpMuxListener
+
+  for (let attempt = 1; ; attempt++) {
+    // libjuice cannot allocate an ephemeral port itself. Probe UDP, not TCP.
+    const candidate = port === 0 ? await getUDPPort(host) : port
+
+    try {
+      listener = new IceUdpMuxListener(candidate, host)
+      port = candidate
+      break
+    } catch (err) {
+      // the probed port can be claimed before the native listener binds it, the
+      // native error does not say why so retry any failure on an ephemeral port
+      if (port !== 0 || attempt === MAX_EPHEMERAL_BIND_ATTEMPTS) {
+        throw err
+      }
+    }
+  }
   listener.onUnhandledStunRequest(request => {
     // this runs inside a native callback where a throw would crash the process
     try {
@@ -32,5 +56,20 @@ export async function stunListener (host: string, port: number, log: Logger, cb:
         port
       }
     }
+  }
+}
+
+// bind the address the native listener will use, a free wildcard port can
+// still be taken on a specific address on Windows
+async function getUDPPort (host: string): Promise<number> {
+  const socket = createSocket(isIPv4(host) ? 'udp4' : 'udp6')
+
+  try {
+    const listening = once(socket, 'listening')
+    socket.bind(0, host)
+    await listening
+    return socket.address().port
+  } finally {
+    await socket[Symbol.asyncDispose]()
   }
 }

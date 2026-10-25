@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/peer-id",
-  "version": "6.0.17",
+  "version": "6.0.18",
   "description": "Implementation of @libp2p/interface-peer-id",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/peer-id#readme",
@@ -55,7 +55,7 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@libp2p/crypto": "^5.1.25",
+    "@libp2p/crypto": "^5.2.0",
     "aegir": "^48.1.1",
     "sinon": "^22.0.0"
   },

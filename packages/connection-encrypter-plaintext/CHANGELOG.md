@@ -72,6 +72,34 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.0.32](https://github.com/libp2p/js-libp2p/compare/plaintext-v3.0.31...plaintext-v3.0.32) (2026-10-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.4 to ^7.4.5
+
+## [3.0.31](https://github.com/libp2p/js-libp2p/compare/plaintext-v3.0.30...plaintext-v3.0.31) (2026-10-17)
+
+
+### Bug Fixes
+
+* share the key encoding across encrypters and keep RSA peer keys ([#3669](https://github.com/libp2p/js-libp2p/issues/3669)) ([95392ef](https://github.com/libp2p/js-libp2p/commit/95392efdf052c8a01f2df182b7b2b56356702c40))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+
 ## [3.0.30](https://github.com/libp2p/js-libp2p/compare/plaintext-v3.0.29...plaintext-v3.0.30) (2026-10-16)
 
 

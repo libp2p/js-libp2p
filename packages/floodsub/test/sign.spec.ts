@@ -10,7 +10,7 @@ import {
   SignPrefix,
   verifySignature
 } from '../src/sign.ts'
-import { randomSeqno, toRpcMessage } from '../src/utils.ts'
+import { nextSeqno, toRpcMessage } from '../src/utils.ts'
 import type { PubSubRPCMessage } from '../src/floodsub.ts'
 import type { Message, SignedMessage } from '../src/index.ts'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
@@ -34,7 +34,7 @@ describe('message signing', () => {
       type: 'signed',
       from: peerId,
       data: uint8ArrayFromString('hello'),
-      sequenceNumber: randomSeqno(),
+      sequenceNumber: nextSeqno(),
       topic: 'test-topic'
     }
 
@@ -67,7 +67,7 @@ describe('message signing', () => {
       type: 'signed',
       from: secPeerId,
       data: uint8ArrayFromString('hello'),
-      sequenceNumber: randomSeqno(),
+      sequenceNumber: nextSeqno(),
       topic: 'test-topic'
     }
 
@@ -95,7 +95,7 @@ describe('message signing', () => {
       type: 'signed',
       from: peerId,
       data: uint8ArrayFromString('hello'),
-      sequenceNumber: randomSeqno(),
+      sequenceNumber: nextSeqno(),
       topic: 'test-topic'
     }
 
@@ -129,7 +129,7 @@ describe('author key binding', () => {
       type: 'signed',
       from: victim,
       data,
-      sequenceNumber: randomSeqno(),
+      sequenceNumber: nextSeqno(),
       topic
     }
     const bytes = uint8ArrayConcat([SignPrefix, encodeMessage(toRpcMessage(message)).subarray()])
@@ -175,7 +175,7 @@ describe('author key binding', () => {
     })
 
     it('accepts a message whose key derives to the author', async () => {
-      const signed = await signMessage(rsaKey, { from: author, topic, data, sequenceNumber: randomSeqno() }, encodeMessage)
+      const signed = await signMessage(rsaKey, { from: author, topic, data, sequenceNumber: nextSeqno() }, encodeMessage)
       // signMessage rebuilds `from` from the private key, so it carries the key;
       // use the wire form so the derive-to-author check is exercised
       signed.from = author

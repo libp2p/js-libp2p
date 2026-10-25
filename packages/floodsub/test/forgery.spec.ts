@@ -11,7 +11,7 @@ import { floodsub } from '../src/index.ts'
 import { RPC } from '../src/message/rpc.ts'
 import { PeerStreams } from '../src/peer-streams.ts'
 import { SignPrefix } from '../src/sign.ts'
-import { randomSeqno, toRpcMessage } from '../src/utils.ts'
+import { nextSeqno, toRpcMessage } from '../src/utils.ts'
 import type { PubSubRPCMessage } from '../src/floodsub.ts'
 import type { FloodSub } from '../src/index.ts'
 import type { PeerId, PrivateKey, PublicKey } from '@libp2p/interface'
@@ -27,7 +27,7 @@ async function wireMessage (from: PeerId, signer: PrivateKey, key: PublicKey): P
     type: 'signed',
     from,
     data,
-    sequenceNumber: randomSeqno(),
+    sequenceNumber: nextSeqno(),
     topic,
     signature: new Uint8Array(0),
     key

@@ -43,9 +43,10 @@ export interface ConnectionManagerInit {
   maxParallelDials?: number
 
   /**
-   * The maximum size the dial queue is allowed to grow to. Promises returned
-   * when dialing peers after this limit is reached will not resolve until the
-   * queue size falls beneath this size.
+   * The maximum number of dial jobs in the queue, including running jobs.
+   * Once this limit is reached, attempts to add a new dial job reject with a
+   * `DialError` instead of waiting for space. Requests that can join an
+   * existing dial job are still allowed.
    *
    * @default 500
    */

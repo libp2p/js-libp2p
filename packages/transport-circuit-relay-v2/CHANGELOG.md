@@ -101,6 +101,34 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.2.17](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v4.2.16...circuit-relay-v2-v4.2.17) (2026-10-19)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/peer-collections bumped from ^7.0.31 to ^7.0.32
+    * @libp2p/utils bumped from ^7.4.4 to ^7.4.5
+
+## [4.2.16](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v4.2.15...circuit-relay-v2-v4.2.16) (2026-10-17)
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/interface-internal bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/peer-collections bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/peer-record bumped from ^9.0.18 to ^9.0.19
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+
 ## [4.2.15](https://github.com/libp2p/js-libp2p/compare/circuit-relay-v2-v4.2.14...circuit-relay-v2-v4.2.15) (2026-10-16)
 
 

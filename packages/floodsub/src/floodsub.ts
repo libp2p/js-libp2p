@@ -10,7 +10,7 @@ import { protocol, StrictNoSign, TopicValidatorResult, StrictSign } from './inde
 import { RPC } from './message/rpc.ts'
 import { PeerStreams } from './peer-streams.ts'
 import { signMessage, verifySignature } from './sign.ts'
-import { toMessage, noSignMsgId, msgId, toRpcMessage, randomSeqno } from './utils.ts'
+import { toMessage, noSignMsgId, msgId, toRpcMessage, nextSeqno } from './utils.ts'
 import type { RPCDecodeLimits } from './decodeRpc.ts'
 import type { FloodSubComponents, FloodSubEvents, FloodSubInit, FloodSub as FloodSubInterface, Message, PublishResult, SubscriptionChangeData, TopicValidatorFn } from './index.ts'
 import type { Logger, Connection, PeerId, Stream } from '@libp2p/interface'
@@ -601,7 +601,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
       from: this.components.peerId,
       topic,
       data: data ?? new Uint8Array(0),
-      sequenceNumber: randomSeqno()
+      sequenceNumber: nextSeqno()
     }
 
     this.log('publish topic: %s from: %p data: %m', topic, message.from, message.data)

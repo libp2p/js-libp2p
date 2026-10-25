@@ -431,6 +431,68 @@ describe('Routing Table', () => {
     expect(table.kb.get(oldPeer.kadId)).to.be.undefined()
   })
 
+  it('does not hang when an old contact accepts the ping but never responds', async () => {
+    await stop(table)
+
+    table = new RoutingTable({
+      ...components,
+      peerId: peerIdFromString('12D3KooWNq99a7DtUgvzyiHwvBX4m7TDLmn6nLZvJUzSt72wc1Zu')
+    }, {
+      logPrefix: '',
+      metricsPrefix: '',
+      protocol: PROTOCOL,
+      kBucketSize: 1,
+      prefixLength: 1,
+      network,
+      lastPingThreshold: 1,
+      pingOldContactTimeout: {
+        minTimeout: 100,
+        maxTimeout: 200
+      }
+    })
+    await start(table)
+
+    const peerIds = [
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi1'),
+      peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi2')
+    ]
+
+    for (const peerId of peerIds) {
+      await table.add(peerId)
+    }
+
+    const newPeerId = peerIdFromString('QmYobx1VAHP7Mi88LcDvLeQoWcc1Aa2rynYHpdEPBqHZi5')
+    const oldPeer = {
+      kadId: await kadUtils.convertPeerId(peerIds[0]),
+      peerId: peerIds[0]
+    }
+
+    // ensure the lastPing threshold is passed
+    await delay(100)
+
+    // reset network stub so we can have specific behavior
+    table.network = network = stubInterface()
+
+    // the contact accepts the ping stream but never sends a pong, so only an
+    // abort can end the ping
+    ping.ping.withArgs(oldPeer.peerId).callsFake(async (peerId, options) => {
+      return new Promise((resolve, reject) => {
+        options?.signal?.addEventListener('abort', () => {
+          reject(options?.signal?.reason ?? new Error('aborted'))
+        })
+      })
+    })
+
+    await table.kb.add(oldPeer.peerId)
+
+    // the ping must be bounded by pingOldContactTimeout, otherwise the bucket
+    // waits on it forever and the job that runs it is never released
+    await expect(Promise.race([
+      table.kb.add(newPeerId).then(() => 'added'),
+      delay(2000).then(() => 'hung')
+    ])).to.eventually.equal('added')
+  })
+
   it('tags newly found kad-close peers', async () => {
     await stop(table)
 

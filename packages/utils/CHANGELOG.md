@@ -36,6 +36,26 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.5](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.4...utils-v7.4.5) (2026-10-19)
+
+
+### Documentation
+
+* correct queue capacity and dial overflow semantics ([#3674](https://github.com/libp2p/js-libp2p/issues/3674)) ([c57bf62](https://github.com/libp2p/js-libp2p/commit/c57bf62281c333d44dd3da74711bd15f602bdd1c))
+
+## [7.4.4](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.3...utils-v7.4.4) (2026-10-17)
+
+
+### Dependencies
+
+* bump p-event from 7.1.1 to 8.0.1 ([#3662](https://github.com/libp2p/js-libp2p/issues/3662)) ([57c4b44](https://github.com/libp2p/js-libp2p/commit/57c4b445656964fc55dffb28ebfb99d52e150a0a))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+
 ## [7.4.3](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.2...utils-v7.4.3) (2026-10-16)
 
 

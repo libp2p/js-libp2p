@@ -98,6 +98,43 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [11.1.1](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.1.0...floodsub-v11.1.1) (2026-10-19)
+
+
+### Bug Fixes
+
+* **floodsub:** use monotonic sequence numbers ([#3672](https://github.com/libp2p/js-libp2p/issues/3672)) ([aa5ba42](https://github.com/libp2p/js-libp2p/commit/aa5ba42d0e0be08373de48606cc223caaf1d338e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.1 to ^3.2.2
+    * @libp2p/peer-collections bumped from ^7.0.31 to ^7.0.32
+    * @libp2p/utils bumped from ^7.4.4 to ^7.4.5
+
+## [11.1.0](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.32...floodsub-v11.1.0) (2026-10-17)
+
+
+### Features
+
+* **crypto:** add publicKeyForPeer to bind keys to peer ids ([#3667](https://github.com/libp2p/js-libp2p/issues/3667)) ([f0e64b9](https://github.com/libp2p/js-libp2p/commit/f0e64b9b82bd29078c9aaf8d73304a227ba9afc7))
+
+
+### Dependencies
+
+* bump p-queue from 9.3.5 to 10.0.0 ([#3664](https://github.com/libp2p/js-libp2p/issues/3664)) ([6d88897](https://github.com/libp2p/js-libp2p/commit/6d888970ee5e59386d16d864b8ac1024df7d0b29))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.1.25 to ^5.2.0
+    * @libp2p/interface-internal bumped from ^3.2.0 to ^3.2.1
+    * @libp2p/peer-collections bumped from ^7.0.30 to ^7.0.31
+    * @libp2p/peer-id bumped from ^6.0.17 to ^6.0.18
+    * @libp2p/utils bumped from ^7.4.3 to ^7.4.4
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.15 to ^6.2.16
+
 ## [11.0.32](https://github.com/libp2p/js-libp2p/compare/floodsub-v11.0.31...floodsub-v11.0.32) (2026-10-16)
 
 
