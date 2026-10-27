@@ -1,4 +1,4 @@
-import { TypedEventEmitter, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
+import { AbortError, StreamStateError, TypedEventEmitter, serviceCapabilities, serviceDependencies } from '@libp2p/interface'
 import { peerIdFromMultihash, peerIdFromString } from '@libp2p/peer-id'
 import { encode } from 'it-length-prefixed'
 import { pipe } from 'it-pipe'
@@ -102,6 +102,17 @@ type ReceivedMessageResult =
   | ({ code: MessageStatus.invalid, msgIdStr?: MsgIdStr } & RejectReasonObj)
   | { code: MessageStatus.valid, messageId: MessageId, msg: Message }
 
+interface OutboundStreamAttempt {
+  peerId: PeerId
+  nextConnection?: Connection
+  failures: number
+  nextAttempt: number
+}
+
+const OUTBOUND_STREAM_RETRY_INITIAL_DELAY = 1000
+const OUTBOUND_STREAM_RETRY_MAX_DELAY = 30_000
+const OUTBOUND_STREAM_RETRY_RESET_INTERVAL = 60_000
+
 export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements TypedEventTarget<GossipSubEvents> {
   /**
    * The signature policy to follow by default
@@ -120,7 +131,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   public readonly streamsOutbound = new Map<PeerIdStr, OutboundStream>()
 
   /** Ensures outbound streams are created sequentially */
-  private outboundInflightQueue = pushable<{ peerId: PeerId, connection: Connection }>({ objectMode: true })
+  private outboundInflightQueue = pushable<OutboundStreamAttempt>({ objectMode: true })
+  private readonly outboundStreamAttempts = new Map<PeerIdStr, OutboundStreamAttempt>()
 
   /** Direct peers */
   public readonly direct = new Set<PeerIdStr>()
@@ -457,8 +469,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // This ensures that outbound stream creation happens sequentially
     this.outboundInflightQueue = pushable({ objectMode: true })
     pipe(this.outboundInflightQueue, async (source) => {
-      for await (const { peerId, connection } of source) {
-        await this.createOutboundStream(peerId, connection)
+      for await (const attempt of source) {
+        await this.createOutboundStream(attempt)
       }
     }).catch((e) => { this.log.error('outbound inflight queue error', e) })
 
@@ -556,6 +568,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
     const { registrarTopologyIds } = this.status
     this.status = { code: GossipStatusCode.stopped }
+    this.outboundStreamAttempts.clear()
 
     if (this.opts.tagMeshPeers) {
       this.removeEventListener('gossipsub:graft', this.tagMeshPeer)
@@ -635,7 +648,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // create inbound stream
     this.createInboundStream(peerId, stream)
     // attempt to create outbound stream
-    this.outboundInflightQueue.push({ peerId, connection })
+    this.queueOutboundStream(peerId, connection)
   }
 
   /**
@@ -650,7 +663,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
 
     this.addPeer(peerId, connection.direction, connection.remoteAddr)
-    this.outboundInflightQueue.push({ peerId, connection })
+    this.queueOutboundStream(peerId, connection)
   }
 
   /**
@@ -661,28 +674,53 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.removePeer(peerId)
   }
 
-  private async createOutboundStream (peerId: PeerId, connection: Connection): Promise<void> {
-    if (!this.isStarted()) {
-      return
-    }
-
+  private queueOutboundStream (peerId: PeerId, connection?: Connection): void {
     const id = peerId.toString()
-
-    if (!this.peers.has(id)) {
+    if (!this.isStarted() || !this.peers.has(id) || this.streamsOutbound.has(id)) {
       return
     }
 
-    // TODO make this behavior more robust
-    // This behavior is different than for inbound streams
-    // If an outbound stream already exists, don't create a new stream
-    if (this.streamsOutbound.has(id)) {
+    const attempt: OutboundStreamAttempt = this.outboundStreamAttempts.get(id) ?? { peerId, failures: 0, nextAttempt: 0 }
+    if (connection != null) {
+      attempt.nextConnection = connection
+    }
+    if (attempt.nextAttempt > Date.now()) {
       return
     }
+
+    // Pending queue entries and in-flight opens must both suppress duplicate attempts.
+    attempt.nextAttempt = Infinity
+    this.outboundStreamAttempts.set(id, attempt)
+    this.outboundInflightQueue.push(attempt)
+  }
+
+  private async createOutboundStream (attempt: OutboundStreamAttempt): Promise<void> {
+    const { peerId } = attempt
+    const id = peerId.toString()
+    if (!this.isStarted() || this.outboundStreamAttempts.get(id) !== attempt) {
+      return
+    }
+
+    const connections = this.components.connectionManager.getConnections(peerId)
+      .filter(conn => conn.status === 'open' && (conn.limits == null || this.runOnLimitedConnection === true))
+    const connection = connections.find(conn => conn === attempt.nextConnection) ?? connections[0]
+    if (connection == null) {
+      this.scheduleOutboundStreamRetry(attempt)
+      return
+    }
+    attempt.nextConnection = connections[(connections.indexOf(connection) + 1) % connections.length]
 
     try {
       const rawStream = await connection.newStream(this.protocols, {
         runOnLimitedConnection: this.runOnLimitedConnection
       })
+      if (!this.isStarted() || this.outboundStreamAttempts.get(id) !== attempt) {
+        rawStream.abort(new AbortError('Outbound gossipsub stream attempt cancelled'))
+        return
+      }
+      if (rawStream.status !== 'open') {
+        throw new StreamStateError('Outbound gossipsub stream closed while opening')
+      }
       const stream = new OutboundStream(
         rawStream,
         (e) => { this.log.error('outbound pipe error', e) },
@@ -692,6 +730,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.log('create outbound stream %p', peerId)
 
       this.streamsOutbound.set(id, stream)
+      const openedAt = Date.now()
 
       const protocol = stream.protocol
       if (protocol === constants.FloodsubID) {
@@ -704,6 +743,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
           this.streamsOutbound.delete(id)
           this.floodsubPeers.delete(id)
           this.metrics?.peersPerProtocol.inc({ protocol }, -1)
+          if (Date.now() - openedAt >= OUTBOUND_STREAM_RETRY_RESET_INTERVAL) {
+            attempt.failures = 0
+          }
+          this.scheduleOutboundStreamRetry(attempt)
         }
       }, { once: true })
 
@@ -714,7 +757,18 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
     } catch (e) {
       this.log.error('createOutboundStream error', e)
+      this.scheduleOutboundStreamRetry(attempt)
     }
+  }
+
+  private scheduleOutboundStreamRetry (attempt: OutboundStreamAttempt): void {
+    if (this.outboundStreamAttempts.get(attempt.peerId.toString()) !== attempt) {
+      return
+    }
+
+    const delay = Math.min(OUTBOUND_STREAM_RETRY_INITIAL_DELAY * 2 ** attempt.failures, OUTBOUND_STREAM_RETRY_MAX_DELAY)
+    attempt.failures = Math.min(attempt.failures + 1, 5)
+    attempt.nextAttempt = Date.now() + delay * (0.5 + Math.random() * 0.5)
   }
 
   private createInboundStream (peerId: PeerId, stream: Stream): void {
@@ -784,6 +838,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     // delete peer
     this.log('delete peer %p', peerId)
     this.peers.delete(id)
+    this.outboundStreamAttempts.delete(id)
 
     const outboundStream = this.streamsOutbound.get(id)
     const inboundStream = this.streamsInbound.get(id)
@@ -2733,6 +2788,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     const { D, Dlo, Dhi, Dscore, Dout, fanoutTTL } = this.opts
 
     this.heartbeatTicks++
+
+    for (const attempt of this.outboundStreamAttempts.values()) {
+      this.queueOutboundStream(attempt.peerId)
+    }
 
     // cache scores through the heartbeat
     const scores = new Map<string, number>()
