@@ -252,6 +252,7 @@ export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSub
     },
     status: 'open',
     direction: 'outbound',
+    limits: undefined,
     streams: [],
     remotePeer: b.components.peerId,
     remoteAddr: multiaddr('/memory/1234')
@@ -271,6 +272,7 @@ export const connectPubsubNodes = async (a: GossipSubAndComponents, b: GossipSub
     },
     status: 'open',
     direction: 'inbound',
+    limits: undefined,
     streams: [],
     remotePeer: a.components.peerId,
     remoteAddr: multiaddr('/memory/5678')
