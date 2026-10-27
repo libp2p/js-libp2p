@@ -12,7 +12,7 @@
  * ```TypeScript
  * import { peerList } from '@libp2p/peer-collections'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  *
  * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
@@ -25,7 +25,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  * ```TypeScript
  * import { trackedPeerList } from '@libp2p/peer-collections'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  * import { createLibp2p } from 'libp2p'
  *
  * const libp2p = await createLibp2p()
@@ -40,7 +40,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  * ```TypeScript
  * import { peerMap } from '@libp2p/peer-collections'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  *
  * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
@@ -54,7 +54,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  * import { trackedPeerMap } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  *
  * const libp2p = await createLibp2p()
  * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
@@ -68,7 +68,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  * ```TypeScript
  * import { peerSet } from '@libp2p/peer-collections'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  *
  * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *
@@ -82,7 +82,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  * import { trackedPeerSet } from '@libp2p/peer-collections'
  * import { createLibp2p } from 'libp2p'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  *
  * const libp2p = await createLibp2p()
  * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
@@ -96,7 +96,7 @@ import { generateKeyPair } from '@libp2p/crypto/keys'
  * ```TypeScript
  * import { peerFilter } from '@libp2p/peer-collections'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  *
  * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
  *

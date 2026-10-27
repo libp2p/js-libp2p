@@ -1,8 +1,9 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { InvalidParametersError, KEEP_ALIVE, start, stop } from '@libp2p/interface'
-import { peerIdFromPrivateKey } from '@libp2p/peer-id'
+import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
+import { sha256 } from 'multiformats/hashes/sha2'
 import pWaitFor from 'p-wait-for'
 import sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -417,6 +418,25 @@ describe('Connection Manager', () => {
     const conn = await connectionManager.openConnection(addr)
 
     expect(conn).to.equal(newConnection)
+  })
+
+  it('stores RSA public key bytes without decoding them', async () => {
+    connectionManager = new DefaultConnectionManager(components, defaultOptions)
+    await connectionManager.start()
+
+    // bound to the peer id by its hash but not a decodable key
+    const publicKey = Uint8Array.from([0, 1, 2, 3])
+    const remotePeer = peerIdFromMultihash(await sha256.digest(publicKey), publicKey)
+    const connection = stubInterface<Connection>({
+      remotePeer,
+      remoteAddr: multiaddr(`/ip4/123.123.123.123/tcp/123/p2p/${remotePeer}`),
+      status: 'open'
+    })
+
+    await connectionManager._onConnect(new CustomEvent('connection:open', { detail: connection }))
+
+    expect(components.peerStore.patch.calledWith(remotePeer)).to.be.true()
+    expect(components.peerStore.patch.getCall(0).args[1]).to.not.have.property('publicKey')
   })
 
   it('should throw when setMaxConnections is less than 1', async () => {

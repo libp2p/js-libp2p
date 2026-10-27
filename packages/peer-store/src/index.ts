@@ -10,7 +10,7 @@ import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import all from 'it-all'
 import { PersistentStore } from './store.ts'
 import type { PeerUpdate } from './store.ts'
-import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions, Metrics } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, Logger, PeerId, PeerStore, Peer, PeerData, PeerQuery, PeerInfo, AbortOptions, ConsumePeerRecordOptions, Metrics, CryptoLoader } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Datastore } from 'interface-datastore'
 import type { TypedEventTarget } from 'main-event'
@@ -21,6 +21,7 @@ export interface PersistentPeerStoreComponents {
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
   metrics?: Metrics
+  getCrypto?: CryptoLoader
 }
 
 /**
@@ -65,12 +66,14 @@ class PersistentPeerStore implements PeerStore {
   private readonly store: PersistentStore
   private readonly events: TypedEventTarget<Libp2pEvents>
   private readonly peerId: PeerId
+  private readonly getCrypto?: CryptoLoader
   private readonly log: Logger
 
   constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
     this.log = components.logger.forComponent('libp2p:peer-store')
     this.events = components.events
     this.peerId = components.peerId
+    this.getCrypto = components.getCrypto
     this.store = new PersistentStore(components, init)
   }
 
@@ -174,7 +177,7 @@ class PersistentPeerStore implements PeerStore {
     const expectedPeer: PeerId | undefined = isPeerId(arg1) ? arg1 : isPeerId(arg1?.expectedPeer) ? arg1.expectedPeer : undefined
     const options: AbortOptions | undefined = isPeerId(arg1) ? arg2 : arg1 === undefined ? arg2 : arg1
 
-    const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN, options)
+    const envelope = await RecordEnvelope.openAndCertify(buf, PeerRecord.DOMAIN, { ...options, getCrypto: this.getCrypto })
     const peerId = peerIdFromPublicKey(envelope.publicKey)
 
     if (expectedPeer?.equals(peerId) === false) {
@@ -201,7 +204,7 @@ class PersistentPeerStore implements PeerStore {
 
     // ensure seq is greater than, or equal to, the last received
     if (peer?.peerRecordEnvelope != null) {
-      const storedEnvelope = RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope)
+      const storedEnvelope = await RecordEnvelope.createFromProtobuf(peer.peerRecordEnvelope, { ...options, getCrypto: this.getCrypto })
       const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
 
       if (storedRecord.seqNumber >= peerRecord.seqNumber) {

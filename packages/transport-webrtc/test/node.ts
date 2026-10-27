@@ -1,7 +1,7 @@
 import { createSocket, Socket } from 'node:dgram'
 import { once } from 'node:events'
 import net from 'node:net'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { getNetConfig } from '@libp2p/utils'

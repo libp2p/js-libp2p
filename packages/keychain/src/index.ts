@@ -1,76 +1,136 @@
 /**
  * @packageDocumentation
  *
- * - Manages the life cycle of a key
- * - Keys are encrypted at rest
- * - Enforces the use of safe key names
- * - Uses encrypted PKCS 8 for key storage
- * - Uses PBKDF2 for a "stretched" key encryption key
- * - Enforces NIST SP 800-131A and NIST SP 800-132
- * - Delays reporting errors to slow down brute force attacks
+ * A WebCrypto-first keychain that stores private keys encrypted at rest.
  *
- * ## KeyInfo
+ * ## Example
  *
- * The key management and naming service API all return a `KeyInfo` object.  The `id` is a universally unique identifier for the key.  The `name` is local to the key chain.
- *
- * ```JSON
- * {
- *   "name": "rsa-key",
- *   "id": "QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW"
- * }
- * ```
- *
- * The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multihash) of its public key.
- *
- * The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
- *
- * ## Private key storage
- *
- * A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *pass phrase* using **PBKDF2**.
- *
- * The default options for generating the derived encryption key are in the `dek` object.  This, along with the pass phrase, is the input to a `PBKDF2` function.
+ * Configure the keychain as a libp2p service:
  *
  * ```TypeScript
- * const defaultOptions = {
- *   // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
- *   dek: {
- *     keyLength: 512 / 8,
- *     iterationCount: 1000,
- *     salt: 'at least 16 characters long',
- *     hash: 'sha2-512'
+ * import { keychain } from '@libp2p/keychain'
+ * import { createLibp2p } from 'libp2p'
+ *
+ * const node = await createLibp2p({
+ *   services: {
+ *     keychain: keychain({
+ *       password: 'a password of at least 20 characters'
+ *     })
  *   }
+ * })
+ *
+ * const key = await node.services.keychain.generateKey('my-key', { type: 'ECDSA' })
+ *
+ * for await (const { id, name } of node.services.keychain.listKeys()) {
+ *   console.info(name, id)
  * }
+ *
+ * const exported = await node.services.keychain.exportKey('my-key')
+ * const signature = await exported.sign(Uint8Array.from([0, 1, 2, 3]))
  * ```
  *
- * ## Physical storage
+ * ## Standalone use
  *
- * The actual physical storage of an encrypted key is left to implementations of [interface-datastore](https://github.com/ipfs/interface-datastore/).
+ * Outside libp2p, pass a datastore and a `CryptoLoader`:
  *
- * A key benefit is that now the key chain can be used in browser with the [js-datastore-level](https://github.com/ipfs/js-datastore-level) implementation.
+ * ```TypeScript
+ * import { defaultCryptoLoader, generateKeyPair } from '@libp2p/crypto'
+ * import { keychain } from '@libp2p/keychain'
+ * import { MemoryDatastore } from 'datastore-core'
+ *
+ * const kc = keychain({
+ *   password: 'a password of at least 20 characters'
+ * })({
+ *   datastore: new MemoryDatastore(),
+ *   getCrypto: defaultCryptoLoader()
+ * })
+ *
+ * await kc.importKey('imported', await generateKeyPair('Ed25519'))
+ * await kc.renameKey('imported', 'renamed')
+ * await kc.rotateKeychainPass('a new password of at least 20 characters')
+ * await kc.removeKey('renamed')
+ * ```
+ *
+ * ## Configuring additional implementations
+ *
+ * ECDSA, Ed25519 and RSA keys are supported out of the box but other schemes
+ * are configurable by passing a `CryptoLoader` that can return `Crypto`
+ * instances.
+ *
+ * ## Upgrading from 6.x
+ *
+ * - The `pass` option is now `password`
+ * - `dek.salt` and `dek.iterationCount` are now `salt` and `iterations`
+ * - A customized `dek.keyLength` or `dek.hash` goes in `legacyDek: { keyLength, hash }` (defaults are `64` and `'sha2-512'`). It is only used to read keys written by 6.x
+ * - A `getCrypto` component is required. libp2p passes `libp2p.getCrypto`, for standalone use pass `defaultCryptoLoader()` or `createCryptoLoader([...])` from `@libp2p/crypto`
+ * - Stores written by 6.x are migrated the first time the keychain is used. The migration is resumable and `/keychain/meta` is written last. Once migrated a store cannot be opened by 6.x
+ * - `findKeyById` and `findKeyByName` have been removed
+ * - `listKeys()` is an async generator
+ * - `importKey` returns the imported key and `removeKey` returns nothing
+ * - `rotateKeychainPass(password)` takes only the new password and changes the password at runtime
  */
-
 import { Keychain as KeychainClass } from './keychain.ts'
-import type { ComponentLogger, PrivateKey } from '@libp2p/interface'
+import type { LegacyDek } from './legacy.ts'
+import type { CryptoLoader, PrivateKey, PublicKey } from '@libp2p/crypto'
+import type { AbortOptions } from 'abort-error'
 import type { Datastore } from 'interface-datastore'
 
-export interface DEKConfig {
-  hash: string
-  salt: string
-  iterationCount: number
-  keyLength: number
+export { DecryptionFailedError, InvalidParametersError, KeychainMigrationError } from './errors.ts'
+export type { CryptoLoader }
+
+export interface KeyInfo {
+  /**
+   * The hash of the key
+   */
+  id: string
+
+  /**
+   * The key name
+   */
+  name: string
+}
+
+export interface GenerateKeyOptions extends AbortOptions, Record<string, any> {
+  /**
+   * The type of key to generate
+   *
+   * @default 'Ed25519'
+   */
+  type?: 'ECDSA' | 'Ed25519' | 'RSA' | string
 }
 
 export interface KeychainInit {
   /**
    * The password is used to derive a key which encrypts the keychain at rest
    */
-  pass?: string
+  password?: string
 
   /**
-   * This key configures how the keychain encryption key is derived from the
-   * configured password
+   * Specify a non-default PBKDF2 salt
    */
-  dek?: DEKConfig
+  salt?: string | Uint8Array
+
+  /**
+   * How many iterations to use when deriving a key from the password
+   *
+   * @default 10_000
+   */
+  iterations?: number
+
+  /**
+   * The hash type
+   *
+   * @default 'SHA-512'
+   */
+  hash?: 'SHA-256' | 'SHA-384' | 'SHA-512'
+
+  /**
+   * Only needed if keys were stored by a previous version that was configured
+   * with a non-default `dek.keyLength` or `dek.hash`, so they can be migrated
+   *
+   * @default { keyLength: 64, hash: 'sha2-512' }
+   */
+  legacyDek?: LegacyDek
 
   /**
    * The 'self' key is the private key of the node from which the peer id is
@@ -88,133 +148,63 @@ export interface KeychainInit {
 
 export interface KeychainComponents {
   datastore: Datastore
-  logger: ComponentLogger
-}
-
-export interface KeyInfo {
-  /**
-   * The universally unique key id
-   */
-  id: string
-
-  /**
-   * The local key name
-   */
-  name: string
+  getCrypto: CryptoLoader
 }
 
 export interface Keychain {
   /**
-   * Find a key by name
-   *
-   * @example
-   *
-   * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
-   * const keyInfo2 = await libp2p.keychain.findKeyByName(keyInfo.name)
-   * ```
+   * Create a key of the passed type and store it under the specified name. A
+   * cryptography implementation must be configured for the key type (defaults
+   * to Ed25519).
    */
-  findKeyByName(name: string): Promise<KeyInfo>
+  generateKey (name: string, options?: GenerateKeyOptions): Promise<PrivateKey>
 
   /**
-   * Find a key by id
+   * Import a private key and store it under the specified name.
    *
-   * @example
-   *
-   * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
-   * const keyInfo2 = await libp2p.keychain.findKeyById(keyInfo.id)
-   * ```
+   * The default supported key types are `ECDSA`, `Ed25519` and `RSA`, others
+   * may be added by passing a `getCrypto` component that can load them.
    */
-  findKeyById (id: string): Promise<KeyInfo>
-
-  /**
-   * Import a new private key.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
-   * ```
-   */
-  importKey(name: string, key: PrivateKey): Promise<KeyInfo>
+  importKey(name: string, key: PrivateKey, options?: AbortOptions): Promise<PrivateKey>
 
   /**
    * Export an existing private key.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * import { generateKeyPair } from '@libp2p/crypto/keys'
-   *
-   * const key = await generateKeyPair('Ed25519')
-   * const keyInfo = await libp2p.keychain.importKey('my-key', key)
-   * const key = await libp2p.keychain.exportKey(keyInfo.id)
-   * ```
    */
-  exportKey(name: string): Promise<PrivateKey>
+  exportKey(name: string, options?: AbortOptions): Promise<PrivateKey>
 
   /**
    * Removes a key from the keychain.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.services.keychain.removeKey('keyTest')
-   * ```
    */
-  removeKey(name: string): Promise<KeyInfo>
+  removeKey(name: string, options?: AbortOptions): Promise<void>
 
   /**
    * Rename a key in the keychain. This is done in a batch commit with rollback
    * so errors thrown during the operation will not cause key loss.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await libp2p.services.keychain.createKey('keyTest', 'RSA', 4096)
-   * const keyInfo = await libp2p.services.keychain.renameKey('keyTest', 'keyNewTest')
-   * ```
    */
-  renameKey(oldName: string, newName: string): Promise<KeyInfo>
+  renameKey(oldName: string, newName: string, options?: AbortOptions): Promise<void>
 
   /**
    * List all the keys.
-   *
-   * @example
-   *
-   * ```TypeScript
-   * const keyInfos = await libp2p.keychain.listKeys()
-   * ```
    */
-  listKeys(): Promise<KeyInfo[]>
+  listKeys(options?: AbortOptions): AsyncGenerator<KeyInfo>
 
   /**
-   * Rotate keychain password and re-encrypt all associated keys
-   *
-   * @example
-   *
-   * ```TypeScript
-   * await libp2p.services.keychain.rotateKeychainPass('oldPassword', 'newPassword')
-   * ```
+   * Re-encrypt all keys in the keychain using a cryptographic key derived
+   * from the password
    */
-  rotateKeychainPass(oldPass: string, newPass: string): Promise<void>
+  rotateKeychainPass(password: string, options?: AbortOptions): Promise<void>
+
+  /**
+   * Attempts to load a public key from a serialized protobuf message conforming
+   * to the `PublicKey` message.
+   */
+  loadPublicKeyFromProtobuf (buf: Uint8Array, options?: AbortOptions): Promise<PublicKey>
 }
 
-export function keychain (init: KeychainInit = {}): (components: KeychainComponents) => Keychain {
-  return (components: KeychainComponents) => {
-    return new KeychainClass(components, init)
-  }
+export type { LegacyDek }
+
+export function keychain (init?: KeychainInit): (components: KeychainComponents) => Keychain {
+  return (components) => new KeychainClass(components, init)
 }
 
 export function isKeychain (obj?: any): obj is Keychain {
@@ -222,8 +212,7 @@ export function isKeychain (obj?: any): obj is Keychain {
     return false
   }
 
-  return typeof obj.findKeyByName === 'function' &&
-    typeof obj.findKeyById === 'function' &&
+  return typeof obj.generateKey === 'function' &&
     typeof obj.importKey === 'function' &&
     typeof obj.exportKey === 'function' &&
     typeof obj.removeKey === 'function' &&

@@ -1,5 +1,5 @@
 import { setMaxListeners } from 'events'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { start, TypedEventEmitter } from '@libp2p/interface'
 import { defaultLogger, prefixLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'

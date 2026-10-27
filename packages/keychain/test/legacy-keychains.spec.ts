@@ -1,46 +1,35 @@
-import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
-import { defaultLogger } from '@libp2p/logger'
 import { expect } from 'aegir/chai'
-import { MemoryDatastore } from 'datastore-core/memory'
-import { Key } from 'interface-datastore/key'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { Keychain } from '../src/keychain.ts'
+import { entries, expectKeys, load, open } from './fixtures/helpers.ts'
 import { legacyKeychains } from './fixtures/legacy-keychains.ts'
-import type { LegacyKeychain } from './fixtures/legacy-keychains.ts'
 
-async function openKeychain (fixture: LegacyKeychain): Promise<Keychain> {
-  const datastore = new MemoryDatastore()
-
-  for (const [key, value] of Object.entries(fixture.entries)) {
-    await datastore.put(new Key(key), uint8ArrayFromString(value))
-  }
-
-  return new Keychain({ datastore, logger: defaultLogger() }, fixture.init)
-}
+const WRONG_PASS = 'this is the wrong keychain password'
 
 describe('legacy keychains', () => {
   for (const fixture of legacyKeychains) {
     describe(fixture.name, () => {
-      it('lists the stored keys', async () => {
-        const keychain = await openKeychain(fixture)
-        const keys = await keychain.listKeys()
-
-        expect(keys.map(({ name, id }) => ({ name, id })).sort((a, b) => a.name.localeCompare(b.name)))
-          .to.deep.equal(fixture.keys.map(({ name, id }) => ({ name, id })).sort((a, b) => a.name.localeCompare(b.name)))
+      it('reads every key', async () => {
+        await expectKeys(open(await load(fixture), fixture), fixture)
       })
 
-      for (const expected of fixture.keys) {
-        it(`exports the ${expected.type} key`, async () => {
-          const keychain = await openKeychain(fixture)
-          const key = await keychain.exportKey(expected.name)
-          const data = uint8ArrayFromString('hello world')
+      it('reads every key again after reopening', async () => {
+        const datastore = await load(fixture)
 
-          expect(key.type).to.equal(expected.type)
-          expect(uint8ArrayToString(publicKeyToProtobuf(key.publicKey), 'base64')).to.equal(expected.publicKey)
-          expect(await key.publicKey.verify(data, await key.sign(data))).to.be.true()
-        })
-      }
+        await expectKeys(open(datastore, fixture), fixture)
+        await expectKeys(open(datastore, fixture), fixture)
+      })
+
+      it('rejects the wrong password without changing stored keys', async () => {
+        const datastore = await load(fixture)
+        const wrong = open(datastore, fixture, { password: fixture.init.pass == null ? WRONG_PASS : `${fixture.init.pass} but wrong` })
+
+        for (const expected of fixture.keys) {
+          await expect(wrong.exportKey(expected.name)).to.eventually.be.rejected.with.property('name', 'KeychainMigrationError')
+        }
+
+        expect(await entries(datastore)).to.deep.equal(fixture.entries)
+
+        await expectKeys(open(datastore, fixture), fixture)
+      })
     })
   }
 })

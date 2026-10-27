@@ -43,7 +43,6 @@
     "test:node": "aegir test -t node"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.2.0",
     "@libp2p/daemon-protocol": "^8.0.13",
     "@libp2p/gossipsub": "^17.2.1",
     "@libp2p/interface": "^3.4.0",

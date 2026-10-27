@@ -1,13 +1,20 @@
 /* spell-checker:disable */
 /**
- * Datastores written by @libp2p/keychain 6.1.9, one per keychain
+ * Datastores written by `@libp2p/keychain` 6.1.9, one per keychain
  * configuration. Values are stored verbatim so later keychain versions can be
  * tested against data written by this one. Do not regenerate.
+ *
+ * With a password, `pbkdf2(pass, dek)` gives a base64 string (`derivedDek`)
+ * that is used as the password for each key: `/pkcs8/<name>` holds AES-GCM
+ * ciphertext as multibase base64, or an encrypted PKCS#8 PEM for RSA keys.
+ * Without a password the empty string is used.
  */
 
 export interface LegacyKeychain {
   name: string
   init: { pass?: string, dek?: { hash: string, keyLength: number, iterationCount: number, salt: string } }
+  dek?: { hash: string, keyLength: number, iterationCount: number, salt: string }
+  derivedDek?: string
   keys: Array<{ name: string, id: string, type: string, publicKey: string }>
   entries: Record<string, string>
 }
@@ -19,38 +26,38 @@ export const legacyKeychains: LegacyKeychain[] = [
     keys: [
       {
         name: 'self',
-        id: 'QmXmJ5msbmAkY9PkhLDFaRZJZpqXUV4uQcVMjdXnZdcZfr',
+        id: 'QmaTZmT1cmU4ofQYeitL5gmtwH6yxmCpsctReYAZVoDyun',
         type: 'Ed25519',
-        publicKey: 'CAESIJTRuwJhJKbkzlvsFOlRoCxKCaMl8SIiqBcEoXkKeQcV'
+        publicKey: 'CAESIKezw4iruz4EQjnLFkhdNkLcei7oBByCu/dXCIApWQbq'
       },
       {
         name: 'secp256k1-key',
-        id: 'QmawNT4BUiu6ixdrWNqwGvkQU24Z3hgou5e4EJft1XNMdZ',
+        id: 'QmV8SQzcxiyCoJJsuEpzBNUUJbPFefQV1t8Pr959FonpqU',
         type: 'secp256k1',
-        publicKey: 'CAISIQJTTZPHDQXgsI2rcTY0GUe083kZgcDM0ubzZSKCdSl4DA'
+        publicKey: 'CAISIQJm5XbuzDbvN2YyrWVjHBPIRtkoQ/PldhWe9RVgbaOq/Q'
       },
       {
         name: 'ecdsa-key',
-        id: 'QmZUDTHUk7aqfxhmpkax6wQ75JM5MWbwnCZRV4P7H8jtSP',
+        id: 'QmXvvm7JqM3aS5WY4FMM78bnJoyMyE9Z59NQcSHGi8PHye',
         type: 'ECDSA',
-        publicKey: 'CAMSVzBVAgEBoAoGCCqGSM49AwEHoUQDQgAEiAGC3ilyk6QHqsyapaNUQXr2VOurJ9wg9AGZpLIi7UHBgkxxUq+a1oYOSSrBzoysrvrs14J7V9ZnjWcLy7rrfg'
+        publicKey: 'CAMSVzBVAgEBoAoGCCqGSM49AwEHoUQDQgAEfVuyly256/t+zNKH+SY494ot/0WGnKXGLE1FRFkyLxxHBaTThfsvFzHXiuYKTjZmGl/LIZ9Ynzrj35MDmvlImg'
       },
       {
         name: 'rsa-key',
-        id: 'QmVfX8PGcGDDPHcrXc1NS16kDRuFFUQsGVcBE2gRreNhmg',
+        id: 'QmPDU5sygNJ51sD2YC4SYrjv1KggrtF7mNHKMJD34SZYbj',
         type: 'RSA',
-        publicKey: 'CAASogEwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAL2nGx/aOZgu8rqVj2AhyWXWO53MMfB8kihfa7g1nTBYdEKpFEEs6tIWgq4avwZ99lvKERMymZdrfmdbdPSEmL1us/BoD6Zlt5MF3cAzofCYbOp8YY+gEwwMVz7eUZ8A4x4PEXT9WseXRFFQBqsmomfjGdsR1O6bzcNY5oJo5HXHAgMBAAE'
+        publicKey: 'CAASogEwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANEYGNL0025lw5wDJhuTgNYIjPtuzCP0etaQJJEGUTeNDxCz8X05H3LTqOlB2PFSwJNQtRYuewZFAKkmckF/JGcuhX2ysf0ZB+2n6/ttGLwSMEmH1b0aOIAO5a6ZSNsw5oDfq/Z1+ldKN0PO83eTmBtqfjO/kcYSkvo1YyENnFg7AgMBAAE'
       }
     ],
     entries: {
-      '/info/ecdsa-key': '{"name":"ecdsa-key","id":"QmZUDTHUk7aqfxhmpkax6wQ75JM5MWbwnCZRV4P7H8jtSP"}',
-      '/info/rsa-key': '{"name":"rsa-key","id":"QmVfX8PGcGDDPHcrXc1NS16kDRuFFUQsGVcBE2gRreNhmg"}',
-      '/info/secp256k1-key': '{"name":"secp256k1-key","id":"QmawNT4BUiu6ixdrWNqwGvkQU24Z3hgou5e4EJft1XNMdZ"}',
-      '/info/self': '{"name":"self","id":"QmXmJ5msbmAkY9PkhLDFaRZJZpqXUV4uQcVMjdXnZdcZfr"}',
-      '/pkcs8/ecdsa-key': 'mmZvshboSSFEOYBP/iau9+6Q6npaqfWdrbXljA7CRkmRkVyNKvTWfN/JgT/MvZBQSHmtjYWxMXx1OTzdUKSYtAMoY8tREX6M/IBBMJu6vvl0whomYjdnUHRldNXKqVVKEQ4NJH4eeDz2dQb8nccuVBNoXmsOLVNmTnBOLzd6OIIn+JdbB2nRiFqHbjTv0YKm3Fn/voL4V3yN5J0mAHfrEhiJ1+Cv+Lw7JhQ',
-      '/pkcs8/rsa-key': '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIC6DBiBgkqhkiG9w0BBQ0wVTA0BgkqhkiG9w0BBQwwJwQQx1so1ABJiQitetrE\nUhnyBAICJxACASAwDAYIKoZIhvcNAgsFADAdBglghkgBZQMEASoEEP7IiTRPR09x\nJOrY9CVDjzYEggKAvVfl+Yss/BPCuFrWW/P1EBrsnGMk6NfaSXioEG2v/kVfw+8l\nIIL4iPh9nau6TEMRIQp9votuVAPLa7NTo3EiGi83uTMkSfGXm5YZPZj9z54C1qU2\nfwV6l3b/YJsQafWE2FHuGszugcSk/8UD0o0HVAja7cuMHjLTMw4K2JS65Cgr1x2T\nWi5CXmkRuRc+mMEsYxm4hmMcHupIm3JaWSeEvOR5eXkwYI1MNMYcYhceN/IweizE\nF5IX95U/ecsepr62W54s0Wx3SJcJFe5wgpJugKdrpo7fCxlSEJl7Y6bVomsr31jJ\nhF1MDTIEUm7d9ckzEZEQNMDyUo6+BAso13sU8stI74hhB2sJAdWk0Vmsb1GgSyBM\niOQ52iqt8hDEzuYWc+vEL9yRVQoVw7AfcTZgVcqlKvavTXfXMPu/QdsEFx41hSEb\nyt/Vtssba5styKPlyZw3PXJtCmaiI2996ZROAvvNDMcJ/A6rrH5GI8B1HHizbta/\nXwBI9jJAB4cSBmMTXMCVh4FZR+ryvx3c339Vj6S1m+nzZlikfrSkQ501RvZzxvQ5\nhaHk5GVlbTAQhcZG71CBBr5ItBhGJO8S/7of5JOSBusAqaMitwruC0BurLYy0qZU\ncHY08CEXkv8VPT9tdaSU70RRfZkVgzqtVM5QHLOw6HmdRQvK3CLYpmiagPs8pA3M\n1PZP/nxjWKkGC5I1gbNNIFM7zqBY3EhVPlYgSeO3yJ/UMBTMwkwP9BQVKzEpDtqB\n4VztTQglgGAOug9FnDAKPQ88tVZ/QfG4+HVVl4LFNCQN3YK33ZwESzWA/xqNnhff\np5nxKlZaQeuowwEukvkWoLSTWRwc+9onmNLicg==\n-----END ENCRYPTED PRIVATE KEY-----',
-      '/pkcs8/secp256k1-key': 'mYB/65ODdHNAPt1lbu0HBSwmH9uQR7lYJa996iAOdhAsCSe/pkjcb08qFYNMtx6AOb/d1RWpKDP1eULT18KZ40gap7IruH0WoLvZSmGBZP60',
-      '/pkcs8/self': 'mxMZRXaCiF0D7jWKl3rsUMeyx7CLS7bNTwyC7DwRR1seFXc6bhQ74HvtLTafhjOa5zrtxKb17DOl8EGWOl68hp3msU8gWgeV9jZLTiDu64crYxoM8gtbNOMrxEONvjtrrYaHJCnvqmJWGSeoRwd0LrQ'
+      '/info/ecdsa-key': '{"name":"ecdsa-key","id":"QmXvvm7JqM3aS5WY4FMM78bnJoyMyE9Z59NQcSHGi8PHye"}',
+      '/info/rsa-key': '{"name":"rsa-key","id":"QmPDU5sygNJ51sD2YC4SYrjv1KggrtF7mNHKMJD34SZYbj"}',
+      '/info/secp256k1-key': '{"name":"secp256k1-key","id":"QmV8SQzcxiyCoJJsuEpzBNUUJbPFefQV1t8Pr959FonpqU"}',
+      '/info/self': '{"name":"self","id":"QmaTZmT1cmU4ofQYeitL5gmtwH6yxmCpsctReYAZVoDyun"}',
+      '/pkcs8/ecdsa-key': 'mzaC9SZb5rYWgJ2lsxTFRfsIxqdtOTTZfT2aEUK1ivUvnoRjPkbr0T1TtFvLURbWoSW274230QIqI7+DoF6+t5mzQPIbxevkJMr4onW5qrQJP9CrvYTdaWkBHDCSXNWz9o75u0VEVqIvNNbkaT4nRRgRuOfBwtm4ho0LMyLD1x01sENfd2t0kFZjBUXGH52kbaQXhSeFy2mXGEIoOwW59pByX52FZQO+qdg',
+      '/pkcs8/rsa-key': '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIC6DBiBgkqhkiG9w0BBQ0wVTA0BgkqhkiG9w0BBQwwJwQQDw2/LfC1nOpIreSS\nU6HRxgICJxACASAwDAYIKoZIhvcNAgsFADAdBglghkgBZQMEASoEEC+X1b2QTdbU\nLbPNhPytxzkEggKAy5BMuaAsAMpiY9U8Swg/BrDRo/aauZCcN9PfKVzA5v8XvfS8\ni5ZXsInsiFdN83vHKIkNaeFSs5n3CyUzT8MHG27VwaSF9sDQN8ADEyWy9+U73Cla\nYFMiLFjEbLgJfCuLpY8AOSlOE+w8N6x1SjacJ/lBJvo7Mq0p2a9Gb553cFB4xVqs\n61iERBJVOoKJGuXUPY8I+E1TuMei138f+1R9WC3ZJwH+Np5JBOTW2+4kMDJBdWOZ\nhXg6AtCW2kX//G7L2lZr25kYePumsS00Mx6oDu+5i3slbbN5Unq/ls9a9R4IQXDo\nqjMHzQnMVPitjVTqEPmrLjgkztrZQo1P2jUJ6IhFm6+jo5htdHJBiDmqSpeYQopV\nAPWzNuOOMEoT9grQK8wr3WibSaVGhLR3vMbGvbxJWry6SdnEELDThmbq5JaSrG9k\nAzQC9OAkdGZKN7qvHSBdMmD3e6ivRGR6O/ewf1Fze82HaT2PZgNLUHb1oCrQ3Ed7\nHjkzfbA0OgebGNr3lyRzRXsOfozGVi4J4XROa78AO05BlfPeNq0eRLrOP6IuYAOh\njiL6JNAAHrGcSsPhNX/5EihzgZKpRi4L/ZJzQgjFx+d77XLLQTM8nyHXOYVYNSW1\nolmb11WoEKwg9EMqv54DiwCM1EcNQ4qula2NNHJoRfmjxe30WYG18UhEZio10RGc\nSZ1wx+d9+igKpe8uQJIupdqdEfrry08ateVi4Z3q8aUQd28fqNy7BK2cXhrg9vA1\nSGDM/BrWXxywqYzhdozfraDcWKxiNLEBzQsEv6u+q8M2crbWv/Zac/n3mXl2SJg+\nY+7wmjmX8962MuHfJtcNmwyC2hFJfe1M/DGhQg==\n-----END ENCRYPTED PRIVATE KEY-----',
+      '/pkcs8/secp256k1-key': 'mXMrucWGOPok04wiYple5i88v7RyAdDT5Znr6aXmclembArJ1MbQqg6aOdodauTOR2JUcy/Ep6Jv34sqtCqlO5cza3DakCkgmyXMfmLQzceU',
+      '/pkcs8/self': 'mK1Y92THfWNbZCvIkRVl7ZVpa3d8y2eM4eSKvHX+JrYjwia6bYmiaUJxgYqC6szHDu59XHvFmlazvjCr2N6BuERueIdtBiVWtA37xzz8pV3cQM+SaPmAnNEYFab6wfkxLlkF90t5qijhQktdsjyFstw'
     }
   },
   {
@@ -58,41 +65,56 @@ export const legacyKeychains: LegacyKeychain[] = [
     init: {
       pass: 'this is a fixture keychain password'
     },
+    dek: {
+      keyLength: 64,
+      iterationCount: 10000,
+      salt: 'you should override this value with a crypto secure random number',
+      hash: 'sha2-512'
+    },
+    derivedDek: 'lpbSJIRM5J7JhYneFPtA9Ur4Aut3uee4GOxMrPqSbhcoIXsi+lcQXhEZjhVL/xFAuMrMPX4qTSMAK9xgoFyTow',
     keys: [
       {
         name: 'self',
-        id: 'QmSJ5gjuNXx8LqDk6yvEdntdn4V7HjCcyALd9DGXu1QpWa',
+        id: 'QmPteqfbCknH5XnCWnMHT1inLMYUWtHV1U3YgRzq2hv5yP',
         type: 'Ed25519',
-        publicKey: 'CAESIBv3GcbAKFXDum4I/UflxgMoO07kTbXNpB9lBqHPMbV5'
+        publicKey: 'CAESIFBpU8Eze8UnEFIHephw7fnmxZlREhvXWlqFDuPcVnVO'
       },
       {
         name: 'secp256k1-key',
-        id: 'QmVYg2sNuEs6hwAT3bA1EEd6u19vrEQvUUysucN25XqZ5o',
+        id: 'QmeDcm13xgFHftoiyYedaq9nT6ApegP8h3g5S1mR9DwR3e',
         type: 'secp256k1',
-        publicKey: 'CAISIQN90KwnB7E2ewRzOUL70VE4WF6Oxs9MJYzi+I0StPSxNA'
+        publicKey: 'CAISIQLMiGqLIyCnWZxMX+WokMpo5pF6b3NEfLPW8OLwjDyH4A'
       },
       {
         name: 'ecdsa-key',
-        id: 'QmT4Mh2TnwXufWwY7FkbvWKJaAuVXkSpvpkEK8CKo22xCc',
+        id: 'QmWM2Ny4LurM2CzibkxZq1K19PbJnW7WzdVfmBsNan7mq3',
         type: 'ECDSA',
-        publicKey: 'CAMSVzBVAgEBoAoGCCqGSM49AwEHoUQDQgAEiNhBS+sTqEtYhBllpyH6o2Hac64d6w1qBsKyjQ8Z9W2ul9LOcrnakHqglgzfStky5OdEFXWO+1W4mKiS3qDD7w'
+        publicKey: 'CAMSVzBVAgEBoAoGCCqGSM49AwEHoUQDQgAEpj2QzwhVzIfmxff55z4H2ElyrpjLbZgT4JFD5bEBpRGZZYR6/LkzmdKeiPuFuuvIxMGBpwarR113v54SGGikQg'
       },
       {
         name: 'rsa-key',
-        id: 'QmRmFd3ZRyatExkVtE1KkUhdW6f1pJRjfjA4SJnEX9Gxqf',
+        id: 'QmTVvPNrw7by6sKV9trdionzcT91QyR2Jpi2biCieAEqXK',
         type: 'RSA',
-        publicKey: 'CAASogEwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAO5BwszoNvNBsDIy8lV+1xyGP3VA4TZNQhG4BH3cGMsgy25sUZmVdO8oY2v5tealpykeys0ONL/kuvPi7If/AR+1cNwbpniBXrv0eNp92qaetCnW9B9gvmy9lFZ9/+XTTVyzRqcbVrF1g7E9eAkxfLwtfaAQsgqwuKKRhxUk2EBnAgMBAAE'
+        publicKey: 'CAASogEwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBANngESdg2Lusgz0Xztjamj6SMe+6jJj5ls84YBwuSANBR+fR2GoEEJyc67r4MAjPPhZGNcDqNamXaX0tuROZ9/mMXtdGz/3cShropr7uCAIfRpGURw2vVFbtxdhS9OkNfQqD6Q4cFggyzkgMQrLpW464tYI/j64HTOhLz0/qLgN1AgMBAAE'
+      },
+      {
+        name: 'my key é.v2',
+        id: 'QmdjBFWAsWbj41p4cTunQvbYSHihHTAjcQY37Wvm5daE64',
+        type: 'Ed25519',
+        publicKey: 'CAESIBDi9txNMabACyklADFDNbIZMdmR4QIKGTqrEUk5ILOo'
       }
     ],
     entries: {
-      '/info/ecdsa-key': '{"name":"ecdsa-key","id":"QmT4Mh2TnwXufWwY7FkbvWKJaAuVXkSpvpkEK8CKo22xCc"}',
-      '/info/rsa-key': '{"name":"rsa-key","id":"QmRmFd3ZRyatExkVtE1KkUhdW6f1pJRjfjA4SJnEX9Gxqf"}',
-      '/info/secp256k1-key': '{"name":"secp256k1-key","id":"QmVYg2sNuEs6hwAT3bA1EEd6u19vrEQvUUysucN25XqZ5o"}',
-      '/info/self': '{"name":"self","id":"QmSJ5gjuNXx8LqDk6yvEdntdn4V7HjCcyALd9DGXu1QpWa"}',
-      '/pkcs8/ecdsa-key': 'mRSmVo3NzqJuNF/ToycoLxtKRS0esEk637Rj9CPcAXmRSCU15IEBxPBBZCCFPhvWHp+G8tmYS/CQSqBv4F43obdj6kGhOIpu+JIqRuPEMEuqO/bpZaLm9Omj+viNfU4KeGQs3p/7rvPn1GKpIQRsGyTmM0npn3swB+bpVfAxPSGKKmVlk4jZKbwV7OIwEjrtFu3do0tiPP47NvkDgtEeZk+PQmhZFEGZQCg',
-      '/pkcs8/rsa-key': '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIC6DBiBgkqhkiG9w0BBQ0wVTA0BgkqhkiG9w0BBQwwJwQQJiZ1ITCJf5Qlzk0p\nzkjO2QICJxACASAwDAYIKoZIhvcNAgsFADAdBglghkgBZQMEASoEEKomqau7YIZs\nc1c2BATT91QEggKAy7xECCJ4lzoWNdVePiZsqV/vlV3wdKN0CBzWy7+32A3+U5bl\n4SADcbZSoODgvTnPpn5IxgvQ/dgTIEcC5y+REPsecGBy+gNmaLLNsy5zZpFrYgKR\nDwf7zymDn2D+Ze4ID+P34vjPRxZWkuvNYHDBrBc/mVKs9GHsyrTt8E5i3fCPJv41\nvxCyXEm7SpM/kW/Z6FIVusynIfukpFq2qIdAWv1KnpfmLajtYLecojhG/6gcX+26\nljHh+m/1INmx7JFROZ7eA+0j3eqyPRKZexNXh9XymAurQyOmi3n2YIxAfVoW7FoR\neCB9ujXH//66oNOV+6CCYyxIQg5yz6j29HqBxNacFMLOPlyUWgkNv+ryV4SZa/33\nzx/IlxfEaTUnH64lkKHuv9MNx69yD4Ex56Q7ls35sUxNPhvI4+m9mDQN7b3eX6HF\ndB6jbSLEl3bS+O9OGSxXYZAYLkc4SEnJtrlYSDnoX4JQL5PrOesUMDvTvmu84j3+\nLoIhIW1x2IVwcNF0qsrppGFWNawcJ7U7qi98L2SGCbyIHBYLfj0J7KfaMPWo28ll\nkQ8qMSqCjIhkAVQYMnR/hLYnLEdGD9+GRaDwo7TkXKiH0Ezj9acXKTs4Si8LLj5u\nM3L7O1yYvLZwb/FWKvFKJGAnC9sjHlFnWDeq2jHOW0/sUTTpurussrtrKKijNKWW\nKqpCAffjRqyNMxxvF4jY8FMcRmbbe7jCHP6IRFgmB2vPQx2MNiAzWjE7/UBqpbIV\nSO7HpWPAMLj1z6jM/OyEfWX/XAyxEWfcSgBV1LcpQxmU2EjFtCimmrU5TX8LKFfk\n8S1Ck+5FLeTcAHiK6jKkVhsflSK6ibXJlDt2UA==\n-----END ENCRYPTED PRIVATE KEY-----',
-      '/pkcs8/secp256k1-key': 'm6CN8Zw2ust6ls9cxfS4qMS71DqubN1sdFi7WBxPAsi5KxvNKihaHdo3X6mTjrZbzOQVDd9ansLzCth5unLx3MrBlZUiw31I03BqwKiV5Dkk',
-      '/pkcs8/self': 'mreJijjwyV/WRrEXD3uoBl+mI4A7U00SMG42e1neSzJHKjMMJvCVS3Ne5QBjaa7w8oJTV2iKlh4RT0siPZqTdBquuS4TcvwEIYDGwJQw1vEU3RZ1Kkw+vusWpEhLSXIR86nBZwkykj2VNHvDjzpJexA'
+      '/info/ecdsa-key': '{"name":"ecdsa-key","id":"QmWM2Ny4LurM2CzibkxZq1K19PbJnW7WzdVfmBsNan7mq3"}',
+      '/info/my key é.v2': '{"name":"my key é.v2","id":"QmdjBFWAsWbj41p4cTunQvbYSHihHTAjcQY37Wvm5daE64"}',
+      '/info/rsa-key': '{"name":"rsa-key","id":"QmTVvPNrw7by6sKV9trdionzcT91QyR2Jpi2biCieAEqXK"}',
+      '/info/secp256k1-key': '{"name":"secp256k1-key","id":"QmeDcm13xgFHftoiyYedaq9nT6ApegP8h3g5S1mR9DwR3e"}',
+      '/info/self': '{"name":"self","id":"QmPteqfbCknH5XnCWnMHT1inLMYUWtHV1U3YgRzq2hv5yP"}',
+      '/pkcs8/ecdsa-key': 'meZttc7hq9fb9QC+808E7TUYdKSNCgdd+F6MOGXMUyloMsxngHwSYQc+v8giV8KJNa6acIxTN7Gs4d9JuqK+sJqnrq/I+lAThPuCMQ8DEH8Wxrx5GGu1S892e/2gHcY5dE7UcR04J7O3uT9UAPO520C2p6FRQcHWezgZbABOhRTTLC3H5L8s63S5yjk2ueDZlGZXwvknofeVpQhXIILMfgV9nF/+MhxfSjQ',
+      '/pkcs8/my key é.v2': 'mjo2b/KX2Cse8zaaN8FnF4Bb94AhMftZySHWfB5uVR110QxMpb8ek+QZWK01Q7jTM148XJGPBF7rFEfJ0WREvloVwwGOV6Igmgx+ldUf9cuM4WQ4GiaA/lmdA1S5TQfFiWqz/nemhWSjUS/CBJBV3aQ',
+      '/pkcs8/rsa-key': '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIC6DBiBgkqhkiG9w0BBQ0wVTA0BgkqhkiG9w0BBQwwJwQQyrSZN9FwFqV6UVZN\nLlLLvgICJxACASAwDAYIKoZIhvcNAgsFADAdBglghkgBZQMEASoEEKg8m7dC21ZO\nozvxmtXgGAIEggKAIMrCtf/V8fjBzttto4ExrHv7YtXKjD19XftFmyJH56Yo93sr\ngKjpI5KtPX8vLJJu1t51VfsTZRZi8KsXnjdLRcfYwgbHcVHPoIkJh3Ymylvi8vN+\noys8emnvk9nht4qg3DHxY/rvzUxBkrwxwxavqwiZz8ZQ29qPLJqIinZyvM3h+ZgO\n+XpceFcFXVj9mc/Xcu+6PalReRresE+RtGeErfE1FyFLDRkjB/Ksce4O3NZUgR18\nErKinWG0Rnmd0hhKdC+Kty4CjHbwwz812WWC51vvqLpImEwjqV0nBb+2sVl/eOvx\nt6MmvAzNsYqr19Hi8NYATLv53C6VYnD1OEjGmxg/xo+23VCFcpBMyIqCkfaRbodH\nJJDUhkMc8DZyZhhhgTReU0fLJiY9E011FC2EMKAmFCNe5T2EVk/zKoH5jsHou4wF\nrMtUilVIHkea5wrPcpD3OkeIb8rdOtwR18L0Q7gvwwQp0MLhTWl3idi8S0bJVFao\nzBsq++n2/vZCwyVDbfWLOof4BkwfrkGeqXmm6UOVoC4M54qd3NjgqRl9ozDDXTGK\nYf3vqr7YUSUJ00akuqLSq13Os5vbpIpgKuSzFXjqCBpYaV9x/BPHofxJP4ZFDcS0\nTLlV8YyNZjjBERGXRwKpXLBGcDrHEFkl3sGrAPmerrh4fzOij+cQL7II7gwEyDPo\nYjjZ9nPX+0KdZuO+53MywQGwL38ulT2Qs0wzRMdNb3+cGQszZdMfsf2/NzLBnAOx\n6sRhfXUng5D62Ko1ZBkxKNjWGu4mBv/TO+oAxVR+ZyZ55hZqxQJ3yBRFkKu/sUhG\n7MBGhztvOQ1DEVLL/zvkRwAf32EJ2ti5n2hsPw==\n-----END ENCRYPTED PRIVATE KEY-----',
+      '/pkcs8/secp256k1-key': 'mB0lIF34CECqmPu0GSeSx2g3Sy8NajHXnUuq8RjjV8gg18aSYVWZv6qm38cz2Q10I/rp5L33ZJhjL0T3ZanLXX6xa1aKvHf7qGM0tpGoKKRg',
+      '/pkcs8/self': 'm5SAmRLfmpArEM8Hr803jT6Tj6c4aG6+M629gfHF1n/rOKv2l/Lu6Hj3IR/TSKOfaQi9V4iswX+e3Eg5p5/LEf4ikx2ZVWEpidtj2lGyqF9K+A3jEv0GcP1FM31mKRTEN/CwdR9ZPe8YVI3oYLyIEYA'
     }
   },
   {
@@ -106,25 +128,32 @@ export const legacyKeychains: LegacyKeychain[] = [
         salt: 'a custom fixture keychain salt'
       }
     },
+    dek: {
+      keyLength: 32,
+      iterationCount: 2000,
+      salt: 'a custom fixture keychain salt',
+      hash: 'sha2-256'
+    },
+    derivedDek: 'xpcRV3immk8LYH/JYtdWxMh6JNyQszPKDaJ4vBdqdZ8',
     keys: [
       {
         name: 'self',
-        id: 'QmXbjDyFQir6x7PFbhZghWQfXwcyJdxhdhHF8QGeeVzwot',
+        id: 'Qmf2MGzbWeyDSQBVnwkka5MZBqJnkLn682UJAtwJU5m5iG',
         type: 'Ed25519',
-        publicKey: 'CAESIHgkTxT134T/4RJKq+cTb8SpICk0zRuTnopxAczQfMpC'
+        publicKey: 'CAESIHveRRgQVocj2xNRaxYNz/y65TqwIyE6uwYtm7oupiCk'
       },
       {
         name: 'rsa-key',
-        id: 'QmdYZijf99H71P6xbdX9gxMAGiqfcPxh9NXM2kqNSNQJ9Q',
+        id: 'QmVUjp6Wqypcugs9McARbaforzdMTNzB5Z5SYWDNGJfCZH',
         type: 'RSA',
-        publicKey: 'CAASogEwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALnhb517ttWophDc2mpduQOGdSFLX8EF9oRP/RxYAibecMJukdgW6JQZqdvbDAH3Q3umYWkjlxxOL3d3rUE4nYlReTpcxhghb6OIr8742yk0IG1m/MNJk3g1mZJD6i/EOh/JlB96E8JdpE2zQByScN4d5pov1UPmP65DqBaFJJ1HAgMBAAE'
+        publicKey: 'CAASogEwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAJWiIWKnk8KPJjp2bww/0CptN0tgGTvql1EhepZdkqqUonpplAwA5inIpi4eEs2W/07/ClCd7RZZCGMH0moBphiQ26deLDiZlGSHzNiUUOCBXIjkgdLdzV4TMCRf6tyjeJVTcMqLRnwXFd+U+knFcmDXhtc/oQE3iG7sb7dK5nf3AgMBAAE'
       }
     ],
     entries: {
-      '/info/rsa-key': '{"name":"rsa-key","id":"QmdYZijf99H71P6xbdX9gxMAGiqfcPxh9NXM2kqNSNQJ9Q"}',
-      '/info/self': '{"name":"self","id":"QmXbjDyFQir6x7PFbhZghWQfXwcyJdxhdhHF8QGeeVzwot"}',
-      '/pkcs8/rsa-key': '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIC6DBiBgkqhkiG9w0BBQ0wVTA0BgkqhkiG9w0BBQwwJwQQKRdN3oOWooooWnUx\nAc7TvwICJxACASAwDAYIKoZIhvcNAgsFADAdBglghkgBZQMEASoEELysdvWpZur2\nhDFkIHt2W3cEggKACOcnNdpssevNiRhUWL7TXIRpb0Hp9j9IiUSPcVT50nk0mupD\ngCk1HFim2vydQk4aRurNlLifoIb+0J5ZJ1gNuPr3eh/vulEUwhYiEktJbZ5IESYy\nNCcUqodoZ0TFprVg7n+UH0CS7Ta1mCk8BR9uwlGyWax9RVfXy9FqsZBMh510tOu6\nGz3GVAwC9fxemg3LHOB+xSTxItdMovhTw9Kuv/DrNPRso8vxZrfpOphdvpYnPN7c\nHhIiFSHNQaaY/VSpxMdNmsAEBQIESaBmrMSGDV9RJBXgoKbcDIx+bWGm/7ZC95rz\nd0CyKerecbyElxjAtDLSlM/RsVXHiPrU8RoauJGoF8CuHsM4FiN38VkDKK4OzYeW\nE8gxxkvPayWFI1IfhdoB8amPjlpf7lglbxt+RT1l495Md4+2VgPtUsGEH/fEyz0k\nSCtIeW6UQbhtVcZTKYplIOubiaKoquLpuJz+d2FY3t8OIxOGbSWZorys6yBV/64C\n7w7Z8+JTY2wHCvtgLLCywnyFMP232YxBr4+TzLTTAmdp6AjOhqpnEiKEBbW3hLJd\nih9iMWESZVr+ARLWUBOYQWg8Kcgr8g4uEo8yvHNryAZsoaSboWdDIPCHMRtlBxQO\n4b4cZRZWdRoBYRlQ97Gq/f3pwiIkG1JuqBzjcRbumfWzEnuPoXK43tnY1/gz/do5\nkW3YC/b4G1Dmfi/wREM1PNbLPrWi+YoCgEgW68AVge/QARnfbPRfYX5BBWqh8KxB\nzldNdG4opEc7J44ZkXWVPBDAXxLypzyO7pM+7rUdk3tsc2p5OMwCm3AiEatYYbs7\n1bWB9BFnadjQ1u/Mg9Dg+lxac9qodkEn7QYFhA==\n-----END ENCRYPTED PRIVATE KEY-----',
-      '/pkcs8/self': 'mSACGewhK/kjj4O/bZS60va+cUdHVn5yHep3+cSOtRhYUc04vxxtR/CyDDkwy4ZFN86RxHodR7LixVfOiWrQtKJi3P0XKtXcrvPw9I7X+VqGU6dAx8AuCL30w6vt6iO6WkabXsBrDEHAl7Gnm4I/XgQ'
+      '/info/rsa-key': '{"name":"rsa-key","id":"QmVUjp6Wqypcugs9McARbaforzdMTNzB5Z5SYWDNGJfCZH"}',
+      '/info/self': '{"name":"self","id":"Qmf2MGzbWeyDSQBVnwkka5MZBqJnkLn682UJAtwJU5m5iG"}',
+      '/pkcs8/rsa-key': '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIC6DBiBgkqhkiG9w0BBQ0wVTA0BgkqhkiG9w0BBQwwJwQQEVGjtVeI4BWY7P8A\ntmQlkQICJxACASAwDAYIKoZIhvcNAgsFADAdBglghkgBZQMEASoEEMhyNaLGKiB4\n/mfQ+MpaXLYEggKA/wkxsu8HH6x2JXsvxSGmi4aFhuubaBiiszxszudMzC3Wm4sL\nF2iEYffvTs4job+DU6i5uz729kncsshIbX2SkqPVk7kiaJrN/UouDtkADt0BZPi2\nXaQNxaZM8n9G7Z5nl5kqL0gHQRx+oXg+R9k2ssMQjEpfYt3yhdgsKQRNya2pp2nW\nJselydp95+W/1YDc4+eeVCrDKhHc23Uobxb/aW/vxxSDPAQr25xRHgaRBG/f7XRq\nQ1r4MK9IcephJtAxjhxn0zEKOunMpySQuuZtQSDr8Pb4xZGGzpojVBbU5xZj2Zry\nLo8Omb7hb8attK6eaD++fMNMMTkCE4e7FsXUBV8l8cbH/Mzk0eroLPAbYvgk8L9Q\nlV4wRm8K75BJGONpx54zYSuRLYDFXfVi70sq8DUdSsL9LKXOlFs9bj5QsNIHETek\nkWuDC8ZQ4FdV30D97GbYXMhdRsFs2cUQM6MRFoZZ+OfM0ypJDPj0oGCPyZO4eglW\nz9ejuaJz44tmbaJ7LyazryymXipD6aN595bMHVHv5jKB15bREnk1Gbsc4QsV6gmK\n7qqySRueAMlaOVNyZw6dIkDArw97LAcG2pBTARgOl+x4mShKn6jS3Vx2toYSkzE9\nc1zwdIBCmwNa9fBS2BCOZGRUMG4n5H0iXOEBNn9PzxG/KrbP7ZtD8aos1QLm0jFg\nPCLQim/eDuPOp7tRCotL+NKbfTXli24J/E6dQUOzvyW5MxgwJOS16ZX3fXyfzGKM\nNAk8k75HTIjMPGZQfPKBfHRNVxO6pxkDW4sO8my/c7pHaPavFXSlUONbr1q+WYTI\nSquWuB/bG4VW4hJCISPbFLmJiop/Vvn3xEuBTA==\n-----END ENCRYPTED PRIVATE KEY-----',
+      '/pkcs8/self': 'mINr2XznVJKol26ngn+VFVdsSj8uGcV5EC2T8hPv5CVoF30e9zuoaMDvFtZRNqYFn2yHhV1GgxbQXKDRvGG4wZOlG96tmdiYteh/PaOEzTaWlW3KTHWz7FCxxvAsENdqGX6KkuDrvMaxluh0c7EIg5w'
     }
   }
 ]

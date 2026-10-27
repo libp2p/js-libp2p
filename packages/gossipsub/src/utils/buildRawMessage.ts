@@ -1,4 +1,4 @@
-import { publicKeyForPeer, publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyForPeer } from '@libp2p/crypto'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import * as Digest from 'multiformats/hashes/digest'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -9,6 +9,7 @@ import { RPC } from '../message/rpc.ts'
 import { PublishConfigType, ValidateError } from '../types.ts'
 import type { Message } from '../index.ts'
 import type { PublishConfig, TopicStr } from '../types.ts'
+import type { CryptoLoaderOptions } from '@libp2p/crypto'
 import type { PublicKey, PeerId } from '@libp2p/interface'
 
 export const SignPrefix = uint8ArrayFromString('libp2p-pubsub:')
@@ -63,7 +64,7 @@ export async function buildRawMessage (
         sequenceNumber: BigInt(`0x${uint8ArrayToString(rpcMsg.seqno ?? new Uint8Array(0), 'base16')}`),
         topic,
         signature: rpcMsg.signature,
-        key: publicKeyFromProtobuf(rpcMsg.key)
+        key: publishConfig.privateKey.publicKey
       }
       return {
         raw: rpcMsg,
@@ -94,11 +95,12 @@ export async function buildRawMessage (
   }
 }
 
-export type ValidationResult = { valid: true, message: Message } | { valid: false, error: ValidateError }
+export type ValidationResult = { valid: true, message: Message } | { valid: false, error: ValidateError, message?: Message }
 
 export async function validateToRawMessage (
   signaturePolicy: typeof StrictNoSign | typeof StrictSign,
-  msg: RPC.Message
+  msg: RPC.Message,
+  options?: CryptoLoaderOptions
 ): Promise<ValidationResult> {
   // If strict-sign, verify all
   // If anonymous (no-sign), ensure no signature, key, from or seqno is present
@@ -131,8 +133,29 @@ export async function validateToRawMessage (
 
       let publicKey: PublicKey
       try {
-        publicKey = await publicKeyForPeer(fromPeerId, msg.key)
-      } catch {
+        publicKey = await publicKeyForPeer(fromPeerId, msg.key, options)
+      } catch (err: any) {
+        if (err.name === 'UnknownCryptoError') {
+          // the key is bound to the author but cannot be decoded, return the
+          // message with a key that only exposes its bytes so an id can be computed
+          const keyBytes = msg.key ?? fromPeerId.publicKey
+          const key = { type: 'unsupported', toProtobuf: () => keyBytes, toMultihash: () => fromPeerId.toMultihash() } as unknown as PublicKey
+
+          return {
+            valid: false,
+            error: ValidateError.UnsupportedKeyType,
+            message: {
+              type: 'signed',
+              from: fromPeerId,
+              data: msg.data ?? new Uint8Array(0),
+              sequenceNumber: BigInt(`0x${uint8ArrayToString(msg.seqno, 'base16')}`),
+              topic: msg.topic,
+              signature: msg.signature,
+              key
+            }
+          }
+        }
+
         // mismatched, missing or malformed keys are invalid, not thrown, so the
         // peer is still scored
         return { valid: false, error: ValidateError.InvalidPeerId }

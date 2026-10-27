@@ -1,4 +1,4 @@
-import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { StreamMessageEvent, UnexpectedPeerError } from '@libp2p/interface'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { AbstractMessageStream, LengthPrefixedDecoder } from '@libp2p/utils'
@@ -11,6 +11,7 @@ import { NoiseHandshakePayload } from './proto/payload.ts'
 import type { MetricsRegistry } from './metrics.ts'
 import type { NoiseExtensions } from './proto/payload.ts'
 import type { HandshakeResult } from './types.ts'
+import type { CryptoLoaderOptions } from '@libp2p/crypto'
 import type { AbortOptions, MessageStream, PeerId, PrivateKey, StreamCloseEvent } from '@libp2p/interface'
 import type { SendResult } from '@libp2p/utils'
 
@@ -19,10 +20,10 @@ export async function createHandshakePayload (
   staticPublicKey: Uint8Array | Uint8ArrayList,
   extensions?: NoiseExtensions
 ): Promise<Uint8Array | Uint8ArrayList> {
-  const identitySig = await privateKey.sign(getSignaturePayload(staticPublicKey))
+  const identitySig = await privateKey.sign(getSignaturePayload(staticPublicKey).subarray())
 
   return NoiseHandshakePayload.encode({
-    identityKey: publicKeyToProtobuf(privateKey.publicKey),
+    identityKey: privateKey.publicKey.toProtobuf(),
     identitySig,
     extensions
   })
@@ -31,11 +32,12 @@ export async function createHandshakePayload (
 export async function decodeHandshakePayload (
   payloadBytes: Uint8Array | Uint8ArrayList,
   remoteStaticKey?: Uint8Array | Uint8ArrayList,
-  remotePeer?: PeerId
+  remotePeer?: PeerId,
+  options?: CryptoLoaderOptions
 ): Promise<{ payload: NoiseHandshakePayload, remotePeer: PeerId }> {
   try {
     const payload = NoiseHandshakePayload.decode(payloadBytes)
-    const publicKey = publicKeyFromProtobuf(payload.identityKey)
+    const publicKey = await publicKeyFromProtobuf(payload.identityKey, options)
     const payloadPeer = peerIdFromPublicKey(publicKey)
 
     // compare peer ids, an expected peer id may not carry its public key (e.g. RSA)
@@ -51,7 +53,7 @@ export async function decodeHandshakePayload (
 
     const signaturePayload = getSignaturePayload(remoteStaticKey)
 
-    if (!(await publicKey.verify(signaturePayload, payload.identitySig))) {
+    if (!(await publicKey.verify(signaturePayload.subarray(), payload.identitySig))) {
       throw new Error('Invalid payload signature')
     }
 

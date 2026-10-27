@@ -22,7 +22,7 @@
  * await datastore.open()
  *
  * const keychainInit = {
- *  pass: 'yes-yes-very-secure'
+ *  password: 'yes-yes-very-very-secure'
  * }
  *
  * const privateKey = await loadOrCreateSelfKey(datastore, keychainInit)

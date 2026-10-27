@@ -26,6 +26,10 @@ repo and examine the changes made.
 
 An implementation of a peer id
 
+`peerId.publicKey` is the protobuf-encoded public key as bytes. To get a key
+object use `publicKeyFromProtobuf(peerId.publicKey)` or
+`publicKeyForPeer(peerId)` from `@libp2p/crypto`.
+
 ## Example
 
 ```TypeScript

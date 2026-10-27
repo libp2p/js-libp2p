@@ -1,17 +1,16 @@
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { InvalidParametersError } from '@libp2p/interface'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Validators } from '../index.ts'
+import type { Validators, ValidateOptions } from '../index.ts'
 import type { Libp2pRecord } from '@libp2p/record'
-import type { AbortOptions } from 'it-pushable'
 
 /**
  * Checks a record and ensures it is still valid.
  * It runs the needed validators.
  * If verification fails the returned Promise will reject with the error.
  */
-export async function verifyRecord (validators: Validators, record: Libp2pRecord, options?: AbortOptions): Promise<void> {
+export async function verifyRecord (validators: Validators, record: Libp2pRecord, options?: ValidateOptions): Promise<void> {
   const key = record.key
   const keyString = uint8ArrayToString(key)
   const parts = keyString.split('/')
@@ -38,7 +37,7 @@ export async function verifyRecord (validators: Validators, record: Libp2pRecord
  * @param {Uint8Array} key - A valid key is of the form `'/pk/<keymultihash>'`
  * @param {Uint8Array} publicKey - The public key to validate against (protobuf encoded).
  */
-const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array, options?: AbortOptions): Promise<void> => {
+const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array, options?: ValidateOptions): Promise<void> => {
   if (!(key instanceof Uint8Array)) {
     throw new InvalidParametersError('"key" must be a Uint8Array')
   }
@@ -53,7 +52,7 @@ const validatePublicKeyRecord = async (key: Uint8Array, publicKey: Uint8Array, o
     throw new InvalidParametersError('key was not prefixed with /pk/')
   }
 
-  const pubKey = publicKeyFromProtobuf(publicKey)
+  const pubKey = await publicKeyFromProtobuf(publicKey, options)
   const keyHash = key.slice(4)
 
   if (!uint8ArrayEquals(keyHash, pubKey.toMultihash().bytes)) {

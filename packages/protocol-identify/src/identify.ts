@@ -1,4 +1,4 @@
-import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { InvalidMessageError, serviceCapabilities } from '@libp2p/interface'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -82,7 +82,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
       throw new InvalidMessageError('Public key was missing from identify message')
     }
 
-    const key = publicKeyFromProtobuf(publicKey)
+    const key = await publicKeyFromProtobuf(publicKey, { ...options, getCrypto: this.components.getCrypto })
     const id = peerIdFromPublicKey(key)
 
     if (!connection.remotePeer.equals(id)) {
@@ -99,7 +99,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
 
     this.log('completed for peer %p and protocols %o', id, protocols)
 
-    return consumeIdentifyMessage(this.components.peerStore, this.components.events, this.log, connection, message)
+    return consumeIdentifyMessage(this.components.peerStore, this.components.events, this.log, connection, message, { ...options, getCrypto: this.components.getCrypto })
   }
 
   private maybeAddObservedAddress (observedAddr: Uint8Array | undefined): void {
@@ -176,7 +176,7 @@ export class Identify extends AbstractIdentify implements Startable, IdentifyInt
     await pb.write({
       protocolVersion: this.host.protocolVersion,
       agentVersion: this.host.agentVersion,
-      publicKey: publicKeyToProtobuf(this.components.privateKey.publicKey),
+      publicKey: this.components.privateKey.publicKey.toProtobuf(),
       listenAddrs: multiaddrs.map(addr => addr.bytes),
       signedPeerRecord,
       observedAddr,

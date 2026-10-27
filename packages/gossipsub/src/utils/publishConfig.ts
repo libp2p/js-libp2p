@@ -1,4 +1,3 @@
-import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { StrictSign, StrictNoSign } from '../index.ts'
 import { PublishConfigType } from '../types.ts'
 import type { PublishConfig } from '../types.ts'
@@ -17,7 +16,7 @@ export function getPublishConfigFromPeerId (
       return {
         type: PublishConfigType.Signing,
         author: peerId,
-        key: publicKeyToProtobuf(privateKey.publicKey),
+        key: privateKey.publicKey.toProtobuf(),
         privateKey
       }
     }

@@ -1,74 +1,92 @@
-/* eslint max-nested-callbacks: ["error", 5] */
-
-import { pbkdf2 } from '@libp2p/crypto'
-import { privateKeyToProtobuf } from '@libp2p/crypto/keys'
-import { InvalidParametersError, NotFoundError, serviceCapabilities } from '@libp2p/interface'
+import { PrivateKeyMessage, PublicKeyMessage } from '@libp2p/crypto/pb'
 import { Key } from 'interface-datastore/key'
 import { base58btc } from 'multiformats/bases/base58'
 import { sha256 } from 'multiformats/hashes/sha2'
+import { raceSignal } from 'race-signal'
 import sanitize from 'sanitize-filename'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { DEK_INIT } from './constants.ts'
-import { exportPrivateKey } from './utils/export.ts'
-import { importPrivateKey } from './utils/import.ts'
-import type { KeychainComponents, KeychainInit, Keychain as KeychainInterface, KeyInfo } from './index.ts'
-import type { Logger, PrivateKey } from '@libp2p/interface'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
+import { KEY_LENGTHS, decryptEntry, deriveDek, encryptEntry } from './cipher.ts'
+import { DecryptionFailedError, InvalidParametersError } from './errors.ts'
+import { DEFAULT_LEGACY_DEK, deriveLegacyDek } from './legacy.ts'
+import { migrate } from './migrate.ts'
+import type { DekOptions } from './cipher.ts'
+import type { Keychain as KeychainInterface, KeyInfo, GenerateKeyOptions, KeychainComponents, KeychainInit } from './index.ts'
+import type { PrivateKey, PublicKey } from '@libp2p/crypto'
+import type { AbortOptions } from 'abort-error'
+import type { Batch } from 'interface-datastore'
 
 const keyPrefix = '/pkcs8/'
 const infoPrefix = '/info/'
-const privates = new WeakMap<object, { dek: string }>()
+
+const serviceCapabilities = Symbol.for('@libp2p/service-capabilities')
+
+/**
+ * Default options for key derivation for the keychain Data Encryption Key.
+ *
+ * Inherited from js-libp2p.
+ *
+ * @see https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
+ */
+const KEYCHAIN_DEK_INIT = {
+  iterations: 10_000,
+  salt: uint8ArrayFromString('you should override this value with a crypto secure random number'),
+  hash: 'SHA-512'
+} as const
+
+const MIN_PASS_LENGTH = 20
 
 // NIST SP 800-132
 const NIST = {
   minKeyLength: 112 / 8,
   minSaltLength: 128 / 8,
-  minIterationCount: 1000
+  minIterations: 1_000
 }
 
 function validateKeyName (name: string): boolean {
   if (name == null) {
     return false
   }
+
   if (typeof name !== 'string') {
     return false
   }
+
   return name === sanitize(name.trim()) && name.length > 0
-}
-
-/**
- * Throws an error after a delay
- *
- * This assumes than an error indicates that the keychain is under attack. Delay returning an
- * error to make brute force attacks harder.
- */
-async function randomDelay (): Promise<void> {
-  const min = 200
-  const max = 1000
-  const delay = Math.random() * (max - min) + min
-
-  await new Promise(resolve => setTimeout(resolve, delay))
 }
 
 /**
  * Converts a key name into a datastore name
  */
-function DsName (name: string): Key {
+function dsName (name: string): Key {
   return new Key(keyPrefix + name)
 }
 
 /**
  * Converts a key name into a datastore info name
  */
-function DsInfoName (name: string): Key {
+function dsInfoName (name: string): Key {
   return new Key(infoPrefix + name)
 }
 
-export async function keyId (key: PrivateKey): Promise<string> {
-  const pb = privateKeyToProtobuf(key)
+async function keyId (key: PrivateKey, options?: AbortOptions): Promise<string> {
+  const pb = key.toProtobuf()
   const hash = await sha256.digest(pb)
 
+  options?.signal?.throwIfAborted()
+
   return base58btc.encode(hash.bytes).substring(1)
+}
+
+function getSalt (salt?: string | Uint8Array): Uint8Array<ArrayBuffer> | undefined {
+  if (typeof salt === 'string') {
+    return uint8ArrayFromString(salt)
+  }
+
+  if (salt instanceof Uint8Array) {
+    return withArrayBuffer(salt)
+  }
 }
 
 /**
@@ -77,53 +95,75 @@ export async function keyId (key: PrivateKey): Promise<string> {
  * A key in the store has two entries
  * - '/info/*key-name*', contains the KeyInfo for the key
  * - '/pkcs8/*key-name*', contains the PKCS #8 for the key
- *
  */
 export class Keychain implements KeychainInterface {
   private readonly components: KeychainComponents
   private readonly init: KeychainInit
-  private readonly log: Logger
   private readonly self: string
+  private readonly dekOptions: DekOptions
+  private dek?: string
+  private opening?: Promise<void>
 
   /**
    * Creates a new instance of a key chain
    */
-  constructor (components: KeychainComponents, init: KeychainInit) {
+  constructor (components: KeychainComponents, init: KeychainInit = {}) {
     this.components = components
-    this.log = components.logger.forComponent('libp2p:keychain')
-    this.init = {
-      ...init,
-      dek: {
-        ...DEK_INIT,
-        ...init.dek
-      }
-    }
+    this.init = init
     this.self = init.selfKey ?? 'self'
+    this.dekOptions = {
+      salt: getSalt(init.salt) ?? KEYCHAIN_DEK_INIT.salt,
+      iterations: init.iterations ?? KEYCHAIN_DEK_INIT.iterations,
+      hash: init.hash ?? KEYCHAIN_DEK_INIT.hash
+    }
 
     // Enforce NIST SP 800-132
-    if (this.init.pass != null && this.init.pass?.length < 20) {
-      throw new Error('pass must be least 20 characters')
+    if (init.password != null && init.password.length < MIN_PASS_LENGTH) {
+      throw new Error('password must be least 20 characters')
     }
-    if (this.init.dek?.keyLength != null && this.init.dek.keyLength < NIST.minKeyLength) {
+    /*
+    if (this.keyLength < NIST.minKeyLength) {
       throw new Error(`dek.keyLength must be least ${NIST.minKeyLength} bytes`)
     }
-    if (this.init.dek?.salt?.length != null && this.init.dek.salt.length < NIST.minSaltLength) {
-      throw new Error(`dek.saltLength must be least ${NIST.minSaltLength} bytes`)
-    }
-    if (this.init.dek?.iterationCount != null && this.init.dek.iterationCount < NIST.minIterationCount) {
-      throw new Error(`dek.iterationCount must be least ${NIST.minIterationCount}`)
+*/
+    if (this.dekOptions.salt.byteLength < NIST.minSaltLength) {
+      throw new Error(`salt must be least ${NIST.minSaltLength} bytes`)
     }
 
-    const dek = this.init.pass != null && this.init.dek?.salt != null
-      ? pbkdf2(
-        this.init.pass,
-        this.init.dek?.salt,
-        this.init.dek?.iterationCount,
-        this.init.dek?.keyLength,
-        this.init.dek?.hash)
-      : ''
+    if (init.iterations != null && init.iterations < NIST.minIterations) {
+      throw new Error(`iterations must be least ${NIST.minIterations}`)
+    }
 
-    privates.set(this, { dek })
+    if (KEY_LENGTHS[this.dekOptions.hash] == null) {
+      throw new InvalidParametersError('Unsupported hash')
+    }
+  }
+
+  /**
+   * Migrates entries written by previous versions on first use. Concurrent
+   * callers share one run, and a failed run is retried by the next caller.
+   */
+  private async ready (options?: AbortOptions): Promise<string> {
+    this.opening ??= this.open().catch(err => {
+      this.opening = undefined
+      throw err
+    })
+
+    await raceSignal(this.opening, options?.signal)
+
+    if (this.dek == null) {
+      throw new Error('Keychain did not open')
+    }
+
+    return this.dek
+  }
+
+  private async open (): Promise<void> {
+    const target = await deriveDek(this.init.password ?? '', this.dekOptions)
+    const legacy = deriveLegacyDek(this.init.password, this.dekOptions.salt, this.dekOptions.iterations, this.init.legacyDek ?? DEFAULT_LEGACY_DEK)
+
+    await migrate(this.components.datastore, target, legacy)
+    this.dek = target
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/keychain'
@@ -132,177 +172,102 @@ export class Keychain implements KeychainInterface {
     '@libp2p/keychain'
   ]
 
-  /**
-   * Generates the options for a keychain.  A random salt is produced.
-   *
-   * @returns {object}
-   */
-  static generateOptions (): KeychainInit {
-    const options = Object.assign({}, this.options)
-    const saltLength = Math.ceil(NIST.minSaltLength / 3) * 3 // no base64 padding
+  async generateKey (name: string, options?: GenerateKeyOptions): Promise<PrivateKey> {
+    await this.ready(options)
+    const crypto = await this.components.getCrypto(options?.type ?? 'Ed25519', options)
+    const key = await crypto.generatePrivateKey(options)
 
-    if (options.dek != null) {
-      options.dek.salt = uint8ArrayToString(crypto.getRandomValues(new Uint8Array(saltLength)), 'base64')
-    }
-
-    return options
+    return this.importKey(name, key, options)
   }
 
-  /**
-   * Gets an object that can encrypt/decrypt protected data.
-   * The default options for a keychain.
-   *
-   * @returns {object}
-   */
-  static get options (): KeychainInit {
-    return {
-      dek: {
-        ...DEK_INIT
-      }
-    }
-  }
-
-  async findKeyByName (name: string): Promise<KeyInfo> {
+  async importKey (name: string, key: PrivateKey, options?: AbortOptions): Promise<PrivateKey> {
     if (!validateKeyName(name)) {
-      await randomDelay()
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const datastoreName = DsInfoName(name)
-
-    try {
-      const res = await this.components.datastore.get(datastoreName)
-      return JSON.parse(uint8ArrayToString(res))
-    } catch (err: any) {
-      await randomDelay()
-      this.log.error('could not read key from datastore - %e', err)
-      throw new NotFoundError(`Key '${name}' does not exist.`)
-    }
-  }
-
-  async findKeyById (id: string): Promise<KeyInfo> {
-    try {
-      const query = {
-        prefix: infoPrefix
-      }
-
-      for await (const value of this.components.datastore.query(query)) {
-        const key = JSON.parse(uint8ArrayToString(value.value))
-
-        if (key.id === id) {
-          return key
-        }
-      }
-
-      throw new InvalidParametersError(`Key with id '${id}' does not exist.`)
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
-  }
-
-  async importKey (name: string, key: PrivateKey): Promise<KeyInfo> {
-    if (!validateKeyName(name)) {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid key name '${name}'`)
-    }
     if (key == null) {
-      await randomDelay()
       throw new InvalidParametersError('Key is required')
     }
-    const datastoreName = DsName(name)
-    const exists = await this.components.datastore.has(datastoreName)
+
+    const dek = await this.ready(options)
+    const exists = await this.components.datastore.has(dsName(name), options)
+
     if (exists) {
-      await randomDelay()
       throw new InvalidParametersError(`Key '${name}' already exists`)
     }
 
-    let kid: string
-    let pem: string
-    try {
-      kid = await keyId(key)
-      const cached = privates.get(this)
+    const batch = this.components.datastore.batch()
+    await this._importKey(name, key, dek, batch, options)
+    await batch.commit(options)
 
-      if (cached == null) {
-        throw new InvalidParametersError('dek missing')
-      }
+    return key
+  }
 
-      const dek = cached.dek
-      pem = await exportPrivateKey(key, dek, key.type === 'RSA' ? 'pkcs-8' : 'libp2p-key')
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
+  private async _importKey (name: string, privateKey: PrivateKey, dek: string, batch: Batch, options?: AbortOptions): Promise<void> {
+    const encodedText = await encryptEntry(dek, privateKey.toProtobuf())
 
-    const keyInfo = {
+    options?.signal?.throwIfAborted()
+
+    const keyInfo: KeyInfo = {
       name,
-      id: kid
+      id: await keyId(privateKey, options)
     }
-    const batch = this.components.datastore.batch()
-    batch.put(datastoreName, uint8ArrayFromString(pem))
-    batch.put(DsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
-    await batch.commit()
 
-    return keyInfo
+    batch.put(dsName(name), uint8ArrayFromString(encodedText))
+    batch.put(dsInfoName(name), uint8ArrayFromString(JSON.stringify(keyInfo)))
   }
 
-  async exportKey (name: string): Promise<PrivateKey> {
+  async exportKey (name: string, options?: AbortOptions): Promise<PrivateKey> {
     if (!validateKeyName(name)) {
-      await randomDelay()
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const datastoreName = DsName(name)
-    try {
-      const res = await this.components.datastore.get(datastoreName)
-      const pem = uint8ArrayToString(res)
-      const cached = privates.get(this)
+    const dek = await this.ready(options)
 
-      if (cached == null) {
-        throw new InvalidParametersError('dek missing')
-      }
-
-      const dek = cached.dek
-
-      return await importPrivateKey(pem, dek)
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
+    return this._exportKey(name, dek, options)
   }
 
-  async removeKey (name: string): Promise<KeyInfo> {
+  private async _exportKey (name: string, dek: string, options?: AbortOptions): Promise<PrivateKey> {
+    const keyBuf = await this.components.datastore.get(dsName(name), options)
+    const plainText = await decryptEntry(dek, uint8ArrayToString(keyBuf))
+    options?.signal?.throwIfAborted()
+    const pb = PrivateKeyMessage.decode(plainText)
+
+    if (pb.Type == null) {
+      throw new DecryptionFailedError('Unknown key type')
+    }
+
+    const crypto = await this.components.getCrypto(pb.Type, options)
+
+    return crypto.privateKeyFromProtobuf(plainText, options)
+  }
+
+  async removeKey (name: string, options?: AbortOptions): Promise<void> {
     if (!validateKeyName(name) || name === this.self) {
-      await randomDelay()
       throw new InvalidParametersError(`Invalid key name '${name}'`)
     }
 
-    const datastoreName = DsName(name)
-    const keyInfo = await this.findKeyByName(name)
-    const batch = this.components.datastore.batch()
-    batch.delete(datastoreName)
-    batch.delete(DsInfoName(name))
-    await batch.commit()
+    await this.ready(options)
 
-    return keyInfo
+    const batch = this.components.datastore.batch()
+    batch.delete(dsName(name))
+    batch.delete(dsInfoName(name))
+    await batch.commit(options)
   }
 
   /**
-   * List all the keys.
-   *
-   * @returns {Promise<KeyInfo[]>}
+   * List all the keys
    */
-  async listKeys (): Promise<KeyInfo[]> {
+  async * listKeys (options?: AbortOptions): AsyncGenerator <KeyInfo> {
+    await this.ready(options)
+
     const query = {
       prefix: infoPrefix
     }
 
-    const info = []
-    for await (const value of this.components.datastore.query(query)) {
-      info.push(JSON.parse(uint8ArrayToString(value.value)))
+    for await (const value of this.components.datastore.query(query, options)) {
+      yield JSON.parse(uint8ArrayToString(value.value))
     }
-
-    return info
   }
 
   /**
@@ -312,97 +277,82 @@ export class Keychain implements KeychainInterface {
    * @param {string} newName - The new local key name; must not already exist.
    * @returns {Promise<KeyInfo>}
    */
-  async renameKey (oldName: string, newName: string): Promise<KeyInfo> {
+  async renameKey (oldName: string, newName: string, options?: AbortOptions): Promise<void> {
     if (!validateKeyName(oldName) || oldName === this.self) {
-      await randomDelay()
       throw new InvalidParametersError(`Invalid old key name '${oldName}'`)
     }
+
     if (!validateKeyName(newName) || newName === this.self) {
-      await randomDelay()
       throw new InvalidParametersError(`Invalid new key name '${newName}'`)
     }
-    const oldDatastoreName = DsName(oldName)
-    const newDatastoreName = DsName(newName)
-    const oldInfoName = DsInfoName(oldName)
-    const newInfoName = DsInfoName(newName)
 
-    const exists = await this.components.datastore.has(newDatastoreName)
+    await this.ready(options)
+
+    const oldDatastoreName = dsName(oldName)
+    const newDatastoreName = dsName(newName)
+    const oldInfoName = dsInfoName(oldName)
+    const newInfoName = dsInfoName(newName)
+
+    const exists = await this.components.datastore.has(newDatastoreName, options)
+
     if (exists) {
-      await randomDelay()
       throw new InvalidParametersError(`Key '${newName}' already exists`)
     }
 
-    try {
-      const pem = await this.components.datastore.get(oldDatastoreName)
-      const res = await this.components.datastore.get(oldInfoName)
+    const pem = await this.components.datastore.get(oldDatastoreName, options)
+    const res = await this.components.datastore.get(oldInfoName, options)
 
-      const keyInfo = JSON.parse(uint8ArrayToString(res))
-      keyInfo.name = newName
-      const batch = this.components.datastore.batch()
-      batch.put(newDatastoreName, pem)
-      batch.put(newInfoName, uint8ArrayFromString(JSON.stringify(keyInfo)))
-      batch.delete(oldDatastoreName)
-      batch.delete(oldInfoName)
-      await batch.commit()
-      return keyInfo
-    } catch (err: any) {
-      await randomDelay()
-      throw err
-    }
+    const keyInfo: KeyInfo = JSON.parse(uint8ArrayToString(res))
+    keyInfo.name = newName
+
+    const batch = this.components.datastore.batch()
+    batch.put(newDatastoreName, pem)
+    batch.put(newInfoName, uint8ArrayFromString(JSON.stringify(keyInfo)))
+    batch.delete(oldDatastoreName)
+    batch.delete(oldInfoName)
+
+    await batch.commit(options)
   }
 
   /**
    * Rotate keychain password and re-encrypt all associated keys
    */
-  async rotateKeychainPass (oldPass: string, newPass: string): Promise<void> {
-    if (typeof oldPass !== 'string') {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid old pass type '${typeof oldPass}'`)
-    }
-    if (typeof newPass !== 'string') {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid new pass type '${typeof newPass}'`)
-    }
-    if (newPass.length < 20) {
-      await randomDelay()
-      throw new InvalidParametersError(`Invalid pass length ${newPass.length}`)
-    }
-    this.log('recreating keychain')
-    const cached = privates.get(this)
-
-    if (cached == null) {
-      throw new InvalidParametersError('dek missing')
+  async rotateKeychainPass (password: string, options?: AbortOptions): Promise<void> {
+    if (typeof password !== 'string') {
+      throw new InvalidParametersError(`Invalid new pass type '${typeof password}'`)
     }
 
-    const oldDek = cached.dek
-    this.init.pass = newPass
-    const newDek = newPass != null && this.init.dek?.salt != null
-      ? pbkdf2(
-        newPass,
-        this.init.dek.salt,
-        this.init.dek?.iterationCount,
-        this.init.dek?.keyLength,
-        this.init.dek?.hash)
-      : ''
-    privates.set(this, { dek: newDek })
-    const keys = await this.listKeys()
-    for (const key of keys) {
-      const res = await this.components.datastore.get(DsName(key.name))
-      const pem = uint8ArrayToString(res)
-      const privateKey = await importPrivateKey(pem, oldDek)
-      const password = newDek.toString()
-      const keyAsPEM = await exportPrivateKey(privateKey, password, privateKey.type === 'RSA' ? 'pkcs-8' : 'libp2p-key')
-
-      // Update stored key
-      const batch = this.components.datastore.batch()
-      const keyInfo = {
-        name: key.name,
-        id: key.id
-      }
-      batch.put(DsName(key.name), uint8ArrayFromString(keyAsPEM))
-      batch.put(DsInfoName(key.name), uint8ArrayFromString(JSON.stringify(keyInfo)))
-      await batch.commit()
+    if (password.length < MIN_PASS_LENGTH) {
+      throw new InvalidParametersError(`Invalid pass length ${password.length}, must be at least ${MIN_PASS_LENGTH}`)
     }
-    this.log('keychain reconstructed')
+
+    const oldDek = await this.ready(options)
+    const newDek = await deriveDek(password, this.dekOptions)
+
+    const batch = this.components.datastore.batch()
+
+    // re-encrypt the stored bytes without loading the keys, so keys of types
+    // that are not configured rotate too and /info entries are unchanged
+    for await (const { key, value } of this.components.datastore.query({ prefix: keyPrefix }, options)) {
+      const plainText = await decryptEntry(oldDek, uint8ArrayToString(value))
+      options?.signal?.throwIfAborted()
+
+      batch.put(key, uint8ArrayFromString(await encryptEntry(newDek, plainText)))
+    }
+
+    await batch.commit(options)
+    this.dek = newDek
+  }
+
+  async loadPublicKeyFromProtobuf (buf: Uint8Array, options?: AbortOptions): Promise<PublicKey> {
+    const pb = PublicKeyMessage.decode(buf)
+
+    if (pb.Type == null) {
+      throw new InvalidParametersError('Protobuf was missing Type')
+    }
+
+    const crypto = await this.components.getCrypto(pb.Type, options)
+
+    return crypto.publicKeyFromProtobuf(buf, options)
   }
 }

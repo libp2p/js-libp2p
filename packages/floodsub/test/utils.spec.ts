@@ -1,4 +1,5 @@
-import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { createCryptoLoader, generateKeyPair } from '@libp2p/crypto'
+import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
 import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import * as utils from '../src/utils.ts'
@@ -20,7 +21,7 @@ describe('utils', () => {
   })
 
   it('msgId should not generate same ID for two different Uint8Arrays', async () => {
-    const key = await generateKeyPair('RSA', 512)
+    const key = await generateKeyPair('RSA', { bits: 512 })
     const msgId0 = utils.msgId(key.publicKey, 1n)
     const msgId1 = utils.msgId(key.publicKey, 2n)
     expect(msgId0).to.not.deep.equal(msgId1)
@@ -44,7 +45,7 @@ describe('utils', () => {
     const edKey = await generateKeyPair('Ed25519')
     const edPeer = peerIdFromPrivateKey(edKey)
 
-    const rsaKey = await generateKeyPair('RSA', 512)
+    const rsaKey = await generateKeyPair('RSA', { bits: 512 })
     const rsaPeer = peerIdFromPrivateKey(rsaKey)
 
     const m: Message[] = [{
@@ -54,7 +55,7 @@ describe('utils', () => {
       data: new Uint8Array(),
       sequenceNumber: 1n,
       signature: new Uint8Array(),
-      key: edPeer.publicKey
+      key: edKey.publicKey
     }, {
       type: 'signed',
       from: rsaPeer,
@@ -70,14 +71,14 @@ describe('utils', () => {
       data: new Uint8Array(),
       sequenceNumber: utils.bigIntToBytes(1n),
       signature: new Uint8Array(),
-      key: publicKeyToProtobuf(edPeer.publicKey)
+      key: edPeer.publicKey
     }, {
       from: rsaPeer.toMultihash().bytes,
       topic: '',
       data: new Uint8Array(),
       sequenceNumber: utils.bigIntToBytes(1n),
       signature: new Uint8Array(),
-      key: publicKeyToProtobuf(rsaKey.publicKey)
+      key: rsaKey.publicKey.toProtobuf()
     }]
     for (let i = 0; i < m.length; i++) {
       expect(utils.toRpcMessage(m[i])).to.deep.equal(expected[i])
@@ -100,10 +101,11 @@ describe('utils', () => {
   })
 
   it('ensures message is signed if public key is extractable', async () => {
-    const dummyKeyPair = await generateKeyPair('RSA', 1024)
+    const dummyKeyPair = await generateKeyPair('RSA', { bits: 1024 })
     const dummyPeerID = peerIdFromPrivateKey(dummyKeyPair)
 
-    const secp256k1Key = await generateKeyPair('secp256k1')
+    const getCrypto = createCryptoLoader([secp256k1Crypto()])
+    const secp256k1Key = await generateKeyPair('secp256k1', { getCrypto })
     const secp256k1Peer = peerIdFromPrivateKey(secp256k1Key)
 
     const cases: PubSubRPCMessage[] = [
@@ -127,7 +129,7 @@ describe('utils', () => {
         data: new Uint8Array(0),
         sequenceNumber: utils.bigIntToBytes(1n),
         signature: new Uint8Array(0),
-        key: publicKeyToProtobuf(dummyKeyPair.publicKey)
+        key: dummyKeyPair.publicKey.toProtobuf()
       },
       {
         from: (peerIdFromPrivateKey(await generateKeyPair('Ed25519'))).toMultihash().bytes,
@@ -139,7 +141,7 @@ describe('utils', () => {
     ]
 
     const expected = ['signed', 'unsigned', 'signed', 'signed']
-    const actual = (await Promise.all(cases.map(utils.toMessage))).map(m => m.type)
+    const actual = (await Promise.all(cases.map(async c => utils.toMessage(c, { getCrypto })))).map(m => m.type)
 
     expect(actual).to.deep.equal(expected)
   })

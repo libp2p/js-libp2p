@@ -48,12 +48,14 @@
     "test:electron-main": "aegir test -t electron-main"
   },
   "dependencies": {
-    "@libp2p/crypto": "^5.2.0",
     "@libp2p/interface": "^3.4.0",
+    "@noble/hashes": "^2.0.1",
     "multiformats": "^14.0.0",
+    "uint8-varint": "^3.0.0",
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
+    "@libp2p/crypto": "^5.2.0",
     "aegir": "^48.1.1",
     "sinon": "^22.0.0"
   },

@@ -1,6 +1,5 @@
 /* eslint max-depth: ["error", 6] */
 
-import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import {
   PSMessage
 } from '@libp2p/daemon-protocol'
@@ -58,7 +57,7 @@ export class PubSubOperations {
             seqno: msg.sequenceNumber == null ? undefined : uint8ArrayFromString(msg.sequenceNumber.toString(16).padStart(16, '0'), 'base16'),
             topicIDs: [msg.topic],
             signature: msg.signature,
-            key: publicKeyToProtobuf(msg.key)
+            key: msg.key.toProtobuf()
           }).subarray())
         } else {
           onMessage.push(PSMessage.encode({

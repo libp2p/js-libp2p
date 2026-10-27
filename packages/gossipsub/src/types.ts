@@ -149,7 +149,10 @@ export enum ValidateError {
   /// [`crate::behaviour::MessageAuthenticity::Anonymous`].
   FromPresent = 'from_present',
   /// The data transformation failed.
-  TransformFailed = 'transform_failed'
+  TransformFailed = 'transform_failed',
+  /// No crypto is configured for the author's key type. Not the sender's
+  /// fault, the message is ignored rather than rejected.
+  UnsupportedKeyType = 'unsupported_key_type'
 }
 
 export enum MessageStatus {

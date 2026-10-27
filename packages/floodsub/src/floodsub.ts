@@ -345,7 +345,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
         }
 
         try {
-          const msg = await toMessage(message)
+          const msg = await toMessage(message, { getCrypto: this.components.getCrypto })
 
           await this.processMessage(peerStream.peerId, msg)
         } catch (err: any) {
@@ -529,7 +529,7 @@ export class FloodSub extends TypedEventEmitter<FloodSubEvents> implements Flood
           throw new InvalidMessageError('StrictSigning: Signing required and no sequenceNumber was present')
         }
 
-        if (!(await verifySignature(message, this.encodeMessage.bind(this)))) {
+        if (!(await verifySignature(message, this.encodeMessage.bind(this), { getCrypto: this.components.getCrypto }))) {
           throw new InvalidMessageError('StrictSigning: Invalid message signature')
         }
 

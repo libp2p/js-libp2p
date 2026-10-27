@@ -172,6 +172,7 @@ export class Noise implements INoiseConnection {
       result = await performHandshakeInitiator({
         connection,
         privateKey,
+        getCrypto: this.components.getCrypto,
         remotePeer,
         log: log.newScope('xxhandshake'),
         crypto: this.crypto,
@@ -209,6 +210,7 @@ export class Noise implements INoiseConnection {
       result = await performHandshakeResponder({
         connection,
         privateKey,
+        getCrypto: this.components.getCrypto,
         remotePeer,
         log: log.newScope('xxhandshake'),
         crypto: this.crypto,

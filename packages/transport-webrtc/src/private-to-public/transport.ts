@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { generateKeyPair, privateKeyToCryptoKeyPair } from '@libp2p/crypto/keys'
+import { ecdsaCrypto } from '@libp2p/crypto'
 import { InvalidParametersError, NotFoundError, NotStartedError } from '@libp2p/interface'
 import { WebRTCDirect } from '@multiformats/multiaddr-matcher'
 import { BasicConstraintsExtension, X509Certificate, X509CertificateGenerator } from '@peculiar/x509'
@@ -175,7 +175,7 @@ export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implemen
       }
 
       this.log.trace('generating private key')
-      this.privateKey = await generateKeyPair('ECDSA', 'P-256')
+      this.privateKey = await ecdsaCrypto().generatePrivateKey({ curve: 'P-256' })
 
       if (keychain != null) {
         this.log.trace('storing private key')
@@ -195,7 +195,7 @@ export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implemen
 
     let cert: X509Certificate
     const dsKey = new Key(this.certInit.certificateDatastoreKey ?? DEFAULT_CERTIFICATE_DATASTORE_KEY)
-    const keyPair = await privateKeyToCryptoKeyPair(privateKey)
+    const keyPair = await toCryptoKeyPair(privateKey)
 
     try {
       if (forceRenew === true) {
@@ -318,4 +318,13 @@ function isTransportCertificate (obj?: any): obj is TransportCertificate {
   }
 
   return typeof obj.privateKey === 'string' && typeof obj.pem === 'string' && typeof obj.certhash === 'string'
+}
+
+async function toCryptoKeyPair (privateKey: PrivateKey): Promise<CryptoKeyPair> {
+  const algorithm = { name: 'ECDSA', namedCurve: 'P-256' }
+
+  return {
+    privateKey: await crypto.subtle.importKey('jwk', privateKey.toJWK(), algorithm, true, ['sign']),
+    publicKey: await crypto.subtle.importKey('jwk', privateKey.publicKey.toJWK(), algorithm, true, ['verify'])
+  }
 }

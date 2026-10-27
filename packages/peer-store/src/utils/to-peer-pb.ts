@@ -1,5 +1,4 @@
 /* eslint-disable complexity */
-import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.ts'
@@ -136,11 +135,11 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
   let publicKey: Uint8Array | undefined
 
   if (existingPeer?.id.publicKey != null) {
-    publicKey = publicKeyToProtobuf(existingPeer.id.publicKey)
+    publicKey = existingPeer.id.publicKey
   } else if (data.publicKey != null) {
-    publicKey = publicKeyToProtobuf(data.publicKey)
+    publicKey = data.publicKey.toProtobuf()
   } else if (peerId.publicKey != null) {
-    publicKey = publicKeyToProtobuf(peerId.publicKey)
+    publicKey = peerId.publicKey
   }
 
   const output: PeerPB = {
