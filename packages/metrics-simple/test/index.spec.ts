@@ -8,6 +8,33 @@ import type { Metrics } from '@libp2p/interface'
 describe('simple-metrics', () => {
   let s: Metrics
 
+  it('should support metric names and labels that match object prototype properties', async () => {
+    const deferred = pDefer<Record<string, any>>()
+    s = simpleMetrics({ onMetrics: deferred.resolve, intervalMs: 10 })({
+      logger: defaultLogger()
+    })
+    s.registerCounter('__proto__').increment(7)
+    const group = s.registerMetricGroup('group')
+    const counters = s.registerCounterGroup('counters')
+    const histograms = s.registerHistogramGroup('histograms')
+    const summaries = s.registerSummaryGroup('summaries')
+    for (const label of ['constructor', 'toString', '__proto__']) {
+      group.update({ [label]: 2 })
+      counters.increment({ [label]: 3 })
+      histograms.observe({ [label]: 4 })
+      summaries.observe({ [label]: 5 })
+    }
+    await start(s)
+    const metrics = await deferred.promise
+    expect(metrics).to.have.own.property('__proto__', 7)
+    for (const label of ['constructor', 'toString', '__proto__']) {
+      expect(metrics.group[label]).to.equal(2)
+      expect(metrics.counters[label]).to.equal(3)
+      expect(metrics.histograms[label].count).to.equal(1)
+      expect(metrics.summaries[label].count).to.equal(1)
+    }
+  })
+
   afterEach(async () => {
     if (s != null) {
       await stop(s)
