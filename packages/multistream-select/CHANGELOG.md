@@ -19,6 +19,13 @@
   * devDependencies
     * @libp2p/logger bumped from ^4.0.1 to ^4.0.2
 
+## [7.0.33](https://github.com/libp2p/js-libp2p/compare/multistream-select-v7.0.32...multistream-select-v7.0.33) (2026-10-27)
+
+
+### Dependencies
+
+* bump p-timeout from 7.0.2 to 8.0.0 ([#3678](https://github.com/libp2p/js-libp2p/issues/3678)) ([93f9eba](https://github.com/libp2p/js-libp2p/commit/93f9eba3d4e239c82c9a2ba1a222a8f2d156e2b0))
+
 ## [7.0.32](https://github.com/libp2p/js-libp2p/compare/multistream-select-v7.0.31...multistream-select-v7.0.32) (2026-10-19)
 
 
