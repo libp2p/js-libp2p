@@ -111,6 +111,16 @@
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
     * libp2p bumped from ^1.2.2 to ^1.2.3
 
+## [7.0.3](https://github.com/libp2p/js-libp2p/compare/webrtc-v7.0.2...webrtc-v7.0.3) (2026-10-27)
+
+
+### Dependencies
+
+* bump p-timeout from 7.0.2 to 8.0.0 ([#3678](https://github.com/libp2p/js-libp2p/issues/3678)) ([93f9eba](https://github.com/libp2p/js-libp2p/commit/93f9eba3d4e239c82c9a2ba1a222a8f2d156e2b0))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/noise bumped from ^17.0.7 to ^17.0.8
+
 ## [7.0.2](https://github.com/libp2p/js-libp2p/compare/webrtc-v7.0.1...webrtc-v7.0.2) (2026-10-19)
 
 

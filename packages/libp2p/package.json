@@ -1,6 +1,6 @@
 {
   "name": "libp2p",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "JavaScript implementation of libp2p, a modular peer to peer network stack",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/libp2p#readme",
@@ -87,7 +87,7 @@
     "@libp2p/interface": "^3.4.0",
     "@libp2p/interface-internal": "^3.2.2",
     "@libp2p/logger": "^6.2.16",
-    "@libp2p/multistream-select": "^7.0.32",
+    "@libp2p/multistream-select": "^7.0.33",
     "@libp2p/peer-collections": "^7.0.32",
     "@libp2p/peer-id": "^6.0.18",
     "@libp2p/peer-store": "^12.0.32",

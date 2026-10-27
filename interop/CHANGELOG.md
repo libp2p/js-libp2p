@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.46](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.45...transport-interop-libp2p-main-v1.0.46) (2026-10-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @libp2p/mplex bumped from ^12.0.36 to ^12.0.37
+    * @libp2p/noise bumped from ^17.0.7 to ^17.0.8
+    * @libp2p/webrtc bumped from ^7.0.2 to ^7.0.3
+    * @libp2p/webtransport bumped from ^6.0.44 to ^6.0.45
+    * @libp2p/yamux bumped from ^8.0.7 to ^8.0.8
+    * libp2p bumped from ^3.5.1 to ^3.5.2
+
 ## [1.0.45](https://github.com/libp2p/js-libp2p/compare/transport-interop-libp2p-main-v1.0.44...transport-interop-libp2p-main-v1.0.45) (2026-10-19)
 
 

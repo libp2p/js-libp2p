@@ -1,5 +1,12 @@
 # Changelog
 
+## [17.2.2](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.2.1...gossipsub-v17.2.2) (2026-10-27)
+
+
+### Bug Fixes
+
+* **gossipsub:** cap prune backoff and process all prune entries ([#3682](https://github.com/libp2p/js-libp2p/issues/3682)) ([0d3ca9f](https://github.com/libp2p/js-libp2p/commit/0d3ca9f0ce5fde129c7c2599fa848e4da6caf3f6))
+
 ## [17.2.1](https://github.com/libp2p/js-libp2p/compare/gossipsub-v17.2.0...gossipsub-v17.2.1) (2026-10-19)
 
 
