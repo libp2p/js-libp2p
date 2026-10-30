@@ -67,6 +67,14 @@ export class PersistentStore {
   private readonly maxAddressAge: number
   private readonly maxPeerAge: number
 
+  /**
+   * Peers with at least one open connection, each with the generation of its
+   * most recent connect so a disconnect that completes after a reconnect does
+   * not forget the newer connection
+   */
+  private readonly connected: PeerMap<number>
+  private lastGeneration: number
+
   constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
     this.log = components.logger.forComponent('libp2p:peer-store')
     this.peerId = components.peerId
@@ -78,6 +86,64 @@ export class PersistentStore {
     })
     this.maxAddressAge = init.maxAddressAge ?? MAX_ADDRESS_AGE
     this.maxPeerAge = init.maxPeerAge ?? MAX_PEER_AGE
+    this.connected = new PeerMap()
+    this.lastGeneration = 0
+  }
+
+  /**
+   * Record that `peerId` has an open connection. Until it disconnects its
+   * record is not expired, however old its `updated` stamp is
+   */
+  markConnected (peerId: PeerId): void {
+    this.connected.set(peerId, ++this.lastGeneration)
+  }
+
+  /**
+   * The generation of `peerId`'s current connection, if it has one. Read it
+   * when the disconnect is observed and pass it to `markDisconnected`, so a
+   * reconnect that happens in between is not mistaken for the closed connection
+   */
+  connectionGeneration (peerId: PeerId): number | undefined {
+    return this.connected.get(peerId)
+  }
+
+  /**
+   * Record that the connection of `generation` to `peerId` has closed. The
+   * record's `updated` stamp is set to now before the peer stops being treated
+   * as connected, so its age is measured from the moment it was last known to
+   * be live, and a read made while the stamp is being written still finds the
+   * record
+   */
+  async markDisconnected (peerId: PeerId, generation: number | undefined, options?: AbortOptions): Promise<void> {
+    try {
+      await this.touch(peerId, options)
+    } finally {
+      if (this.connected.get(peerId) === generation) {
+        this.connected.delete(peerId)
+      }
+    }
+  }
+
+  /**
+   * Set the stored record's `updated` stamp to now without decoding its
+   * addresses. Does nothing if no record is stored
+   */
+  async touch (peerId: PeerId, options?: AbortOptions): Promise<void> {
+    const key = peerIdToDatastoreKey(peerId)
+    let peer: PeerPB
+
+    try {
+      peer = PeerPB.decode(await this.datastore.get(key, options))
+    } catch (err: any) {
+      if (err.name === 'NotFoundError') {
+        return
+      }
+
+      throw err
+    }
+
+    peer.updated = Date.now()
+    await this.datastore.put(key, PeerPB.encode(peer), options)
   }
 
   getLock (peerId: PeerId): Lock {
@@ -276,6 +342,11 @@ export class PersistentStore {
     }
 
     if (this.peerId.equals(peerId)) {
+      return false
+    }
+
+    // an open connection is proof the peer is live
+    if (this.connected.has(peerId)) {
       return false
     }
 

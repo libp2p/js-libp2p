@@ -134,6 +134,84 @@ describe('connection', () => {
     expect(connection.streams).to.include(stream)
   })
 
+  it('should record an outbound stream protocol in the peer store once per connection', async () => {
+    const otherProtocol = '/other/1.0.0'
+    registrar.getHandler.withArgs(otherProtocol).returns({
+      handler: () => {},
+      options: {}
+    })
+    registrar.getMiddleware.withArgs(otherProtocol).returns([])
+
+    const connection = createConnection(components, init)
+
+    await connection.newStream([ECHO_PROTOCOL])
+    await connection.newStream([ECHO_PROTOCOL])
+
+    expect(peerStore.merge.callCount).to.equal(1)
+    expect(peerStore.merge.getCall(0).args.slice(0, 2)).to.deep.equal([init.remotePeer, {
+      protocols: [ECHO_PROTOCOL]
+    }])
+
+    await connection.newStream([otherProtocol])
+
+    expect(peerStore.merge.callCount).to.equal(2)
+    expect(peerStore.merge.getCall(1).args[1]).to.deep.equal({
+      protocols: [otherProtocol]
+    })
+  })
+
+  it('should record a protocol again after recording it failed', async () => {
+    peerStore.merge.onFirstCall().rejects(new Error('Urk!'))
+
+    const connection = createConnection(components, init)
+
+    await expect(connection.newStream([ECHO_PROTOCOL])).to.eventually.be.rejected
+      .with.property('message', 'Urk!')
+
+    await connection.newStream([ECHO_PROTOCOL])
+
+    expect(peerStore.merge.callCount).to.equal(2)
+  })
+
+  it('should record an inbound stream protocol in the peer store once per connection', async () => {
+    const streamProtocol = '/test/protocol'
+
+    registrar.getMiddleware.withArgs(streamProtocol).returns([])
+    registrar.getHandler.withArgs(streamProtocol).returns({
+      handler: () => {},
+      options: {}
+    })
+
+    const muxer = stubInterface<StreamMuxer>({
+      streams: []
+    })
+
+    createConnection(components, {
+      ...init,
+      muxer
+    })
+
+    const onIncomingStream = muxer.addEventListener.getCall(0).args[1]
+
+    if (typeof onIncomingStream !== 'function') {
+      throw new Error('Stream handler was not function')
+    }
+
+    for (let i = 0; i < 2; i++) {
+      onIncomingStream(new CustomEvent('stream', {
+        detail: stubInterface<Stream>({
+          log: defaultLogger().forComponent('stream'),
+          protocol: streamProtocol
+        })
+      }))
+
+      // incoming stream is opened asynchronously
+      await delay(50)
+    }
+
+    expect(peerStore.merge.callCount).to.equal(1)
+  })
+
   it('should be able to close the connection after being created', async () => {
     const connection = createConnection(components, init)
     expect(connection).to.have.property('status', 'open')
