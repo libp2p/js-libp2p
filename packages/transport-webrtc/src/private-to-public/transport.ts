@@ -77,6 +77,8 @@ interface CertInit {
   certificateRenewalThreshold?: number
 }
 
+const MAX_TIMEOUT = 2 ** 31 - 1
+
 export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implements Transport, Startable {
   private certificate?: TransportCertificate
   private privateKey?: PrivateKey
@@ -223,7 +225,7 @@ export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implemen
 
     this.log('will renew TLS certificate after %d ms', renewTime)
 
-    this.renewCertificateTask = setTimeout(() => {
+    const renew = (): void => {
       this.log('renewing TLS certificate')
       this.getCertificate(true)
         .then(cert => {
@@ -235,7 +237,15 @@ export class WebRTCDirectTransport extends WebRTCDirectBrowserTransport implemen
         .catch(err => {
           this.log.error('could not renew certificate - %e', err)
         })
-    }, renewTime)
+    }
+
+    // setTimeout fires at once for any delay over 2^31 - 1 ms, so a long
+    // certificate lifespan re-arms the timer in steps no longer than that
+    const schedule = (ms: number): void => {
+      this.renewCertificateTask = setTimeout(ms > MAX_TIMEOUT ? () => { schedule(ms - MAX_TIMEOUT) } : renew, Math.min(ms, MAX_TIMEOUT))
+    }
+
+    schedule(renewTime)
 
     return {
       pem: cert.toString('pem'),
