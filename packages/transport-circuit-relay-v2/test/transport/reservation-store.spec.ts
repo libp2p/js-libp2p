@@ -117,6 +117,307 @@ describe('transport reservation-store', () => {
     })).to.be.true()
   })
 
+  it('should not dial a queued discovered relay once enough relays are found', async () => {
+    const relayA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayB = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    addConnectedRelay(relayA, 300)
+    addConnectedRelay(relayB, 300)
+
+    store = new ReservationStore(components, { reservationConcurrency: 1 })
+    store.reserveRelay()
+
+    const a = store.addRelay(relayA, 'discovered')
+    const b = store.addRelay(relayB, 'discovered')
+
+    await expect(a).to.eventually.have.property('relay').that.equals(relayA)
+    await expect(Promise.race([b, delay(1000).then(() => 'hung')])).to.eventually.be.rejected
+      .with.property('name', 'HadEnoughRelaysError')
+    expect(components.connectionManager.openConnection.calledWith(relayB)).to.be.false()
+  })
+
+  it('should reserve a configured relay that joins a queued discovered attempt', async () => {
+    const relayA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayC = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const hold = Promise.withResolvers<void>()
+    const connectionA = addConnectedRelay(relayA, 300)
+    const respondA = respondToReserve(relayA, 300)
+    connectionA.newStream.callsFake(async () => {
+      await hold.promise
+      return respondA()
+    })
+    addConnectedRelay(relayC, 300)
+
+    store = new ReservationStore(components, { reservationConcurrency: 1 })
+    store.reserveRelay()
+
+    // relay C is queued behind relay A, which takes the only pending reservation
+    const a = store.addRelay(relayA, 'discovered')
+    void store.addRelay(relayC, 'discovered').catch(() => {})
+    const c = store.addRelay(relayC, 'configured')
+
+    hold.resolve()
+
+    await expect(a).to.eventually.have.property('relay').that.equals(relayA)
+    await expect(Promise.race([c, delay(1000).then(() => 'hung')])).to.eventually.have.nested.property('details.type', 'configured')
+  })
+
+  it('should reserve a configured relay that joins after a discovered attempt has reserved', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    addConnectedRelay(relayPeer, 300)
+
+    // hold the attempt after the reservation is stored
+    const tagging = Promise.withResolvers<void>()
+    const hold = Promise.withResolvers<void>()
+    components.peerStore.merge.withArgs(relayPeer).callsFake(async () => {
+      tagging.resolve()
+      await hold.promise
+      return stubInterface<Peer>()
+    })
+
+    store.reserveRelay()
+
+    const notEnough = Promise.withResolvers<void>()
+    store.addEventListener('relay:not-enough-relays', () => {
+      notEnough.resolve()
+    })
+
+    const discovered = store.addRelay(relayPeer, 'discovered')
+    await tagging.promise
+    const configured = store.addRelay(relayPeer, 'configured')
+
+    hold.resolve()
+
+    await expect(Promise.race([configured, delay(1000).then(() => 'hung')])).to.eventually.have.nested.property('details.type', 'configured')
+    await expect(discovered).to.eventually.have.nested.property('details.type', 'configured')
+
+    // the pending reservation it was given is free again
+    await expect(Promise.race([notEnough.promise, delay(1000).then(() => 'hung')])).to.eventually.be.undefined()
+  })
+
+  it('should keep a configured reservation configured when a discovered attempt refreshes it', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    addConnectedRelay(relayPeer, 300)
+
+    await store.addRelay(relayPeer, 'configured')
+
+    // there are no pending reservations for a discovered relay
+    await expect(store.addRelay(relayPeer, 'discovered')).to.eventually.have.nested.property('details.type', 'configured')
+    expect(store.hasReservation(relayPeer)).to.equal(true)
+  })
+
+  it('should free the pending reservation of a discovered relay that becomes configured', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    addConnectedRelay(relayPeer, 300)
+
+    store.reserveRelay()
+    await store.addRelay(relayPeer, 'discovered')
+
+    const notEnough = Promise.withResolvers<void>()
+    store.addEventListener('relay:not-enough-relays', () => {
+      notEnough.resolve()
+    })
+
+    await expect(store.addRelay(relayPeer, 'configured')).to.eventually.have.nested.property('details.type', 'configured')
+
+    // the pending reservation it held is free again
+    await expect(Promise.race([notEnough.promise, delay(1000).then(() => 'hung')])).to.eventually.be.undefined()
+  })
+
+  it('should not arm a refresh for a discovered reservation that was not needed', async () => {
+    const relayA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayB = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const holdA = Promise.withResolvers<void>()
+    const holdB = Promise.withResolvers<void>()
+    const runningB = Promise.withResolvers<void>()
+    const connectionA = addConnectedRelay(relayA, 300)
+    const respondA = respondToReserve(relayA, 300)
+    connectionA.newStream.callsFake(async () => {
+      await holdA.promise
+      return respondA()
+    })
+    const connectionB = addConnectedRelay(relayB, 300)
+    const respondB = respondToReserve(relayB, 300)
+    connectionB.newStream.callsFake(async () => {
+      runningB.resolve()
+      await holdB.promise
+      return respondB()
+    })
+
+    store = new ReservationStore(components, { reservationConcurrency: 2 })
+    store.reserveRelay()
+
+    const setTimeoutSpy = Sinon.spy(globalThis, 'setTimeout')
+
+    const a = store.addRelay(relayA, 'discovered')
+    const b = store.addRelay(relayB, 'discovered')
+    await runningB.promise
+
+    // relay A takes the only pending reservation, relay B reserves but is not needed
+    holdA.resolve()
+    await expect(a).to.eventually.have.property('relay').that.equals(relayA)
+    holdB.resolve()
+    await expect(b).to.eventually.be.rejected
+      .with.property('name', 'HadEnoughRelaysError')
+
+    // only relay A's reservation is refreshed
+    const refreshes = setTimeoutSpy.getCalls().filter(call => call.args[1] === 30_000)
+    expect(refreshes).to.have.lengthOf(1)
+  })
+
+  it('should check the reservation count after redialing old relays when one fails', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    components.peerStore.all.resolves([{
+      id: relayPeer,
+      addresses: [],
+      metadata: new Map(),
+      tags: new Map([[KEEP_ALIVE_TAG, { value: 1 }]]),
+      protocols: []
+    }])
+    components.connectionManager.openConnection.withArgs(relayPeer).rejects(Object.assign(new Error('dial failed'), { name: 'DialError' }))
+
+    store.reserveRelay()
+
+    const notEnough = Promise.withResolvers<void>()
+    store.addEventListener('relay:not-enough-relays', () => {
+      notEnough.resolve()
+    })
+
+    await start(store)
+
+    await expect(Promise.race([notEnough.promise, delay(1000).then(() => 'hung')])).to.eventually.be.undefined()
+  })
+
+  it('should only apply the queue limit to new discovered relays', async () => {
+    const relayA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayB = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayC = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const hold = Promise.withResolvers<void>()
+    const connectionA = addConnectedRelay(relayA, 300)
+    const respondA = respondToReserve(relayA, 300)
+    connectionA.newStream.callsFake(async () => {
+      await hold.promise
+      return respondA()
+    })
+    addConnectedRelay(relayB, 300)
+    addConnectedRelay(relayC, 300)
+
+    store = new ReservationStore(components, {
+      reservationConcurrency: 1,
+      maxReservationQueueLength: 0
+    })
+    store.reserveRelay()
+    store.reserveRelay()
+
+    // relay A fills the queue
+    const a = store.addRelay(relayA, 'discovered')
+
+    await expect(store.addRelay(relayB, 'discovered')).to.eventually.be.rejected
+      .with.property('name', 'RelayQueueFullError')
+
+    const c = store.addRelay(relayC, 'configured')
+
+    hold.resolve()
+
+    await expect(a).to.eventually.have.property('relay').that.equals(relayA)
+    await expect(c).to.eventually.have.nested.property('details.type', 'configured')
+  })
+
+  it('should refresh a reservation while the queue is full', async () => {
+    const relayA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayR = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const hold = Promise.withResolvers<void>()
+    const connectionA = addConnectedRelay(relayA, 300)
+    const respondA = respondToReserve(relayA, 300)
+    connectionA.newStream.callsFake(async () => {
+      await hold.promise
+      return respondA()
+    })
+    addConnectedRelay(relayR, 300)
+
+    store = new ReservationStore(components, {
+      reservationConcurrency: 1,
+      maxReservationQueueLength: 0
+    })
+    store.reserveRelay()
+    store.reserveRelay()
+
+    await store.addRelay(relayR, 'discovered')
+
+    // relay A fills the queue
+    const a = store.addRelay(relayA, 'discovered')
+
+    // relay R's reservation expires soon so this refreshes it
+    const refresh = store.addRelay(relayR, 'discovered')
+
+    hold.resolve()
+
+    await expect(a).to.eventually.have.property('relay').that.equals(relayA)
+    await expect(refresh).to.eventually.have.property('relay').that.equals(relayR)
+    expect(store.hasReservation(relayR)).to.equal(true)
+  })
+
+  it('should join a queued discovered attempt while the queue is full', async () => {
+    const relayA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayC = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const hold = Promise.withResolvers<void>()
+    const connectionA = addConnectedRelay(relayA, 300)
+    const respondA = respondToReserve(relayA, 300)
+    connectionA.newStream.callsFake(async () => {
+      await hold.promise
+      return respondA()
+    })
+    addConnectedRelay(relayC, 300)
+
+    store = new ReservationStore(components, {
+      reservationConcurrency: 1,
+      maxReservationQueueLength: 1
+    })
+    store.reserveRelay()
+    store.reserveRelay()
+
+    // relay A runs and relay C is queued, which puts the queue over its limit
+    const a = store.addRelay(relayA, 'discovered')
+    void store.addRelay(relayC, 'discovered').catch(() => {})
+
+    // joining adds nothing to the queue so it is not rejected as full
+    const c = store.addRelay(relayC, 'discovered')
+
+    hold.resolve()
+
+    await expect(a).to.eventually.have.property('relay').that.equals(relayA)
+    await expect(c).to.eventually.have.property('relay').that.equals(relayC)
+  })
+
+  it('should reserve a configured relay that was marked invalid as a discovered relay', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    components.connectionManager.openConnection.withArgs(relayPeer).rejects(Object.assign(new Error('dial failed'), { name: 'DialError' }))
+
+    store.reserveRelay()
+
+    await expect(store.addRelay(relayPeer, 'discovered')).to.eventually.be.rejected
+      .with.property('name', 'DialError')
+
+    // the relay comes back and is configured
+    addConnectedRelay(relayPeer, 300)
+
+    await expect(store.addRelay(relayPeer, 'configured')).to.eventually.have.nested.property('details.type', 'configured')
+  })
+
+  it('should mark a discovered relay as invalid', async () => {
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    components.connectionManager.openConnection.withArgs(relayPeer).rejects(Object.assign(new Error('dial failed'), { name: 'DialError' }))
+
+    store.reserveRelay()
+
+    await expect(store.addRelay(relayPeer, 'discovered')).to.eventually.be.rejected
+      .with.property('name', 'DialError')
+    await expect(store.addRelay(relayPeer, 'discovered')).to.eventually.be.rejected
+      .with.property('message', 'The relay was previously invalid')
+  })
+
   it('should not drop a still-connected reservation while refreshing it', async () => {
     const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     addConnectedRelay(relayPeer, 300)

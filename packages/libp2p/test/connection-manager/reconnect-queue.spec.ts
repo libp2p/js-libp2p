@@ -1,15 +1,16 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
-import { KEEP_ALIVE, start, stop } from '@libp2p/interface'
+import { AbortError, KEEP_ALIVE, start, stop } from '@libp2p/interface'
 import { peerLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
+import pDefer from 'p-defer'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { ReconnectQueue } from '../../src/connection-manager/reconnect-queue.ts'
-import type { ComponentLogger, Libp2pEvents, PeerStore, Peer } from '@libp2p/interface'
+import type { ComponentLogger, Libp2pEvents, PeerId, PeerStore, Peer } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
 import type { StubbedInstance } from 'sinon-ts'
@@ -138,6 +139,11 @@ describe('reconnect queue', () => {
 
     await start(queue)
 
+    const reconnectFailure = pDefer<PeerId>()
+    components.events.addEventListener('peer:reconnect-failure', (evt) => {
+      reconnectFailure.resolve(evt.detail)
+    })
+
     components.connectionManager.openConnection.withArgs(keepAlivePeer).rejects(new Error('Dial failed'))
 
     components.events.safeDispatchEvent('peer:disconnect', new CustomEvent('peer:disconnect', {
@@ -154,5 +160,88 @@ describe('reconnect queue', () => {
       retries: 5,
       factor: 1
     })
+
+    await expect(Promise.race([reconnectFailure.promise, delay(1000).then(() => 'hung')])).to.eventually.equal(keepAlivePeer)
+  })
+
+  it('should remove KEEP_ALIVE tags when reconnecting fails with an AbortError', async () => {
+    queue = new ReconnectQueue(components, {
+      retries: 1,
+      retryInterval: 10,
+      backoffFactor: 1
+    })
+
+    const keepAlivePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    components.peerStore.all.resolves([])
+    components.peerStore.get.withArgs(keepAlivePeer).resolves(
+      stubInterface<Peer>({
+        id: keepAlivePeer,
+        tags: new Map([[KEEP_ALIVE, {
+          value: 1
+        }]])
+      })
+    )
+
+    await start(queue)
+
+    const reconnectFailure = pDefer<PeerId>()
+    components.events.addEventListener('peer:reconnect-failure', (evt) => {
+      reconnectFailure.resolve(evt.detail)
+    })
+
+    // a dial to an unreachable address can time out with an AbortError
+    components.connectionManager.openConnection.withArgs(keepAlivePeer).rejects(new AbortError())
+
+    components.events.safeDispatchEvent('peer:disconnect', new CustomEvent('peer:disconnect', {
+      detail: keepAlivePeer
+    }))
+
+    await expect(Promise.race([reconnectFailure.promise, delay(1000).then(() => 'hung')])).to.eventually.equal(keepAlivePeer)
+    expect(components.peerStore.merge.calledWith(keepAlivePeer, {
+      tags: {
+        [KEEP_ALIVE]: undefined
+      }
+    })).to.be.true()
+  })
+
+  it('should not remove KEEP_ALIVE tags when stopped while reconnecting', async () => {
+    queue = new ReconnectQueue(components)
+
+    const keepAlivePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+
+    components.peerStore.all.resolves([])
+    components.peerStore.get.withArgs(keepAlivePeer).resolves(
+      stubInterface<Peer>({
+        id: keepAlivePeer,
+        tags: new Map([[KEEP_ALIVE, {
+          value: 1
+        }]])
+      })
+    )
+
+    const dialing = pDefer()
+
+    components.connectionManager.openConnection.withArgs(keepAlivePeer).callsFake(async (peer, options) => {
+      dialing.resolve()
+
+      return new Promise((resolve, reject) => {
+        options?.signal?.addEventListener('abort', () => {
+          reject(options.signal?.reason)
+        })
+      })
+    })
+
+    await start(queue)
+
+    components.events.safeDispatchEvent('peer:disconnect', new CustomEvent('peer:disconnect', {
+      detail: keepAlivePeer
+    }))
+
+    await dialing.promise
+    await stop(queue)
+    await delay(100)
+
+    expect(components.peerStore.merge.called).to.be.false()
   })
 })
