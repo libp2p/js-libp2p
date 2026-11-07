@@ -27,6 +27,24 @@ import type { Libp2p as Libp2pInterface, Libp2pInit } from './index.ts'
 import type { PeerRouting, ContentRouting, Libp2pEvents, PendingDial, ServiceMap, AbortOptions, ComponentLogger, Logger, Connection, Stream, Metrics, PeerId, PeerInfo, PeerStore, Topology, Libp2pStatus, IsDialableOptions, DialOptions, PublicKey, Ed25519PeerId, Secp256k1PeerId, RSAPublicKey, RSAPeerId, URLPeerId, Ed25519PublicKey, Secp256k1PublicKey, StreamHandler, StreamHandlerOptions, StreamMiddleware, DialTarget, DialProtocolOptions } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 
+function toMiddlewareList (middleware?: StreamMiddleware | readonly StreamMiddleware[]): StreamMiddleware[] {
+  const list = Array.isArray(middleware) ? middleware : [middleware]
+
+  if (!list.every((mw): mw is StreamMiddleware => typeof mw === 'function')) {
+    throw new InvalidParametersError('Middleware must be a function or a list of functions')
+  }
+
+  return list
+}
+
+function secondArgumentError (first: unknown): InvalidParametersError {
+  if (typeof first === 'function' || Array.isArray(first)) {
+    return new InvalidParametersError('Global middleware must be passed as a single argument')
+  }
+
+  return new InvalidParametersError(`Protocol must be a string, got ${first === null ? 'null' : typeof first}`)
+}
+
 export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter<Libp2pEvents> implements Libp2pInterface<T> {
   public peerId: PeerId
   public peerStore: PeerStore
@@ -401,30 +419,34 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     this.components.registrar.unregister(id)
   }
 
-  use (middleware: StreamMiddleware): void
-  use (protocol: string, middleware: StreamMiddleware | StreamMiddleware[]): void
-  use (protocol: string | StreamMiddleware, middleware?: StreamMiddleware | StreamMiddleware[]): void {
-    if (typeof protocol === 'function') {
-      this.components.registrar.use(protocol)
+  use (middleware: StreamMiddleware | readonly StreamMiddleware[]): void
+  use (protocol: string, middleware: StreamMiddleware | readonly StreamMiddleware[]): void
+  use (protocolOrMiddleware: string | StreamMiddleware | readonly StreamMiddleware[], middleware?: StreamMiddleware | readonly StreamMiddleware[]): void {
+    if (typeof protocolOrMiddleware === 'string') {
+      this.components.registrar.use(protocolOrMiddleware, toMiddlewareList(middleware))
       return
     }
 
-    if (middleware == null) {
-      throw new InvalidParametersError('Protocol middleware is required')
+    if (middleware != null) {
+      throw secondArgumentError(protocolOrMiddleware)
     }
 
-    this.components.registrar.use(protocol, Array.isArray(middleware) ? middleware : [middleware])
+    this.components.registrar.use(toMiddlewareList(protocolOrMiddleware))
   }
 
-  unuse (middleware: StreamMiddleware): void
-  unuse (protocol: string): void
-  unuse (protocol: string | StreamMiddleware): void {
-    if (typeof protocol === 'function') {
-      this.components.registrar.unuse(protocol)
+  unuse (middleware: StreamMiddleware | readonly StreamMiddleware[]): void
+  unuse (protocol: string, middleware?: StreamMiddleware | readonly StreamMiddleware[]): void
+  unuse (protocolOrMiddleware: string | StreamMiddleware | readonly StreamMiddleware[], middleware?: StreamMiddleware | readonly StreamMiddleware[]): void {
+    if (typeof protocolOrMiddleware === 'string') {
+      this.components.registrar.unuse(protocolOrMiddleware, middleware == null ? undefined : toMiddlewareList(middleware))
       return
     }
 
-    this.components.registrar.unuse(protocol)
+    if (middleware != null) {
+      throw secondArgumentError(protocolOrMiddleware)
+    }
+
+    this.components.registrar.unuse(toMiddlewareList(protocolOrMiddleware))
   }
 
   async isDialable (multiaddr: Multiaddr, options: IsDialableOptions = {}): Promise<boolean> {
