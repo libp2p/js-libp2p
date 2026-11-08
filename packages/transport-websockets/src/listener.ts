@@ -177,6 +177,14 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     let addr: string | ws.AddressInfo | null
     socket.binaryType = 'arraybuffer'
 
+    // `ws` emits 'error' when the remote breaks the protocol (e.g. a close frame
+    // with a reserved code such as 1006), then closes the socket - without a
+    // listener the error is thrown and takes the whole process down
+    socket.on('error', (err) => {
+      this.log.error('websocket error - %e', err)
+      this.metrics.errors?.increment({ [`${this.addr} inbound_websocket_error`]: true })
+    })
+
     try {
       addr = this.server.address()
 
