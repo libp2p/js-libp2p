@@ -16,6 +16,7 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { setGlobalDispatcher, Agent } from 'undici'
 import { webSockets } from '../src/index.ts'
+import { ConnectionFailedError } from '@libp2p/interface'
 import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -285,6 +286,22 @@ describe('dial', () => {
       controller.abort()
 
       await expect(conn).to.eventually.be.rejected()
+    })
+
+    it('failed dial rejects with an Error, not a raw ErrorEvent', async () => {
+      const ma = multiaddr('/ip4/127.0.0.1/tcp/48322/ws')
+
+      try {
+        await ws.dial(ma, {
+          upgrader,
+          signal: AbortSignal.timeout(5_000)
+        })
+        expect.fail('should have thrown')
+      } catch (err) {
+        expect(err).to.be.an.instanceOf(Error)
+        expect(err).to.be.an.instanceOf(ConnectionFailedError)
+        expect(err).to.have.property('message').that.includes('Could not connect')
+      }
     })
 
     it('should resolve port 0', async () => {
