@@ -157,7 +157,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
         websocket.close()
       } catch {}
 
-      throw err
+      throw new ConnectionFailedError(`Could not connect to ${uri}`, { cause: err })
     }
 
     this.log('connected %s', ma)
