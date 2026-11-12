@@ -743,7 +743,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     const inboundStream = new InboundStream(stream, { maxDataLength: this.opts.maxInboundDataLength })
     this.streamsInbound.set(id, inboundStream)
 
-    this.pipePeerReadStream(peerId, inboundStream.source).catch((err) => { this.log(err) })
+    this.pipePeerReadStream(peerId, inboundStream).catch((err) => { this.log(err) })
   }
 
   /**
@@ -898,9 +898,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /**
    * Responsible for processing each RPC message received by other peers.
    */
-  private async pipePeerReadStream (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>): Promise<void> {
+  private async pipePeerReadStream (peerId: PeerId, inboundStream: InboundStream): Promise<void> {
     try {
-      await pipe(stream, async (source) => {
+      await pipe(inboundStream.source, async (source) => {
         for await (const data of source) {
           try {
             // TODO: Check max gossip message size, before decodeRpc()
@@ -936,7 +936,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       })
     } catch (err) {
       this.metrics?.onPeerReadStreamError()
-      this.handlePeerReadStreamError(err as Error, peerId)
+      this.handlePeerReadStreamError(err as Error, peerId, inboundStream)
     }
   }
 
@@ -944,8 +944,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * Handle error when read stream pipe throws, less of the functional use but more
    * to for testing purposes to spy on the error handling
    */
-  private handlePeerReadStreamError (err: Error, peerId: PeerId): void {
+  private handlePeerReadStreamError (err: Error, peerId: PeerId, inboundStream: InboundStream): void {
     this.log.error(err)
+    // an error on an inbound stream that is no longer the peer's entry ends
+    // that stream alone; the peer and its current inbound stream stay
+    if (this.streamsInbound.get(peerId.toString()) !== inboundStream) {
+      return
+    }
     this.onPeerDisconnected(peerId)
   }
 
