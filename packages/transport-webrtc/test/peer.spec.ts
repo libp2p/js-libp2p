@@ -6,6 +6,7 @@ import { multiaddr } from '@multiformats/multiaddr'
 import { expect } from 'aegir/chai'
 import delay from 'delay'
 import { TypedEventEmitter } from 'main-event'
+import { pEvent } from 'p-event'
 import pRetry from 'p-retry'
 import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
@@ -82,6 +83,7 @@ describe('webrtc basic', () => {
   let initiatorPeerConnection: RTCPeerConnection
 
   afterEach(() => {
+    Sinon.restore()
     initiatorPeerConnection?.close()
     recipient?.peerConnection?.close()
   })
@@ -109,6 +111,62 @@ describe('webrtc basic', () => {
       expect(initiatorPeerConnection.connectionState).eq('connected')
       expect(recipient.peerConnection.connectionState).eq('connected')
     })
+  })
+
+  it('should connect when the recipient closes the init channel first', async () => {
+    ({ initiator, recipient } = await getComponents())
+
+    // no existing connection
+    initiator.connectionManager.getConnections.returns([])
+
+    // transport manager dials recipient
+    initiator.transportManager.dial.resolves(initiator.connection)
+
+    // signaling stream opens successfully
+    initiator.connection.newStream.withArgs(SIGNALING_PROTOCOL).resolves(initiator.stream)
+
+    // the recipient closes the init channel as soon as it arrives, as its muxer
+    // does once the recipient's side is connected
+    recipient.peerConnection.ondatachannel = ({ channel }) => {
+      if (channel.label === 'init') {
+        channel.close()
+      }
+    }
+
+    // the initiator only sees its peer connection connected once the init
+    // channel has closed
+    const createDataChannel = RTCPeerConnection.prototype.createDataChannel
+    Sinon.stub(RTCPeerConnection.prototype, 'createDataChannel').callsFake(function (this: RTCPeerConnection, label, options) {
+      const channel = createDataChannel.call(this, label, options)
+      const closed = pEvent(channel, 'close', {
+        rejectionEvents: []
+      })
+      let onConnectionStateChange: ((event: Event) => void) | null = null
+
+      Object.defineProperty(this, 'onconnectionstatechange', {
+        configurable: true,
+        get: () => null,
+        set: (listener: ((event: Event) => void) | null) => {
+          onConnectionStateChange = listener
+        }
+      })
+
+      this.addEventListener('connectionstatechange', (event) => {
+        void closed.then(() => onConnectionStateChange?.call(this, event))
+      })
+
+      return channel
+    })
+
+    ;[{ peerConnection: initiatorPeerConnection }] = await expect(
+      Promise.all([
+        initiateConnection({
+          ...initiator,
+          signal: AbortSignal.timeout(5_000)
+        }),
+        handleIncomingStream(recipient.stream, recipient.connection, recipient)
+      ])
+    ).to.eventually.be.fulfilled()
   })
 
   it('should survive aborting during connection', async () => {
