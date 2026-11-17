@@ -183,6 +183,88 @@ describe('private-ip', function () {
     }
   })
 
+  it('returns the same result for every spelling of an IPv6 address', function () {
+    // each group is the same address written in different (valid) RFC 4291
+    // section 2.2 forms: compressed, uncompressed, leading zeros, upper case
+    const privateSpellings = [
+      ['::1', '0:0:0:0:0:0:0:1', '0000:0000:0000:0000:0000:0000:0000:0001', '::0001'],
+      ['::', '0::0', '0:0:0:0:0:0:0:0', '0000:0000:0000:0000:0000:0000:0000:0000'],
+      ['::ffff:10.0.0.1', '::FFFF:10.0.0.1', '::ffff:a00:1', '::FFFF:0A00:0001', '0:0:0:0:0:ffff:10.0.0.1', '0:0:0:0:0:ffff:a00:1'],
+      ['2001:db8::1', '2001:0db8::1', '2001:DB8::1', '2001:0db8:0:0:0:0:0:1'],
+      ['fe80::1', 'FE80::1', 'fe80:0:0:0:0:0:0:1', 'fe80:0000:0000:0000:0000:0000:0000:0001'],
+      ['fd00::1', 'FD00::1', 'fd00:0:0:0:0:0:0:1'],
+      ['ff02::1', 'FF02::1', 'ff02:0:0:0:0:0:0:1'],
+      ['100::', '0100::', '100:0:0:0:0:0:0:0'],
+      ['2002::1', '2002:0:0:0:0:0:0:1'],
+      ['2001:20::1', '2001:0020::1', '2001:20:0:0:0:0:0:1']
+    ]
+
+    const publicSpellings = [
+      ['::ffff:8.8.8.8', '::FFFF:8.8.8.8', '::ffff:808:808', '0:0:0:0:0:ffff:808:808'],
+      ['2000::', '2000:0:0:0:0:0:0:0'],
+      ['2606:4700:4700::1111', '2606:4700:4700:0:0:0:0:1111', '2606:4700:4700:0000:0000:0000:0000:1111'],
+      ['2001:db9::', '2001:0db9::', '2001:DB9::', '2001:db9:0:0:0:0:0:0'],
+      ['::1fff:10.0.0.0', '0:0:0:0:0:1fff:a00:0']
+    ]
+
+    for (const spellings of privateSpellings) {
+      for (const ip of spellings) {
+        expect(isPrivateIp(ip)).to.be.true(`isPrivateIp('${ip}') should be true`)
+      }
+    }
+
+    for (const spellings of publicSpellings) {
+      for (const ip of spellings) {
+        expect(isPrivateIp(ip)).to.be.false(`isPrivateIp('${ip}') should be false`)
+      }
+    }
+  })
+
+  it('identifies NAT64 (64:ff9b::/96) addresses in their hex form', function () {
+    // RFC 5952 formatting of 64:ff9b::10.0.0.1 etc, as produced by multiaddr
+    const privateIps = [
+      '64:ff9b::a00:1',
+      '64:ff9b::808:808',
+      '64:ff9b::ffff:ffff',
+      '64:ff9b:0:0:0:0:a00:1',
+      '0064:ff9b:0000:0000:0000:0000:0a00:0001',
+      '64:FF9B::A00:1'
+    ]
+
+    for (const ip of privateIps) {
+      expect(isPrivateIp(ip)).to.be.true(`isPrivateIp('${ip}') should be true`)
+    }
+
+    // not part of 64:ff9b::/96
+    const publicIps = [
+      '64:ff9a::a00:1',
+      '64:ff9c::a00:1',
+      '64:ff9b:0:0:0:1:a00:1',
+      '64:ff9b:1::a00:1'
+    ]
+
+    for (const ip of publicIps) {
+      expect(isPrivateIp(ip)).to.be.false(`isPrivateIp('${ip}') should be false`)
+    }
+  })
+
+  it('identifies Teredo (2001::/32) addresses with non-zero trailing hextets', function () {
+    // RFC 4380 example Teredo address
+    const privateIps = [
+      '2001:0:4136:e378:8000:63bf:3fff:fdd2',
+      '2001:0000:4136:e378:8000:63bf:3fff:fdd2',
+      '2001:0:ffff:ffff:ffff:ffff:ffff:ffff',
+      '2001:0:1::1'
+    ]
+
+    for (const ip of privateIps) {
+      expect(isPrivateIp(ip)).to.be.true(`isPrivateIp('${ip}') should be true`)
+    }
+
+    // 2001:1::/32 is not Teredo
+    expect(isPrivateIp('2001:1:4136:e378:8000:63bf:3fff:fdd2')).to.be.false()
+  })
+
   it('identifies invalid ips', function () {
     for (const ip of invalidIps) {
       expect(isPrivateIp(ip)).to.be.undefined(`isPrivateIp('${ip}') should be undefined`)

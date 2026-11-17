@@ -1,4 +1,5 @@
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
+import { parseIPv6 } from '@chainsafe/is-ip/parse'
 import { Netmask } from 'netmask'
 
 const PRIVATE_IP_RANGES = [
@@ -38,54 +39,84 @@ function ipv4Check (ipAddr: string): boolean {
   return false
 }
 
-function isIpv4MappedIpv6 (ipAddr: string): boolean {
-  return /^::ffff:([0-9a-fA-F]{1,4}):([0-9a-fA-F]{1,4})$/.test(ipAddr)
+/**
+ * An IPv6 prefix, expressed as the first bytes of the address and the number of
+ * significant bits
+ */
+interface Ipv6Prefix {
+  bytes: number[]
+  bits: number
 }
 
 /**
- * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2
+ * Private, reserved or otherwise non-globally-routable IPv6 ranges
+ *
+ * These are matched against the parsed address bytes so the result does not
+ * depend on how the address is spelled (compression, leading zeros, case).
+ *
+ * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.2
+ * @see https://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xhtml
  */
-function ipv4MappedIpv6Check (ipAddr: string): boolean {
-  const parts = ipAddr.split(':')
+const IPV6_PRIVATE_RANGES: Ipv6Prefix[] = [
+  // ::/128 - unspecified address (RFC 4291)
+  { bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], bits: 128 },
+  // ::1/128 - loopback address (RFC 4291)
+  { bytes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], bits: 128 },
+  // 64:ff9b::/96 - IPv4/IPv6 translation (RFC 6052)
+  { bytes: [0x00, 0x64, 0xff, 0x9b, 0, 0, 0, 0, 0, 0, 0, 0], bits: 96 },
+  // 100::/64 - discard-only address block (RFC 6666)
+  { bytes: [0x01, 0x00, 0, 0, 0, 0, 0, 0], bits: 64 },
+  // 2001::/32 - Teredo (RFC 4380)
+  { bytes: [0x20, 0x01, 0, 0], bits: 32 },
+  // 2001:20::/28 - ORCHIDv2 (RFC 7343)
+  { bytes: [0x20, 0x01, 0x00, 0x20], bits: 28 },
+  // 2001:db8::/32 - documentation (RFC 3849)
+  { bytes: [0x20, 0x01, 0x0d, 0xb8], bits: 32 },
+  // 2002::/16 - 6to4 (RFC 3056)
+  { bytes: [0x20, 0x02], bits: 16 },
+  // fc00::/7 - unique local addresses (RFC 4193)
+  { bytes: [0xfc], bits: 7 },
+  // fe80::/10 - link-local unicast (RFC 4291)
+  { bytes: [0xfe, 0x80], bits: 10 },
+  // ff00::/8 - multicast (RFC 4291)
+  { bytes: [0xff], bits: 8 }
+]
 
-  if (parts.length < 2) {
-    return false
+function matchesPrefix (addr: Uint8Array, prefix: Ipv6Prefix): boolean {
+  for (let bit = 0; bit < prefix.bits; bit += 8) {
+    const index = bit / 8
+    const remaining = prefix.bits - bit
+    const mask = remaining >= 8 ? 0xff : (0xff << (8 - remaining)) & 0xff
+
+    if ((addr[index] & mask) !== (prefix.bytes[index] & mask)) {
+      return false
+    }
   }
 
-  const octet34 = parts[parts.length - 1].padStart(4, '0')
-  const octet12 = parts[parts.length - 2].padStart(4, '0')
-
-  const ip4 = `${parseInt(octet12.substring(0, 2), 16)}.${parseInt(octet12.substring(2), 16)}.${parseInt(octet34.substring(0, 2), 16)}.${parseInt(octet34.substring(2), 16)}`
-
-  return ipv4Check(ip4)
+  return true
 }
 
 /**
- * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.2 example 3
+ * Returns true if the address is an IPv4-mapped IPv6 address (::ffff:0:0/96)
+ *
+ * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2
  */
-function isIpv4EmbeddedIpv6 (ipAddr: string): boolean {
-  return /^::ffff:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr)
+function isIpv4MappedIpv6 (addr: Uint8Array): boolean {
+  for (let i = 0; i < 10; i++) {
+    if (addr[i] !== 0) {
+      return false
+    }
+  }
+
+  return addr[10] === 0xff && addr[11] === 0xff
 }
 
-function ipv4EmbeddedIpv6Check (ipAddr: string): boolean {
-  const parts = ipAddr.split(':')
-  const ip4 = parts[parts.length - 1]
+function ipv6Check (addr: Uint8Array): boolean {
+  if (isIpv4MappedIpv6(addr)) {
+    return ipv4Check(`${addr[12]}.${addr[13]}.${addr[14]}.${addr[15]}`)
+  }
 
-  return ipv4Check(ip4)
-}
-
-function ipv6Check (ipAddr: string): boolean {
-  return /^::$/.test(ipAddr) ||
-    /^::1$/.test(ipAddr) ||
-    /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) ||
-    /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2001:2[0-9a-fA-F]:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2001:db8:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2002:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^f[c-d]([0-9a-fA-F]{2,2}):/i.test(ipAddr) ||
-    /^fe[8-9a-bA-B][0-9a-fA-F]:/i.test(ipAddr) ||
-    /^ff([0-9a-fA-F]{2,2}):/i.test(ipAddr)
+  return IPV6_PRIVATE_RANGES.some(range => matchesPrefix(addr, range))
 }
 
 export function isPrivateIp (ip: string): boolean | undefined {
@@ -93,15 +124,11 @@ export function isPrivateIp (ip: string): boolean | undefined {
     return ipv4Check(ip)
   }
 
-  if (isIpv4MappedIpv6(ip)) {
-    return ipv4MappedIpv6Check(ip)
-  }
-
-  if (isIpv4EmbeddedIpv6(ip)) {
-    return ipv4EmbeddedIpv6Check(ip)
-  }
-
   if (isIPv6(ip)) {
-    return ipv6Check(ip)
+    const addr = parseIPv6(ip)
+
+    if (addr != null) {
+      return ipv6Check(addr)
+    }
   }
 }
