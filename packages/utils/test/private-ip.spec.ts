@@ -190,8 +190,8 @@ describe('private-ip', function () {
   })
 
   it('returns the same result for every spelling of an IPv6 address', function () {
-    // each group is the same address written in different (valid) RFC 4291
-    // section 2.2 forms: compressed, uncompressed, leading zeros, upper case
+    // each group is one address in different valid spellings: compressed,
+    // uncompressed, leading zeros, upper case
     const privateSpellings = [
       ['::1', '0:0:0:0:0:0:0:1', '0000:0000:0000:0000:0000:0000:0000:0001', '::0001'],
       ['::', '0::0', '0:0:0:0:0:0:0:0', '0000:0000:0000:0000:0000:0000:0000:0000'],
@@ -227,7 +227,7 @@ describe('private-ip', function () {
   })
 
   it('identifies NAT64 (64:ff9b::/96) addresses in their hex form', function () {
-    // RFC 5952 formatting of 64:ff9b::10.0.0.1 etc, as produced by multiaddr
+    // hex form of 64:ff9b::10.0.0.1 etc, as multiaddr normalizes it
     const privateIps = [
       '64:ff9b::a00:1',
       '64:ff9b::808:808',
@@ -255,7 +255,7 @@ describe('private-ip', function () {
   })
 
   it('identifies Teredo (2001::/32) addresses with non-zero trailing hextets', function () {
-    // RFC 4380 example Teredo address
+    // example Teredo address
     const privateIps = [
       '2001:0:4136:e378:8000:63bf:3fff:fdd2',
       '2001:0000:4136:e378:8000:63bf:3fff:fdd2',
