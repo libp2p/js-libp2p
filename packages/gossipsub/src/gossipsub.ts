@@ -280,12 +280,6 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /** Running total of subscribed-topic bytes per peer, to bound the topics map */
   private readonly peerTopicBytes = new Map<PeerIdStr, number>()
 
-  private heartbeatTimer: {
-    _intervalId: ReturnType<typeof setInterval> | undefined
-    runPeriodically(fn: () => void, period: number): void
-    cancel(): void
-  } | null = null
-
   constructor (components: GossipSubComponents, options: Partial<GossipsubOpts> = {}) {
     super()
 
@@ -554,8 +548,12 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       return
     }
 
-    const { registrarTopologyIds } = this.status
+    const { registrarTopologyIds, heartbeatTimeout } = this.status
     this.status = { code: GossipStatusCode.stopped }
+
+    // cancel the pending heartbeat (or the initial delay timer) so that it
+    // neither runs once more nor keeps the event loop alive
+    clearTimeout(heartbeatTimeout)
 
     if (this.opts.tagMeshPeers) {
       this.removeEventListener('gossipsub:graft', this.tagMeshPeer)
@@ -588,11 +586,6 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     this.peerTopicBytes.clear()
 
     // Gossipsub
-
-    if (this.heartbeatTimer != null) {
-      this.heartbeatTimer.cancel()
-      this.heartbeatTimer = null
-    }
 
     this.score.stop()
 
