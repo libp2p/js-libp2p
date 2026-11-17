@@ -168,7 +168,13 @@ describe('private-ip', function () {
   const invalidIps = [
     '100::ffff::',
     '::ffff:0.0.255.255.255',
-    '::ffff:0.255.255.255.255'
+    '::ffff:0.255.255.255.255',
+    // zone ids are only valid on IPv6
+    '127.0.0.1%eth0',
+    // leading zeros are not allowed in IPv4 octets, mapped or not
+    '127.0.0.01',
+    '::ffff:127.0.0.01',
+    '::ffff:192.168.001.001'
   ]
 
   it('identifies public ips', function () {
