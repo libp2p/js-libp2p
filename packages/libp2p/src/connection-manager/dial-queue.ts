@@ -143,7 +143,7 @@ export class DialQueue {
     const { peerId, multiaddrs } = getPeerAddress(peerIdOrMultiaddr)
 
     if (peerId != null && options.force !== true) {
-      const existingConnection = findExistingConnection(peerId, this.connections.get(peerId), multiaddrs)
+      const existingConnection = findExistingConnection(peerId, this.connections.get(peerId), multiaddrs, options.runOnLimitedConnection)
 
       if (existingConnection != null) {
         this.log('already connected to %a', existingConnection.remoteAddr)

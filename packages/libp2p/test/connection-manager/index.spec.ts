@@ -11,7 +11,7 @@ import { createLibp2p } from '../../src/index.ts'
 import { getComponent } from '../fixtures/get-component.ts'
 import { createDefaultConnectionManagerComponents } from './utils.ts'
 import type { StubbedDefaultConnectionManagerComponents } from './utils.ts'
-import type { Libp2p, Connection, MultiaddrConnection } from '@libp2p/interface'
+import type { Libp2p, Connection, MultiaddrConnection, Stream } from '@libp2p/interface'
 
 const defaultOptions = {
   maxConnections: 10,
@@ -378,6 +378,60 @@ describe('Connection Manager', () => {
     // should be true because we have now completed the upgrade of maConn1
     expect(connectionManager.acceptIncomingConnection(maConn2))
       .to.be.true()
+  })
+
+  it('should open a stream on an existing limited connection when explicitly allowed', async () => {
+    connectionManager = new DefaultConnectionManager(components, defaultOptions)
+    await connectionManager.start()
+
+    const targetPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const stream = stubInterface<Stream>()
+    const connection = stubInterface<Connection>({
+      status: 'open',
+      direct: false,
+      remotePeer: targetPeer,
+      limits: { bytes: 100n }
+    })
+    connection.newStream.resolves(stream)
+    connectionManager.getConnectionsMap().set(targetPeer, [connection])
+    const dial = sinon.stub(connectionManager.dialQueue, 'dial').rejects(new Error('No direct route'))
+    const options = { runOnLimitedConnection: true }
+
+    expect(await connectionManager.openStream(targetPeer, '/test/1.0.0', options)).to.equal(stream)
+    sinon.assert.notCalled(dial)
+    sinon.assert.calledOnceWithExactly(connection.newStream, '/test/1.0.0', options)
+  })
+
+  ;[
+    { runOnLimitedConnection: false },
+    { runOnLimitedConnection: true, force: true }
+  ].forEach(options => {
+    it(`should dial a new stream connection with options ${JSON.stringify(options)}`, async () => {
+      connectionManager = new DefaultConnectionManager(components, defaultOptions)
+      await connectionManager.start()
+
+      const targetPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+      const connection = stubInterface<Connection>({
+        status: 'open',
+        direct: false,
+        remotePeer: targetPeer,
+        limits: { bytes: 100n },
+        remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
+      })
+      const newConnection = stubInterface<Connection>({
+        status: 'open',
+        remotePeer: targetPeer,
+        remoteAddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
+      })
+      const stream = stubInterface<Stream>()
+      newConnection.newStream.resolves(stream)
+      connectionManager.getConnectionsMap().set(targetPeer, [connection])
+      const dial = sinon.stub(connectionManager.dialQueue, 'dial').resolves(newConnection)
+
+      expect(await connectionManager.openStream(targetPeer, '/test/1.0.0', options)).to.equal(stream)
+      sinon.assert.calledOnce(dial)
+      sinon.assert.notCalled(connection.newStream)
+    })
   })
 
   it('should allow dialing peers when an existing limited connection exists', async () => {
