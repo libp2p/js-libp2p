@@ -1,7 +1,7 @@
 /* eslint-disable complexity */
 import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { InvalidParametersError } from '@libp2p/interface'
-import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { dedupeFilterAndSortAddresses } from './dedupe-addresses.ts'
 import type { AddressFilter } from '../index.ts'
 import type { Tag, Peer as PeerPB } from '../pb/peer.ts'
@@ -10,6 +10,7 @@ import type { PeerId, Address, PeerData, TagOptions, AbortOptions } from '@libp2
 
 export interface ToPBPeerOptions extends AbortOptions {
   addressFilter?: AddressFilter
+  maxAddresses?: number
   existingPeer?: ExistingPeer
 }
 
@@ -149,7 +150,8 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
       options.addressFilter ?? (async () => true),
       addresses,
       options.existingPeer?.peerPB.addresses,
-      options
+      options,
+      options.maxAddresses
     ),
     protocols: [...protocols.values()].sort((a, b) => {
       return a.localeCompare(b)
@@ -161,8 +163,21 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
   }
 
   // add observed addresses to multiaddrs
+  const observed = new Map<string, number>()
+
+  for (const existingAddr of options.existingPeer?.peerPB.addresses ?? []) {
+    const key = uint8ArrayToString(existingAddr.multiaddr, 'base64')
+
+    // keep the first value for each address
+    if (existingAddr.observed != null && !observed.has(key)) {
+      observed.set(key, existingAddr.observed)
+    }
+  }
+
+  const now = Date.now()
+
   output.addresses.forEach(addr => {
-    addr.observed = options.existingPeer?.peerPB.addresses?.find(existingAddr => uint8ArrayEquals(existingAddr.multiaddr, addr.multiaddr))?.observed ?? Date.now()
+    addr.observed = observed.get(uint8ArrayToString(addr.multiaddr, 'base64')) ?? now
   })
 
   // Ed25519 and secp256k1 have their public key embedded in them so no need to duplicate it
