@@ -185,9 +185,12 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, maxEa
 
     log.trace('initiator connected')
 
+    // the init channel can also close before it opens, for example when a
+    // remote close arrives first, so wait for whichever happens and continue
+    // based on the readyState
     if (channel.readyState === 'connecting') {
-      log.trace('wait for init channel to open')
-      await pEvent(channel, 'open', {
+      log.trace('wait for init channel to open or close')
+      await pEvent(channel, ['open', 'close'], {
         signal
       })
     }
