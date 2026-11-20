@@ -586,6 +586,89 @@ describe('PersistentPeerStore', () => {
         })
       }
     })
+
+    it('should not expire a connected peer', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      events.safeDispatchEvent('peer:connect', { detail: otherPeerId })
+
+      await delay(500)
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.be.ok('expired a connected peer')
+      expect((await peerStore.all()).map(peer => peer.id))
+        .to.deep.include(otherPeerId)
+    })
+
+    it('should measure peer age from the moment it disconnected', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 200
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      events.safeDispatchEvent('peer:connect', { detail: otherPeerId })
+
+      // connected for longer than `maxPeerAge` with no writes to the record
+      await delay(500)
+
+      events.safeDispatchEvent('peer:disconnect', { detail: otherPeerId })
+
+      // read while the disconnect is being recorded
+      await expect(peerStore.get(otherPeerId)).to.eventually.be.ok('expired a peer as it disconnected')
+
+      await delay(50)
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.be.ok('expired a peer before maxPeerAge had passed since it disconnected')
+
+      await delay(500)
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.be.rejected()
+        .with.property('name', 'NotFoundError')
+    })
+
+    it('should keep a peer that reconnects while its disconnect is being recorded', async () => {
+      const peerStore = persistentPeerStore(components, {
+        maxAddressAge: 50,
+        maxPeerAge: 100
+      })
+
+      await peerStore.save(otherPeerId, {
+        multiaddrs: [
+          multiaddr('/ip4/123.123.123.123/tcp/1234')
+        ]
+      })
+
+      events.safeDispatchEvent('peer:connect', { detail: otherPeerId })
+      events.safeDispatchEvent('peer:disconnect', { detail: otherPeerId })
+      events.safeDispatchEvent('peer:connect', { detail: otherPeerId })
+
+      await delay(500)
+
+      await expect(peerStore.get(otherPeerId)).to.eventually.be.ok('expired a reconnected peer')
+    })
+
+    it('should not create a record when a peer with no record disconnects', async () => {
+      events.safeDispatchEvent('peer:connect', { detail: otherPeerId })
+      events.safeDispatchEvent('peer:disconnect', { detail: otherPeerId })
+
+      await delay(50)
+
+      await expect(peerStore.has(otherPeerId)).to.eventually.be.false()
+    })
   })
 
   it('should return peerInfo', async () => {

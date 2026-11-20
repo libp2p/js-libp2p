@@ -72,6 +72,13 @@ class PersistentPeerStore implements PeerStore {
     this.events = components.events
     this.peerId = components.peerId
     this.store = new PersistentStore(components, init)
+
+    this.events.addEventListener('peer:connect', (evt) => {
+      this.store.markConnected(evt.detail)
+    })
+    this.events.addEventListener('peer:disconnect', (evt) => {
+      void this.#onDisconnect(evt.detail, this.store.connectionGeneration(evt.detail))
+    })
   }
 
   readonly [Symbol.toStringTag] = '@libp2p/peer-store'
@@ -219,6 +226,20 @@ class PersistentPeerStore implements PeerStore {
     }, options)
 
     return true
+  }
+
+  async #onDisconnect (peerId: PeerId, generation: number | undefined): Promise<void> {
+    try {
+      const release = await this.store.getWriteLock(peerId)
+
+      try {
+        await this.store.markDisconnected(peerId, generation)
+      } finally {
+        release()
+      }
+    } catch (err: any) {
+      this.log.error('could not record disconnect of %p - %e', peerId, err)
+    }
   }
 
   #emitIfUpdated (id: PeerId, result: PeerUpdate): void {

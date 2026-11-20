@@ -1,5 +1,6 @@
 import { KEEP_ALIVE } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
+import delay from 'delay'
 import { createLibp2p } from 'libp2p'
 import pWaitFor from 'p-wait-for'
 import { createBaseOptions } from './fixtures/base-options.ts'
@@ -44,6 +45,38 @@ describe('peers', () => {
         message: 'Did not reconnect to peer tagged with KEEP_ALIVE'
       }
     })
+  })
+
+  it('should keep a connected peer in the peer store for longer than maxPeerAge', async () => {
+    await nodes[0].stop()
+    nodes[0] = await createLibp2p(createBaseOptions({
+      peerStore: {
+        maxAddressAge: 100,
+        maxPeerAge: 200
+      }
+    }))
+
+    await nodes[0].dial(nodes[1].getMultiaddrs())
+
+    await nodes[0].peerStore.merge(nodes[1].peerId, {
+      tags: {
+        [KEEP_ALIVE]: {
+          value: 1
+        }
+      }
+    })
+
+    // connected for longer than `maxPeerAge` with no streams opened
+    await delay(500)
+
+    const peer = await nodes[0].peerStore.get(nodes[1].peerId)
+    expect(peer.tags.has(KEEP_ALIVE)).to.be.true('lost the record of a connected peer')
+
+    await Promise.all(
+      nodes[0].getConnections(nodes[1].peerId).map(async conn => conn.close())
+    )
+
+    await expect(nodes[0].peerStore.has(nodes[1].peerId)).to.eventually.be.true('lost the record of a peer as it disconnected')
   })
 
   it('should store the multiaddr for a peer after a successful dial', async () => {

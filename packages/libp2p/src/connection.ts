@@ -54,6 +54,15 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
   private readonly inboundStreamProtocolNegotiationTimeout: number
   private readonly closeTimeout: number
 
+  /**
+   * Protocols already recorded against the remote peer in the peer store by a
+   * stream on this connection. Each is merged once per connection rather than
+   * once per stream - the peer store treats the open connection itself as
+   * evidence the peer is live, so re-writing the record on every stream adds
+   * nothing but cost
+   */
+  private readonly recordedProtocols: Set<string>
+
   constructor (components: ConnectionComponents, init: ConnectionInit) {
     super()
 
@@ -72,6 +81,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
     this.inboundStreamProtocolNegotiationTimeout = init.inboundStreamProtocolNegotiationTimeout ?? PROTOCOL_NEGOTIATION_TIMEOUT
     this.closeTimeout = init.closeTimeout ?? CONNECTION_CLOSE_TIMEOUT
     this.direct = isDirect(init.maConn.remoteAddr)
+    this.recordedProtocols = new Set()
 
     this.onIncomingStream = this.onIncomingStream.bind(this)
 
@@ -177,9 +187,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       // If a protocol stream has been successfully negotiated and is to be passed to the application,
       // the peer store should ensure that the peer is registered with that protocol
-      await this.components.peerStore.merge(this.remotePeer, {
-        protocols: [muxedStream.protocol]
-      })
+      await this.recordProtocol(muxedStream.protocol)
 
       this.components.metrics?.trackProtocolStream(muxedStream)
 
@@ -202,6 +210,22 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       throw err
     }
+  }
+
+  /**
+   * Ensure the remote peer is recorded as supporting `protocol`. Only the first
+   * stream on this connection for a given protocol writes to the peer store
+   */
+  private async recordProtocol (protocol: string, options?: AbortOptions): Promise<void> {
+    if (this.recordedProtocols.has(protocol)) {
+      return
+    }
+
+    await this.components.peerStore.merge(this.remotePeer, {
+      protocols: [protocol]
+    }, options)
+
+    this.recordedProtocols.add(protocol)
   }
 
   private async onIncomingStream (evt: CustomEvent<Stream>): Promise<void> {
@@ -236,9 +260,7 @@ export class Connection extends TypedEventEmitter<MessageStreamEvents> implement
 
       // If a protocol stream has been successfully negotiated and is to be passed to the application,
       // the peer store should ensure that the peer is registered with that protocol
-      await this.components.peerStore.merge(this.remotePeer, {
-        protocols: [muxedStream.protocol]
-      }, {
+      await this.recordProtocol(muxedStream.protocol, {
         signal
       })
 
