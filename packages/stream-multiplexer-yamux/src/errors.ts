@@ -13,7 +13,7 @@ export class ProtocolError extends Error {
 }
 
 export function isProtocolError (err?: any): err is ProtocolError {
-  return err?.reason !== null
+  return err?.reason != null
 }
 
 export class InvalidFrameError extends ProtocolError {

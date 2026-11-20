@@ -2,6 +2,8 @@
 
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
+import { InvalidFrameError } from '../src/errors.ts'
+import { GoAwayCode } from '../src/frame.ts'
 import { YamuxMuxer } from '../src/muxer.ts'
 import { sleep } from './util.ts'
 import type { MultiaddrConnection } from '@libp2p/interface'
@@ -132,5 +134,19 @@ describe('muxer', () => {
       expect(server.streams.length).to.equal(1)
       expect(client.streams.length).to.equal(1)
     }
+  })
+
+  it('should send an internal error go away when aborted with a non-protocol error', async () => {
+    client.abort(new Error('boom'))
+    await sleep(10)
+
+    expect(server['remoteGoAway']).to.equal(GoAwayCode.InternalError)
+  })
+
+  it('should send a protocol error go away when aborted with a protocol error', async () => {
+    client.abort(new InvalidFrameError())
+    await sleep(10)
+
+    expect(server['remoteGoAway']).to.equal(GoAwayCode.ProtocolError)
   })
 })
