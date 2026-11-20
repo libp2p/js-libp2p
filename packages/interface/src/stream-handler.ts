@@ -23,6 +23,26 @@ export interface StreamHandlerOptions extends AbortOptions {
   maxInboundStreams?: number
 
   /**
+   * Limits how many new inbound streams can be opened for this protocol per
+   * connection within a sliding time window. Use this to prevent malicious
+   * peers from flooding built-in protocols (e.g. identify/push).
+   *
+   * @example
+   * // Allow at most 10 new streams per 60 seconds per connection
+   * inboundStreamRateLimit: { count: 10, interval: 60_000 }
+   */
+  inboundStreamRateLimit?: {
+    /**
+     * Maximum number of new inbound streams allowed within the interval
+     */
+    count: number
+    /**
+     * Length of the time window in milliseconds
+     */
+    interval: number
+  }
+
+  /**
    * How many outgoing streams can be open for this protocol at the same time on each connection
    *
    * @default 64
