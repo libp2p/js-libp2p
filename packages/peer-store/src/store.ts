@@ -186,7 +186,8 @@ export class PersistentStore {
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
       ...options,
       addressFilter: this.addressFilter,
-      maxAddresses: this.#maxAddressesFor(peerId)
+      maxAddresses: this.#maxAddressesFor(peerId),
+      log: this.log
     })
 
     return this.#saveIfDifferent(peerId, peerPb, existingPeer)
@@ -199,6 +200,7 @@ export class PersistentStore {
       ...options,
       addressFilter: this.addressFilter,
       maxAddresses: this.#maxAddressesFor(peerId),
+      log: this.log,
       existingPeer
     })
 
@@ -211,6 +213,7 @@ export class PersistentStore {
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'merge', {
       addressFilter: this.addressFilter,
       maxAddresses: this.#maxAddressesFor(peerId),
+      log: this.log,
       existingPeer
     })
 

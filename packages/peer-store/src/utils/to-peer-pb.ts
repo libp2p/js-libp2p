@@ -6,11 +6,12 @@ import { dedupeFilterAndSortAddresses } from './dedupe-addresses.ts'
 import type { AddressFilter } from '../index.ts'
 import type { Tag, Peer as PeerPB } from '../pb/peer.ts'
 import type { ExistingPeer } from '../store.ts'
-import type { PeerId, Address, PeerData, TagOptions, AbortOptions } from '@libp2p/interface'
+import type { PeerId, Address, PeerData, TagOptions, AbortOptions, Logger } from '@libp2p/interface'
 
 export interface ToPBPeerOptions extends AbortOptions {
   addressFilter?: AddressFilter
   maxAddresses?: number
+  log?: Logger
   existingPeer?: ExistingPeer
 }
 
@@ -150,8 +151,7 @@ export async function toPeerPB (peerId: PeerId, data: Partial<PeerData>, strateg
       options.addressFilter ?? (async () => true),
       addresses,
       options.existingPeer?.peerPB.addresses,
-      options,
-      options.maxAddresses
+      options
     ),
     protocols: [...protocols.values()].sort((a, b) => {
       return a.localeCompare(b)

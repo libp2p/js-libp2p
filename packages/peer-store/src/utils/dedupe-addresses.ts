@@ -2,9 +2,15 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { CODE_P2P, isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import type { AddressFilter } from '../index.ts'
 import type { Address as AddressPB } from '../pb/peer.ts'
-import type { PeerId, Address, AbortOptions } from '@libp2p/interface'
+import type { PeerId, Address, AbortOptions, Logger } from '@libp2p/interface'
 
-export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>, existingAddresses?: AddressPB[], options?: AbortOptions, maxAddresses: number = Infinity): Promise<AddressPB[]> {
+export interface DedupeAddressesOptions extends AbortOptions {
+  maxAddresses?: number
+  log?: Logger
+}
+
+export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>, existingAddresses?: AddressPB[], options?: DedupeAddressesOptions): Promise<AddressPB[]> {
+  const maxAddresses = options?.maxAddresses ?? Infinity
   const addressMap = new Map<string, Address>()
 
   for (const addr of addresses) {
@@ -41,6 +47,8 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
   let entries = [...addressMap.entries()]
 
   if (entries.length > maxAddresses) {
+    options?.log?.('%p has %d addresses, only storing %d', peerId, entries.length, maxAddresses)
+
     // prefer certified addresses, then addresses in the order they were
     // passed - e.g. existing addresses before new ones
     entries = [
