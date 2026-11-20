@@ -4,6 +4,23 @@
 
 * make sendReset synchronous to avoid unhandled rejections ([#113](https://github.com/ChainSafe/js-libp2p-yamux/issues/113)) ([232fb1b](https://github.com/ChainSafe/js-libp2p-yamux/commit/232fb1b6aec679d61a31f4b97deeed135ef6f5c4))
 
+## [8.0.8](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.7...yamux-v8.0.8) (2026-11-20)
+
+
+### Bug Fixes
+
+* **yamux:** send internal error go away for non-protocol errors ([#3718](https://github.com/libp2p/js-libp2p/issues/3718)) ([ff95dc5](https://github.com/libp2p/js-libp2p/commit/ff95dc546e705a23b92ddbbe15d2d6e4cef735e2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.5 to ^7.4.6
+  * devDependencies
+    * @libp2p/interface-compliance-tests bumped from ^7.0.36 to ^7.0.37
+    * @libp2p/mplex bumped from ^12.0.36 to ^12.0.37
+
 ## [8.0.7](https://github.com/libp2p/js-libp2p/compare/yamux-v8.0.6...yamux-v8.0.7) (2026-10-19)
 
 

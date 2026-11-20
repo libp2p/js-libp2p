@@ -44,6 +44,16 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [3.0.33](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.32...dcutr-v3.0.33) (2026-11-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/utils bumped from ^7.4.5 to ^7.4.6
+
 ## [3.0.32](https://github.com/libp2p/js-libp2p/compare/dcutr-v3.0.31...dcutr-v3.0.32) (2026-10-19)
 
 

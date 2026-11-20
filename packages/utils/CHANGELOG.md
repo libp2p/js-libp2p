@@ -36,6 +36,14 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.6](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.5...utils-v7.4.6) (2026-11-20)
+
+
+### Bug Fixes
+
+* **utils:** abort the connection when aborting the muxer throws ([#3719](https://github.com/libp2p/js-libp2p/issues/3719)) ([1cb1b8e](https://github.com/libp2p/js-libp2p/commit/1cb1b8eb6d0f287b9fc819563799f98e310d5e04))
+* **utils:** classify IPv6 private ranges by parsed bytes ([#3707](https://github.com/libp2p/js-libp2p/issues/3707)) ([42064ed](https://github.com/libp2p/js-libp2p/commit/42064ed689115921b4a11df81989c360d17fb6d9))
+
 ## [7.4.5](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.4...utils-v7.4.5) (2026-10-19)
 
 
