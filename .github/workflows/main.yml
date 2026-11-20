@@ -59,12 +59,12 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-      # go-libp2p@1.7.0's fetch-based postinstall stalls on macOS runners,
+      # go-libp2p@1.7.0's fetch-based postinstall stalls on macOS runners, so
       # pre-seed its download cache with curl until libp2p/npm-go-libp2p#94 ships
       - if: runner.os == 'macOS'
         run: |
           mkdir -p ~/Library/Caches/npm-go-libp2p
-          curl -fsSL --retry 5 -o ~/Library/Caches/npm-go-libp2p/p2pd-v0.9.2-darwin.tar.gz \
+          curl -fsSL --retry 5 --retry-all-errors --connect-timeout 30 --max-time 300 -o ~/Library/Caches/npm-go-libp2p/p2pd-v0.9.2-darwin.tar.gz \
             https://github.com/libp2p/go-libp2p-daemon/releases/download/v0.9.2/p2pd-v0.9.2-darwin.tar.gz
       - uses: ipfs/aegir/actions/cache-node-modules@main
         with:
