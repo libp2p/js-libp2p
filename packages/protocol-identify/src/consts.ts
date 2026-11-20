@@ -18,6 +18,13 @@ export const MAX_IDENTIFY_MESSAGE_SIZE = 1024 * 8
 // https://github.com/libp2p/specs/pull/709
 export const MAX_IDENTIFY_MESSAGES = 10
 
+// The maximum number of listen addresses we will accept from a remote peer in
+// an identify or identify-push exchange, any further addresses are ignored.
+// Without a limit a peer can send several thousand addresses across multiple
+// messages which makes every subsequent peer store update for that peer
+// expensive
+export const MAX_LISTEN_ADDRESSES = 100
+
 // https://github.com/libp2p/go-libp2p/blob/0385ec924bad172f74a74db09939e97c079b1420/p2p/protocol/identify/id.go#L47C7-L47C25
 export const MAX_PUSH_CONCURRENCY = 32
 

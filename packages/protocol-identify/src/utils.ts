@@ -5,7 +5,7 @@ import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
 import { pbStream } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_IDENTIFY_MESSAGES, MAX_PUSH_CONCURRENCY } from './consts.ts'
+import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_IDENTIFY_MESSAGES, MAX_LISTEN_ADDRESSES, MAX_PUSH_CONCURRENCY } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
 import type { IdentifyComponents, IdentifyInit } from './index.ts'
 import type { AbortOptions, Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
@@ -18,6 +18,7 @@ export const defaultValues = {
   maxInboundStreams: 1,
   maxOutboundStreams: 1,
   maxObservedAddresses: 10,
+  maxListenAddresses: MAX_LISTEN_ADDRESSES,
   maxMessageSize: MAX_IDENTIFY_MESSAGE_SIZE,
   runOnConnectionOpen: true,
   runOnSelfUpdate: true,
@@ -46,7 +47,7 @@ export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined)
   }
 }
 
-export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
+export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage, maxListenAddresses: number = defaultValues.maxListenAddresses): Promise<IdentifyResult> {
   log('received identify from %p', connection.remotePeer)
 
   if (message == null) {
@@ -55,7 +56,12 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
   const peer: PeerData = {}
 
+  if (message.listenAddrs.length > maxListenAddresses) {
+    log('%p sent %d listen addresses, ignoring all but the first %d', connection.remotePeer, message.listenAddrs.length, maxListenAddresses)
+  }
+
   const listenAddrs = message.listenAddrs
+    .slice(0, maxListenAddresses)
     .map(getCleanMultiaddr)
     .filter((addr): addr is Multiaddr => addr != null)
 
@@ -133,7 +139,9 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     // store the signed record for next time
     peer.peerRecordEnvelope = peerRecordEnvelope
 
-    const peerRecordMultiaddrs = peerRecord.multiaddrs.filter(addr => !isEmptyMultiaddr(addr))
+    const peerRecordMultiaddrs = peerRecord.multiaddrs
+      .filter(addr => !isEmptyMultiaddr(addr))
+      .slice(0, maxListenAddresses)
 
     // override the stored addresses with the signed multiaddrs
     peer.addresses = peerRecordMultiaddrs.map(multiaddr => ({
@@ -281,6 +289,7 @@ export abstract class AbstractIdentify implements Startable {
   private readonly maxOutboundStreams: number
   protected readonly maxMessageSize: number
   protected readonly maxObservedAddresses: number
+  protected readonly maxListenAddresses: number
   protected readonly runOnLimitedConnection: boolean
   protected readonly log: Logger
 
@@ -295,6 +304,7 @@ export abstract class AbstractIdentify implements Startable {
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultValues.maxOutboundStreams
     this.maxMessageSize = init.maxMessageSize ?? defaultValues.maxMessageSize
     this.maxObservedAddresses = init.maxObservedAddresses ?? defaultValues.maxObservedAddresses
+    this.maxListenAddresses = init.maxListenAddresses ?? defaultValues.maxListenAddresses
     this.runOnLimitedConnection = init.runOnLimitedConnection ?? defaultValues.runOnLimitedConnection
 
     // Store self host metadata

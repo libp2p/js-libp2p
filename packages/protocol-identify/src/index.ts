@@ -91,6 +91,14 @@ export interface IdentifyInit {
   maxObservedAddresses?: number
 
   /**
+   * The maximum number of listen addresses to accept from a remote peer, any
+   * further addresses they send will be ignored
+   *
+   * @default 100
+   */
+  maxListenAddresses?: number
+
+  /**
    * Whether to run on connections with data or duration limits
    *
    * @default true
