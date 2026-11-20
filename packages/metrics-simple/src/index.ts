@@ -72,7 +72,7 @@ class SimpleMetric implements Metric {
 }
 
 class SimpleGroupMetric implements MetricGroup {
-  private values: Record<string, number> = {}
+  private values: Record<string, number> = Object.create(null)
   private readonly calculate?: CalculateMetric<Record<string, number>>
 
   constructor (opts?: CalculatedMetricOptions<Record<string, number>>) {
@@ -112,7 +112,7 @@ class SimpleGroupMetric implements MetricGroup {
   }
 
   reset (): void {
-    this.values = {}
+    this.values = Object.create(null)
   }
 
   timer (key: string): StopTimer {
@@ -182,12 +182,12 @@ class SimpleHistogram implements Histogram {
 }
 
 class SimpleHistogramGroup implements HistogramGroup {
-  public histograms: Record<string, SimpleHistogram> = {}
+  public histograms: Record<string, SimpleHistogram> = Object.create(null)
   private readonly opts: HistogramOptions
   private readonly calculate?: CalculateMetric<Record<string, number>>
 
   constructor (opts?: Partial<CalculatedHistogramOptions<Record<string, number>>>) {
-    this.histograms = {}
+    this.histograms = Object.create(null)
     this.opts = {
       buckets: opts?.buckets
     }
@@ -199,7 +199,7 @@ class SimpleHistogramGroup implements HistogramGroup {
       this.observe(await this.calculate())
     }
 
-    const output: Record<string, { count: number, sum: number, buckets: Record<number, number> }> = {}
+    const output: Record<string, { count: number, sum: number, buckets: Record<number, number> }> = Object.create(null)
 
     for (const [key, histogram] of Object.entries(this.histograms)) {
       output[key] = await histogram.collect()
@@ -286,12 +286,12 @@ class SimpleSummary implements Summary {
 }
 
 class SimpleSummaryGroup implements SummaryGroup {
-  public summaries: Record<string, SimpleSummary> = {}
+  public summaries: Record<string, SimpleSummary> = Object.create(null)
   private readonly opts: SummaryOptions
   private readonly calculate?: CalculateMetric<Record<string, number>>
 
   constructor (opts?: Partial<CalculatedSummaryOptions<Record<string, number>>>) {
-    this.summaries = {}
+    this.summaries = Object.create(null)
     this.opts = {
       percentiles: opts?.percentiles,
       compressCount: opts?.compressCount
@@ -405,7 +405,7 @@ class SimpleMetrics implements Metrics, Startable {
 
   private _emitMetrics (): void {
     Promise.resolve().then(async () => {
-      const output: Record<string, any> = {}
+      const output: Record<string, any> = Object.create(null)
 
       for (const [name, metric] of this.metrics.entries()) {
         output[name] = await metric.collect()
