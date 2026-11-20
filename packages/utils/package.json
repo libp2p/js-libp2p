@@ -61,7 +61,6 @@
     "it-pushable": "^3.2.3",
     "it-stream-types": "^2.0.2",
     "main-event": "^1.0.5",
-    "netmask": "^2.0.2",
     "p-defer": "^4.0.1",
     "p-event": "^8.0.1",
     "progress-events": "^1.1.0",
@@ -74,7 +73,6 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.2.0",
     "@libp2p/peer-id": "^6.0.18",
-    "@types/netmask": "^2.0.5",
     "aegir": "^48.1.1",
     "benchmark": "^2.1.4",
     "it-all": "^3.0.9",

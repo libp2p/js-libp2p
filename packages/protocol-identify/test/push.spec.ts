@@ -152,6 +152,45 @@ describe('identify (push)', () => {
     expect(update.addresses?.map(({ multiaddr }) => multiaddr.toString())).deep.equals([updatedAddress.toString()])
   })
 
+  it('should limit the number of listen addresses accepted', async () => {
+    identify = new IdentifyPush(components, {
+      maxListenAddresses: 5
+    })
+
+    await start(identify)
+
+    const remotePeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const [outgoingStream, incomingStream] = await streamPair()
+    const connection = stubInterface<Connection>({
+      remotePeer
+    })
+
+    const addrs = new Array(20).fill(0).map((_, i) => multiaddr(`/ip4/127.0.0.1/tcp/${i + 1}`))
+
+    // split the addresses across several messages
+    const pb = pbStream(outgoingStream).pb(IdentifyMessage)
+    await pb.write({
+      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      protocols: [],
+      listenAddrs: addrs.slice(0, 10).map(ma => ma.bytes)
+    })
+    await pb.write({
+      protocols: [],
+      listenAddrs: addrs.slice(10).map(ma => ma.bytes)
+    })
+    await outgoingStream.close()
+
+    components.peerStore.patch.reset()
+
+    await identify.handleProtocol(incomingStream, connection)
+
+    expect(components.peerStore.patch.callCount).to.equal(1)
+    const update = components.peerStore.patch.getCall(0).args[1]
+    expect(update.addresses?.map(({ multiaddr }) => multiaddr.toString())).to.deep.equal(
+      addrs.slice(0, 5).map(ma => ma.toString())
+    )
+  })
+
   it('should handle multiple push messages and merge them', async () => {
     identify = new IdentifyPush(components)
 
