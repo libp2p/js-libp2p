@@ -1,5 +1,6 @@
 import { Uint8ArrayList } from 'uint8arraylist'
-import { InvalidFrameError } from './errors.ts'
+import { MAX_STREAM_WINDOW } from './constants.ts'
+import { InvalidFrameError, ReceiveWindowExceededError } from './errors.ts'
 import { FrameType, HEADER_LENGTH, YAMUX_VERSION } from './frame.ts'
 import type { FrameHeader } from './frame.ts'
 
@@ -46,9 +47,12 @@ export function decodeHeader (data: Uint8Array): FrameHeader {
 export class Decoder {
   /** Buffer for in-progress frames */
   private readonly buffer: Uint8ArrayList
+  /** The largest data frame body that can fit in a stream receive window */
+  private readonly maxDataLength: number
 
-  constructor () {
+  constructor (maxDataLength: number = MAX_STREAM_WINDOW) {
     this.buffer = new Uint8ArrayList()
+    this.maxDataLength = maxDataLength
   }
 
   /**
@@ -85,6 +89,12 @@ export class Decoder {
     const header = decodeHeader(this.buffer.subarray(0, HEADER_LENGTH))
 
     if (header.type === FrameType.Data) {
+      // reject before buffering the body, the per-stream window check only runs
+      // once the whole frame has arrived
+      if (header.length > this.maxDataLength) {
+        throw new ReceiveWindowExceededError('Data frame length exceeds max stream window')
+      }
+
       frameSize += header.length
 
       if (this.buffer.byteLength < frameSize) {
