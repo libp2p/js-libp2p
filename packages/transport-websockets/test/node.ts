@@ -3,6 +3,7 @@
 
 import fs from 'node:fs'
 import http from 'node:http'
+import net from 'node:net'
 import { defaultLogger } from '@libp2p/logger'
 import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -108,6 +109,34 @@ describe('listen', () => {
       })
 
       void listener.listen(ma)
+    })
+
+    it('survives a client breaking the websocket protocol', async () => {
+      listener = ws.createListener({ upgrader })
+      await listener.listen(ma)
+
+      const uncaught = Sinon.spy()
+      const listeners = process.listeners('uncaughtException')
+      process.removeAllListeners('uncaughtException')
+      process.on('uncaughtException', uncaught)
+
+      try {
+        const socket = net.connect(47382, '127.0.0.1')
+        await pEvent(socket, 'connect')
+        socket.write('GET / HTTP/1.1\r\nHost: localhost\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n')
+        await pEvent(socket, 'data')
+
+        // a masked close frame with code 1006, which an endpoint must never send
+        const mask = Uint8Array.from([1, 2, 3, 4])
+        const payload = Uint8Array.from([0x03, 0xee]).map((b, i) => b ^ mask[i % 4])
+        socket.write(Uint8Array.from([0x88, 0x80 | payload.length, ...mask, ...payload]))
+        await pEvent(socket, 'close')
+      } finally {
+        process.removeListener('uncaughtException', uncaught)
+        listeners.forEach(l => process.on('uncaughtException', l))
+      }
+
+      expect(uncaught.called).to.be.false()
     })
 
     it('listen on addr with /ipfs/QmHASH', async () => {
