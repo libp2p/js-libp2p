@@ -60,7 +60,7 @@ function stripPeerId (peerId: PeerId, ma: Multiaddr): Multiaddr {
   const last = ma.getComponents().at(-1)
 
   if (last?.code === CODE_P2P && peerId.equals(last.value)) {
-    return ma.decapsulate(multiaddr(`/p2p/${peerId}`))
+    return ma.decapsulateCode(CODE_P2P)
   }
 
   return ma

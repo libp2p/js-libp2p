@@ -108,6 +108,45 @@ describe('dedupe-addresses', () => {
     }])
   })
 
+  it('should only strip the trailing peer id when it appears more than once', async () => {
+    const circuit = multiaddr(`/p2p/${peerId}/p2p-circuit`)
+
+    expect(await dedupeFilterAndSortAddresses(peerId, async () => true, [{
+      multiaddr: circuit.encapsulate(`/p2p/${peerId}`),
+      isCertified: false
+    }])).to.deep.equal([{
+      multiaddr: circuit.bytes,
+      isCertified: false
+    }])
+  })
+
+  it('should strip a trailing peer id from a webrtc address', async () => {
+    const relay = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const webrtc = multiaddr(`/ip4/20.0.0.1/tcp/8001/p2p/${relay}/p2p-circuit/webrtc`)
+
+    expect(await dedupeFilterAndSortAddresses(peerId, async () => true, [{
+      multiaddr: webrtc.encapsulate(`/p2p/${peerId}`),
+      isCertified: false
+    }])).to.deep.equal([{
+      multiaddr: webrtc.bytes,
+      isCertified: false
+    }])
+  })
+
+  it('should not change isCertified on the passed addresses', async () => {
+    const uncertified = {
+      multiaddr: addr1,
+      isCertified: false
+    }
+
+    await dedupeFilterAndSortAddresses(peerId, async () => true, [{
+      multiaddr: addr1,
+      isCertified: true
+    }, uncertified])
+
+    expect(uncertified.isCertified).to.be.false()
+  })
+
   it('should not strip a different trailing peer id', async () => {
     const other = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const withOther = addr1.encapsulate(`/p2p/${other}`)
