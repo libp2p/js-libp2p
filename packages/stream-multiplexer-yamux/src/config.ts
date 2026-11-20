@@ -60,13 +60,15 @@ export function verifyConfig (config: Config): void {
   if (config.maxMessageSize != null && config.maxMessageSize < 1024) {
     throw new InvalidParametersError('MaxMessageSize must be greater than a kilobyte')
   }
-  if (config.streamOptions?.initialStreamWindowSize != null && config.streamOptions?.initialStreamWindowSize < INITIAL_STREAM_WINDOW) {
+  const { initialStreamWindowSize: initial, maxStreamWindowSize: max } = config.streamOptions ?? {}
+
+  if (initial != null && initial < INITIAL_STREAM_WINDOW) {
     throw new InvalidParametersError('InitialStreamWindowSize must be larger or equal 256 kB')
   }
-  if (config.streamOptions?.maxStreamWindowSize != null && config.streamOptions?.initialStreamWindowSize != null && config.streamOptions?.maxStreamWindowSize < config.streamOptions?.initialStreamWindowSize) {
+  if (initial != null && max != null && max < initial) {
     throw new InvalidParametersError('MaxStreamWindowSize must be larger than the InitialStreamWindowSize')
   }
-  if (config.streamOptions?.maxStreamWindowSize != null && config.streamOptions?.maxStreamWindowSize > 2 ** 32 - 1) {
+  if (max != null && max > 2 ** 32 - 1) {
     throw new InvalidParametersError('MaxStreamWindowSize must be less than equal MAX_UINT32')
   }
 }

@@ -108,7 +108,11 @@ export class YamuxMuxer extends AbstractStreamMuxer<YamuxStream> {
     this.maxInboundStreams = init.maxInboundStreams ?? defaultConfig.maxInboundStreams
     this.maxOutboundStreams = init.maxOutboundStreams ?? defaultConfig.maxOutboundStreams
 
-    this.decoder = new Decoder()
+    // a stream's window starts at the initial size even if the max is smaller
+    this.decoder = new Decoder(Math.max(
+      init.streamOptions?.initialStreamWindowSize ?? defaultConfig.streamOptions.initialStreamWindowSize,
+      init.streamOptions?.maxStreamWindowSize ?? defaultConfig.streamOptions.maxStreamWindowSize
+    ))
 
     this.numInboundStreams = 0
     this.numOutboundStreams = 0

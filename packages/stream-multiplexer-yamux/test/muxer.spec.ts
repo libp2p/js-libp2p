@@ -2,8 +2,10 @@
 
 import { multiaddrConnectionPair } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
+import { INITIAL_STREAM_WINDOW, MAX_STREAM_WINDOW } from '../src/constants.ts'
+import { encodeHeader } from '../src/encode.ts'
 import { InvalidFrameError } from '../src/errors.ts'
-import { GoAwayCode } from '../src/frame.ts'
+import { Flag, FrameType, GoAwayCode } from '../src/frame.ts'
 import { YamuxMuxer } from '../src/muxer.ts'
 import { sleep } from './util.ts'
 import type { MultiaddrConnection } from '@libp2p/interface'
@@ -135,6 +137,36 @@ describe('muxer', () => {
       expect(client.streams.length).to.equal(1)
     }
   })
+
+  it('should abort when a data frame exceeds the max stream window', async () => {
+    outboundConnection.send(encodeHeader({ type: FrameType.Data, flag: Flag.SYN, streamID: 1, length: 0xFFFFFFFF }))
+    await sleep(10)
+
+    expect(server.status).to.equal('closed')
+  })
+
+  for (const { name, streamOptions, limit } of [
+    { name: 'a configured max', streamOptions: { maxStreamWindowSize: 1024 * 1024 }, limit: 1024 * 1024 },
+    { name: 'an initial window above the default max', streamOptions: { initialStreamWindowSize: MAX_STREAM_WINDOW * 2 }, limit: MAX_STREAM_WINDOW * 2 },
+    { name: 'a max below the initial window', streamOptions: { maxStreamWindowSize: INITIAL_STREAM_WINDOW / 2 }, limit: INITIAL_STREAM_WINDOW }
+  ]) {
+    it(`should limit data frames to the largest stream window with ${name}`, async () => {
+      const sendHeader = async (length: number): Promise<YamuxMuxer> => {
+        const [outbound, inbound] = multiaddrConnectionPair()
+        const muxer = new YamuxMuxer(inbound, { streamOptions })
+        outbound.send(encodeHeader({ type: FrameType.Data, flag: Flag.SYN, streamID: 1, length }))
+        await sleep(10)
+        return muxer
+      }
+
+      const atLimit = await sendHeader(limit)
+      expect(atLimit.status).to.equal('open')
+      atLimit.abort(new Error('done'))
+
+      const overLimit = await sendHeader(limit + 1)
+      expect(overLimit.status).to.equal('closed')
+    })
+  }
 
   it('should send an internal error go away when aborted with a non-protocol error', async () => {
     client.abort(new Error('boom'))
