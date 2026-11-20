@@ -68,6 +68,20 @@
   * dependencies
     * @libp2p/peer-record bumped from ^7.0.8 to ^7.0.9
 
+## [12.0.33](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.32...peer-store-v12.0.33) (2026-11-20)
+
+
+### Bug Fixes
+
+* **peer-store:** limit the number of addresses stored per peer ([#3716](https://github.com/libp2p/js-libp2p/issues/3716)) ([f50d5b7](https://github.com/libp2p/js-libp2p/commit/f50d5b79ef08d5c18e9bb9fe4dbbd672d760fee4))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/peer-collections bumped from ^7.0.32 to ^7.0.33
+
 ## [12.0.32](https://github.com/libp2p/js-libp2p/compare/peer-store-v12.0.31...peer-store-v12.0.32) (2026-10-19)
 
 

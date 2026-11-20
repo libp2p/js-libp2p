@@ -76,6 +76,21 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [4.1.19](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.18...identify-v4.1.19) (2026-11-20)
+
+
+### Bug Fixes
+
+* **identify:** limit the number of listen addresses accepted ([#3715](https://github.com/libp2p/js-libp2p/issues/3715)) ([b4f172c](https://github.com/libp2p/js-libp2p/commit/b4f172c175e4fe9f3fc9ee9710dcc9888ffcab5f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/interface-internal bumped from ^3.2.2 to ^3.2.3
+    * @libp2p/utils bumped from ^7.4.5 to ^7.4.6
+
 ## [4.1.18](https://github.com/libp2p/js-libp2p/compare/identify-v4.1.17...identify-v4.1.18) (2026-10-19)
 
 

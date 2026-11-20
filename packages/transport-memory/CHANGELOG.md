@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.33](https://github.com/libp2p/js-libp2p/compare/memory-v2.0.32...memory-v2.0.33) (2026-11-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/utils bumped from ^7.4.5 to ^7.4.6
+
 ## [2.0.32](https://github.com/libp2p/js-libp2p/compare/memory-v2.0.31...memory-v2.0.32) (2026-10-19)
 
 
