@@ -67,7 +67,7 @@
     "@libp2p/peer-id": "^6.0.18",
     "@libp2p/utils": "^7.4.5",
     "@peculiar/asn1-schema": "^2.4.0",
-    "@peculiar/asn1-x509": "^2.4.0",
+    "@peculiar/asn1-x509": "^3.0.0",
     "@peculiar/webcrypto": "^1.5.0",
     "@peculiar/x509": "^2.0.0",
     "asn1js": "^3.0.6",
