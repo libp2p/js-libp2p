@@ -31,6 +31,10 @@ export class DNSMappings {
   }
 
   has (ma: Multiaddr): boolean {
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
     const config = getNetConfig(ma)
     let host = config.host
 
