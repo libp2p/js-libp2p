@@ -1,9 +1,10 @@
 /* eslint-disable complexity */
 import { isIPv4 } from '@chainsafe/is-ip'
 import { peerIdFromString } from '@libp2p/peer-id'
-import { debounce, createScalableCuckooFilter, isPrivateIp, getNetConfig, isNetworkAddress, isLoopback } from '@libp2p/utils'
+import { debounce, createScalableCuckooFilter, isPrivateIp, getNetConfig, isNetworkAddress, isLoopback, multiaddrInput, nonNegativeNumber, validateOptions } from '@libp2p/utils'
 import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
 import { QUIC_V1, TCP, WebSockets, WebSocketsSecure } from '@multiformats/multiaddr-matcher'
+import { array, looseObject, optional } from 'valibot'
 import { DNSMappings } from './dns-mappings.ts'
 import { IPMappings } from './ip-mappings.ts'
 import { ObservedAddresses } from './observed-addresses.ts'
@@ -21,6 +22,18 @@ export const defaultValues = {
   addressVerificationTTL: ONE_MINUTE * 10,
   addressVerificationRetry: ONE_MINUTE * 5
 }
+
+const addressList = optional(array(multiaddrInput))
+
+const initSchema = looseObject({
+  listen: addressList,
+  announce: addressList,
+  noAnnounce: addressList,
+  appendAnnounce: addressList,
+  maxObservedAddresses: nonNegativeNumber,
+  addressVerificationTTL: nonNegativeNumber,
+  addressVerificationRetry: nonNegativeNumber
+})
 
 export interface AddressManagerInit {
   /**
@@ -137,6 +150,8 @@ export class AddressManager implements AddressManagerInterface {
    * while the announce addresses will be used for the peer addresses' to other peers in the network.
    */
   constructor (components: AddressManagerComponents, init: AddressManagerInit = {}) {
+    validateOptions(initSchema, init, 'addresses')
+
     const { listen = [], announce = [], appendAnnounce = [] } = init
 
     this.components = components
