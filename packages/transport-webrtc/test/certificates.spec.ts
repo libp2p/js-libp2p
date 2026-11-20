@@ -171,6 +171,32 @@ describe('WebRTCDirect Transport - certificates', () => {
     expect(certHashes2).to.have.nested.property('[0]').that.is.a('string')
     expect(certHashes1).to.not.deep.equal(certHashes2)
   })
+
+  it('should not renew a certificate whose renewal is further away than the maximum timer delay', async function () {
+    if (!isNode && !isElectronMain) {
+      return this.skip()
+    }
+
+    const ipv4 = multiaddr('/ip4/127.0.0.1/udp/0')
+
+    transport = new WebRTCDirectTransport(components, {
+      certificateLifespan: 30 * 24 * 60 * 60 * 1000
+    })
+    await start(transport)
+    listener = transport.createListener({
+      upgrader
+    })
+    await listener.listen(ipv4)
+
+    const certHashes1 = getCerthashes(listener.getAddrs())
+
+    await delay(1000)
+
+    const certHashes2 = getCerthashes(listener.getAddrs())
+
+    expect(certHashes1).to.have.lengthOf(1)
+    expect(certHashes1).to.deep.equal(certHashes2)
+  })
 })
 
 function getCerthashes (addrs: Multiaddr[]): string[] {
