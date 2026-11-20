@@ -1,5 +1,5 @@
 /* eslint-env mocha */
-import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -37,7 +37,7 @@ async function wireMessage (from: PeerId, signer: PrivateKey, key: PublicKey): P
 
   const signature = await signer.sign(uint8ArrayConcat([SignPrefix, RPC.Message.encode(unsigned)]))
 
-  return { ...unsigned, signature, key: publicKeyToProtobuf(key) }
+  return { ...unsigned, signature, key: key.toProtobuf() }
 }
 
 describe('forged messages over the wire', () => {
@@ -90,7 +90,7 @@ describe('forged messages over the wire', () => {
   })
 
   it('delivers a message from an RSA author carrying its key', async () => {
-    const authorKey = await generateKeyPair('RSA', 2048)
+    const authorKey = await generateKeyPair('RSA', { bits: 2048 })
 
     await receive(await wireMessage(peerIdFromPrivateKey(authorKey), authorKey, authorKey.publicKey))
 
@@ -108,7 +108,7 @@ describe('forged messages over the wire', () => {
   // dropped as unsigned by `isSigned` before signature verification, since the
   // key does not derive to the author
   it('drops a message signed by the attacker claiming an RSA author', async () => {
-    const victim = peerIdFromPrivateKey(await generateKeyPair('RSA', 2048))
+    const victim = peerIdFromPrivateKey(await generateKeyPair('RSA', { bits: 2048 }))
 
     await receive(await wireMessage(victim, attackerKey, attackerKey.publicKey))
 

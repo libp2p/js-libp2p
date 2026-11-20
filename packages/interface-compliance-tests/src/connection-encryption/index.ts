@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey, peerIdFromString } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, echo } from '@libp2p/utils'
 import { expect } from 'aegir/chai'
@@ -126,7 +126,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
       let cryptoRsa: ConnectionEncrypter
 
       before(async () => {
-        rsaKey = await generateKeyPair('RSA', 512)
+        rsaKey = await generateKeyPair('RSA', { bits: 512 })
         rsaPeer = peerIdFromPrivateKey(rsaKey)
         cryptoRsa = await common.setup({
           privateKey: rsaKey
@@ -170,7 +170,7 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
 
         const { outbound } = await secure({ initiator: crypto, responder: cryptoRsa, expectedByInitiator: expected })
         expect(outbound.equals(rsaPeer)).to.be.true()
-        expect(outbound.publicKey?.equals(rsaKey.publicKey)).to.be.true()
+        expect(outbound.publicKey).to.equalBytes(rsaKey.publicKey.toProtobuf())
       })
 
       it('should not match an RSA peer id against a different key on outbound connections', async () => {
@@ -187,13 +187,13 @@ export default (common: TestSetup<ConnectionEncrypter, ConnectionEncrypterSetupA
 
         const { inbound } = await secure({ initiator: cryptoRsa, responder: cryptoRemote, expectedByResponder: expected })
         expect(inbound.equals(rsaPeer)).to.be.true()
-        expect(inbound.publicKey?.equals(rsaKey.publicKey)).to.be.true()
+        expect(inbound.publicKey).to.equalBytes(rsaKey.publicKey.toProtobuf())
       })
 
       it('should return the key of an RSA peer on inbound connections without an expected peer', async () => {
         const { inbound } = await secure({ initiator: cryptoRsa, responder: cryptoRemote })
         expect(inbound.equals(rsaPeer)).to.be.true()
-        expect(inbound.publicKey?.equals(rsaKey.publicKey)).to.be.true()
+        expect(inbound.publicKey).to.equalBytes(rsaKey.publicKey.toProtobuf())
       })
 
       it('should not match an RSA peer id against a different key on inbound connections', async () => {

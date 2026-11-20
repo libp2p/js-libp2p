@@ -1,5 +1,6 @@
 /* eslint-env mocha */
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { createCryptoLoader, generateKeyPair } from '@libp2p/crypto'
+import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
 import { expect } from 'aegir/chai'
 import { base32 } from 'multiformats/bases/base32'
 import { base36 } from 'multiformats/bases/base36'
@@ -8,18 +9,20 @@ import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromString } from '../src/index.ts'
-import type { KeyType, PeerId } from '@libp2p/interface'
+import { peerIdFromCID, peerIdFromMultihash, peerIdFromPrivateKey, peerIdFromPublicKey, peerIdFromString } from '../src/index.ts'
+import type { PeerId } from '@libp2p/interface'
 
 // these values are from https://github.com/multiformats/multicodec/blob/master/table.csv
 const TRANSPORT_IPFS_GATEWAY_HTTP_CODE = 0x0920
 const RAW_CODE = 0x55
 
-const types: KeyType[] = [
+const getCrypto = createCryptoLoader([secp256k1Crypto()])
+
+const types = [
   'Ed25519',
   'secp256k1',
   'RSA'
-]
+] as const
 
 describe('PeerId', () => {
   types.forEach(type => {
@@ -27,7 +30,11 @@ describe('PeerId', () => {
       let peerId: PeerId
 
       before(async () => {
-        const key = await generateKeyPair(type)
+        const key = type === 'RSA'
+          ? await generateKeyPair(type, { bits: 1024 })
+          : type === 'secp256k1'
+            ? await generateKeyPair(type, { getCrypto })
+            : await generateKeyPair(type)
         peerId = peerIdFromPrivateKey(key)
       })
 
@@ -47,8 +54,8 @@ describe('PeerId', () => {
         expect(id.toCID().toString()).to.equal(peerId.toCID().toString())
       })
 
-      it('should stringify to the public key', async () => {
-        expect(peerId.toString()).to.equal(peerId.publicKey?.toString())
+      it('should stringify to the base58btc multihash', async () => {
+        expect(peerId.toString()).to.equal(base58btc.encode(peerId.toMultihash().bytes).slice(1))
       })
 
       it('should parse a v1 CID with the libp2p-key codec', async () => {
@@ -124,6 +131,72 @@ describe('PeerId', () => {
         expect(stub.calledWith(peerId)).to.be.true()
       })
     })
+  })
+
+  it('parses an Ed25519 peer id to its key bytes', async () => {
+    const key = await generateKeyPair('Ed25519')
+    const peerId = peerIdFromString(peerIdFromPrivateKey(key).toString())
+
+    expect(peerId.publicKey).to.equalBytes(key.publicKey.toProtobuf())
+  })
+
+  it('parses a secp256k1 peer id to its key bytes', async () => {
+    const key = await generateKeyPair('secp256k1', { getCrypto })
+    const peerId = peerIdFromString(peerIdFromPrivateKey(key).toString())
+
+    expect(peerId.type).to.equal('secp256k1')
+    expect(peerId.publicKey).to.equalBytes(key.publicKey.toProtobuf())
+  })
+
+  it('accepts RSA key bytes that match', async () => {
+    const key = await generateKeyPair('RSA', { bits: 1024 })
+    const peerId = peerIdFromMultihash(key.publicKey.toMultihash(), key.publicKey.toProtobuf())
+
+    expect(peerId.publicKey).to.equalBytes(key.publicKey.toProtobuf())
+  })
+
+  it('rejects RSA key bytes that do not match', async () => {
+    const key = await generateKeyPair('RSA', { bits: 1024 })
+    const other = await generateKeyPair('RSA', { bits: 1024 })
+
+    expect(() => peerIdFromMultihash(key.publicKey.toMultihash(), other.publicKey.toProtobuf()))
+      .to.throw().with.property('name', 'InvalidPublicKeyError')
+  })
+
+  it('still parses URL peer ids', () => {
+    const peerId = peerIdFromMultihash(identity.digest(new TextEncoder().encode('https://example.com')))
+
+    expect(peerId.type).to.equal('url')
+    expect(peerId.publicKey).to.be.undefined()
+  })
+
+  it('rejects identity multihashes of well-formed unsupported keys', async () => {
+    const key = await generateKeyPair('ECDSA')
+
+    expect(() => peerIdFromMultihash(identity.digest(key.publicKey.toProtobuf())))
+      .to.throw().with.property('name', 'InvalidMultihashError')
+  })
+
+  it('rejects a mismatched public key for identity multihashes', async () => {
+    const key = await generateKeyPair('Ed25519')
+    const other = await generateKeyPair('Ed25519')
+
+    expect(() => peerIdFromMultihash(key.publicKey.toMultihash(), other.publicKey.toProtobuf()))
+      .to.throw().with.property('name', 'InvalidPublicKeyError')
+  })
+
+  it('rejects non-canonical Ed25519 headers', () => {
+    const buf = new Uint8Array(36)
+    buf.set([0x08, 0x01, 0x12, 0xA0, 0x80, 0x00])
+
+    expect(() => peerIdFromMultihash(identity.digest(buf))).to.throw()
+  })
+
+  it('rejects ECDSA public keys', async () => {
+    const key = await generateKeyPair('ECDSA')
+
+    expect(() => peerIdFromPublicKey(key.publicKey))
+      .to.throw().with.property('name', 'UnsupportedKeyTypeError')
   })
 
   it('throws on invalid CID multicodec', () => {

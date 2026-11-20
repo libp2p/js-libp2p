@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -67,13 +67,15 @@ describe('random-walk', () => {
 
   it('should break out of a random walk', async () => {
     let yielded = 0
+    const peers = await Promise.all(Array.from({ length: 100 }, async () => createRandomPeerInfo()))
 
     peerRouting.getClosestPeers
       .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
-        for (let i = 0; i < 100; i++) {
+        for (const peer of peers) {
           options?.signal?.throwIfAborted()
           yielded++
-          yield await createRandomPeerInfo()
+          await delay(0)
+          yield peer
         }
       })
       .onSecondCall().returns(slowIterator())
@@ -141,13 +143,15 @@ describe('random-walk', () => {
 
   it('should continue random walk until all consumers satisfied', async () => {
     let yielded = 0
+    const peers = await Promise.all(Array.from({ length: 100 }, async () => createRandomPeerInfo()))
 
     peerRouting.getClosestPeers
       .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
-        for (let i = 0; i < 100; i++) {
+        for (const peer of peers) {
           options?.signal?.throwIfAborted()
           yielded++
-          yield await createRandomPeerInfo()
+          await delay(0)
+          yield peer
         }
       })
       .onSecondCall().returns(slowIterator())
@@ -157,18 +161,20 @@ describe('random-walk', () => {
       drain(take(randomWalk.walk(), 2))
     ])
 
-    expect(yielded).to.equal(3)
+    expect(yielded).to.equal(2)
   })
 
   it('should not block walk on slow consumers', async () => {
     let yielded = 0
+    const peers = await Promise.all(Array.from({ length: 100 }, async () => createRandomPeerInfo()))
 
     peerRouting.getClosestPeers
       .onFirstCall().callsFake(async function * (key, options?: AbortOptions) {
-        for (let i = 0; i < 100; i++) {
+        for (const peer of peers) {
           options?.signal?.throwIfAborted()
           yielded++
-          yield await createRandomPeerInfo()
+          await delay(0)
+          yield peer
         }
       })
       .onSecondCall().returns(slowIterator())
@@ -181,7 +187,7 @@ describe('random-walk', () => {
       }))
     ])
 
-    expect(yielded).to.equal(8)
+    expect(yielded).to.equal(7)
   })
 
   it('should unpause query if second consumer requires peers', async () => {

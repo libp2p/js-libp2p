@@ -1,4 +1,4 @@
-import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { start, stop } from '@libp2p/interface'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
@@ -77,7 +77,7 @@ describe('identify', () => {
       protocols: [
         '/foo/bar/1.0'
       ],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+      publicKey: remotePeer.publicKey
     }
 
     const [outgoingStream, incomingStream] = await streamPair()
@@ -108,7 +108,7 @@ describe('identify', () => {
     incomingStream.send(lp.encode.single(IdentifyMessage.encode({
       listenAddrs: [],
       protocols: [],
-      publicKey: publicKeyToProtobuf(otherPeer.publicKey)
+      publicKey: otherPeer.publicKey
     })))
     void incomingStream.close()
     const connection = stubInterface<Connection>({
@@ -179,7 +179,7 @@ describe('identify', () => {
       protocols: [
         '/foo/bar/1.0'
       ],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+      publicKey: remotePeer.publicKey
     }
 
     const [outgoingStream] = await streamPair()
@@ -232,7 +232,7 @@ describe('identify', () => {
       protocols: [
         '/foo/bar/1.0'
       ],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+      publicKey: remotePeer.publicKey
     }
     const secondMessage: IdentifyMessage = {
       listenAddrs: [],
@@ -291,7 +291,7 @@ describe('identify', () => {
     const message: IdentifyMessage = {
       listenAddrs: [],
       protocols: ['/foo/1.0'],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+      publicKey: remotePeer.publicKey
     }
 
     const [outgoingStream, incomingStream] = await streamPair()
@@ -347,7 +347,7 @@ describe('identify', () => {
     incomingStream.send(lp.encode.single(IdentifyMessage.encode({
       listenAddrs: [],
       protocols: [],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       agentVersion: 'secret-agent',
       protocolVersion: '9000'
     })))
@@ -402,7 +402,7 @@ describe('identify', () => {
     incomingStream.send(lp.encode.single(IdentifyMessage.encode({
       listenAddrs: [],
       protocols: [],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       signedPeerRecord: oldPeerRecord.marshal()
     })))
     void incomingStream.close()
@@ -452,7 +452,7 @@ describe('identify', () => {
       agentVersion: 'agent version',
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
       protocols: ['protocols'],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+      publicKey: remotePeer.publicKey
     }
 
     const [outgoingStream, incomingStream] = await streamPair()
@@ -475,7 +475,7 @@ describe('identify', () => {
       isCertified: false,
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/1234')
     }])
-    expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
+    expect(peer.publicKey?.toProtobuf()).to.equalBytes(remotePeer.publicKey)
   })
 
   it('should ignore empty and malformed listen multiaddrs', async () => {
@@ -494,7 +494,7 @@ describe('identify', () => {
         multiaddr('/ip4/127.0.0.1/tcp/1234').bytes
       ],
       protocols: ['protocols'],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey)
+      publicKey: remotePeer.publicKey
     }
 
     const [outgoingStream, incomingStream] = await streamPair()
@@ -538,7 +538,7 @@ describe('identify', () => {
       agentVersion: 'agent version',
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
       protocols: ['protocols'],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       signedPeerRecord: peerRecordEnvelope
     }
 
@@ -561,7 +561,7 @@ describe('identify', () => {
       isCertified: true,
       multiaddr: multiaddr('/ip4/127.0.0.1/tcp/5678')
     }])
-    expect(peer.publicKey?.equals(remotePeer.publicKey)).to.be.true()
+    expect(peer.publicKey?.toProtobuf()).to.equalBytes(remotePeer.publicKey)
   })
 
   it('should ignore empty multiaddrs from signed peer record', async () => {
@@ -587,7 +587,7 @@ describe('identify', () => {
       agentVersion: 'agent version',
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
       protocols: ['protocols'],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       signedPeerRecord: peerRecordEnvelope
     }
 
@@ -659,7 +659,7 @@ describe('identify', () => {
       agentVersion: 'agent version',
       listenAddrs: [multiaddr('/ip4/127.0.0.1/tcp/1234').bytes],
       protocols: ['protocols'],
-      publicKey: publicKeyToProtobuf(remotePeer.publicKey),
+      publicKey: remotePeer.publicKey,
       observedAddr: multiaddr('/ip6zone/en/ip6/fe80::2892:aef3:af04:735a').bytes
     }
 

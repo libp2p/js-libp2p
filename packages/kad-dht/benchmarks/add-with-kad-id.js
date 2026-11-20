@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import Benchmark from 'benchmark'
 import { sha256 } from 'multiformats/hashes/sha2'

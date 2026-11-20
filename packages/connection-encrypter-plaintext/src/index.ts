@@ -21,29 +21,32 @@
  * ```
  */
 
-import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { UnexpectedPeerError, InvalidCryptoExchangeError, serviceCapabilities, ProtocolError } from '@libp2p/interface'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { pbStream } from '@libp2p/utils'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { Exchange } from './pb/proto.ts'
-import type { ComponentLogger, Logger, ConnectionEncrypter, SecuredConnection, PrivateKey, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
+import type { ComponentLogger, CryptoLoader, Logger, ConnectionEncrypter, SecuredConnection, PrivateKey, SecureConnectionOptions, MessageStream } from '@libp2p/interface'
 
 const PROTOCOL = '/plaintext/2.0.0'
 
 export interface PlaintextComponents {
   privateKey: PrivateKey
   logger: ComponentLogger
+  getCrypto?: CryptoLoader
 }
 
 class Plaintext implements ConnectionEncrypter {
   public protocol: string = PROTOCOL
   private readonly privateKey: PrivateKey
   private readonly log: Logger
+  private readonly getCrypto?: CryptoLoader
 
   constructor (components: PlaintextComponents) {
     this.privateKey = components.privateKey
+    this.getCrypto = components.getCrypto
     this.log = components.logger.forComponent('libp2p:plaintext')
   }
 
@@ -75,7 +78,7 @@ class Plaintext implements ConnectionEncrypter {
     // Encode the public key and write it to the remote peer
     await pb.write({
       id: publicKey.toMultihash().bytes,
-      pubkey: withArrayBuffer(publicKeyToProtobuf(publicKey))
+      pubkey: withArrayBuffer(publicKey.toProtobuf())
     }, options)
 
     // Get the Exchange message
@@ -95,7 +98,7 @@ class Plaintext implements ConnectionEncrypter {
         throw new ProtocolError('Remote id missing')
       }
 
-      const pubKey = publicKeyFromProtobuf(response.pubkey)
+      const pubKey = await publicKeyFromProtobuf(response.pubkey, { ...options, getCrypto: this.getCrypto })
 
       if (!uint8ArrayEquals(pubKey.toMultihash().bytes, response.id)) {
         throw new InvalidCryptoExchangeError('Public key did not match id')

@@ -481,11 +481,10 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
     this.connections.set(peerId, storedConns)
 
-    // only need to store RSA public keys, all other types are embedded in the peer id
+    // only need to store RSA public keys, all other types are embedded in the
+    // peer id. The peer store copies the key bytes from the peer id
     if (peerId.publicKey != null && peerId.type === 'RSA') {
-      await this.peerStore.patch(peerId, {
-        publicKey: peerId.publicKey
-      })
+      await this.peerStore.patch(peerId, {})
     }
 
     if (isNewPeer) {

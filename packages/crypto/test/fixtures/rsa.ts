@@ -1,5 +1,8 @@
 /* spell-checker: disable */
-import type { JWKKeyPair } from '../../src/keys/interface.ts'
+interface JWKKeyPair {
+  privateKey: JsonWebKey
+  publicKey: JsonWebKey
+}
 
 /**
  * A 8200 bit RSA key

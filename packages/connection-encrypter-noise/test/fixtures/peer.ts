@@ -1,4 +1,4 @@
-import { generateKeyPair, privateKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair, privateKeyFromProtobuf } from '@libp2p/crypto'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { base64pad } from 'multiformats/bases/base64'
 import type { PeerId, PrivateKey } from '@libp2p/interface'
@@ -25,7 +25,7 @@ const peers = [{
 export async function createPeerIdsFromFixtures (length: number): Promise<Array<{ peerId: PeerId, privateKey: PrivateKey }>> {
   return Promise.all(
     Array.from({ length }).map(async (_, i) => {
-      const privateKey = privateKeyFromProtobuf(base64pad.decode(`M${peers[i].privKey}`))
+      const privateKey = await privateKeyFromProtobuf(base64pad.decode(`M${peers[i].privKey}`))
 
       return {
         privateKey,

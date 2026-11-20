@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { expect } from 'aegir/chai'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
@@ -50,7 +50,7 @@ describe('Envelope', () => {
     })
 
     expect(envelope).to.exist()
-    expect(envelope.publicKey.equals(key.publicKey)).to.eql(true)
+    expect(envelope.publicKey.toProtobuf()).to.equalBytes(key.publicKey.toProtobuf())
     expect(envelope.payloadType).to.equalBytes(payloadType)
     expect(envelope.payload.subarray()).to.equalBytes(payload.subarray())
     expect(envelope.signature).to.equalBytes(signature)
@@ -59,7 +59,7 @@ describe('Envelope', () => {
   it('can seal a record', async () => {
     const envelope = await RecordEnvelope.seal(testRecord, key)
     expect(envelope).to.exist()
-    expect(envelope.publicKey.equals(key.publicKey)).to.eql(true)
+    expect(envelope.publicKey.toProtobuf()).to.equalBytes(key.publicKey.toProtobuf())
     expect(envelope.payloadType).to.eql(payloadType)
     expect(envelope.payload).to.exist()
     expect(envelope.signature).to.exist()

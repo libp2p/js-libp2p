@@ -17,7 +17,7 @@
  *
  * ```TypeScript
  * import { PeerRecord, RecordEnvelope } from '@libp2p/peer-record'
- * import { generateKeyPair } from '@libp2p/crypto/keys'
+ * import { generateKeyPair } from '@libp2p/crypto'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
  *
  * const privateKey = await generateKeyPair('Ed25519')
@@ -62,7 +62,7 @@
  * ```TypeScript
  * import { PeerRecord } from '@libp2p/peer-record'
  * import { peerIdFromPrivateKey } from '@libp2p/peer-id'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
  * import { multiaddr } from '@multiformats/multiaddr'
  *
  * const peerId = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))

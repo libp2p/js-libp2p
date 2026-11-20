@@ -1,4 +1,4 @@
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { InvalidMessageError } from '@libp2p/interface'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { RecordEnvelope, PeerRecord } from '@libp2p/peer-record'
@@ -8,6 +8,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { IDENTIFY_PROTOCOL_VERSION, MAX_IDENTIFY_MESSAGE_SIZE, MAX_IDENTIFY_MESSAGES, MAX_PUSH_CONCURRENCY } from './consts.ts'
 import { Identify as IdentifyMessage } from './pb/message.ts'
 import type { IdentifyComponents, IdentifyInit } from './index.ts'
+import type { CryptoLoaderOptions } from '@libp2p/crypto'
 import type { AbortOptions, Libp2pEvents, IdentifyResult, SignedPeerRecord, Logger, Connection, Peer, PeerData, PeerStore, Startable, Stream } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -46,7 +47,7 @@ export function getCleanMultiaddr (addr: Uint8Array | string | null | undefined)
   }
 }
 
-export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage): Promise<IdentifyResult> {
+export async function consumeIdentifyMessage (peerStore: PeerStore, events: TypedEventTarget<Libp2pEvents>, log: Logger, connection: Connection, message: IdentifyMessage, options?: CryptoLoaderOptions): Promise<IdentifyResult> {
   log('received identify from %p', connection.remotePeer)
 
   if (message == null) {
@@ -71,7 +72,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
   }
 
   if (message.publicKey != null) {
-    const publicKey = publicKeyFromProtobuf(message.publicKey)
+    const publicKey = await publicKeyFromProtobuf(message.publicKey, options)
     const peerId = peerIdFromPublicKey(publicKey)
 
     if (!peerId.equals(connection.remotePeer)) {
@@ -88,7 +89,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
     log.trace('received signedPeerRecord from %p', connection.remotePeer)
 
     let peerRecordEnvelope = message.signedPeerRecord
-    const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN)
+    const envelope = await RecordEnvelope.openAndCertify(peerRecordEnvelope, PeerRecord.DOMAIN, options)
     let peerRecord = PeerRecord.createFromProtobuf(envelope.payload)
     const envelopePeer = peerIdFromPublicKey(envelope.publicKey)
 
@@ -118,7 +119,7 @@ export async function consumeIdentifyMessage (peerStore: PeerStore, events: Type
 
       // if we have previously received a signed record for this peer, compare it to the incoming one
       if (existingPeer.peerRecordEnvelope != null) {
-        const storedEnvelope = RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope)
+        const storedEnvelope = await RecordEnvelope.createFromProtobuf(existingPeer.peerRecordEnvelope, options)
         const storedRecord = PeerRecord.createFromProtobuf(storedEnvelope.payload)
 
         // ensure seq is greater than, or equal to, the last received

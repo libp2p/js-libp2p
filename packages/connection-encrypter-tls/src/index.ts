@@ -19,7 +19,7 @@
  */
 
 import { TLS } from './tls.ts'
-import type { ComponentLogger, ConnectionEncrypter, Metrics, PrivateKey, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, ConnectionEncrypter, CryptoLoader, Metrics, PrivateKey, Upgrader } from '@libp2p/interface'
 
 export const PROTOCOL = '/tls/1.0.0'
 
@@ -28,6 +28,7 @@ export interface TLSComponents {
   logger: ComponentLogger
   upgrader: Upgrader
   metrics?: Metrics
+  getCrypto?: CryptoLoader
 }
 
 export function tls (): (components: TLSComponents) => ConnectionEncrypter {

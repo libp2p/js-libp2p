@@ -1,4 +1,5 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
+import { PublicKeyMessage } from '@libp2p/crypto/pb'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { lpStream, streamPair } from '@libp2p/utils'
@@ -16,7 +17,7 @@ function field (num: number, value: Uint8Array): Uint8Array {
 // an Exchange message encoded by hand with the key as an embedded
 // `PublicKey { Type, Data }` message, the format other implementations use
 function exchange (key: PrivateKey, type: number): Uint8Array {
-  const publicKey = uint8ArrayConcat([Uint8Array.from([0x08, type]), field(2, key.publicKey.raw)])
+  const publicKey = uint8ArrayConcat([Uint8Array.from([0x08, type]), field(2, PublicKeyMessage.decode(key.publicKey.toProtobuf()).Data ?? new Uint8Array())])
 
   return uint8ArrayConcat([field(1, key.publicKey.toMultihash().bytes), field(2, publicKey)])
 }
@@ -28,8 +29,8 @@ describe('plaintext wire format', () => {
       let remoteKey: PrivateKey
 
       before(async () => {
-        localKey = await generateKeyPair(name, bits)
-        remoteKey = await generateKeyPair(name, bits)
+        localKey = await generateKeyPair(name, { bits })
+        remoteKey = await generateKeyPair(name, { bits })
       })
 
       it('writes and reads an Exchange with an embedded PublicKey message', async () => {
@@ -46,7 +47,7 @@ describe('plaintext wire format', () => {
 
         const { remotePeer } = await result
         expect(remotePeer.equals(peerIdFromPrivateKey(remoteKey))).to.be.true()
-        expect(remotePeer.publicKey?.equals(remoteKey.publicKey)).to.be.true()
+        expect(remotePeer.publicKey).to.equalBytes(remoteKey.publicKey.toProtobuf())
       })
     })
   }

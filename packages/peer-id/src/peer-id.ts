@@ -14,14 +14,16 @@
  * ```
  */
 
-import { peerIdSymbol } from '@libp2p/interface'
+import { InvalidPublicKeyError, peerIdSymbol } from '@libp2p/interface'
+import { sha256 } from '@noble/hashes/sha2.js'
 import { base58btc } from 'multiformats/bases/base58'
 import { CID } from 'multiformats/cid'
 import { identity } from 'multiformats/hashes/identity'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import type { Ed25519PeerId as Ed25519PeerIdInterface, PeerIdType, RSAPeerId as RSAPeerIdInterface, URLPeerId as URLPeerIdInterface, Secp256k1PeerId as Secp256k1PeerIdInterface, PeerId, PublicKey, Ed25519PublicKey, Secp256k1PublicKey, RSAPublicKey } from '@libp2p/interface'
+import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
+import type { Ed25519PeerId as Ed25519PeerIdInterface, PeerIdType, RSAPeerId as RSAPeerIdInterface, URLPeerId as URLPeerIdInterface, Secp256k1PeerId as Secp256k1PeerIdInterface, PeerId } from '@libp2p/interface'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
 
 const inspect = Symbol.for('nodejs.util.inspect.custom')
@@ -36,23 +38,22 @@ interface PeerIdInit <DigestCode extends number> {
 
 interface RSAPeerIdInit {
   multihash: MultihashDigest<0x12>
-  publicKey?: RSAPublicKey
+  publicKey?: Uint8Array
 }
 
 interface Ed25519PeerIdInit {
   multihash: MultihashDigest<0x0>
-  publicKey: Ed25519PublicKey
+  publicKey: Uint8Array
 }
 
 interface Secp256k1PeerIdInit {
   multihash: MultihashDigest<0x0>
-  publicKey: Secp256k1PublicKey
+  publicKey: Uint8Array
 }
 
 class PeerIdImpl <DigestCode extends number> {
   public type: PeerIdType
   private readonly multihash: MultihashDigest<DigestCode>
-  public readonly publicKey?: PublicKey
   private string?: string
 
   constructor (init: PeerIdInit<DigestCode>) {
@@ -132,34 +133,40 @@ class PeerIdImpl <DigestCode extends number> {
 
 export class RSAPeerId extends PeerIdImpl<0x12> implements RSAPeerIdInterface {
   public readonly type = 'RSA'
-  public readonly publicKey?: RSAPublicKey
+  public readonly publicKey?: Uint8Array<ArrayBuffer>
 
   constructor (init: RSAPeerIdInit) {
     super({ ...init, type: 'RSA' })
 
-    this.publicKey = init.publicKey
+    if (init.publicKey != null) {
+      if (!uint8ArrayEquals(sha256(init.publicKey), init.multihash.digest)) {
+        throw new InvalidPublicKeyError('Public key does not match peer id')
+      }
+
+      this.publicKey = withArrayBuffer(init.publicKey)
+    }
   }
 }
 
 export class Ed25519PeerId extends PeerIdImpl<0x0> implements Ed25519PeerIdInterface {
   public readonly type = 'Ed25519'
-  public readonly publicKey: Ed25519PublicKey
+  public readonly publicKey: Uint8Array<ArrayBuffer>
 
   constructor (init: Ed25519PeerIdInit) {
     super({ ...init, type: 'Ed25519' })
 
-    this.publicKey = init.publicKey
+    this.publicKey = withArrayBuffer(init.publicKey)
   }
 }
 
 export class Secp256k1PeerId extends PeerIdImpl<0x0> implements Secp256k1PeerIdInterface {
   public readonly type = 'secp256k1'
-  public readonly publicKey: Secp256k1PublicKey
+  public readonly publicKey: Uint8Array<ArrayBuffer>
 
   constructor (init: Secp256k1PeerIdInit) {
     super({ ...init, type: 'secp256k1' })
 
-    this.publicKey = init.publicKey
+    this.publicKey = withArrayBuffer(init.publicKey)
   }
 }
 

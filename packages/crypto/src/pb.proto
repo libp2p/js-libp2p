@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+enum KeyType {
+  RSA = 0;
+  Ed25519 = 1;
+  secp256k1 = 2;
+  ECDSA = 3;
+}
+
+message PublicKeyMessage {
+  optional int32 Type = 1;
+  optional bytes Data = 2;
+}
+
+message PrivateKeyMessage {
+  optional int32 Type = 1;
+  optional bytes Data = 2;
+}

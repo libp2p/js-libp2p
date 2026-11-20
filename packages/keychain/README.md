@@ -5,7 +5,7 @@
 [![codecov](https://img.shields.io/codecov/c/github/libp2p/js-libp2p.svg?style=flat-square)](https://codecov.io/gh/libp2p/js-libp2p)
 [![CI](https://img.shields.io/github/actions/workflow/status/libp2p/js-libp2p/main.yml?branch=main\&style=flat-square)](https://github.com/libp2p/js-libp2p/actions/workflows/main.yml?query=branch%3Amain)
 
-> Key management and cryptographically protected messages
+> Generate and securely store private keys at rest
 
 # About
 
@@ -24,52 +24,73 @@ repo and examine the changes made.
 
 -->
 
-- Manages the life cycle of a key
-- Keys are encrypted at rest
-- Enforces the use of safe key names
-- Uses encrypted PKCS 8 for key storage
-- Uses PBKDF2 for a "stretched" key encryption key
-- Enforces NIST SP 800-131A and NIST SP 800-132
-- Delays reporting errors to slow down brute force attacks
+A WebCrypto-first keychain that stores private keys encrypted at rest.
 
-## KeyInfo
+## Example
 
-The key management and naming service API all return a `KeyInfo` object.  The `id` is a universally unique identifier for the key.  The `name` is local to the key chain.
-
-```JSON
-{
-  "name": "rsa-key",
-  "id": "QmYWYSUZ4PV6MRFYpdtEDJBiGs4UrmE6g8wmAWSePekXVW"
-}
-```
-
-The **key id** is the SHA-256 [multihash](https://github.com/multiformats/multihash) of its public key.
-
-The *public key* is a [protobuf encoding](https://github.com/libp2p/js-libp2p/blob/main/packages/crypto/src/keys/keys.proto) containing a type and the [DER encoding](https://en.wikipedia.org/wiki/X.690) of the PKCS [SubjectPublicKeyInfo](https://www.ietf.org/rfc/rfc3279.txt).
-
-## Private key storage
-
-A private key is stored as an encrypted PKCS 8 structure in the PEM format. It is protected by a key generated from the key chain's *pass phrase* using **PBKDF2**.
-
-The default options for generating the derived encryption key are in the `dek` object.  This, along with the pass phrase, is the input to a `PBKDF2` function.
+Configure the keychain as a libp2p service:
 
 ```TypeScript
-const defaultOptions = {
-  // See https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
-  dek: {
-    keyLength: 512 / 8,
-    iterationCount: 1000,
-    salt: 'at least 16 characters long',
-    hash: 'sha2-512'
+import { keychain } from '@libp2p/keychain'
+import { createLibp2p } from 'libp2p'
+
+const node = await createLibp2p({
+  services: {
+    keychain: keychain({
+      password: 'a password of at least 20 characters'
+    })
   }
+})
+
+const key = await node.services.keychain.generateKey('my-key', { type: 'ECDSA' })
+
+for await (const { id, name } of node.services.keychain.listKeys()) {
+  console.info(name, id)
 }
+
+const exported = await node.services.keychain.exportKey('my-key')
+const signature = await exported.sign(Uint8Array.from([0, 1, 2, 3]))
 ```
 
-## Physical storage
+## Standalone use
 
-The actual physical storage of an encrypted key is left to implementations of [interface-datastore](https://github.com/ipfs/interface-datastore/).
+Outside libp2p, pass a datastore and a `CryptoLoader`:
 
-A key benefit is that now the key chain can be used in browser with the [js-datastore-level](https://github.com/ipfs/js-datastore-level) implementation.
+```TypeScript
+import { defaultCryptoLoader, generateKeyPair } from '@libp2p/crypto'
+import { keychain } from '@libp2p/keychain'
+import { MemoryDatastore } from 'datastore-core'
+
+const kc = keychain({
+  password: 'a password of at least 20 characters'
+})({
+  datastore: new MemoryDatastore(),
+  getCrypto: defaultCryptoLoader()
+})
+
+await kc.importKey('imported', await generateKeyPair('Ed25519'))
+await kc.renameKey('imported', 'renamed')
+await kc.rotateKeychainPass('a new password of at least 20 characters')
+await kc.removeKey('renamed')
+```
+
+## Configuring additional implementations
+
+ECDSA, Ed25519 and RSA keys are supported out of the box but other schemes
+are configurable by passing a `CryptoLoader` that can return `Crypto`
+instances.
+
+## Upgrading from 6.x
+
+- The `pass` option is now `password`
+- `dek.salt` and `dek.iterationCount` are now `salt` and `iterations`
+- A customized `dek.keyLength` or `dek.hash` goes in `legacyDek: { keyLength, hash }` (defaults are `64` and `'sha2-512'`). It is only used to read keys written by 6.x
+- A `getCrypto` component is required. libp2p passes `libp2p.getCrypto`, for standalone use pass `defaultCryptoLoader()` or `createCryptoLoader([...])` from `@libp2p/crypto`
+- Stores written by 6.x are migrated the first time the keychain is used. The migration is resumable and `/keychain/meta` is written last. Once migrated a store cannot be opened by 6.x
+- `findKeyById` and `findKeyByName` have been removed
+- `listKeys()` is an async generator
+- `importKey` returns the imported key and `removeKey` returns nothing
+- `rotateKeychainPass(password)` takes only the new password and changes the password at runtime
 
 # Install
 

@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { stop } from '@libp2p/interface'
 import { memory } from '@libp2p/memory'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'

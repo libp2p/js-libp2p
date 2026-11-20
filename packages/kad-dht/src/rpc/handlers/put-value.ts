@@ -5,7 +5,7 @@ import { bufferToRecordKey } from '../../utils.ts'
 import type { Validators } from '../../index.ts'
 import type { Message } from '../../message/dht.ts'
 import type { DHTMessageHandler } from '../index.ts'
-import type { ComponentLogger, Logger, PeerId } from '@libp2p/interface'
+import type { ComponentLogger, CryptoLoader, Logger, PeerId } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
 
 export interface PutValueHandlerInit {
@@ -17,6 +17,7 @@ export interface PutValueHandlerInit {
 export interface PutValueHandlerComponents {
   datastore: Datastore
   logger: ComponentLogger
+  getCrypto?: CryptoLoader
 }
 
 export class PutValueHandler implements DHTMessageHandler {
@@ -46,7 +47,7 @@ export class PutValueHandler implements DHTMessageHandler {
     try {
       const deserializedRecord = Libp2pRecord.deserialize(msg.record)
 
-      await verifyRecord(this.validators, deserializedRecord)
+      await verifyRecord(this.validators, deserializedRecord, { getCrypto: this.components.getCrypto })
 
       deserializedRecord.timeReceived = new Date()
       const recordKey = bufferToRecordKey(this.datastorePrefix, deserializedRecord.key)

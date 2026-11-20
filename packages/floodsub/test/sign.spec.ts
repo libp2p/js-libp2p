@@ -1,4 +1,5 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { createCryptoLoader, generateKeyPair } from '@libp2p/crypto'
+import { secp256k1Crypto } from '@libp2p/crypto/secp256k1'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
@@ -46,7 +47,7 @@ describe('message signing', () => {
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)
-    expect(signedMessage.key.equals(peerId.publicKey)).to.be.true()
+    expect(signedMessage.key.toProtobuf()).to.equalBytes(peerId.publicKey)
 
     // Verify the signature
     const verified = await verifySignature({
@@ -57,7 +58,8 @@ describe('message signing', () => {
   })
 
   it('should be able to extract the public key from an inlined key', async () => {
-    const secPrivateKey = await generateKeyPair('secp256k1')
+    const getCrypto = createCryptoLoader([secp256k1Crypto()])
+    const secPrivateKey = await generateKeyPair('secp256k1', { getCrypto })
     const secPeerId = peerIdFromPrivateKey(secPrivateKey)
 
     // @ts-expect-error incomplete implementation
@@ -83,7 +85,7 @@ describe('message signing', () => {
     const verified = await verifySignature({
       ...signedMessage,
       from: secPeerId
-    }, encodeMessage)
+    }, encodeMessage, { getCrypto })
     expect(verified).to.eql(true)
   })
 
@@ -104,7 +106,7 @@ describe('message signing', () => {
 
     // Check the signature and public key
     expect(signedMessage.signature).to.equalBytes(expectedSignature)
-    expect(signedMessage.key.equals(peerId.publicKey)).to.be.true()
+    expect(signedMessage.key.toProtobuf()).to.equalBytes(peerId.publicKey)
 
     // Verify the signature
     const verified = await verifySignature({
@@ -143,11 +145,21 @@ describe('author key binding', () => {
     await expect(verifySignature(forged, encodeMessage)).to.eventually.equal(false)
   })
 
+  it('does not verify a message from an unsupported key type', async () => {
+    const getCrypto = createCryptoLoader([secp256k1Crypto()])
+    const secPrivateKey = await generateKeyPair('secp256k1', { getCrypto })
+    const signed = await signMessage(secPrivateKey, { from: peerIdFromPrivateKey(secPrivateKey), topic, data, sequenceNumber: nextSeqno() }, encodeMessage)
+
+    await expect(verifySignature(signed, encodeMessage)).to.eventually.equal(false)
+    await expect(verifySignature(signed, encodeMessage, { getCrypto })).to.eventually.equal(true)
+  })
+
   it('rejects a message whose key does not derive to the secp256k1 author', async () => {
-    const victim = peerIdFromPrivateKey(await generateKeyPair('secp256k1'))
+    const getCrypto = createCryptoLoader([secp256k1Crypto()])
+    const victim = peerIdFromPrivateKey(await generateKeyPair('secp256k1', { getCrypto }))
     const forged = await forge(victim, await generateKeyPair('Ed25519'))
 
-    await expect(verifySignature(forged, encodeMessage)).to.eventually.equal(false)
+    await expect(verifySignature(forged, encodeMessage, { getCrypto })).to.eventually.equal(false)
   })
 
   // an RSA peer id does not carry its public key, so the message key is the only
@@ -157,7 +169,7 @@ describe('author key binding', () => {
     let author: PeerId
 
     before(async () => {
-      rsaKey = await generateKeyPair('RSA', 2048)
+      rsaKey = await generateKeyPair('RSA', { bits: 2048 })
       // on the wire `from` is rebuilt from its multihash and carries no key
       author = peerIdFromMultihash(peerIdFromPrivateKey(rsaKey).toMultihash())
     })

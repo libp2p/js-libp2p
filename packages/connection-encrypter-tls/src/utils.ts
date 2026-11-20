@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 import { Duplex } from 'node:stream'
 import tls from 'node:tls'
-import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { InvalidCryptoExchangeError, UnexpectedPeerError, StreamMessageEvent } from '@libp2p/interface'
 import { peerIdFromPublicKey } from '@libp2p/peer-id'
 import { AbstractMessageStream } from '@libp2p/utils'
@@ -17,6 +17,7 @@ import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidCertificateError } from './errors.ts'
+import type { CryptoLoaderOptions } from '@libp2p/crypto'
 import type { PeerId, PublicKey as Libp2pPublicKey, Logger, PrivateKey, AbortOptions, MessageStream, StreamCloseEvent } from '@libp2p/interface'
 import type { SendResult } from '@libp2p/utils'
 
@@ -31,7 +32,7 @@ const CERT_VALIDITY_PERIOD_FROM = 60 * 60 * 1000 // ~1 hour
 // https://github.com/libp2p/go-libp2p/blob/28c0f6ab32cd69e4b18e9e4b550ef6ce059a9d1a/p2p/security/tls/crypto.go#L24C28-L24C44
 const CERT_VALIDITY_PERIOD_TO = 100 * 365 * 24 * 60 * 60 * 1000 // ~100 years
 
-export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger): Promise<PeerId> {
+export async function verifyPeerCertificate (rawCertificate: Uint8Array, expectedPeerId?: PeerId, log?: Logger, options?: CryptoLoaderOptions): Promise<PeerId> {
   const now = Date.now()
   const x509Cert = new x509.X509Certificate(withArrayBuffer(rawCertificate))
 
@@ -71,7 +72,7 @@ export async function verifyPeerCertificate (rawCertificate: Uint8Array, expecte
   // @ts-expect-error deep chain
   const remotePeerIdPb = libp2pKeySequence.valueBlock.value[0].valueBlock.valueHex
   const marshaledPeerId = new Uint8Array(remotePeerIdPb, 0, remotePeerIdPb.byteLength)
-  const remoteLibp2pPublicKey: Libp2pPublicKey = publicKeyFromProtobuf(marshaledPeerId)
+  const remoteLibp2pPublicKey: Libp2pPublicKey = await publicKeyFromProtobuf(marshaledPeerId, options)
 
   // @ts-expect-error deep chain
   const remoteSignature = libp2pKeySequence.valueBlock.value[1].valueBlock.valueHex
@@ -126,7 +127,7 @@ export async function generateCertificate (privateKey: PrivateKey, options?: Abo
         value: [
           // publicKey
           new asn1js.OctetString({
-            valueHex: publicKeyToProtobuf(privateKey.publicKey)
+            valueHex: privateKey.publicKey.toProtobuf()
           }),
           // signature
           new asn1js.OctetString({

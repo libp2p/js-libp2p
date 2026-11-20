@@ -1,4 +1,3 @@
-import { publicKeyToProtobuf } from '@libp2p/crypto/keys'
 import { peerIdFromMultihash } from '@libp2p/peer-id'
 import { RecordEnvelope } from '@libp2p/peer-record'
 import { pbStream } from '@libp2p/utils'
@@ -242,7 +241,7 @@ export class CircuitRelayServer extends TypedEventEmitter<RelayServerEvents> imp
       addrs,
       expire,
       voucher: {
-        publicKey: publicKeyToProtobuf(envelope.publicKey),
+        publicKey: envelope.publicKey.toProtobuf(),
         payloadType: envelope.payloadType,
         payload: {
           peer: remotePeer.toMultihash().bytes,

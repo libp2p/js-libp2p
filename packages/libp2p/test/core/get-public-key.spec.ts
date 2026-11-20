@@ -1,4 +1,4 @@
-import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair, publicKeyFromProtobuf } from '@libp2p/crypto'
 import { contentRoutingSymbol } from '@libp2p/interface'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -34,34 +34,34 @@ describe('getPublicKey', () => {
 
     const key = await node.getPublicKey(otherPeer)
 
-    expect(otherPeer.publicKey.equals(key)).to.be.true()
+    expect(key.toProtobuf()).to.equalBytes(otherPeer.publicKey)
   })
 
   it('should get key from the peer store', async () => {
-    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', { bits: 512 }))
 
     if (otherPeer.publicKey == null) {
       throw new Error('Public key was missing')
     }
 
     await node.peerStore.patch(otherPeer, {
-      publicKey: otherPeer.publicKey
+      publicKey: await publicKeyFromProtobuf(otherPeer.publicKey)
     })
 
     const key = await node.getPublicKey(otherPeer)
 
-    expect(otherPeer.publicKey.equals(key)).to.be.true()
+    expect(key.toProtobuf()).to.equalBytes(otherPeer.publicKey)
   })
 
   it('should query content routing when the key is not in the keystore', async () => {
-    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', { bits: 512 }))
 
     router.get.callsFake(async () => {
       if (otherPeer.publicKey == null) {
         throw new Error('Public key was missing')
       }
 
-      return Promise.resolve(publicKeyToProtobuf(otherPeer.publicKey))
+      return Promise.resolve(otherPeer.publicKey)
     })
 
     // create a copy of the RSA key, this will not have the public key
@@ -70,16 +70,16 @@ describe('getPublicKey', () => {
 
     const key = await node.getPublicKey(otherPeerWithoutPublicKey)
 
-    expect(otherPeer.publicKey?.equals(key)).to.be.true()
+    expect(key.toProtobuf()).to.equalBytes(otherPeer.publicKey)
     expect(router.get.called).to.be.true('routing was not queried')
   })
 
   it('rejects a public key that does not match the requested peer', async () => {
-    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', 512))
+    const otherPeer = peerIdFromPrivateKey(await generateKeyPair('RSA', { bits: 512 }))
     const wrongKey = await generateKeyPair('Ed25519')
 
     // content routing returns a key for a different peer
-    router.get.callsFake(async () => publicKeyToProtobuf(wrongKey.publicKey))
+    router.get.callsFake(async () => wrongKey.publicKey.toProtobuf())
 
     // the mismatched key must be rejected before it is stored
     const patchSpy = sinon.spy(node.peerStore, 'patch')

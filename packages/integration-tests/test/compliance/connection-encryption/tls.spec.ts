@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import suite from '@libp2p/interface-compliance-tests/connection-encryption'
 import { defaultLogger } from '@libp2p/logger'
 import { tls } from '@libp2p/tls'

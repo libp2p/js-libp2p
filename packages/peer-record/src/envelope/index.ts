@@ -1,10 +1,11 @@
-import { publicKeyFromProtobuf, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import * as varint from 'uint8-varint'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
 import { fromString as uint8arraysFromString } from 'uint8arrays/from-string'
 import { Envelope as Protobuf } from './envelope.ts'
 import { InvalidSignatureError } from './errors.ts'
+import type { CryptoLoaderOptions } from '@libp2p/crypto'
 import type { Record, Envelope, PrivateKey, PublicKey, AbortOptions } from '@libp2p/interface'
 
 export interface RecordEnvelopeInit {
@@ -18,9 +19,9 @@ export class RecordEnvelope implements Envelope {
   /**
    * Unmarshal a serialized Envelope protobuf message
    */
-  static createFromProtobuf = (data: Uint8Array | Uint8ArrayList): RecordEnvelope => {
+  static createFromProtobuf = async (data: Uint8Array | Uint8ArrayList, options?: CryptoLoaderOptions): Promise<RecordEnvelope> => {
     const envelopeData = Protobuf.decode(data)
-    const publicKey = publicKeyFromProtobuf(envelopeData.publicKey)
+    const publicKey = await publicKeyFromProtobuf(envelopeData.publicKey, options)
 
     return new RecordEnvelope({
       publicKey,
@@ -57,8 +58,8 @@ export class RecordEnvelope implements Envelope {
    * Open and certify a given marshaled envelope.
    * Data is unmarshaled and the signature validated for the given domain.
    */
-  static openAndCertify = async (data: Uint8Array | Uint8ArrayList, domain: string, options?: AbortOptions): Promise<RecordEnvelope> => {
-    const envelope = RecordEnvelope.createFromProtobuf(data)
+  static openAndCertify = async (data: Uint8Array | Uint8ArrayList, domain: string, options?: CryptoLoaderOptions): Promise<RecordEnvelope> => {
+    const envelope = await RecordEnvelope.createFromProtobuf(data, options)
     const valid = await envelope.validate(domain, options)
 
     if (!valid) {
@@ -93,7 +94,7 @@ export class RecordEnvelope implements Envelope {
   marshal (): Uint8Array {
     if (this.marshaled == null) {
       this.marshaled = Protobuf.encode({
-        publicKey: publicKeyToProtobuf(this.publicKey),
+        publicKey: this.publicKey.toProtobuf(),
         payloadType: this.payloadType,
         payload: this.payload.subarray(),
         signature: this.signature

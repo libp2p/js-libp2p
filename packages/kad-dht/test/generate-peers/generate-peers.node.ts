@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
@@ -54,7 +54,7 @@ describe.skip('generate peers', function () {
   })
 
   beforeEach(async () => {
-    const key = await generateKeyPair('RSA', 512)
+    const key = await generateKeyPair('RSA', { bits: 512 })
     const id = peerIdFromPrivateKey(key)
 
     const components = {
@@ -100,7 +100,7 @@ describe.skip('generate peers', function () {
 
   TEST_CASES.forEach(({ targetCpl, randPrefix }) => {
     it(`should generate peers targetCpl ${targetCpl} randPrefix ${randPrefix}`, async () => {
-      const key = await generateKeyPair('RSA', 512)
+      const key = await generateKeyPair('RSA', { bits: 512 })
       const peerId = peerIdFromPrivateKey(key)
       const localKadId = await convertPeerId(peerId)
 

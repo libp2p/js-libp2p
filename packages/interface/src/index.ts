@@ -16,9 +16,9 @@
 
 import type { Connection, NewStreamOptions, NewStreamProgressEvents } from './connection.ts'
 import type { ContentRouting } from './content-routing.ts'
-import type { Ed25519PublicKey, PublicKey, RSAPublicKey, Secp256k1PublicKey } from './keys.ts'
+import type { CryptoLoader, PublicKey } from './keys.ts'
 import type { Metrics } from './metrics.ts'
-import type { Ed25519PeerId, PeerId, RSAPeerId, Secp256k1PeerId, URLPeerId } from './peer-id.ts'
+import type { PeerId } from './peer-id.ts'
 import type { PeerInfo } from './peer-info.ts'
 import type { PeerRouting } from './peer-routing.ts'
 import type { Address, Peer, PeerStore } from './peer-store.ts'
@@ -524,6 +524,19 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
   peerId: PeerId
 
   /**
+   * Loads the key implementations this node was configured with, the defaults
+   * (Ed25519, RSA and ECDSA) plus any passed as `cryptos`. Pass it as the
+   * `getCrypto` option to `@libp2p/crypto` functions to handle those key types.
+   *
+   * @example
+   *
+   * ```TypeScript
+   * const crypto = await libp2p.getCrypto('Ed25519')
+   * ```
+   */
+  getCrypto: CryptoLoader
+
+  /**
    * The peer store holds information we know about other peers on the network.
    * - multiaddrs, supported protocols, etc.
    *
@@ -844,10 +857,6 @@ export interface Libp2p<T extends ServiceMap = ServiceMap> extends Startable, Ty
    * type this may mean searching the routing if the peer's key is not present
    * in the peer store.
    */
-  getPublicKey(peer: Ed25519PeerId, options?: AbortOptions): Promise<Ed25519PublicKey>
-  getPublicKey(peer: Secp256k1PeerId, options?: AbortOptions): Promise<Secp256k1PublicKey>
-  getPublicKey(peer: RSAPeerId, options?: AbortOptions): Promise<RSAPublicKey>
-  getPublicKey(peer: URLPeerId, options?: AbortOptions): Promise<never>
   getPublicKey(peer: PeerId, options?: AbortOptions): Promise<PublicKey>
 
   /**

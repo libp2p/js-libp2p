@@ -1,5 +1,5 @@
 import { bootstrap } from '@libp2p/bootstrap'
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerDiscoverySymbol } from '@libp2p/interface'
 import { mplex } from '@libp2p/mplex'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'

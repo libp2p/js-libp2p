@@ -1,4 +1,4 @@
-import { publicKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { publicKeyFromProtobuf } from '@libp2p/crypto'
 import { InvalidPublicKeyError, NotFoundError } from '@libp2p/interface'
 import { peerIdFromPublicKey, peerIdFromMultihash } from '@libp2p/peer-id'
 import { Libp2pRecord } from '@libp2p/record'
@@ -21,7 +21,7 @@ import type { QueryManager, QueryOptions } from '../query/manager.ts'
 import type { QueryFunc } from '../query/types.ts'
 import type { RoutingTable } from '../routing-table/index.ts'
 import type { GetClosestPeersOptions } from '../routing-table/k-bucket.ts'
-import type { ComponentLogger, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
+import type { ComponentLogger, CryptoLoader, Logger, Metrics, PeerId, PeerInfo, PeerStore, RoutingOptions } from '@libp2p/interface'
 import type { AbortOptions } from 'it-pushable'
 
 export interface PeerRoutingComponents {
@@ -29,6 +29,7 @@ export interface PeerRoutingComponents {
   peerStore: PeerStore
   logger: ComponentLogger
   metrics?: Metrics
+  getCrypto?: CryptoLoader
 }
 
 export interface PeerRoutingInit {
@@ -136,7 +137,7 @@ export class PeerRouting {
       yield event
 
       if (event.name === 'PEER_RESPONSE' && event.record != null) {
-        const publicKey = publicKeyFromProtobuf(event.record.value)
+        const publicKey = await publicKeyFromProtobuf(event.record.value, { ...options, getCrypto: this.components.getCrypto })
         const recPeer = peerIdFromPublicKey(publicKey)
 
         // compare hashes of the pub key
@@ -333,7 +334,7 @@ export class PeerRouting {
       throw new InvalidRecordError('received record key did not match the requested key')
     }
 
-    await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived), options)
+    await verifyRecord(this.validators, new Libp2pRecord(record.key, record.value, record.timeReceived), { ...options, getCrypto: this.components.getCrypto })
   }
 
   /**

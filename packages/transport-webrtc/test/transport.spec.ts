@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { defaultCryptoLoader, generateKeyPair } from '@libp2p/crypto'
 import { transportSymbol, start, stop } from '@libp2p/interface'
 import { keychain } from '@libp2p/keychain'
 import { defaultLogger } from '@libp2p/logger'
@@ -55,7 +55,7 @@ async function createTransportComponents (): Promise<WebRTCDirectTransportCompon
     datastore,
     keychain: keychain()({
       datastore,
-      logger
+      getCrypto: defaultCryptoLoader()
     })
   }
 }
@@ -87,7 +87,7 @@ describe('WebRTCDirect Transport', () => {
       datastore,
       keychain: keychain()({
         datastore,
-        logger
+        getCrypto: defaultCryptoLoader()
       })
     }
 

@@ -1,347 +1,129 @@
 import type { AbortOptions } from './index.ts'
 import type { CID } from 'multiformats/cid'
 import type { MultihashDigest } from 'multiformats/hashes/interface'
-import type { Uint8ArrayList } from 'uint8arraylist'
 
 export type KeyType = 'RSA' | 'Ed25519' | 'secp256k1' | 'ECDSA'
 
-export interface RSAPublicKey {
+export interface PublicKey {
   /**
-   * The type of this key
+   * The type of the crypto implementation, e.g. `Ed25519`
    */
-  readonly type: 'RSA'
+  readonly type: string
 
   /**
-   * PKIX in ASN1 DER format
+   * The code that is used as the `Type` field in the protobuf representation of
+   * the public/private keys
    */
-  readonly raw: Uint8Array
+  readonly code: number
 
   /**
-   * The public key as a JSON web key
+   * Return a MultihashDigest that represents this key
    */
-  readonly jwk: JsonWebKey
+  toMultihash(): MultihashDigest
 
   /**
-   * Returns `true` if the passed object matches this key
+   * Return the libp2p-key CID that represents this key
    */
-  equals(key?: any): boolean
+  toCID(): CID<unknown, 0x72, number, 1>
 
   /**
-   * Returns this public key as a Multihash digest.
-   *
-   * It contains a sha256 hash of the protobuf version of the public key.
+   * Return this key encoded as a protobuf PublicKey message
    */
-  toMultihash(): MultihashDigest<0x12>
+  toProtobuf(): Uint8Array<ArrayBuffer>
 
   /**
-   * Return this public key as a CID encoded with the `libp2p-key` codec
-   *
-   * The digest contains a sha256 hash of the protobuf version of the public
-   * key.
+   * Return this key as a RFC 7517 Json Web Key
    */
-  toCID(): CID<unknown, 0x72, 0x12, 1>
+  toJWK(): JsonWebKey
 
   /**
-   * Verify the passed data was signed by the private key corresponding to this
-   * public key
+   * Verify the passed message against it's signature
    */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
-
-  /**
-   * Returns this key as a multihash with base58btc encoding
-   */
-  toString(): string
+  verify(message: Uint8Array, signature: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
 }
 
-export interface Ed25519PublicKey {
-  /**
-   * The type of this key
-   */
-  readonly type: 'Ed25519'
-
-  /**
-   * The raw public key bytes
-   */
-  readonly raw: Uint8Array
-
-  /**
-   * Returns `true` if the passed object matches this key
-   */
-  equals(key?: any): boolean
-
-  /**
-   * Returns this public key as an identity hash containing the protobuf wrapped
-   * public key
-   */
-  toMultihash(): MultihashDigest<0x0>
-
-  /**
-   * Return this public key as a CID encoded with the `libp2p-key` codec
-   *
-   * The digest contains an identity hash containing the protobuf wrapped
-   * version of the public key.
-   */
-  toCID(): CID<unknown, 0x72, 0x0, 1>
-
-  /**
-   * Verify the passed data was signed by the private key corresponding to this
-   * public key
-   */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
-
-  /**
-   * Returns this key as a multihash with base58btc encoding
-   */
-  toString(): string
-}
-
-export interface Secp256k1PublicKey {
-  /**
-   * The type of this key
-   */
-  readonly type: 'secp256k1'
-
-  /**
-   * The raw public key bytes
-   */
-  readonly raw: Uint8Array
-
-  /**
-   * Returns `true` if the passed object matches this key
-   */
-  equals(key?: any): boolean
-
-  /**
-   * Returns this public key as an identity hash containing the protobuf wrapped
-   * public key
-   */
-  toMultihash(): MultihashDigest<0x0>
-
-  /**
-   * Return this public key as a CID encoded with the `libp2p-key` codec
-   *
-   * The digest contains an identity hash containing the protobuf wrapped
-   * version of the public key.
-   */
-  toCID(): CID<unknown, 0x72, 0x0, 1>
-
-  /**
-   * Verify the passed data was signed by the private key corresponding to this
-   * public key
-   */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
-
-  /**
-   * Returns this key as a multihash with base58btc encoding
-   */
-  toString(): string
-}
-
-export interface ECDSAPublicKey {
-  /**
-   * The type of this key
-   */
-  readonly type: 'ECDSA'
-
-  /**
-   * The public key as a DER-encoded PKIMessage
-   */
-  readonly raw: Uint8Array
-
-  /**
-   * The public key as a JSON web key
-   */
-  readonly jwk: JsonWebKey
-
-  /**
-   * Returns `true` if the passed object matches this key
-   */
-  equals(key?: any): boolean
-
-  /**
-   * Returns this public key as an identity hash containing the protobuf wrapped
-   * public key
-   */
-  toMultihash(): MultihashDigest<0x0>
-
-  /**
-   * Return this public key as a CID encoded with the `libp2p-key` codec
-   *
-   * The digest contains an identity hash containing the protobuf wrapped
-   * version of the public key.
-   */
-  toCID(): CID<unknown, 0x72, 0x0, 1>
-
-  /**
-   * Verify the passed data was signed by the private key corresponding to this
-   * public key
-   */
-  verify(data: Uint8Array | Uint8ArrayList, sig: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
-
-  /**
-   * Returns this key as a multihash with base58btc encoding
-   */
-  toString(): string
-}
-
-export type PublicKey = RSAPublicKey | Ed25519PublicKey | Secp256k1PublicKey | ECDSAPublicKey
-
-/**
- * Returns true if the passed argument has type overlap with the `PublicKey`
- * interface. Can be used to disambiguate object types.
- */
-export function isPublicKey (key?: any): key is PublicKey {
-  if (key == null) {
+export function isPublicKey (obj?: any): obj is PublicKey {
+  if (obj == null) {
     return false
   }
 
-  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA') &&
-    key.raw instanceof Uint8Array &&
-    typeof key.equals === 'function' &&
-    typeof key.toMultihash === 'function' &&
-    typeof key.toCID === 'function' &&
-    typeof key.verify === 'function'
+  return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.verify === 'function'
 }
 
-/**
- * Generic private key interface
- */
-export interface RSAPrivateKey {
+export interface PrivateKey {
   /**
-   * The type of this key
+   * The type of the crypto implementation, e.g. `Ed25519`
    */
-  readonly type: 'RSA'
+  readonly type: string
+
+  /**
+   * The code that is used as the `Type` field in the protobuf representation of
+   * the public/private keys
+   */
+  readonly code: number
 
   /**
    * The public key that corresponds to this private key
    */
-  readonly publicKey: RSAPublicKey
+  readonly publicKey: PublicKey
 
   /**
-   * PKIX in ASN1 DER format
+   * Return this key encoded as a protobuf PrivateKey message
    */
-  readonly raw: Uint8Array
+  toProtobuf(): Uint8Array<ArrayBuffer>
 
   /**
-   * The private key as a JSON web key
+   * Return this key as a RFC 7517 Json Web Key
    */
-  readonly jwk: JsonWebKey
+  toJWK(): JsonWebKey
 
   /**
-   * Returns `true` if the passed object matches this key
+   * Sign the passed message and return a signature
    */
-  equals(key?: any): boolean
-
-  /**
-   * Sign the passed data with this private key and return the signature for
-   * later verification
-   */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
+  sign(message: Uint8Array, options?: AbortOptions): Uint8Array<ArrayBuffer> | Promise<Uint8Array<ArrayBuffer>>
 }
 
-export interface Ed25519PrivateKey {
-  /**
-   * The type of this key
-   */
-  readonly type: 'Ed25519'
-
-  /**
-   * The public key that corresponds to this private key
-   */
-  readonly publicKey: Ed25519PublicKey
-
-  /**
-   * The raw private key bytes
-   */
-  readonly raw: Uint8Array
-
-  /**
-   * Returns `true` if the passed object matches this key
-   */
-  equals(key?: any): boolean
-
-  /**
-   * Sign the passed data with this private key and return the signature for
-   * later verification
-   */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
-}
-
-export interface Secp256k1PrivateKey {
-  /**
-   * The type of this key
-   */
-  readonly type: 'secp256k1'
-
-  /**
-   * The public key that corresponds to this private key
-   */
-  readonly publicKey: Secp256k1PublicKey
-
-  /**
-   * The raw private key bytes
-   */
-  readonly raw: Uint8Array
-
-  /**
-   * Returns `true` if the passed object matches this key
-   */
-  equals(key?: any): boolean
-
-  /**
-   * Sign the passed data with this private key and return the signature for
-   * later verification
-   */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
-}
-
-export interface ECDSAPrivateKey {
-  /**
-   * The type of this key
-   */
-  readonly type: 'ECDSA'
-
-  /**
-   * The public key that corresponds to this private key
-   */
-  readonly publicKey: ECDSAPublicKey
-
-  /**
-   * The private key as a DER-encoded PKIMessage
-   */
-  readonly raw: Uint8Array
-
-  /**
-   * The private key as a JSON web key
-   */
-  readonly jwk: JsonWebKey
-
-  /**
-   * Returns `true` if the passed object matches this key
-   */
-  equals(key?: any): boolean
-
-  /**
-   * Sign the passed data with this private key and return the signature for
-   * later verification
-   */
-  sign(data: Uint8Array | Uint8ArrayList, options?: AbortOptions): Uint8Array | Promise<Uint8Array>
-}
-
-export type PrivateKey = RSAPrivateKey | Ed25519PrivateKey | Secp256k1PrivateKey | ECDSAPrivateKey
-
-/**
- * Returns true if the passed argument has type overlap with the `PrivateKey`
- * interface. Can be used to disambiguate object types.
- */
-export function isPrivateKey (key?: any): key is PrivateKey {
-  if (key == null) {
+export function isPrivateKey (obj?: any): obj is PrivateKey {
+  if (obj == null) {
     return false
   }
 
-  return (key.type === 'RSA' || key.type === 'Ed25519' || key.type === 'secp256k1' || key.type === 'ECDSA') &&
-    isPublicKey(key.publicKey) &&
-    key.raw instanceof Uint8Array &&
-    typeof key.equals === 'function' &&
-    typeof key.sign === 'function'
+  return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.sign === 'function' && isPublicKey(obj.publicKey)
+}
+
+export interface Crypto {
+  /**
+   * The type of the crypto implementation, e.g. `Ed25519`
+   */
+  readonly type: string
+
+  /**
+   * The code that is used as the `Type` field in the protobuf representation of
+   * the public/private keys
+   */
+  readonly code: number
+
+  /**
+   * Create a new private key
+   */
+  generatePrivateKey(options?: AbortOptions & Record<string, any>): Promise<PrivateKey>
+
+  /**
+   * Decode a public key from a whole `PublicKey` protobuf message, as returned
+   * by `PublicKey.toProtobuf()`
+   */
+  publicKeyFromProtobuf(buf: Uint8Array, options?: AbortOptions): PublicKey | Promise<PublicKey>
+
+  /**
+   * Decode a private key from a whole `PrivateKey` protobuf message, as
+   * returned by `PrivateKey.toProtobuf()`
+   */
+  privateKeyFromProtobuf(buf: Uint8Array, options?: AbortOptions): PrivateKey | Promise<PrivateKey>
+}
+
+/**
+ * Resolves a Crypto implementation by key type name or protobuf type code
+ */
+export interface CryptoLoader {
+  (typeOrCode: number | string, options?: AbortOptions): Crypto | Promise<Crypto>
 }

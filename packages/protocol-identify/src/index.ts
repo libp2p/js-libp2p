@@ -43,7 +43,7 @@
 
 import { IdentifyPush as IdentifyPushClass } from './identify-push.ts'
 import { Identify as IdentifyClass } from './identify.ts'
-import type { IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, PeerId, PeerStore, Connection, PrivateKey, NewStreamOptions } from '@libp2p/interface'
+import type { IdentifyResult, Libp2pEvents, ComponentLogger, NodeInfo, PeerId, PeerStore, Connection, PrivateKey, NewStreamOptions, CryptoLoader } from '@libp2p/interface'
 import type { AddressManager, ConnectionManager, Registrar } from '@libp2p/interface-internal'
 import type { TypedEventTarget } from 'main-event'
 
@@ -139,6 +139,7 @@ export interface IdentifyComponents {
   events: TypedEventTarget<Libp2pEvents>
   logger: ComponentLogger
   nodeInfo: NodeInfo
+  getCrypto?: CryptoLoader
 }
 
 export interface IdentifyPushComponents extends IdentifyComponents {

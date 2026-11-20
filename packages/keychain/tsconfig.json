@@ -10,15 +10,6 @@
   "references": [
     {
       "path": "../crypto"
-    },
-    {
-      "path": "../interface"
-    },
-    {
-      "path": "../logger"
-    },
-    {
-      "path": "../utils"
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromMultihash, peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddrConnectionPair, streamPair } from '@libp2p/utils'
@@ -71,7 +71,7 @@ describe('tls', () => {
   })
 
   it('should reject an RSA peer when a different peer is expected', async () => {
-    const keyPair = await generateKeyPair('RSA', 512)
+    const keyPair = await generateKeyPair('RSA', { bits: 512 })
     const peer = peerIdFromPrivateKey(keyPair)
     remotePeer = peerIdFromMultihash(peer.toMultihash())
 

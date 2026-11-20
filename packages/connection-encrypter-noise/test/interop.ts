@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { privateKeyFromProtobuf } from '@libp2p/crypto'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { connectInteropTests } from '@libp2p/interop'
@@ -67,7 +67,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.key != null) {
     const keyFile = fs.readFileSync(options.key)
-    privateKey = privateKeyFromProtobuf(keyFile)
+    privateKey = await privateKeyFromProtobuf(keyFile)
   }
 
   const opts: Libp2pOptions = {

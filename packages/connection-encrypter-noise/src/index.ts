@@ -50,7 +50,7 @@
 import { Noise } from './noise.ts'
 import type { NoiseInit, NoiseExtensions } from './noise.ts'
 import type { KeyPair } from './types.ts'
-import type { ComponentLogger, ConnectionEncrypter, Metrics, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
+import type { ComponentLogger, ConnectionEncrypter, CryptoLoader, Metrics, PeerId, PrivateKey, Upgrader } from '@libp2p/interface'
 
 export { pureJsCrypto } from './crypto/js.ts'
 export type { ICryptoInterface } from './crypto.ts'
@@ -62,6 +62,7 @@ export interface NoiseComponents {
   logger: ComponentLogger
   upgrader: Upgrader
   metrics?: Metrics
+  getCrypto?: CryptoLoader
 }
 
 export function noise (init: NoiseInit = {}): (components: NoiseComponents) => ConnectionEncrypter<NoiseExtensions> {

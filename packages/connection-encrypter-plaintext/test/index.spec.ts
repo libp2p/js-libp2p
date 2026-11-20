@@ -1,4 +1,5 @@
-import { generateKeyPair, publicKeyToProtobuf } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
+import { PublicKeyMessage } from '@libp2p/crypto/pb'
 import { defaultLogger } from '@libp2p/logger'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { pbStream, streamPair } from '@libp2p/utils'
@@ -51,13 +52,13 @@ describe('plaintext', () => {
   })
 
   it('should reject a public key whose type does not match its data', async () => {
-    const remoteKey = await generateKeyPair('secp256k1')
+    const remoteKey = await generateKeyPair('RSA', { bits: 512 })
     const [inbound, outbound] = await streamPair()
 
     const result = encrypter.secureInbound(inbound)
 
-    // a secp256k1 key labelled as Ed25519: Type (field 1) = 1, Data (field 2)
-    const data = remoteKey.publicKey.raw
+    // an RSA key labelled as Ed25519: Type (field 1) = 1, Data (field 2)
+    const data = PublicKeyMessage.decode(remoteKey.publicKey.toProtobuf()).Data ?? new Uint8Array()
     await pbStream(outbound).pb(Exchange).write({
       id: remoteKey.publicKey.toMultihash().bytes,
       pubkey: uint8ArrayConcat([Uint8Array.from([0x08, 0x01, 0x12, data.byteLength]), data])
@@ -76,7 +77,7 @@ describe('plaintext', () => {
 
     await pbStream(outbound).pb(Exchange).write({
       id: wrongPeer.toMultihash().bytes,
-      pubkey: withArrayBuffer(publicKeyToProtobuf(remoteKey.publicKey))
+      pubkey: withArrayBuffer(remoteKey.publicKey.toProtobuf())
     })
 
     const err = await result.catch(err => err)
@@ -85,7 +86,7 @@ describe('plaintext', () => {
   })
 
   it('should reject an RSA peer when a different peer is expected', async () => {
-    const keyPair = await generateKeyPair('RSA', 512)
+    const keyPair = await generateKeyPair('RSA', { bits: 512 })
 
     encrypter = plaintext()({
       privateKey: keyPair,

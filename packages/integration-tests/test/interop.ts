@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { circuitRelayServer, circuitRelayTransport } from '@libp2p/circuit-relay-v2'
-import { privateKeyFromProtobuf } from '@libp2p/crypto/keys'
+import { privateKeyFromProtobuf } from '@libp2p/crypto'
 import { createClient } from '@libp2p/daemon-client'
 import { createServer } from '@libp2p/daemon-server'
 import { floodsub } from '@libp2p/floodsub'
@@ -153,7 +153,7 @@ async function createJsPeer (options: SpawnOptions): Promise<Daemon> {
 
   if (options.key != null) {
     const keyFile = fs.readFileSync(options.key)
-    privateKey = privateKeyFromProtobuf(keyFile)
+    privateKey = await privateKeyFromProtobuf(keyFile)
   }
 
   const opts: Libp2pOptions<ServiceMap> = {

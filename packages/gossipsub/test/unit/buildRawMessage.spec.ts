@@ -1,4 +1,4 @@
-import { generateKeyPair } from '@libp2p/crypto/keys'
+import { generateKeyPair } from '@libp2p/crypto'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { expect } from 'aegir/chai'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -73,7 +73,7 @@ describe('buildRawMessage', () => {
     before(async function () {
       // RSA key generation is slow
       this.timeout(30_000)
-      victimKey = await generateKeyPair('RSA', 2048)
+      victimKey = await generateKeyPair('RSA', { bits: 2048 })
     })
 
     it('accepts a message signed by the genuine RSA author', async () => {
