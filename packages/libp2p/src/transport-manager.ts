@@ -36,6 +36,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
   private readonly components: DefaultTransportManagerComponents
   private readonly transports: Map<string, Transport>
   private readonly listeners: Map<string, Listener[]>
+  private readonly listenerAddrs: WeakMap<Listener, Multiaddr>
   private readonly faultTolerance: FaultTolerance
   private started: boolean
 
@@ -51,6 +52,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
       name: 'libp2p_transport_manager_listeners',
       metrics: this.components.metrics
     })
+    this.listenerAddrs = new WeakMap()
     this.faultTolerance = init.faultTolerance ?? FaultTolerance.FATAL_ALL
   }
 
@@ -246,6 +248,7 @@ export class DefaultTransportManager implements TransportManager, Startable {
         }
 
         listeners.push(listener)
+        this.listenerAddrs.set(listener, addr)
 
         // Track listen/close events
         listener.addEventListener('listening', () => {
@@ -322,6 +325,32 @@ export class DefaultTransportManager implements TransportManager, Startable {
 `
       }).join('')
     }`)
+  }
+
+  /**
+   * Closes any listeners that were started for the passed Multiaddrs, or that
+   * are currently listening on them
+   */
+  async unlisten (addrs: Multiaddr[]): Promise<void> {
+    const matches = (listener: Listener): boolean => {
+      const listenerAddrs = [...listener.getAddrs()]
+      const requested = this.listenerAddrs.get(listener)
+
+      if (requested != null) {
+        listenerAddrs.push(requested)
+      }
+
+      return listenerAddrs.some(la => addrs.some(ma => ma.equals(la)))
+    }
+
+    const tasks = this.getListeners()
+      .filter(matches)
+      .map(async listener => {
+        this.log('closing listener for %a', this.listenerAddrs.get(listener))
+        await listener.close()
+      })
+
+    await Promise.all(tasks)
   }
 
   private ipv6Unsupported (listenStats: ListenStats): boolean {

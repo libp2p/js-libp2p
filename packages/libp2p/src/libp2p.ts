@@ -312,6 +312,14 @@ export class Libp2p<T extends ServiceMap = ServiceMap> extends TypedEventEmitter
     return this.components.addressManager.getAddresses()
   }
 
+  async listen (addrs: Multiaddr | Multiaddr[]): Promise<void> {
+    await this.components.transportManager.listen(Array.isArray(addrs) ? addrs : [addrs])
+  }
+
+  async unlisten (addrs: Multiaddr | Multiaddr[]): Promise<void> {
+    await this.components.transportManager.unlisten(Array.isArray(addrs) ? addrs : [addrs])
+  }
+
   getProtocols (): string[] {
     return this.components.registrar.getProtocols()
   }

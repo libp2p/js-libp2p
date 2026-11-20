@@ -85,6 +85,15 @@ export interface TransportManager {
   listen(addrs: Multiaddr[]): Promise<void>
 
   /**
+   * Close any listeners that were started for the passed multiaddrs, or that
+   * are listening on them
+   *
+   * @param addrs - An array of multiaddrs to stop listening on.
+   * @returns A promise that resolves once the matching listeners have closed.
+   */
+  unlisten(addrs: Multiaddr[]): Promise<void>
+
+  /**
    * Remove a previously configured transport
    *
    * @param key - The transport key or identifier.
