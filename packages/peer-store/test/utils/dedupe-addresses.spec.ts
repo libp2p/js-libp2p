@@ -147,6 +147,24 @@ describe('dedupe-addresses', () => {
     expect(uncertified.isCertified).to.be.false()
   })
 
+  it('should dedupe before applying the address limit', async () => {
+    expect(await dedupeFilterAndSortAddresses(peerId, async () => true, [{
+      multiaddr: addr2,
+      isCertified: false
+    }, {
+      multiaddr: addr1,
+      isCertified: false
+    }, {
+      multiaddr: addr1.encapsulate(`/p2p/${peerId}`),
+      isCertified: true
+    }], undefined, {
+      maxAddresses: 1
+    })).to.deep.equal([{
+      multiaddr: addr1.bytes,
+      isCertified: true
+    }])
+  })
+
   it('should not strip a different trailing peer id', async () => {
     const other = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     const withOther = addr1.encapsulate(`/p2p/${other}`)
