@@ -250,6 +250,23 @@ describe('Address Manager', () => {
     await pWaitFor(() => peerStore.patch.callCount === 2, { timeout: 2000 })
   })
 
+  it('should not throw when removing an observed address that is not a network address', () => {
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: Sinon.stub().returns([]),
+        getListeners: Sinon.stub().returns([])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    expect(() => {
+      am.removeObservedAddr(multiaddr('/memory/address-1/p2p-circuit'))
+    }).to.not.throw()
+  })
+
   it('should strip our peer address from added observed addresses', () => {
     const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new AddressManager({

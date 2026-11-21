@@ -35,6 +35,10 @@ export class IPMappings {
   }
 
   has (ma: Multiaddr): boolean {
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
     const config = getNetConfig(ma)
 
     if (config.type !== 'ip4' && config.type !== 'ip6') {
