@@ -31,6 +31,10 @@ export class DNSMappings {
   }
 
   has (ma: Multiaddr): boolean {
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
     const config = getNetConfig(ma)
     let host = config.host
 
@@ -64,6 +68,10 @@ export class DNSMappings {
   }
 
   remove (ma: Multiaddr): boolean {
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
     const config = getNetConfig(ma)
 
     if (config.type !== 'ip4' && config.type !== 'ip6') {
@@ -140,6 +148,10 @@ export class DNSMappings {
   }
 
   confirm (ma: Multiaddr, ttl: number): boolean {
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
     const config = getNetConfig(ma)
     let host = config.host
 
@@ -163,6 +175,10 @@ export class DNSMappings {
   }
 
   unconfirm (ma: Multiaddr, ttl: number): boolean {
+    if (!isNetworkAddress(ma)) {
+      return false
+    }
+
     const config = getNetConfig(ma)
 
     if (config.type !== 'ip4' && config.type !== 'ip6') {

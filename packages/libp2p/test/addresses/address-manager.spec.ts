@@ -250,6 +250,24 @@ describe('Address Manager', () => {
     await pWaitFor(() => peerStore.patch.callCount === 2, { timeout: 2000 })
   })
 
+  it('should not throw when confirming or removing an address without a network host', () => {
+    // e.g. what the circuit relay listener removes when a relay reservation ends
+    const ma = multiaddr('/webrtc/p2p/12D3KooWCqc3ea12m1Nrhj7uToW6PiNJcCL1FDn89rptNgAZPrF1/p2p-circuit')
+    const am = new AddressManager({
+      peerId,
+      transportManager: stubInterface<TransportManager>({
+        getAddrs: Sinon.stub().returns([]),
+        getListeners: Sinon.stub().returns([])
+      }),
+      peerStore,
+      events,
+      logger: defaultLogger()
+    })
+
+    expect(() => { am.confirmObservedAddr(ma) }).to.not.throw()
+    expect(() => { am.removeObservedAddr(ma) }).to.not.throw()
+  })
+
   it('should strip our peer address from added observed addresses', () => {
     const ma = multiaddr('/ip4/123.123.123.123/tcp/39201')
     const am = new AddressManager({
