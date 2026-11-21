@@ -16,6 +16,7 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { setGlobalDispatcher, Agent } from 'undici'
 import { webSockets } from '../src/index.ts'
+import { webSocketToMaConnTests } from './websocket-to-conn.ts'
 import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
@@ -25,6 +26,8 @@ setGlobalDispatcher(new Agent({
     rejectUnauthorized: false
   }
 }))
+
+webSocketToMaConnTests()
 
 describe('instantiate the transport', () => {
   it('create', () => {

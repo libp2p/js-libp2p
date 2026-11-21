@@ -3,6 +3,10 @@
  *
  * A [libp2p transport](https://libp2p.io/docs/transports-overview/) based on [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
  *
+ * The WebSocket implementation must expose a finite, non-negative
+ * `bufferedAmount` so the transport can apply write backpressure. Unsupported
+ * implementations are closed and rejected with `UnsupportedOperationError`.
+ *
  * @example
  *
  * ```TypeScript
