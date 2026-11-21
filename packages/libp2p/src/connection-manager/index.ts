@@ -554,7 +554,7 @@ export class DefaultConnectionManager implements ConnectionManager, Startable {
 
       if (peerId != null && options.force !== true) {
         this.log('dial %p', peerId)
-        const existingConnection = findExistingConnection(peerId, this.getConnections(peerId), multiaddrs)
+        const existingConnection = findExistingConnection(peerId, this.getConnections(peerId), multiaddrs, options.runOnLimitedConnection)
 
         if (existingConnection != null) {
           this.log('had an existing connection to %p as %a', peerId, existingConnection.remoteAddr)

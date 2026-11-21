@@ -5,6 +5,33 @@ import { findExistingConnection, safelyCloseConnectionIfUnused } from '../../src
 import type { Connection, Stream } from '@libp2p/interface'
 
 describe('findExistingConnection', () => {
+  it('should reuse a limited connection when explicitly allowed', () => {
+    const connection = stubInterface<Connection>({
+      status: 'open', limits: { seconds: 60 }, direct: false
+    })
+
+    expect(findExistingConnection(connection.remotePeer, [connection], undefined, true)).to.equal(connection)
+  })
+
+  it('should prefer an unlimited connection even when limited connections are allowed', () => {
+    const limited = stubInterface<Connection>({
+      status: 'open', limits: { seconds: 60 }, direct: true
+    })
+    const unlimited = stubInterface<Connection>({
+      status: 'open', limits: undefined, direct: false
+    })
+
+    expect(findExistingConnection(unlimited.remotePeer, [limited, unlimited], undefined, true)).to.equal(unlimited)
+  })
+
+  it('should exclude closed limited connections when limited connections are allowed', () => {
+    const connection = stubInterface<Connection>({
+      status: 'closed', limits: { seconds: 60 }, direct: false
+    })
+
+    expect(findExistingConnection(connection.remotePeer, [connection], undefined, true)).to.be.undefined()
+  })
+
   it('should return an open unlimited connection', () => {
     const connection = stubInterface<Connection>({
       status: 'open',

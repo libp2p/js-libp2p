@@ -6,7 +6,7 @@ import type { ProgressOptions } from 'progress-events'
 /**
  * Options for opening a connection to a remote peer.
  */
-export interface OpenConnectionOptions extends AbortOptions, ProgressOptions<OpenConnectionProgressEvents> {
+export interface OpenConnectionOptions extends AbortOptions, Pick<NewStreamOptions, 'runOnLimitedConnection'>, ProgressOptions<OpenConnectionProgressEvents> {
   /**
    * Connection requests with a higher priority will be executed before those
    * with a lower priority.
