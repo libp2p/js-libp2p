@@ -66,6 +66,44 @@ describe('dedupe-addresses', () => {
     }])
   })
 
+  it('should retain isCertified when a later duplicate is certified', async () => {
+    expect(await dedupeFilterAndSortAddresses(peerId, async () => true, [{
+      multiaddr: addr1,
+      isCertified: false
+    }, {
+      multiaddr: addr1,
+      isCertified: true
+    }])).to.deep.equal([{
+      multiaddr: addr1.bytes,
+      isCertified: true
+    }])
+  })
+
+  it('should track certification separately for interleaved duplicate addresses', async () => {
+    expect(await dedupeFilterAndSortAddresses(peerId, async () => true, [{
+      multiaddr: addr2,
+      isCertified: false
+    }, {
+      multiaddr: addr1,
+      isCertified: false
+    }, {
+      multiaddr: addr2,
+      isCertified: true
+    }, {
+      multiaddr: addr1,
+      isCertified: false
+    }, {
+      multiaddr: addr2,
+      isCertified: false
+    }])).to.deep.equal([{
+      multiaddr: addr1.bytes,
+      isCertified: false
+    }, {
+      multiaddr: addr2.bytes,
+      isCertified: true
+    }])
+  })
+
   it('should filter addresses', async () => {
     expect(await dedupeFilterAndSortAddresses(peerId, async () => false, [{
       multiaddr: addr1,
