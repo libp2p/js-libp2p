@@ -195,12 +195,10 @@ export interface TransportReservationStoreComponents {
 
 export interface TransportReservationStoreInit {
   /**
-   * Multiple relays may be discovered simultaneously - to prevent listening
-   * on too many relays, this value controls how many to attempt to reserve a
-   * slot on at once. If set to more than one, we may end up listening on
-   * more relays than the `maxReservations` value, but on networks with poor
-   * connectivity the user may wish to attempt to reserve on multiple relays
-   * simultaneously.
+   * How many relays to attempt to reserve a slot on at once. Discovered relays
+   * never exceed the number of `/p2p-circuit` listen addresses, but on networks
+   * with poor connectivity the user may wish to attempt to reserve on multiple
+   * relays simultaneously.
    *
    * @default 1
    */
