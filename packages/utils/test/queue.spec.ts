@@ -298,12 +298,7 @@ describe('queue', () => {
 
   it('.clear()', async () => {
     const queue = new Queue({ concurrency: 2 })
-    void queue.add(async () => delay(20_000))
-    void queue.add(async () => delay(20_000))
-    void queue.add(async () => delay(20_000))
-    void queue.add(async () => delay(20_000))
-    void queue.add(async () => delay(20_000))
-    void queue.add(async () => delay(20_000))
+    const jobs = Array.from({ length: 6 }, async () => queue.add(async () => delay(20_000)))
 
     expect(queue).to.have.property('size', 6)
     expect(queue).to.have.property('queued', 4)
@@ -312,6 +307,11 @@ describe('queue', () => {
     queue.clear()
 
     expect(queue).to.have.property('size', 0)
+
+    for (const job of jobs.slice(2)) {
+      await expect(Promise.race([job, delay(100).then(() => 'hung')])).to.eventually.be.rejected
+        .with.property('message', 'The queue was cleared')
+    }
   })
 
   it('.add() - handle task throwing error', async () => {
@@ -688,6 +688,145 @@ describe('queue', () => {
     ])
   })
 
+  it('should reject queued jobs without a signal when the queue is aborted', async () => {
+    const queue = new Queue({ concurrency: 1 })
+    const hold = pDefer<void>()
+
+    const running = queue.add(async () => hold.promise)
+    const queued = Array.from({ length: 3 }, async () => queue.add(async () => {}))
+
+    queue.abort()
+
+    await expect(running).to.eventually.be.rejected
+      .with.property('message', 'The queue was aborted')
+
+    for (const job of queued) {
+      await expect(Promise.race([job, delay(100).then(() => 'hung')])).to.eventually.be.rejected
+        .with.property('message', 'The queue was aborted')
+    }
+
+    hold.resolve()
+  })
+
+  it('should reject queued jobs when the queue is cleared', async () => {
+    const queue = new Queue({ concurrency: 1 })
+    const hold = pDefer<void>()
+
+    const running = queue.add(async () => hold.promise)
+    let ran = false
+    const queued = queue.add(async () => {
+      ran = true
+    })
+    const joined = queue.queue[1].join()
+
+    queue.clear()
+
+    await expect(Promise.race([queued, delay(100).then(() => 'hung')])).to.eventually.be.rejected
+      .with.property('message', 'The queue was cleared')
+    await expect(Promise.race([joined, delay(100).then(() => 'hung')])).to.eventually.be.rejected
+      .with.property('message', 'The queue was cleared')
+
+    // the running job is not aborted
+    hold.resolve()
+    await expect(running).to.eventually.be.undefined()
+    expect(ran).to.be.false()
+  })
+
+  it('should reject joining a queued job after all recipients abort', async () => {
+    const queue = new Queue({ concurrency: 1 })
+    const hold = pDefer<void>()
+    const controller = new AbortController()
+
+    void queue.add(async () => hold.promise)
+    const queued = queue.add(async () => {}, {
+      signal: controller.signal
+    })
+    const job = queue.queue[1]
+
+    controller.abort()
+
+    await expect(queued).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+    await expect(Promise.race([job.join(), delay(100).then(() => 'hung')])).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+
+    hold.resolve()
+  })
+
+  it('should remove a queued job once every recipient has aborted', async () => {
+    const queue = new Queue<string>({ concurrency: 1, maxSize: 1 })
+    const adder = new AbortController()
+    const joiner = new AbortController()
+
+    queue.pause()
+
+    const added = queue.add(async () => 'shared', {
+      signal: adder.signal
+    })
+    const joined = queue.queue[0].join({
+      signal: joiner.signal
+    })
+
+    adder.abort()
+    await expect(added).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+
+    // the job is kept for the joiner
+    expect(queue.size).to.equal(1)
+
+    joiner.abort()
+    await expect(joined).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+
+    expect(queue.size).to.equal(0)
+
+    // the slot is free again
+    const next = queue.add(async () => 'next')
+    queue.resume()
+    await expect(next).to.eventually.equal('next')
+  })
+
+  it('should emit the outcome of a job kept for other recipients', async () => {
+    const queue = new Queue<string>({ concurrency: 1 })
+    const hold = pDefer<void>()
+    const controller = new AbortController()
+    const events: string[] = []
+
+    queue.addEventListener('success', (evt) => {
+      events.push(`success:${evt.detail.result}`)
+    })
+    queue.addEventListener('failure', (evt) => {
+      events.push(`failure:${evt.detail.error.message}`)
+    })
+
+    void queue.add(async () => {
+      await hold.promise
+      return 'first'
+    })
+    void queue.add(async () => 'shared', {
+      signal: controller.signal
+    })
+      .catch(() => {})
+    void queue.add(async () => {
+      throw new Error('real failure')
+    }, {
+      signal: controller.signal
+    })
+      .catch(() => {})
+    const joinedResult = queue.queue[1].join()
+    const joinedError = queue.queue[2].join()
+
+    controller.abort()
+    hold.resolve()
+
+    await expect(joinedResult).to.eventually.equal('shared')
+    await expect(joinedError).to.eventually.be.rejected
+      .with.property('message', 'real failure')
+    await queue.onIdle()
+
+    expect(events).to.deep.equal(['success:first', 'success:shared', 'failure:real failure'])
+  })
+
   it('can be used as a generator', async () => {
     const results = [0, 1, 2, 3, 4]
     const queue = new Queue<number>({ concurrency: 1 })
@@ -752,6 +891,67 @@ describe('queue', () => {
     expect(started).to.equal(3)
     expect(collected).to.deep.equal([0, 1])
     expect(queue.size).to.equal(0)
+  })
+
+  it('rejects jobs that have not started when breaking out of a generator', async () => {
+    const queue = new Queue<number>({ concurrency: 1 })
+    const started = new Set<number>()
+
+    const jobs = Array.from({ length: 3 }, async (_, i) => queue.add(async () => {
+      started.add(i)
+      await delay(10)
+      return i
+    }))
+
+    for await (const result of queue.toGenerator()) {
+      if (result === 0) {
+        break
+      }
+    }
+
+    const notStarted = jobs.filter((_, i) => !started.has(i))
+    expect(notStarted).to.not.be.empty()
+
+    for (const job of notStarted) {
+      await expect(Promise.race([job, delay(100).then(() => 'hung')])).to.eventually.be.rejected
+        .with.property('message', 'The queue was cleared')
+    }
+  })
+
+  it('does not fail a generator when the queue is cleared', async () => {
+    const queue = new Queue<number>({ concurrency: 1 })
+
+    for (let i = 0; i < 3; i++) {
+      void queue.add(async () => {
+        await delay(30)
+        return i
+      })
+        .catch(() => {})
+    }
+
+    setTimeout(() => {
+      queue.clear()
+    }, 10)
+
+    await expect(all(queue.toGenerator())).to.eventually.deep.equal([0])
+  })
+
+  it('fails a generator with the error from a failing job', async () => {
+    const queue = new Queue<number>({ concurrency: 1 })
+
+    void queue.add(async () => {
+      await delay(10)
+      throw new Error('boom')
+    })
+      .catch(() => {})
+
+    for (let i = 0; i < 2; i++) {
+      void queue.add(async () => i)
+        .catch(() => {})
+    }
+
+    await expect(all(queue.toGenerator())).to.eventually.be.rejected
+      .with.property('message', 'boom')
   })
 
   it('cleans up listeners after all job recipients abort', async () => {
