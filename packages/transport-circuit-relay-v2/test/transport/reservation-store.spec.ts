@@ -136,6 +136,29 @@ describe('transport reservation-store', () => {
     expect(removed).to.have.lengthOf(0)
   })
 
+  it('should reserve a slot on every configured relay', async () => {
+    const relayA = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const relayB = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    addConnectedRelay(relayA, 3600)
+    addConnectedRelay(relayB, 3600)
+
+    // listening on two configured relays queues both reservations before the
+    // first one has been made - finishing the first must not drop the second
+    const reservations = Promise.all([
+      store.addRelay(relayA, 'configured'),
+      store.addRelay(relayB, 'configured')
+    ])
+
+    await expect(Promise.race([
+      reservations,
+      delay(1_000).then(() => { throw new Error('a reservation on a configured relay was never made') })
+    ])).to.eventually.have.lengthOf(2)
+
+    expect(store.hasReservation(relayA)).to.equal(true)
+    expect(store.hasReservation(relayB)).to.equal(true)
+    expect(store.reservationCount('configured')).to.equal(2)
+  })
+
   it('should refresh a still-connected discovered reservation in place', async () => {
     const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
     addConnectedRelay(relayPeer, 300)
