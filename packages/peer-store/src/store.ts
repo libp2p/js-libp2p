@@ -4,7 +4,7 @@ import { peerIdFromCID } from '@libp2p/peer-id'
 import mortice from 'mortice'
 import { base32 } from 'multiformats/bases/base32'
 import { CID } from 'multiformats/cid'
-import { MAX_ADDRESS_AGE, MAX_PEER_AGE } from './constants.ts'
+import { MAX_ADDRESS_AGE, MAX_ADDRESSES, MAX_PEER_AGE } from './constants.ts'
 import { Peer as PeerPB } from './pb/peer.ts'
 import { bytesToPeer, pbToPeer } from './utils/bytes-to-peer.ts'
 import { peerEquals } from './utils/peer-equals.ts'
@@ -66,6 +66,7 @@ export class PersistentStore {
   private readonly log: Logger
   private readonly maxAddressAge: number
   private readonly maxPeerAge: number
+  private readonly maxAddresses: number
 
   constructor (components: PersistentPeerStoreComponents, init: PersistentPeerStoreInit = {}) {
     this.log = components.logger.forComponent('libp2p:peer-store')
@@ -78,6 +79,7 @@ export class PersistentStore {
     })
     this.maxAddressAge = init.maxAddressAge ?? MAX_ADDRESS_AGE
     this.maxPeerAge = init.maxPeerAge ?? MAX_PEER_AGE
+    this.maxAddresses = init.maxAddresses ?? MAX_ADDRESSES
   }
 
   getLock (peerId: PeerId): Lock {
@@ -183,7 +185,9 @@ export class PersistentStore {
 
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
       ...options,
-      addressFilter: this.addressFilter
+      addressFilter: this.addressFilter,
+      maxAddresses: this.#maxAddressesFor(peerId),
+      log: this.log
     })
 
     return this.#saveIfDifferent(peerId, peerPb, existingPeer)
@@ -195,6 +199,8 @@ export class PersistentStore {
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'patch', {
       ...options,
       addressFilter: this.addressFilter,
+      maxAddresses: this.#maxAddressesFor(peerId),
+      log: this.log,
       existingPeer
     })
 
@@ -206,6 +212,8 @@ export class PersistentStore {
 
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'merge', {
       addressFilter: this.addressFilter,
+      maxAddresses: this.#maxAddressesFor(peerId),
+      log: this.log,
       existingPeer
     })
 
@@ -268,6 +276,11 @@ export class PersistentStore {
       previous: existingPeer?.peer,
       updated: existingPeer == null || !peerEquals(peer, existingPeer.peerPB)
     }
+  }
+
+  #maxAddressesFor (peerId: PeerId): number {
+    // our own addresses are trusted so are not limited
+    return this.peerId.equals(peerId) ? Infinity : this.maxAddresses
   }
 
   #peerIsExpired (peerId: PeerId, peer: PeerPB): boolean {

@@ -43,7 +43,9 @@ describe('multiaddr isPrivate', () => {
       multiaddr('/ip6/::ffff:172.16.0.1/tcp/1000'),
       multiaddr('/ip6/::ffff:192.168.0.1/tcp/1000'),
       multiaddr('/ip6/::ffff:127.0.0.1/tcp/1000'),
-      multiaddr('/ip6/::ffff:127.0.0.1')
+      multiaddr('/ip6/::ffff:127.0.0.1'),
+      multiaddr('/ip6/64:ff9b::10.0.0.1/tcp/1000'), // NAT64, normalized to 64:ff9b::a00:1
+      multiaddr('/ip6/2001:0:4136:e378:8000:63bf:3fff:fdd2/tcp/1000') // Teredo
     ].forEach(ma => {
       try {
         expect(isPrivate(ma)).to.be.true(`"${ma}" was not identified as private`)

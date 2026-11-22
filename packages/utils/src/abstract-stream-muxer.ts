@@ -55,7 +55,12 @@ export abstract class AbstractStreamMuxer <MuxedStream extends AbstractStream = 
       try {
         this.onData(evt.data)
       } catch (err: any) {
-        this.abort(err)
+        try {
+          this.abort(err)
+        } catch (abortErr: any) {
+          this.log.error('error aborting muxer - %e', abortErr)
+        }
+
         this.maConn.abort(err)
       }
     }

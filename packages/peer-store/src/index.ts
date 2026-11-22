@@ -56,6 +56,17 @@ export interface PersistentPeerStoreInit {
    * @default 21_600_000
    */
   maxPeerAge?: number
+
+  /**
+   * The maximum number of multiaddrs that will be stored for a single peer.
+   *
+   * If more addresses than this are supplied, certified addresses are kept in
+   * preference to uncertified ones, then addresses that were already stored
+   * in preference to new ones.
+   *
+   * @default 100
+   */
+  maxAddresses?: number
 }
 
 /**
