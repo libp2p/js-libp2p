@@ -2,9 +2,15 @@ import { InvalidParametersError } from '@libp2p/interface'
 import { CODE_P2P, isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import type { AddressFilter } from '../index.ts'
 import type { Address as AddressPB } from '../pb/peer.ts'
-import type { PeerId, Address, AbortOptions } from '@libp2p/interface'
+import type { PeerId, Address, AbortOptions, Logger } from '@libp2p/interface'
 
-export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>, existingAddresses?: AddressPB[], options?: AbortOptions): Promise<AddressPB[]> {
+export interface DedupeAddressesOptions extends AbortOptions {
+  maxAddresses?: number
+  log?: Logger
+}
+
+export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: AddressFilter, addresses: Array<Address | AddressPB | undefined>, existingAddresses?: AddressPB[], options?: DedupeAddressesOptions): Promise<AddressPB[]> {
+  const maxAddresses = options?.maxAddresses ?? Infinity
   const addressMap = new Map<string, Address>()
 
   for (const addr of addresses) {
@@ -38,11 +44,24 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     }
   }
 
-  return [...addressMap.values()]
-    .sort((a, b) => {
-      return a.multiaddr.toString().localeCompare(b.multiaddr.toString())
+  let entries = [...addressMap.entries()]
+
+  if (entries.length > maxAddresses) {
+    options?.log?.('%p has %d addresses, only storing %d', peerId, entries.length, maxAddresses)
+
+    // prefer certified addresses, then addresses in the order they were
+    // passed - e.g. existing addresses before new ones
+    entries = [
+      ...entries.filter(([, addr]) => addr.isCertified),
+      ...entries.filter(([, addr]) => !addr.isCertified)
+    ].slice(0, maxAddresses)
+  }
+
+  return entries
+    .sort(([a], [b]) => {
+      return a.localeCompare(b)
     })
-    .map(({ isCertified, multiaddr: ma }) => {
+    .map(([, { isCertified, multiaddr: ma }]) => {
       // strip the trailing peerId if it is present
       const addrPeer = ma.getComponents().find(c => c.code === CODE_P2P)?.value
 

@@ -1523,7 +1523,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * Handles Graft messages
    */
   private async handleGraft (id: PeerIdStr, graft: RPC.ControlGraft[]): Promise<RPC.ControlPrune[]> {
-    const prune: TopicStr[] = []
+    // a single RPC can hold many GRAFTs for the same topic, only respond with
+    // one PRUNE per topic
+    const prune = new Set<TopicStr>()
     const score = this.score.score(id)
     const now = Date.now()
     let doPX = this.opts.doPX
@@ -1555,7 +1557,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       if (this.direct.has(id)) {
         this.log('GRAFT: ignoring request from direct peer %s', id)
         // this is possibly a bug from a non-reciprocal configuration; send a PRUNE
-        prune.push(topicID)
+        prune.add(topicID)
         // but don't px
         doPX = false
 
@@ -1574,14 +1576,14 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         }
         // refresh the backoff
         this.addBackoff(id, topicID)
-        prune.push(topicID)
+        prune.add(topicID)
 
         // check the score
       } else if (score < 0) {
         // we don't GRAFT peers with negative score
         this.log('GRAFT: ignoring peer %s with negative score: score=%d, topic=%s', id, score, topicID)
         // we do send them PRUNE however, because it's a matter of protocol correctness
-        prune.push(topicID)
+        prune.add(topicID)
         // but we won't PX to them
         doPX = false
         // add/refresh backoff so that we don't reGRAFT too early even if the score decays
@@ -1591,24 +1593,27 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         // from peers with outbound connections; this is a defensive check to restrict potential
         // mesh takeover attacks combined with love bombing
       } else if (peersInMesh.size >= this.opts.Dhi && !(this.outbound.get(id) ?? false)) {
-        prune.push(topicID)
+        prune.add(topicID)
         this.addBackoff(id, topicID)
 
         // valid graft
       } else {
         this.log('GRAFT: Add mesh link from %s in %s', id, topicID)
         this.addToMesh(id, topicID, InclusionReason.Subscribed)
-      }
 
-      this.safeDispatchEvent<MeshPeer>('gossipsub:graft', { detail: { peerId: id, topic: topicID, direction: 'inbound' } })
+        // only notify when the peer was actually added to the mesh - rejected
+        // GRAFTs do not change the mesh and listeners (e.g. peer tagging) can
+        // be expensive
+        this.safeDispatchEvent<MeshPeer>('gossipsub:graft', { detail: { peerId: id, topic: topicID, direction: 'inbound' } })
+      }
     })
 
-    if (prune.length === 0) {
+    if (prune.size === 0) {
       return []
     }
 
     const onUnsubscribe = false
-    return Promise.all(prune.map(async (topic) => this.makePrune(id, topic, doPX, onUnsubscribe)))
+    return Promise.all(Array.from(prune, async (topic) => this.makePrune(id, topic, doPX, onUnsubscribe)))
   }
 
   /**
@@ -1616,11 +1621,19 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    */
   private async handlePrune (id: PeerIdStr, prune: RPC.ControlPrune[]): Promise<void> {
     const score = this.score.score(id)
+    // a single RPC can hold many PRUNEs for the same topic, only the first one
+    // is processed so the work done is bounded by the number of topics
+    const seenTopics = new Set<TopicStr>()
 
     for (const { topicID, backoff, peers } of prune) {
       if (topicID == null) {
         continue
       }
+
+      if (seenTopics.has(topicID)) {
+        continue
+      }
+      seenTopics.add(topicID)
 
       const peersInMesh = this.mesh.get(topicID)
       if (peersInMesh == null) {
@@ -1629,8 +1642,8 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
 
       this.log('PRUNE: Remove mesh link to %s in %s', id, topicID)
       this.score.prune(id, topicID)
-      if (peersInMesh.has(id)) {
-        peersInMesh.delete(id)
+      const wasInMesh = peersInMesh.delete(id)
+      if (wasInMesh) {
         this.metrics?.onRemoveFromMesh(topicID, ChurnReason.Prune, 1)
       }
 
@@ -1656,7 +1669,11 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         }
       }
 
-      this.safeDispatchEvent<MeshPeer>('gossipsub:prune', { detail: { peerId: id, topic: topicID, direction: 'inbound' } })
+      // only notify when the peer was actually removed from the mesh -
+      // listeners (e.g. peer untagging) can be expensive
+      if (wasInMesh) {
+        this.safeDispatchEvent<MeshPeer>('gossipsub:prune', { detail: { peerId: id, topic: topicID, direction: 'inbound' } })
+      }
     }
   }
 

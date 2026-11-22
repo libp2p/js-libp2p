@@ -10,6 +10,7 @@ import { MemoryDatastore } from 'datastore-core/memory'
 import { TypedEventEmitter } from 'main-event'
 import { pEvent } from 'p-event'
 import { persistentPeerStore } from '../src/index.ts'
+import { Peer as PeerPB } from '../src/pb/peer.ts'
 import { peerIdToDatastoreKey } from '../src/utils/peer-id-to-datastore-key.ts'
 import type { Libp2pEvents, PeerId, PeerStore, PeerData } from '@libp2p/interface'
 import type { Datastore } from 'interface-datastore'
@@ -37,6 +38,73 @@ describe('merge', () => {
       datastore,
       logger: defaultLogger()
     })
+  })
+
+  it('limits the number of addresses stored for a peer', async () => {
+    peerStore = persistentPeerStore({
+      peerId,
+      events,
+      datastore,
+      logger: defaultLogger()
+    }, {
+      maxAddresses: 2
+    })
+
+    await peerStore.merge(otherPeerId, {
+      multiaddrs: [addr1]
+    })
+
+    const peer = await peerStore.merge(otherPeerId, {
+      addresses: [{
+        multiaddr: addr2,
+        isCertified: false
+      }, {
+        multiaddr: addr3,
+        isCertified: true
+      }]
+    })
+
+    // certified addresses are preferred, then existing addresses
+    expect(peer.addresses.map(({ multiaddr }) => multiaddr.toString()).sort()).to.deep.equal([
+      addr1.toString(),
+      addr3.toString()
+    ].sort())
+  })
+
+  it('limits the number of addresses stored for a peer by default', async () => {
+    const peer = await peerStore.merge(otherPeerId, {
+      multiaddrs: new Array(1_000).fill(0).map((_, i) => multiaddr(`/ip4/127.0.0.1/tcp/${i + 1}`))
+    })
+
+    expect(peer.addresses).to.have.lengthOf(100)
+  })
+
+  it('does not limit the number of addresses stored for the self peer', async () => {
+    const peer = await peerStore.merge(peerId, {
+      multiaddrs: new Array(1_000).fill(0).map((_, i) => multiaddr(`/ip4/127.0.0.1/tcp/${i + 1}`))
+    })
+
+    expect(peer.addresses).to.have.lengthOf(1_000)
+  })
+
+  it('preserves the observed time of existing addresses', async () => {
+    await peerStore.merge(otherPeerId, {
+      multiaddrs: [addr1]
+    })
+
+    const before = PeerPB.decode(await datastore.get(peerIdToDatastoreKey(otherPeerId)))
+
+    await new Promise(resolve => setTimeout(resolve, 10))
+
+    await peerStore.merge(otherPeerId, {
+      multiaddrs: [addr2]
+    })
+
+    const after = PeerPB.decode(await datastore.get(peerIdToDatastoreKey(otherPeerId)))
+    const find = (pb: PeerPB, ma: typeof addr1): number | undefined => pb.addresses.find(a => multiaddr(a.multiaddr).equals(ma))?.observed
+
+    expect(find(after, addr1)).to.equal(find(before, addr1))
+    expect(find(after, addr2)).to.be.greaterThan(find(before, addr1) ?? Infinity)
   })
 
   it('emits peer:update event on merge', async () => {

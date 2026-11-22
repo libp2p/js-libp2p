@@ -1,6 +1,16 @@
 import { isIPv4, isIPv6 } from '@chainsafe/is-ip'
-import { Netmask } from 'netmask'
+import { parseIP } from '@chainsafe/is-ip/parse'
+import { IpNet, iPv4FromIPv6, isIPv4mappedIPv6 } from '@chainsafe/netmask'
 
+/**
+ * Private, reserved or special-purpose IP ranges
+ *
+ * Addresses are matched by their parsed bytes so the result does not depend on
+ * how an address is spelled (IPv6 compression, leading zeros, case).
+ *
+ * @see https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml
+ * @see https://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xhtml
+ */
 const PRIVATE_IP_RANGES = [
   '0.0.0.0/8',
   '10.0.0.0/8',
@@ -25,83 +35,34 @@ const PRIVATE_IP_RANGES = [
   '198.51.100.0/24',
   '203.0.113.0/24',
   '240.0.0.0/4',
-  '255.255.255.255/32'
-]
-
-const NETMASK_RANGES = PRIVATE_IP_RANGES.map(ipRange => new Netmask(ipRange))
-
-function ipv4Check (ipAddr: string): boolean {
-  for (const r of NETMASK_RANGES) {
-    if (r.contains(ipAddr)) { return true }
-  }
-
-  return false
-}
-
-function isIpv4MappedIpv6 (ipAddr: string): boolean {
-  return /^::ffff:([0-9a-fA-F]{1,4}):([0-9a-fA-F]{1,4})$/.test(ipAddr)
-}
-
-/**
- * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2
- */
-function ipv4MappedIpv6Check (ipAddr: string): boolean {
-  const parts = ipAddr.split(':')
-
-  if (parts.length < 2) {
-    return false
-  }
-
-  const octet34 = parts[parts.length - 1].padStart(4, '0')
-  const octet12 = parts[parts.length - 2].padStart(4, '0')
-
-  const ip4 = `${parseInt(octet12.substring(0, 2), 16)}.${parseInt(octet12.substring(2), 16)}.${parseInt(octet34.substring(0, 2), 16)}.${parseInt(octet34.substring(2), 16)}`
-
-  return ipv4Check(ip4)
-}
-
-/**
- * @see https://datatracker.ietf.org/doc/html/rfc4291#section-2.2 example 3
- */
-function isIpv4EmbeddedIpv6 (ipAddr: string): boolean {
-  return /^::ffff:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr)
-}
-
-function ipv4EmbeddedIpv6Check (ipAddr: string): boolean {
-  const parts = ipAddr.split(':')
-  const ip4 = parts[parts.length - 1]
-
-  return ipv4Check(ip4)
-}
-
-function ipv6Check (ipAddr: string): boolean {
-  return /^::$/.test(ipAddr) ||
-    /^::1$/.test(ipAddr) ||
-    /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ipAddr) ||
-    /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2001:2[0-9a-fA-F]:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2001:db8:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^2002:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ipAddr) ||
-    /^f[c-d]([0-9a-fA-F]{2,2}):/i.test(ipAddr) ||
-    /^fe[8-9a-bA-B][0-9a-fA-F]:/i.test(ipAddr) ||
-    /^ff([0-9a-fA-F]{2,2}):/i.test(ipAddr)
-}
+  '255.255.255.255/32',
+  '::/128', // unspecified (RFC 4291)
+  '::1/128', // loopback (RFC 4291)
+  '64:ff9b::/96', // IPv4/IPv6 translation (RFC 6052)
+  '100::/64', // discard-only (RFC 6666)
+  '2001::/32', // Teredo (RFC 4380)
+  '2001:20::/28', // ORCHIDv2 (RFC 7343)
+  '2001:db8::/32', // documentation (RFC 3849)
+  '2002::/16', // 6to4 (RFC 3056)
+  'fc00::/7', // unique local (RFC 4193)
+  'fe80::/10', // link-local unicast (RFC 4291)
+  'ff00::/8' // multicast (RFC 4291)
+].map(cidr => new IpNet(cidr))
 
 export function isPrivateIp (ip: string): boolean | undefined {
-  if (isIPv4(ip)) {
-    return ipv4Check(ip)
+  if (!isIPv4(ip) && !isIPv6(ip)) {
+    return
   }
 
-  if (isIpv4MappedIpv6(ip)) {
-    return ipv4MappedIpv6Check(ip)
+  const parsed = parseIP(ip)
+
+  if (parsed == null) {
+    return
   }
 
-  if (isIpv4EmbeddedIpv6(ip)) {
-    return ipv4EmbeddedIpv6Check(ip)
-  }
+  // check IPv4-mapped IPv6 (::ffff:0:0/96) against the IPv4 ranges, the length
+  // check matters as isIPv4mappedIPv6 also matches 0.0.0.0
+  const addr = parsed.length === 16 && isIPv4mappedIPv6(parsed) ? iPv4FromIPv6(parsed) : parsed
 
-  if (isIPv6(ip)) {
-    return ipv6Check(ip)
-  }
+  return PRIVATE_IP_RANGES.some(net => net.contains(addr))
 }
