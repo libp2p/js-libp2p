@@ -84,16 +84,6 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
       }
     }
 
-    context.metrics?.registerMetricGroup('libp2p_tcp_inbound_connections_total', {
-      label: 'address',
-      help: 'Current active connections in TCP listener',
-      calculate: () => {
-        return {
-          [this.addr]: this.sockets.size
-        }
-      }
-    })
-
     this.metrics = {
       status: context.metrics?.registerMetricGroup('libp2p_tcp_listener_status_info', {
         label: 'address',
@@ -220,6 +210,17 @@ export class TCPListener extends TypedEventEmitter<ListenerEvents> implements Li
         this.sockets.delete(socket)
         maConn.abort(err)
       })
+  }
+
+  /**
+   * Returns the number of active inbound connections keyed by listen address,
+   * for the `libp2p_tcp_inbound_connections_total` metric the transport
+   * reports on behalf of all of its listeners
+   */
+  getConnectionCounts (): Record<string, number> {
+    return {
+      [this.addr]: this.sockets.size
+    }
   }
 
   getAddrs (): Multiaddr[] {
