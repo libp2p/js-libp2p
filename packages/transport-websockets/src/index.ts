@@ -30,6 +30,7 @@ import { pEvent } from 'p-event'
 import { CustomProgressEvent } from 'progress-events'
 import { createListener } from './listener.ts'
 import { webSocketToMaConn } from './websocket-to-conn.ts'
+import type { WebSocketListener } from './listener.ts'
 import type { Transport, CreateListenerOptions, DialTransportOptions, Listener, AbortOptions, ComponentLogger, Logger, Connection, OutboundConnectionUpgradeEvents, Metrics, CounterGroup, Libp2pEvents } from '@libp2p/interface'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { TypedEventTarget } from 'main-event'
@@ -89,6 +90,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
   private readonly logger: ComponentLogger
   private readonly metrics?: WebSocketsMetrics
   private readonly components: WebSocketsComponents
+  private readonly listeners = new Set<WebSocketListener>()
 
   constructor (components: WebSocketsComponents, init: WebSocketsInit = {}) {
     this.log = components.logger.forComponent('libp2p:websockets')
@@ -97,6 +99,22 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
     this.init = init
 
     if (components.metrics != null) {
+      // metric groups with a `calculate` function are registered once per name,
+      // so report every listener from here instead of from each listener
+      components.metrics.registerMetricGroup('libp2p_websockets_inbound_connections_total', {
+        label: 'address',
+        help: 'Current active connections in WebSocket listener',
+        calculate: () => {
+          const counts: Record<string, number> = {}
+
+          for (const listener of this.listeners) {
+            Object.assign(counts, listener.getConnectionCounts())
+          }
+
+          return counts
+        }
+      })
+
       this.metrics = {
         dialerEvents: components.metrics.registerCounterGroup('libp2p_websockets_dialer_events_total', {
           label: 'event',
@@ -171,7 +189,7 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
    * `upgrader.upgradeInbound`
    */
   createListener (options: CreateListenerOptions): Listener {
-    return createListener({
+    const listener = createListener({
       logger: this.logger,
       events: this.components.events,
       metrics: this.components.metrics
@@ -179,6 +197,13 @@ class WebSockets implements Transport<WebSocketsDialEvents> {
       ...this.init,
       ...options
     })
+
+    this.listeners.add(listener)
+    listener.addEventListener('close', () => {
+      this.listeners.delete(listener)
+    }, { once: true })
+
+    return listener
   }
 
   listenFilter (multiaddrs: Multiaddr[]): Multiaddr[] {
