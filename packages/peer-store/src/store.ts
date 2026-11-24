@@ -190,7 +190,7 @@ export class PersistentStore {
       log: this.log
     })
 
-    return this.#saveIfDifferent(peerId, peerPb, existingPeer)
+    return this.#saveIfDifferent(peerId, peerPb, existingPeer, options)
   }
 
   async patch (peerId: PeerId, data: Partial<PeerData>, options?: AbortOptions): Promise<PeerUpdate> {
@@ -204,20 +204,21 @@ export class PersistentStore {
       existingPeer
     })
 
-    return this.#saveIfDifferent(peerId, peerPb, existingPeer)
+    return this.#saveIfDifferent(peerId, peerPb, existingPeer, options)
   }
 
   async merge (peerId: PeerId, data: PeerData, options?: AbortOptions): Promise<PeerUpdate> {
     const existingPeer = await this.#findExistingPeer(peerId, options)
 
     const peerPb: PeerPB = await toPeerPB(peerId, data, 'merge', {
+      ...options,
       addressFilter: this.addressFilter,
       maxAddresses: this.#maxAddressesFor(peerId),
       log: this.log,
       existingPeer
     })
 
-    return this.#saveIfDifferent(peerId, peerPb, existingPeer)
+    return this.#saveIfDifferent(peerId, peerPb, existingPeer, options)
   }
 
   async * all (options?: PeerQuery): AsyncGenerator<Peer, void, unknown> {
