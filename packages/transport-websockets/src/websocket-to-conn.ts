@@ -1,3 +1,4 @@
+import { UnsupportedOperationError } from '@libp2p/interface'
 import { AbstractMultiaddrConnection, repeatingTask } from '@libp2p/utils'
 import { Uint8ArrayList } from 'uint8arraylist'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
@@ -105,5 +106,19 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
 // Convert a stream into a MultiaddrConnection
 // https://github.com/libp2p/interface-transport#multiaddrconnection
 export function webSocketToMaConn (init: WebSocketMultiaddrConnectionInit): MultiaddrConnection {
+  const bufferedAmount = init.websocket.bufferedAmount
+
+  if (typeof bufferedAmount !== 'number' || !Number.isFinite(bufferedAmount) || bufferedAmount < 0) {
+    // Without a buffer count it is impossible to apply write backpressure. Do
+    // not silently treat a missing implementation as an empty write queue.
+    try {
+      init.websocket.close()
+    } catch {
+      // Preserve the capability error if the runtime also rejects close().
+    }
+
+    throw new UnsupportedOperationError('The WebSocket implementation must provide a finite, non-negative bufferedAmount to support write backpressure')
+  }
+
   return new WebSocketMultiaddrConnection(init)
 }
