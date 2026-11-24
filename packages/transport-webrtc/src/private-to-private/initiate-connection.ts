@@ -185,22 +185,30 @@ export async function initiateConnection ({ rtcConfiguration, dataChannel, maxEa
 
     log.trace('initiator connected')
 
-    if (channel.readyState !== 'open') {
-      log.trace('wait for init channel to open')
-      await pEvent(channel, 'open', {
+    // the init channel can also close before it opens, for example when a
+    // remote close arrives first, so wait for whichever happens and continue
+    // based on the readyState
+    if (channel.readyState === 'connecting') {
+      log.trace('wait for init channel to open or close')
+      await pEvent(channel, ['open', 'close'], {
         signal
       })
     }
 
-    log.trace('closing init channel')
-    channel.close()
+    // the recipient closes the init channel once its side is connected, which
+    // can happen before this side sees the peer connection connected, and then
+    // neither the open nor the close event will fire again
+    if (channel.readyState !== 'closed') {
+      log.trace('closing init channel')
+      channel.close()
 
-    // wait for init channel to close before proceeding, otherwise the channel
-    // id can be reused before both sides have seen the channel close
-    log.trace('waiting for init channel to close')
-    await pEvent(channel, 'close', {
-      signal
-    })
+      // wait for init channel to close before proceeding, otherwise the channel
+      // id can be reused before both sides have seen the channel close
+      log.trace('waiting for init channel to close')
+      await pEvent(channel, 'close', {
+        signal
+      })
+    }
 
     onProgress?.(new CustomProgressEvent('webrtc:close-signaling-stream'))
 
