@@ -106,11 +106,12 @@ export function isDirect (ma: Multiaddr): boolean {
 }
 
 /**
- * If there is an existing non-limited connection to the remote peer return it,
+ * If there is an existing eligible connection to the remote peer return it,
  * unless it is indirect and at least one of the passed dial addresses would
- * result in a direct connection
+ * result in a direct connection. Limited connections are only eligible when
+ * explicitly allowed, and unlimited connections are always preferred.
  */
-export function findExistingConnection (peerId?: PeerId, connections?: Connection[], dialAddresses?: Multiaddr[]): Connection | undefined {
+export function findExistingConnection (peerId?: PeerId, connections?: Connection[], dialAddresses?: Multiaddr[], runOnLimitedConnection = false): Connection | undefined {
   if (peerId == null || connections == null) {
     return
   }
@@ -122,6 +123,10 @@ export function findExistingConnection (peerId?: PeerId, connections?: Connectio
     // event hasn't fired in this tick)
     .filter(con => con.status === 'open')
     .sort((a, b) => {
+      if ((a.limits == null) !== (b.limits == null)) {
+        return a.limits == null ? -1 : 1
+      }
+
       if (a.direct) {
         return -1
       }
@@ -132,13 +137,13 @@ export function findExistingConnection (peerId?: PeerId, connections?: Connectio
 
       return 0
     })
-    .find(con => con.limits == null)
+    .find(con => con.limits == null || runOnLimitedConnection)
 
   if (existingConnection == null || existingConnection.direct || dialAddresses == null) {
     return existingConnection
   }
 
-  // we have an indirect, but unlimited connection - test the dial addresses to
+  // we have an indirect connection - test the dial addresses to
   // see if any of them would result in a direct connection, in which case allow
   // the attempt to upgrade to a direct connection
   const wouldUpgradeToDirect = dialAddresses.some(ma => isDirect(ma))

@@ -1,6 +1,7 @@
 import { generateKeyPair } from '@libp2p/crypto/keys'
 import { NotFoundError } from '@libp2p/interface'
 import { peerLogger } from '@libp2p/logger'
+import { PeerMap } from '@libp2p/peer-collections'
 import { peerIdFromPrivateKey } from '@libp2p/peer-id'
 import { multiaddr } from '@multiformats/multiaddr'
 import { TCP, WebRTC } from '@multiformats/multiaddr-matcher'
@@ -43,6 +44,19 @@ describe('dial queue', () => {
     if (dialer != null) {
       dialer.stop()
     }
+  })
+
+  it('should reuse an existing limited connection when explicitly allowed', async () => {
+    const peer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = stubInterface<Connection>({
+      status: 'open', direct: false, remotePeer: peer, limits: { bytes: 100n }
+    })
+    const connections = new PeerMap<Connection[]>()
+    connections.set(peer, [connection])
+    dialer = new DialQueue(components, { connections })
+
+    expect(await dialer.dial(peer, { runOnLimitedConnection: true })).to.equal(connection)
+    sinon.assert.notCalled(components.transportManager.dial)
   })
 
   it('should end when a single multiaddr dials succeeds', async () => {
