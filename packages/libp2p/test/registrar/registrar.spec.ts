@@ -52,58 +52,6 @@ describe('registrar topologies', () => {
     expect(registrar.getTopologies(protocol)).to.have.lengthOf(1)
   })
 
-  it('should keep per-stream changes out of registered middleware', () => {
-    const middleware: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    registrar.use(protocol, [middleware])
-    registrar.getMiddleware(protocol).push(() => {})
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([middleware])
-  })
-
-  it('should run global middleware before protocol middleware', () => {
-    const global: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const specific: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    registrar.use(global)
-    registrar.use(protocol, [specific])
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([global, specific])
-    expect(registrar.getMiddleware('/outbound-only/1.0.0')).to.deep.equal([global])
-    expect(registrar.getMiddleware('*')).to.deep.equal([global])
-    expect(registrar.getProtocols()).to.deep.equal([])
-    registrar.unuse(global)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([specific])
-  })
-
-  it('should append global middleware and remove only the requested observer', () => {
-    const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const second: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    registrar.use(first)
-    registrar.use(second)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([first, second])
-    registrar.unuse(second)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([first])
-    registrar.unuse(first)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([])
-  })
-
-  it('should preserve protocol replacement and literal asterisk registrations', () => {
-    const global: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const first: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    const replacement: StreamMiddleware = (stream, connection, next) => next(stream, connection)
-    registrar.use(global)
-
-    for (const name of [protocol, '*']) {
-      registrar.use(name, [first])
-      registrar.use(name, [replacement])
-      expect(registrar.getMiddleware(name), name).to.deep.equal([global, replacement])
-      expect(registrar.getMiddleware('/unregistered/1'), name).to.deep.equal([global])
-      registrar.unuse(name)
-      expect(registrar.getMiddleware(name), name).to.deep.equal([global])
-    }
-
-    registrar.use(protocol, [first])
-    registrar.unuse(global)
-    expect(registrar.getMiddleware(protocol)).to.deep.equal([first])
-  })
-
   it('should be able to unregister a protocol', async () => {
     const topology: Topology = {
       onConnect: () => { },
@@ -636,5 +584,169 @@ describe('registrar topologies', () => {
     // should not have notified
     expect(topology.onConnect).to.have.property('called', false)
     expect(topology.onDisconnect).to.have.property('called', false)
+  })
+})
+
+describe('registrar middleware', () => {
+  let registrar: Registrar
+  let a: StreamMiddleware
+  let b: StreamMiddleware
+  let c: StreamMiddleware
+
+  beforeEach(async () => {
+    registrar = new Registrar({
+      peerId: peerIdFromPrivateKey(await generateKeyPair('Ed25519')),
+      peerStore: stubInterface<PeerStore>(),
+      events: new TypedEventEmitter<Libp2pEvents>(),
+      logger: defaultLogger()
+    })
+
+    a = (stream, connection, next) => { next(stream, connection) }
+    b = (stream, connection, next) => { next(stream, connection) }
+    c = (stream, connection, next) => { next(stream, connection) }
+  })
+
+  it('should append protocol middleware in registration order', () => {
+    registrar.use(protocol, [a])
+    registrar.use(protocol, [b, c])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, b, c])
+    expect(registrar.getMiddleware('/other/1.0.0')).to.be.empty()
+  })
+
+  it('should ignore protocol middleware that is already registered', () => {
+    registrar.use(protocol, [a, b, a])
+    registrar.use(protocol, [a])
+    registrar.use(protocol, [c, b])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, b, c])
+  })
+
+  it('should remove only the passed protocol middleware', () => {
+    registrar.use(protocol, [a, b, c])
+    registrar.unuse(protocol, [b])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, c])
+
+    // not registered
+    registrar.unuse(protocol, [b])
+    registrar.unuse('/other/1.0.0', [a])
+    registrar.unuse(protocol, [])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, c])
+  })
+
+  it('should remove all protocol middleware when none is passed', () => {
+    registrar.use(protocol, [a, b])
+    registrar.use([c])
+    registrar.unuse(protocol)
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([c])
+
+    registrar.use(protocol, [b])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([c, b])
+  })
+
+  it('should order global middleware before protocol middleware', () => {
+    registrar.use(protocol, [a])
+    registrar.use([b])
+    registrar.use([c])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([b, c, a])
+    expect(registrar.getMiddleware('/other/1.0.0')).to.deep.equal([b, c])
+    expect(registrar.getProtocols()).to.be.empty()
+  })
+
+  it('should ignore global middleware that is already registered', () => {
+    registrar.use([a, b, a])
+    registrar.use([a])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, b])
+  })
+
+  it('should remove only the passed global middleware', () => {
+    registrar.use([a, b])
+    registrar.use(protocol, [c])
+    registrar.unuse([a])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([b, c])
+  })
+
+  it('should register global and protocol middleware separately', () => {
+    registrar.use([a])
+    registrar.use(protocol, [a])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, a])
+
+    registrar.unuse([a])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a])
+
+    registrar.use([a])
+    registrar.unuse(protocol, [a])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a])
+  })
+
+  it('should register the same middleware for different protocols separately', () => {
+    const other = '/other/1.0.0'
+    registrar.use(protocol, [a])
+    registrar.use(other, [a])
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a])
+    expect(registrar.getMiddleware(other)).to.deep.equal([a])
+
+    registrar.unuse(protocol, [a])
+
+    expect(registrar.getMiddleware(protocol)).to.be.empty()
+    expect(registrar.getMiddleware(other)).to.deep.equal([a])
+  })
+
+  it('should require middleware when registering for a protocol', () => {
+    // @ts-expect-error middleware is required
+    expect(() => { registrar.use(protocol) }).to.throw()
+      .with.property('name', 'InvalidParametersError')
+  })
+
+  it('should treat an asterisk as a literal protocol', () => {
+    registrar.use('*', [a])
+    registrar.use([b])
+
+    expect(registrar.getMiddleware('*')).to.deep.equal([b, a])
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([b])
+  })
+
+  it('should not change registered middleware when a returned chain changes', () => {
+    const other = '/other/1.0.0'
+    registrar.use([a])
+    registrar.use(protocol, [b])
+
+    registrar.getMiddleware(protocol).push(c)
+    registrar.getMiddleware(other).push(c)
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([a, b])
+    expect(registrar.getMiddleware(other)).to.deep.equal([a])
+  })
+
+  it('should not change a returned chain when middleware changes', () => {
+    registrar.use(protocol, [a, b])
+
+    const chain = registrar.getMiddleware(protocol)
+
+    registrar.unuse(protocol, [a])
+    registrar.use([c])
+
+    expect(chain).to.deep.equal([a, b])
+  })
+
+  it('should not retain the passed middleware list', () => {
+    const middleware = [a]
+    registrar.use(protocol, middleware)
+    registrar.use([b])
+
+    middleware.push(c)
+
+    expect(registrar.getMiddleware(protocol)).to.deep.equal([b, a])
   })
 })
