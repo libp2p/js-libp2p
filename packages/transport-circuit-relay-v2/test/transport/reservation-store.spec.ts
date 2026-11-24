@@ -43,6 +43,7 @@ describe('transport reservation-store', () => {
     }
 
     store = new ReservationStore(components)
+    store.start()
   })
 
   afterEach(() => {
@@ -345,5 +346,38 @@ describe('transport reservation-store', () => {
     // the freed slot returns to the pool despite the failed datastore write
     expect((store as any).pendingReservations).to.have.lengthOf(1)
     expect(notEnough).to.be.greaterThan(0)
+  })
+
+  it('should not keep a reservation that completes after the store has stopped', async () => {
+    // fake setTimeout and clearTimeout so the refresh timer can be counted, and
+    // let the clock follow real time so the stream pair still delivers data
+    const clock = Sinon.useFakeTimers({
+      toFake: ['setTimeout', 'clearTimeout'],
+      shouldAdvanceTime: true
+    })
+
+    const relayPeer = peerIdFromPrivateKey(await generateKeyPair('Ed25519'))
+    const connection = addConnectedRelay(relayPeer, 300)
+
+    // the store stops and the relay connection closes while the reservation is
+    // being made, so the relay's answer is handled after both
+    connection.newStream.reset()
+    connection.newStream.callsFake(() => {
+      store.stop()
+      components.events.dispatchEvent(new CustomEvent('connection:close', { detail: connection }))
+      return respondToReserve(relayPeer, 300)()
+    })
+
+    store.reserveRelay()
+    const reservation = store.addRelay(relayPeer, 'discovered')
+    await reservation.catch(() => {})
+
+    // run the short stream and queue timers but not a refresh timer, which is
+    // at least 30 seconds
+    await clock.tickAsync(1000)
+
+    expect(store.hasReservation(relayPeer)).to.be.false()
+    expect(clock.countTimers()).to.equal(0)
+    await expect(reservation).to.eventually.be.rejected.with.property('name', 'NotStartedError')
   })
 })

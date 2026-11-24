@@ -1,4 +1,4 @@
-import { ListenError } from '@libp2p/interface'
+import { ListenError, NotStartedError } from '@libp2p/interface'
 import { PeerMap } from '@libp2p/peer-collections'
 import { createScalableCuckooFilter, PeerQueue, pbStream } from '@libp2p/utils'
 import { CODE_P2P, multiaddr } from '@multiformats/multiaddr'
@@ -269,6 +269,13 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         const reservation = await this.#createReservation(connection, {
           signal
         })
+
+        // the store may have been stopped while the reservation was being made.
+        // stop() has already cleared the store, so do not arm a refresh timer or
+        // keep a reservation that nothing would clear
+        if (!this.started) {
+          throw new NotStartedError('Made reservation on relay but the reservation store is not started')
+        }
 
         const expiration = getExpirationMilliseconds(reservation.expire)
 
