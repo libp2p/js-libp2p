@@ -75,50 +75,65 @@ export class ReconnectQueue implements Startable {
     }
 
     this.queue.add(async (options) => {
-      await pRetry(async (attempt) => {
-        if (!this.started) {
-          return
+      try {
+        await pRetry(async (attempt) => {
+          if (!this.started) {
+            return
+          }
+
+          try {
+            await this.connectionManager.openConnection(peerId, {
+              signal: options?.signal
+            })
+          } catch (err) {
+            this.log('reconnecting to %p attempt %d of %d failed - %e', peerId, attempt, this.retries, err)
+            throw err
+          }
+        }, {
+          signal: options?.signal,
+          retries: this.retries,
+          factor: this.backoffFactor,
+          minTimeout: this.retryInterval
+        })
+      } catch (err) {
+        // the queue aborts the job when we stop, that is not a failed reconnect
+        if (options?.signal?.aborted !== true) {
+          await this.reconnectFailed(peer, err)
         }
 
-        try {
-          await this.connectionManager.openConnection(peerId, {
-            signal: options?.signal
-          })
-        } catch (err) {
-          this.log('reconnecting to %p attempt %d of %d failed - %e', peerId, attempt, this.retries, err)
-          throw err
-        }
-      }, {
-        signal: options?.signal,
-        retries: this.retries,
-        factor: this.backoffFactor,
-        minTimeout: this.retryInterval
-      })
+        throw err
+      }
     }, {
       peerId
     })
-      .catch(async err => {
-        this.log.error('failed to reconnect to %p - %e', peerId, err)
-
-        const tags: Record<string, undefined> = {}
-
-        ;[...peer.tags.keys()].forEach(key => {
-          if (key.startsWith(KEEP_ALIVE)) {
-            tags[key] = undefined
-          }
-        })
-
-        await this.peerStore.merge(peerId, {
-          tags
-        })
-
-        this.events.safeDispatchEvent('peer:reconnect-failure', {
-          detail: peerId
-        })
+      .catch(err => {
+        // failures are handled by the job
+        this.log.trace('reconnecting to %p ended - %e', peerId, err)
       })
-      .catch(async err => {
-        this.log.error('failed to remove keep-alive tag from %p - %e', peerId, err)
+  }
+
+  private async reconnectFailed (peer: Peer, err: any): Promise<void> {
+    this.log.error('failed to reconnect to %p - %e', peer.id, err)
+
+    const tags: Record<string, undefined> = {}
+
+    ;[...peer.tags.keys()].forEach(key => {
+      if (key.startsWith(KEEP_ALIVE)) {
+        tags[key] = undefined
+      }
+    })
+
+    try {
+      await this.peerStore.merge(peer.id, {
+        tags
       })
+
+      this.events.safeDispatchEvent('peer:reconnect-failure', {
+        detail: peer.id
+      })
+    } catch (err) {
+      this.log.error('failed to remove keep-alive tag from %p - %e', peer.id, err)
+    }
   }
 
   start (): void {
