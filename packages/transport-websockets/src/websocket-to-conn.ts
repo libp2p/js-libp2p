@@ -63,7 +63,14 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
       this.websocket.send(withArrayBuffer(buf))
     }
 
-    const canSendMore = this.websocket.bufferedAmount < this.maxBufferedAmount
+    // Some WebSocket implementations (notably React Native) don't expose
+    // `bufferedAmount`. When unavailable, treat it as 0; we can't track
+    // backpressure, but at least writes proceed instead of blocking forever
+    // waiting for a 'drain' event, the implementation never emits.
+    const bufferedAmount = typeof this.websocket.bufferedAmount === 'number'
+      ? this.websocket.bufferedAmount
+      : 0
+    const canSendMore = bufferedAmount < this.maxBufferedAmount
 
     if (!canSendMore) {
       this.checkBufferedAmountTask.start()
@@ -93,9 +100,11 @@ class WebSocketMultiaddrConnection extends AbstractMultiaddrConnection {
   }
 
   private checkBufferedAmount (): void {
-    this.log('buffered amount now %d', this.websocket.bufferedAmount)
-
-    if (this.websocket.bufferedAmount === 0) {
+    const bufferedAmount = typeof this.websocket.bufferedAmount === 'number'
+      ? this.websocket.bufferedAmount
+      : 0
+    this.log('buffered amount now %d', bufferedAmount)
+    if (bufferedAmount === 0) {
       this.checkBufferedAmountTask.stop()
       this.safeDispatchEvent('drain')
     }
