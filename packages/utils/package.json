@@ -51,7 +51,7 @@
     "@libp2p/logger": "^6.2.16",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
-    "@sindresorhus/fnv1a": "^3.1.0",
+    "@sindresorhus/fnv1a": "^4.0.0",
     "any-signal": "^4.1.1",
     "cborg": "^6.0.0",
     "delay": "^7.0.0",
