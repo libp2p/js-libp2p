@@ -98,7 +98,7 @@
     "it-length-prefixed": "^11.0.1",
     "lodash.random": "^3.2.0",
     "lodash.range": "^3.2.0",
-    "p-retry": "^8.0.0",
+    "p-retry": "^9.0.0",
     "protons": "^9.0.1",
     "sinon": "^22.0.0",
     "sinon-ts": "^2.0.0",
