@@ -159,9 +159,17 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   async * [Symbol.asyncIterator] (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
     const output = pushable<Uint8Array | Uint8ArrayList>()
     let error: Error | undefined
+    let paused = false
 
     const streamAsyncIterableOnMessageListener = (evt: StreamMessageEvent): void => {
       output.push(evt.data)
+
+      // while the reader is behind, hold further data in the read buffer where
+      // maxReadBufferLength applies and the remote can be asked to pause
+      if (output.readableLength > this.maxReadBufferLength && this.readStatus === 'readable') {
+        paused = true
+        this.pause()
+      }
     }
     this.addEventListener('message', streamAsyncIterableOnMessageListener)
 
@@ -183,7 +191,17 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     }
 
     try {
-      yield * output
+      for await (const buf of output) {
+        yield buf
+
+        if (paused && output.readableLength === 0) {
+          paused = false
+
+          if (this.readStatus === 'paused') {
+            this.resume()
+          }
+        }
+      }
 
       if (error != null) {
         throw error
@@ -191,6 +209,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     } finally {
       this.removeEventListener('message', streamAsyncIterableOnMessageListener)
       this.#iteratorEnds.delete(streamAsyncIterableEnd)
+
+      // do not leave the stream paused for the next reader
+      if (paused && this.readStatus === 'paused') {
+        this.resume()
+      }
     }
   }
 
@@ -293,7 +316,12 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     this.readStatus = 'readable'
     // emit any data that accumulated while we were paused
     this.dispatchReadBuffer()
-    this.sendResume()
+
+    // dispatching can pause or end the readable end again, and a stream that
+    // closed while paused may no longer be able to send
+    if (this.readStatus === 'readable' && this.status === 'open') {
+      this.sendResume()
+    }
   }
 
   push (data: Uint8Array | Uint8ArrayList): void {
