@@ -69,7 +69,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
   /**
    * The error the stream was aborted or reset with, thrown by async iterators
-   * after they have yielded all received data
+   * after they have yielded all received data and by onDrain once closed
    */
   #closeError?: Error
 
@@ -123,6 +123,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
       }
 
       this.onDrainPromise?.resolve()
+      this.onDrainPromise = undefined
     }
     this.addEventListener('drain', continueSendingOnDrain)
 
@@ -145,6 +146,11 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
   }
 
   async onDrain (options?: AbortOptions): Promise<void> {
+    // a closed writable end will never drain
+    if (this.writeStatus === 'closed') {
+      throw this.#closeError ?? new StreamClosedError()
+    }
+
     if (this.writableNeedsDrain !== true) {
       return Promise.resolve()
     }
