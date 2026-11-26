@@ -286,8 +286,9 @@ export class YamuxStream extends AbstractStream {
     const rtt = this.getRTT()
 
     if (flags === 0 && rtt > -1 && (now - this.epochStart) <= (rtt * 4)) {
-      // we've already validated that maxStreamWindowSize can't be more than MAX_UINT32
-      this.recvWindow = Math.min(this.recvWindow * 2, this.maxStreamWindowSize)
+      // we've already validated that maxStreamWindowSize can't be more than
+      // MAX_UINT32, and a paused stream must be able to buffer a full window
+      this.recvWindow = Math.min(this.recvWindow * 2, this.maxStreamWindowSize, this.maxReadBufferLength)
     }
 
     if (this.recvWindowCapacity >= this.recvWindow && flags === 0) {

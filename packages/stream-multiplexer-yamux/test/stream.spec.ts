@@ -130,6 +130,54 @@ describe('stream', () => {
     expect(s1['recvWindowCapacity']).to.be.gte(defaultConfig.streamOptions.initialStreamWindowSize)
   })
 
+  it('test send data - slow reader with increasing recv window size', async () => {
+    const [
+      s1, c1
+    ] = await Promise.all([
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
+      client.createStream(),
+      server.ping()
+    ])
+
+    const MiB = 1024 * 1024
+    const total = 32 * MiB
+    const chunk = 64 * 1024
+    let sent = 0
+    let received = 0
+    let maxUnread = 0
+
+    await Promise.all([
+      Promise.resolve().then(async () => {
+        while (sent < total) {
+          const sendMore = c1.send(new Uint8Array(chunk))
+          sent += chunk
+          maxUnread = Math.max(maxUnread, sent - received)
+
+          if (!sendMore) {
+            await pEvent(c1, 'drain')
+          }
+        }
+
+        await c1.close()
+      }),
+      Promise.resolve().then(async () => {
+        for await (const buf of s1) {
+          const before = received
+          received += buf.byteLength
+
+          // the reader takes a while to process each MiB
+          if (Math.floor(received / MiB) > Math.floor(before / MiB)) {
+            await sleep(20)
+          }
+        }
+      })
+    ])
+
+    expect(received).to.equal(total)
+    // the window held the sender back instead of the reader buffering everything
+    expect(maxUnread).to.be.lte(2 * s1.maxReadBufferLength + chunk)
+  })
+
   it('test many streams', async () => {
     for (let i = 0; i < 1000; i++) {
       await client.createStream()
