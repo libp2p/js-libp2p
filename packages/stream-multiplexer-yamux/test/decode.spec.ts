@@ -224,5 +224,29 @@ describe('Decoder', () => {
 
       expectEqualDataFrames(actual, expected)
     })
+
+    it('should reject a data frame longer than the max data length before buffering the body', () => {
+      d = new Decoder(1024)
+      const header = encodeHeader({ type: FrameType.Data, flag: Flag.SYN, streamID: 1, length: 0xFFFFFFFF })
+
+      expect(() => all(d.emitFrames(header))).to.throw().with.property('name', 'ReceiveWindowExceededError')
+    })
+
+    it('should not limit the length field of non-data frames', () => {
+      d = new Decoder(1024)
+      const headers = [FrameType.WindowUpdate, FrameType.Ping, FrameType.GoAway].map(type => ({ type, flag: 0, streamID: 1, length: 0xFFFFFFFF }))
+      const input = new Uint8ArrayList(...headers.map(header => encodeHeader(header)))
+
+      expect(all(d.emitFrames(input))).to.deep.equal(headers.map(header => ({ header })))
+      expect(d['buffer'].length).to.equal(0)
+    })
+
+    it('should accept a data frame equal to the max data length', () => {
+      d = new Decoder(1024)
+      const df = dataFrame(1024)
+      const input = new Uint8ArrayList(encodeHeader(df.header), df.data)
+
+      expectEqualDataFrames(all(d.emitFrames(input)), [df])
+    })
   })
 })
