@@ -76,4 +76,8 @@ export class InboundStream {
   async close (): Promise<void> {
     this.closeController.abort()
   }
+
+  abort (err: Error): void {
+    this.rawStream.abort(err)
+  }
 }

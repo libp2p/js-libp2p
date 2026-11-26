@@ -95,7 +95,11 @@ export enum ScorePenalty {
   /// A Peer did not send enough messages as expected.
   MessageDeficit = 'message_deficit',
   /// Too many peers under one IP address.
-  IPColocation = 'IP_colocation'
+  IPColocation = 'IP_colocation',
+  /// A peer sent an RPC that failed to decode.
+  RpcDecodeError = 'rpc_decode_error',
+  /// A peer sent an RPC with no subscriptions, messages or control entries.
+  EmptyRpc = 'empty_rpc'
 }
 
 export enum IHaveIgnoreReason {

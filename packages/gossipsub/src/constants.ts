@@ -326,6 +326,12 @@ export const GossipsubIdontwantMinDataSize = 512
 export const GossipsubIdontwantMaxMessages = 512
 
 /**
+ * The number of inbound RPCs a connected peer may send that fail to decode or carry nothing before
+ * its inbound stream is aborted. Honest peers send neither.
+ */
+export const GossipsubMaxInboundRpcDecodeErrors = 10
+
+/**
  * The default per-peer memory budget for tracking a peer's topic subscriptions,
  * bounding per-peer memory in the topics map. Each topic costs its string
  * length plus GossipsubTopicEntryOverhead, so this bounds topic count as well
