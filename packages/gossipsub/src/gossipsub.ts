@@ -12,7 +12,7 @@ import {
   BACKOFF_SLACK
 } from './constants.ts'
 import { StrictNoSign, StrictSign, TopicValidatorResult } from './index.ts'
-import { defaultDecodeRpcLimits } from './message/decodeRpc.ts'
+import { decodeRpc, withDefaultDecodeRpcLimits } from './message/decodeRpc.ts'
 import { RPC } from './message/rpc.ts'
 import { MessageCache } from './message-cache.ts'
 import {
@@ -324,7 +324,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     }
 
     this.components = components
-    this.decodeRpcLimits = opts.decodeRpcLimits ?? defaultDecodeRpcLimits
+    this.decodeRpcLimits = withDefaultDecodeRpcLimits(opts.decodeRpcLimits)
 
     this.globalSignaturePolicy = opts.globalSignaturePolicy ?? StrictSign
 
@@ -876,23 +876,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    * Decode an inbound RPC, enforcing this.decodeRpcLimits.
    */
   private decodeRpc (rpcBytes: Uint8Array | Uint8ArrayList): RPC {
-    return RPC.decode(rpcBytes, {
-      limits: {
-        subscriptions: this.decodeRpcLimits.maxSubscriptions,
-        messages: this.decodeRpcLimits.maxMessages,
-        control: {
-          ihave: this.decodeRpcLimits.maxControlMessages,
-          ihave$: { messageIDs: this.decodeRpcLimits.maxIhaveMessageIDs },
-          iwant: this.decodeRpcLimits.maxControlMessages,
-          iwant$: { messageIDs: this.decodeRpcLimits.maxIwantMessageIDs },
-          graft: this.decodeRpcLimits.maxControlMessages,
-          prune: this.decodeRpcLimits.maxControlMessages,
-          prune$: { peers: this.decodeRpcLimits.maxPeerInfos },
-          idontwant: this.decodeRpcLimits.maxControlMessages,
-          idontwant$: { messageIDs: this.decodeRpcLimits.maxIdontwantMessageIDs }
-        }
-      }
-    })
+    return decodeRpc(rpcBytes, this.decodeRpcLimits)
   }
 
   /**
