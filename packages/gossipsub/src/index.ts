@@ -247,9 +247,9 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
   maxTopicBytesPerPeer?: number
 
   /**
-   * Limits to bound protobuf decoding
+   * Limits to bound protobuf decoding, a limit left out keeps its default
    */
-  decodeRpcLimits?: DecodeRPCLimits
+  decodeRpcLimits?: Partial<DecodeRPCLimits>
 
   /**
    * If true, will utilize the libp2p connection manager tagging system to prune/graft connections to peers, defaults to true
