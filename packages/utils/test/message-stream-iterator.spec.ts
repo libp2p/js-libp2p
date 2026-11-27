@@ -631,4 +631,40 @@ describe('message stream async iterator', () => {
 
     await expect(collect(conn)).to.eventually.deep.equal([uint8ArrayFromString('hello')])
   })
+
+  it('should resume the remote when the readable end of a stream paused for a slow reader is closed', async () => {
+    const [, inbound] = await streamPair({
+      inbound: {
+        maxReadBufferLength: 10
+      }
+    })
+    const stream = inbound as unknown as AbstractStream
+
+    const stalled = Promise.withResolvers<void>()
+    let received = 0
+
+    const reading = (async () => {
+      for await (const buf of stream) {
+        received += buf.byteLength
+        await stalled.promise
+      }
+    })()
+
+    for (let i = 0; i < 4; i++) {
+      stream.onData(new Uint8Array(4))
+    }
+
+    expect(stream.readStatus).to.equal('paused')
+
+    const sendResume = Sinon.spy(stream, 'sendResume')
+    await stream.closeRead()
+
+    // data is discarded from now on, a remote left paused would wait forever
+    expect(sendResume.calledOnce).to.be.true()
+
+    stalled.resolve()
+    await reading
+
+    expect(received).to.equal(16)
+  })
 })

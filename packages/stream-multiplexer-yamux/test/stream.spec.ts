@@ -5,6 +5,7 @@ import { expect } from 'aegir/chai'
 import drain from 'it-drain'
 import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
+import { raceSignal } from 'race-signal'
 import { defaultConfig } from '../src/config.ts'
 import { GoAwayCode } from '../src/frame.ts'
 import { YamuxMuxer } from '../src/muxer.ts'
@@ -176,6 +177,86 @@ describe('stream', () => {
     expect(received).to.equal(total)
     // the window held the sender back instead of the reader buffering everything
     expect(maxUnread).to.be.lte(2 * s1.maxReadBufferLength + chunk)
+  })
+
+  it('test send data - slow reader closes the readable end', async () => {
+    const [
+      s1, c1
+    ] = await Promise.all([
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
+      client.createStream(),
+      server.ping()
+    ])
+
+    const total = 32 * 1024 * 1024
+    const chunk = 64 * 1024
+    const stalled = Promise.withResolvers<void>()
+
+    const sending = Promise.resolve().then(async () => {
+      for (let sent = 0; sent < total; sent += chunk) {
+        if (!c1.send(new Uint8Array(chunk))) {
+          await pEvent(c1, 'drain', { rejectionEvents: ['close'] })
+        }
+      }
+
+      await c1.close()
+    })
+
+    const reading = Promise.resolve().then(async () => {
+      for await (const buf of s1) {
+        expect(buf.byteLength).to.be.greaterThan(0)
+        await stalled.promise
+      }
+    })
+
+    // give the reader time to fall behind
+    for (let i = 0; i < 100 && s1.readStatus !== 'paused'; i++) {
+      await sleep(10)
+    }
+
+    await s1.closeRead()
+    stalled.resolve()
+    await reading
+
+    await raceSignal(sending, AbortSignal.timeout(5000)).catch((err) => {
+      c1.abort(err)
+      throw err
+    })
+  })
+
+  it('test send data - paused stream closes the readable end', async () => {
+    const [
+      s1, c1
+    ] = await Promise.all([
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
+      client.createStream(),
+      server.ping()
+    ])
+
+    const total = 8 * 1024 * 1024
+    const chunk = 64 * 1024
+
+    s1.pause()
+
+    const sending = Promise.resolve().then(async () => {
+      for (let sent = 0; sent < total; sent += chunk) {
+        if (!c1.send(new Uint8Array(chunk))) {
+          await pEvent(c1, 'drain', { rejectionEvents: ['close'] })
+        }
+      }
+
+      await c1.close()
+    })
+
+    await sleep(100)
+    expect(s1.readBufferLength).to.be.greaterThan(0)
+
+    await s1.closeRead()
+
+    await raceSignal(sending, AbortSignal.timeout(5000)).catch((err) => {
+      c1.abort(err)
+      throw err
+    })
   })
 
   it('test many streams', async () => {
