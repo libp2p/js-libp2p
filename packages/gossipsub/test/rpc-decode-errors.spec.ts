@@ -165,6 +165,29 @@ describe('gossip / inbound RPC decode errors', () => {
     expect(decodeErrors.has(idA)).to.equal(false)
   })
 
+  it('forgets the decode error count of a removed peer that disconnects without onDisconnect', async function () {
+    this.timeout(10 * 1000)
+    await createNodes()
+    const decodeErrors = (nodes[1].pubsub as any).inboundRpcDecodeErrors as Map<string, number>
+
+    const stream = await openStream()
+    stream.send(frames(repeat(undecodable, maxInboundRpcDecodeErrors - 1)))
+    await pWaitFor(() => decodeErrors.get(idA) === maxInboundRpcDecodeErrors - 1, { timeout: 5000 })
+    stream.abort(new Error('reset'))
+    await pWaitFor(() => !nodes[1].pubsub.peers.has(idA), { timeout: 5000 })
+
+    await nodes[1].pubsub.heartbeat()
+    expect(decodeErrors.get(idA), 'count kept while connected').to.equal(maxInboundRpcDecodeErrors - 1)
+
+    // the registrar skips onDisconnect for peers that never identified
+    nodes[1].components.registrar.getTopologies.callsFake(() => [])
+    await nodes[1].components.connectionManager.closeConnections(nodes[0].components.peerId)
+    expect(decodeErrors.has(idA)).to.equal(true)
+
+    await nodes[1].pubsub.heartbeat()
+    expect(decodeErrors.has(idA)).to.equal(false)
+  })
+
   it('allows one empty RPC per stream without penalty', async function () {
     this.timeout(10 * 1000)
     await createNodes()

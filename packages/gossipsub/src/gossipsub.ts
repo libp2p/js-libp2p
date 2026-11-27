@@ -2848,6 +2848,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
     }
 
+    // the registrar does not report disconnects of peers that never identified
+    for (const id of this.inboundRpcDecodeErrors.keys()) {
+      if (!this.peers.has(id) && this.components.connectionManager.getConnections(peerIdFromString(id)).length === 0) {
+        this.inboundRpcDecodeErrors.delete(id)
+      }
+    }
+
     // ensure direct peers are connected
     if (this.heartbeatTicks % this.opts.directConnectTicks === 0) {
       // we only do this every few ticks to allow pending connections to complete and account for restarts/downtime
