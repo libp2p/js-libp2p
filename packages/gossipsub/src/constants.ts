@@ -326,8 +326,9 @@ export const GossipsubIdontwantMinDataSize = 512
 export const GossipsubIdontwantMaxMessages = 512
 
 /**
- * The number of inbound RPCs a connected peer may send that fail to decode or carry nothing before
- * its inbound stream is aborted. Honest peers send neither.
+ * The number of inbound RPCs that fail to decode or carry nothing after which a connected peer's
+ * inbound stream is aborted. The first empty RPC on each stream is not counted, since go-libp2p-pubsub
+ * v0.16 and earlier opens each stream with an empty hello when it has no subscriptions.
  */
 export const GossipsubMaxInboundRpcDecodeErrors = 10
 

@@ -252,9 +252,9 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
   decodeRpcLimits?: DecodeRPCLimits
 
   /**
-   * The number of inbound RPCs a connected peer may send that fail to decode, or that carry no
-   * subscriptions, messages or control entries, before its inbound stream is aborted. The count
-   * is kept until the peer disconnects, and the first empty RPC on each stream is not counted.
+   * A connected peer's inbound stream is aborted once it has sent this many RPCs that fail to
+   * decode, or that carry no subscriptions, messages or control entries (0 or 1 abort on the first).
+   * The count is kept until the peer disconnects, and the first empty RPC on each stream is not counted.
    * RPCs over `decodeRpcLimits` are not counted. Each counted RPC, and each RPC over
    * `decodeRpcLimits`, is also a behaviour penalty for the peer.
    *
