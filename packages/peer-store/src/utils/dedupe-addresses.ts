@@ -3,6 +3,7 @@ import { CODE_P2P, isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import type { AddressFilter } from '../index.ts'
 import type { Address as AddressPB } from '../pb/peer.ts'
 import type { PeerId, Address, AbortOptions, Logger } from '@libp2p/interface'
+import type { Multiaddr } from '@multiformats/multiaddr'
 
 export interface DedupeAddressesOptions extends AbortOptions {
   maxAddresses?: number
@@ -31,14 +32,15 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
     }
 
     const isCertified = addr.isCertified ?? false
-    const maStr = addr.multiaddr.toString()
+    const ma = stripPeerId(peerId, addr.multiaddr)
+    const maStr = ma.toString()
     const existingAddr = addressMap.get(maStr)
 
     if (existingAddr != null) {
-      addr.isCertified = existingAddr.isCertified || isCertified
+      existingAddr.isCertified = existingAddr.isCertified || isCertified
     } else {
       addressMap.set(maStr, {
-        multiaddr: addr.multiaddr,
+        multiaddr: ma,
         isCertified
       })
     }
@@ -62,16 +64,23 @@ export async function dedupeFilterAndSortAddresses (peerId: PeerId, filter: Addr
       return a.localeCompare(b)
     })
     .map(([, { isCertified, multiaddr: ma }]) => {
-      // strip the trailing peerId if it is present
-      const addrPeer = ma.getComponents().find(c => c.code === CODE_P2P)?.value
-
-      if (peerId.equals(addrPeer)) {
-        ma = ma.decapsulate(multiaddr(`/p2p/${peerId}`))
-      }
-
       return {
         isCertified,
         multiaddr: ma.bytes
       }
     })
+}
+
+/**
+ * Remove a trailing `/p2p/<peerId>` so an address is stored the same way
+ * whether or not it was supplied with the peer id
+ */
+function stripPeerId (peerId: PeerId, ma: Multiaddr): Multiaddr {
+  const last = ma.getComponents().at(-1)
+
+  if (last?.code === CODE_P2P && peerId.equals(last.value)) {
+    return ma.decapsulateCode(CODE_P2P)
+  }
+
+  return ma
 }
