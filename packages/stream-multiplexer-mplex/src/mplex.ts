@@ -11,6 +11,7 @@ import type { CreateStreamOptions, MultiaddrConnection, MessageStreamDirection }
 import type { Uint8ArrayList } from 'uint8arraylist'
 
 const DISCONNECT_THRESHOLD = 5
+const MAX_RESET_STREAM_IDS = 100
 
 function printMessage (msg: Message): any {
   const output: any = {
@@ -35,6 +36,7 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
   private readonly maxMessageSize: number
   private readonly maxUnprocessedMessageQueueSize: number
   private readonly decoder: Decoder
+  private readonly resetStreamIds: Set<string>
 
   constructor (maConn: MultiaddrConnection, init: MplexInit) {
     super(maConn, {
@@ -47,6 +49,7 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
     this.maxMessageSize = init.maxMessageSize ?? MAX_MSG_SIZE
     this.maxUnprocessedMessageQueueSize = init.maxUnprocessedMessageQueueSize ?? MAX_MSG_QUEUE_SIZE
     this.decoder = new Decoder(this.maxMessageSize, this.maxUnprocessedMessageQueueSize)
+    this.resetStreamIds = new Set()
 
     this.rateLimiter = new RateLimiter({
       points: init.disconnectThreshold ?? DISCONNECT_THRESHOLD,
@@ -86,6 +89,17 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
       muxer: this
     })
 
+    // the remote may still be sending until it receives the reset
+    stream.addEventListener('close', (evt) => {
+      if (evt.local === true && evt.error != null) {
+        this.resetStreamIds.add(stream.id)
+
+        if (this.resetStreamIds.size > MAX_RESET_STREAM_IDS) {
+          this.resetStreamIds.delete(this.resetStreamIds.values().next().value as string)
+        }
+      }
+    })
+
     return stream
   }
 
@@ -117,6 +131,10 @@ export class MplexStreamMuxer extends AbstractStreamMuxer<MplexStream> {
 
     if (stream == null) {
       this.log('missing stream %s for message type %s', id, MessageTypeNames[message.type])
+
+      if (this.resetStreamIds.has(id)) {
+        return
+      }
 
       // if the remote keeps sending us messages for streams that have been
       // closed or were never opened they may be attacking us so if they do
