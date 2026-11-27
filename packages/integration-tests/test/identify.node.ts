@@ -11,8 +11,8 @@ import { createBaseOptions } from './fixtures/base-options.ts'
 import type { Identify, IdentifyPush } from '@libp2p/identify'
 import type { Libp2p } from '@libp2p/interface'
 
-const LOCAL_PORT = 47321
-const REMOTE_PORT = 47322
+const LOCAL_PORT = 29321
+const REMOTE_PORT = 29322
 const AGENT_VERSION = 'libp2p/0.0.0'
 
 // Stub environment version for testing dynamic AGENT_VERSION

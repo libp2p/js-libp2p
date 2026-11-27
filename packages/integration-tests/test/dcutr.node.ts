@@ -11,9 +11,9 @@ import { usingAsRelay } from './fixtures/utils.ts'
 import type { CircuitRelayService } from '@libp2p/circuit-relay-v2'
 import type { Libp2p } from '@libp2p/interface'
 
-const RELAY_PORT = 47330
-const LOCAL_PORT = 47331
-const REMOTE_PORT = 47332
+const RELAY_PORT = 29330
+const LOCAL_PORT = 29331
+const REMOTE_PORT = 29332
 
 describe('dcutr', () => {
   let relay: Libp2p<{ identify: unknown, relay: CircuitRelayService }>
