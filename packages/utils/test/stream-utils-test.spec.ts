@@ -555,27 +555,6 @@ describe('stream-pair', () => {
     ])).to.eventually.deep.equal([true, true])
   })
 
-  it('should abort a promise from onDrain via abort after an earlier drain', async () => {
-    const [outgoing] = await streamPair({
-      capacity: 1,
-      delay: 10
-    })
-
-    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
-    await outgoing.onDrain()
-
-    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
-
-    await expect(
-      Promise.all([
-        outgoing.onDrain(),
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        outgoing.abort(new Error('Abort!'))
-      ])
-    ).to.eventually.be.rejected
-      .with.property('message', 'Abort!')
-  })
-
   it('should reject a promise from onDrain after the stream is aborted', async () => {
     const [outgoing] = await streamPair({
       capacity: 1,
@@ -586,8 +565,21 @@ describe('stream-pair', () => {
 
     outgoing.abort(new Error('Abort!'))
 
-    await expect(outgoing.onDrain()).to.eventually.be.rejected
+    await expect(outgoing.onDrain({
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.be.rejected
       .with.property('message', 'Abort!')
+  })
+
+  it('should reject a promise from onDrain after the stream is closed', async () => {
+    const [outgoing] = await streamPair()
+
+    await outgoing.close()
+
+    await expect(outgoing.onDrain({
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.be.rejected
+      .with.property('name', 'StreamClosedError')
   })
 
   it('should reject a promise from onDrain after the stream is aborted while waiting for a drain', async () => {
@@ -597,13 +589,18 @@ describe('stream-pair', () => {
     })
 
     while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    await outgoing.onDrain()
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
 
     const waiting = outgoing.onDrain()
     outgoing.abort(new Error('Abort!'))
 
     await expect(waiting).to.eventually.be.rejected
       .with.property('message', 'Abort!')
-    await expect(outgoing.onDrain()).to.eventually.be.rejected
+    await expect(outgoing.onDrain({
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.be.rejected
       .with.property('message', 'Abort!')
   })
 

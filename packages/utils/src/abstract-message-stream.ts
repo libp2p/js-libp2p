@@ -129,6 +129,7 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
 
     const rejectOnDrainOnClose = (evt: StreamCloseEvent): void => {
       this.onDrainPromise?.reject(evt.error ?? new StreamClosedError())
+      this.onDrainPromise = undefined
     }
     this.addEventListener('close', rejectOnDrainOnClose)
   }
