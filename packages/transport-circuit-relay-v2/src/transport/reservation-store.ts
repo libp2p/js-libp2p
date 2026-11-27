@@ -13,7 +13,7 @@ import type { TransportReservationStoreComponents, TransportReservationStoreInit
 import type { Reservation } from '../pb/index.ts'
 import type { AbortOptions, Libp2pEvents, Logger, PeerId, PeerStore, Startable, Peer, Connection } from '@libp2p/interface'
 import type { ConnectionManager } from '@libp2p/interface-internal'
-import type { Filter } from '@libp2p/utils'
+import type { Filter, PeerQueueJobOptions } from '@libp2p/utils'
 import type { TypedEventTarget } from 'main-event'
 
 // allow refreshing a relay reservation if it will expire in the next 10 minutes
@@ -26,6 +26,13 @@ const REFRESH_TIMEOUT = (60 * 1000) * 5
 const REFRESH_TIMEOUT_MIN = 30 * 1000
 
 export type RelayType = 'discovered' | 'configured'
+
+interface ReserveJobOptions extends PeerQueueJobOptions {
+  /**
+   * How the relay the job reserves a slot on was found
+   */
+  type: RelayType
+}
 
 export interface DiscoveredRelayEntry {
   timeout: ReturnType<typeof setTimeout>
@@ -73,7 +80,7 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   private readonly connectionManager: ConnectionManager
   private readonly peerStore: PeerStore
   private readonly events: TypedEventTarget<Libp2pEvents>
-  private readonly reserveQueue: PeerQueue<RelayReservation>
+  private readonly reserveQueue: PeerQueue<RelayReservation, ReserveJobOptions>
   private readonly reservations: PeerMap<RelayEntry>
   private readonly pendingReservations: string[]
   private readonly maxReservationQueueLength: number
@@ -378,7 +385,8 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
         throw err
       }
     }, {
-      peerId
+      peerId,
+      type
     })
   }
 
@@ -518,7 +526,16 @@ export class ReservationStore extends TypedEventEmitter<ReservationStoreEvents> 
   #checkReservationCount (): void {
     if (this.pendingReservations.length === 0) {
       this.log.trace('have discovered enough relays')
-      this.reserveQueue.clear()
+
+      // only reservations on discovered relays are surplus - a queued
+      // reservation on a configured relay was asked for by a listener that
+      // awaits it, so removing the job would leave that listener (and with it
+      // `libp2p.start()`) waiting forever
+      for (let i = this.reserveQueue.queue.length - 1; i >= 0; i--) {
+        if (this.reserveQueue.queue[i].options.type !== 'configured') {
+          this.reserveQueue.queue.splice(i, 1)
+        }
+      }
       this.safeDispatchEvent('relay:found-enough-relays')
 
       return
