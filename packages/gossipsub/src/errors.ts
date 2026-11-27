@@ -15,3 +15,12 @@ export class InvalidPeerScoreThresholdsError extends Error {
     this.name = 'InvalidPeerScoreThresholdsError'
   }
 }
+
+export class TooManyRpcDecodeErrorsError extends Error {
+  static name = 'TooManyRpcDecodeErrorsError'
+
+  constructor (message = 'Too many RPC decode errors') {
+    super(message)
+    this.name = 'TooManyRpcDecodeErrorsError'
+  }
+}

@@ -252,6 +252,17 @@ export interface GossipsubOpts extends GossipsubOptsSpec {
   decodeRpcLimits?: DecodeRPCLimits
 
   /**
+   * A connected peer's inbound stream is aborted once it has sent this many RPCs that fail to
+   * decode, or that carry no subscriptions, messages or control entries (0 or 1 abort on the first).
+   * The count is kept until the peer disconnects, and the first empty RPC on each stream is not counted.
+   * RPCs over `decodeRpcLimits` are not counted. Each counted RPC, and each RPC over
+   * `decodeRpcLimits`, is also a behaviour penalty for the peer.
+   *
+   * @default 10
+   */
+  maxInboundRpcDecodeErrors?: number
+
+  /**
    * If true, will utilize the libp2p connection manager tagging system to prune/graft connections to peers, defaults to true
    */
   tagMeshPeers: boolean

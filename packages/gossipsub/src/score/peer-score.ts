@@ -224,6 +224,17 @@ export class PeerScore {
   }
 
   addPeer (id: PeerIdStr): void {
+    // a peer that reconnects within retainScore resumes the stats removePeer retained
+    const retained = this.peerStats.get(id)
+    if (retained != null) {
+      // drop the retained IPs, the caller adds the IP of the new connection
+      this.removeIPsForPeer(id, retained.knownIPs)
+      retained.knownIPs.clear()
+      retained.connected = true
+      retained.expire = 0
+      return
+    }
+
     // create peer stats (not including topic stats for each topic to be scored)
     // topic stats will be added as needed
     const pstats: PeerStats = {

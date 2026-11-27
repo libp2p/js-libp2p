@@ -11,6 +11,7 @@ import {
   ACCEPT_FROM_WHITELIST_THRESHOLD_SCORE,
   BACKOFF_SLACK
 } from './constants.ts'
+import { TooManyRpcDecodeErrorsError } from './errors.ts'
 import { StrictNoSign, StrictSign, TopicValidatorResult } from './index.ts'
 import { defaultDecodeRpcLimits } from './message/decodeRpc.ts'
 import { RPC } from './message/rpc.ts'
@@ -46,7 +47,7 @@ import {
 
 } from './types.ts'
 import { buildRawMessage, validateToRawMessage } from './utils/buildRawMessage.ts'
-import { createGossipRpc, ensureControl } from './utils/create-gossip-rpc.ts'
+import { createGossipRpc, ensureControl, isEmptyRpc } from './utils/create-gossip-rpc.ts'
 import { shuffle, messageIdToString } from './utils/index.ts'
 import { msgIdFnStrictNoSign, msgIdFnStrictSign } from './utils/msgIdFn.ts'
 import { multiaddrToIPStr } from './utils/multiaddr.ts'
@@ -260,6 +261,12 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    */
   private readonly idontwants = new Map<PeerIdStr, Map<MsgIdStr, number>>()
 
+  /**
+   * Inbound RPCs per peer that failed to decode or carried nothing, kept until the peer
+   * disconnects so that replacing or reopening an inbound stream does not reset the count
+   */
+  private readonly inboundRpcDecodeErrors = new Map<PeerIdStr, number>()
+
   private readonly components: GossipSubComponents
 
   private directPeerInitial: ReturnType<typeof setTimeout> | null = null
@@ -318,6 +325,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       gossipFactor: constants.GossipsubGossipFactor,
       idontwantMinDataSize: constants.GossipsubIdontwantMinDataSize,
       idontwantMaxMessages: constants.GossipsubIdontwantMaxMessages,
+      maxInboundRpcDecodeErrors: constants.GossipsubMaxInboundRpcDecodeErrors,
       ...options,
       scoreParams: createPeerScoreParams(options.scoreParams),
       scoreThresholds: createPeerScoreThresholds(options.scoreThresholds)
@@ -612,6 +620,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     if (this.directPeerInitial != null) { clearTimeout(this.directPeerInitial) }
     this.idontwantCounts.clear()
     this.idontwants.clear()
+    this.inboundRpcDecodeErrors.clear()
 
     this.log('stopped')
   }
@@ -658,6 +667,10 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
    */
   private onPeerDisconnected (peerId: PeerId): void {
     this.log('connection ended %p', peerId)
+    // also called when an inbound stream fails while the peer stays connected
+    if (this.components.connectionManager.getConnections(peerId).length === 0) {
+      this.inboundRpcDecodeErrors.delete(peerId.toString())
+    }
     this.removePeer(peerId)
   }
 
@@ -743,7 +756,7 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
     const inboundStream = new InboundStream(stream, { maxDataLength: this.opts.maxInboundDataLength })
     this.streamsInbound.set(id, inboundStream)
 
-    this.pipePeerReadStream(peerId, inboundStream.source).catch((err) => { this.log(err) })
+    this.pipePeerReadStream(peerId, inboundStream).catch((err) => { this.log(err) })
   }
 
   /**
@@ -898,18 +911,30 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
   /**
    * Responsible for processing each RPC message received by other peers.
    */
-  private async pipePeerReadStream (peerId: PeerId, stream: AsyncIterable<Uint8ArrayList>): Promise<void> {
+  private async pipePeerReadStream (peerId: PeerId, stream: InboundStream): Promise<void> {
+    const id = peerId.toString()
+    // some implementations open a stream with a gossipsub v1.3 extensions control message, which decodes as empty here
+    let emptyRpcs = 0
+    let tooManyDecodeErrors = false
+
     try {
-      await pipe(stream, async (source) => {
+      await pipe(stream.source, async (source) => {
         for await (const data of source) {
           try {
             // TODO: Check max gossip message size, before decodeRpc()
             const rpcBytes = data.subarray()
             // Note: This function may throw, it must be wrapped in a try {} catch {} to prevent closing the stream.
-            // TODO: What should we do if the entire RPC is invalid?
             const rpc = this.decodeRpc(rpcBytes)
 
             this.metrics?.onRpcRecv(rpc, rpcBytes.length)
+
+            if (isEmptyRpc(rpc) && ++emptyRpcs > 1) {
+              tooManyDecodeErrors = this.addInboundRpcDecodeError(id, ScorePenalty.EmptyRpc)
+              if (tooManyDecodeErrors) {
+                break
+              }
+              continue
+            }
 
             // Since processRpc may be overridden entirely in unsafe ways,
             // the simplest/safest option here is to wrap in a function and capture all errors
@@ -931,6 +956,16 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
           } catch (e) {
             this.metrics?.onRpcDataError()
             this.log(e as Error)
+            // RPCs over decodeRpcLimits cost about as much per byte as valid ones and may come from
+            // honest peers with higher limits, so they are penalized but do not abort the stream
+            if ((e as Error).name === 'MaxLengthError') {
+              this.score.addPenalty(id, 1, ScorePenalty.RpcDecodeError)
+              continue
+            }
+            tooManyDecodeErrors = this.addInboundRpcDecodeError(id, ScorePenalty.RpcDecodeError)
+            if (tooManyDecodeErrors) {
+              break
+            }
           }
         }
       })
@@ -938,6 +973,26 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       this.metrics?.onPeerReadStreamError()
       this.handlePeerReadStreamError(err as Error, peerId)
     }
+
+    // abort rather than close, so the peer cannot keep queueing frames on this stream
+    if (tooManyDecodeErrors) {
+      this.log('aborting inbound stream from %p after %d RPC decode errors', peerId, this.inboundRpcDecodeErrors.get(id))
+      stream.abort(new TooManyRpcDecodeErrorsError())
+      if (this.streamsInbound.get(id) === stream) {
+        this.streamsInbound.delete(id)
+      }
+    }
+  }
+
+  /**
+   * Penalizes the peer for an inbound RPC that failed to decode or carried nothing,
+   * returns true once the peer has sent too many of them
+   */
+  private addInboundRpcDecodeError (id: PeerIdStr, penalty: ScorePenalty): boolean {
+    this.score.addPenalty(id, 1, penalty)
+    const decodeErrors = (this.inboundRpcDecodeErrors.get(id) ?? 0) + 1
+    this.inboundRpcDecodeErrors.set(id, decodeErrors)
+    return decodeErrors >= this.opts.maxInboundRpcDecodeErrors
   }
 
   /**
@@ -2790,6 +2845,13 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
         if (this.heartbeatTicks - heartbeatTick >= this.opts.mcacheLength) {
           idontwants.delete(msgId)
         }
+      }
+    }
+
+    // the registrar does not report disconnects of peers that never identified or list no gossipsub protocol
+    for (const id of this.inboundRpcDecodeErrors.keys()) {
+      if (this.components.connectionManager.getConnections(this.peers.get(id) ?? peerIdFromString(id)).length === 0) {
+        this.inboundRpcDecodeErrors.delete(id)
       }
     }
 

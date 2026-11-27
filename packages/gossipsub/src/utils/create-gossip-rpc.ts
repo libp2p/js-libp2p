@@ -19,6 +19,25 @@ export function createGossipRpc (messages: RPC.Message[] = [], control?: Partial
   }
 }
 
+/**
+ * True if the RPC carries no subscriptions, messages or control entries
+ */
+export function isEmptyRpc (rpc: RPC): boolean {
+  if (rpc.subscriptions.length > 0 || rpc.messages.length > 0) {
+    return false
+  }
+
+  const control = rpc.control
+
+  return control == null || (
+    control.ihave.length === 0 &&
+    control.iwant.length === 0 &&
+    control.graft.length === 0 &&
+    control.prune.length === 0 &&
+    control.idontwant.length === 0
+  )
+}
+
 export function ensureControl (rpc: RPC): Required<RPC> {
   if (rpc.control === undefined) {
     rpc.control = {

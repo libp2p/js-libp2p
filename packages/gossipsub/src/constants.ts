@@ -326,6 +326,13 @@ export const GossipsubIdontwantMinDataSize = 512
 export const GossipsubIdontwantMaxMessages = 512
 
 /**
+ * The number of inbound RPCs that fail to decode or carry nothing after which a connected peer's
+ * inbound stream is aborted. The first empty RPC on each stream is not counted, since go-libp2p-pubsub
+ * v0.16 and earlier opens each stream with an empty hello when it has no subscriptions.
+ */
+export const GossipsubMaxInboundRpcDecodeErrors = 10
+
+/**
  * The default per-peer memory budget for tracking a peer's topic subscriptions,
  * bounding per-peer memory in the topics map. Each topic costs its string
  * length plus GossipsubTopicEntryOverhead, so this bounds topic count as well
