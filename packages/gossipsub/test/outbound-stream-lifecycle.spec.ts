@@ -1,8 +1,10 @@
 import { stop } from '@libp2p/interface'
 import { expect } from 'aegir/chai'
+import { pEvent } from 'p-event'
 import pWaitFor from 'p-wait-for'
 import { createComponentsArray } from './utils/create-pubsub.ts'
 import type { GossipSubAndComponents } from './utils/create-pubsub.ts'
+import type { Message } from '../src/index.ts'
 import type { Stream } from '@libp2p/interface'
 
 describe('outbound stream lifecycle', () => {
@@ -16,9 +18,12 @@ describe('outbound stream lifecycle', () => {
     await stop(...nodes.reduce<any[]>((acc, curr) => acc.concat(curr.pubsub, ...Object.entries(curr.components)), []))
   })
 
-  it('removes an outbound stream from the registry when it closes', async () => {
+  it('replaces a closed outbound stream and resumes publishing', async function () {
+    this.timeout(10_000)
     const [nodeA, nodeB] = nodes
     const bId = nodeB.components.peerId.toString()
+    const topic = 'test-topic'
+    nodeB.pubsub.subscribe(topic)
 
     // wait until nodeA has opened an outbound stream to nodeB
     await pWaitFor(() => nodeA.pubsub.streamsOutbound.has(bId), { timeout: 10000 })
@@ -36,5 +41,14 @@ describe('outbound stream lifecycle', () => {
     // every future outbound message to this peer for the life of the connection
     await pWaitFor(() => !nodeA.pubsub.streamsOutbound.has(bId), { timeout: 10000 })
     expect(nodeA.pubsub.streamsOutbound.has(bId)).to.be.false()
+
+    await pWaitFor(() => nodeA.pubsub.streamsOutbound.has(bId), { timeout: 10000 })
+    expect(nodeA.pubsub.streamsOutbound.get(bId)).to.not.equal(outboundStream)
+    await pWaitFor(() => nodeA.pubsub.getSubscribers(topic).some(peer => peer.equals(nodeB.components.peerId)))
+
+    const message = pEvent<'message', CustomEvent<Message>>(nodeB.pubsub, 'message', { timeout: 10000 })
+    const data = new Uint8Array([1, 2, 3])
+    await nodeA.pubsub.publish(topic, data)
+    expect((await message).detail.data).to.deep.equal(data)
   })
 })
