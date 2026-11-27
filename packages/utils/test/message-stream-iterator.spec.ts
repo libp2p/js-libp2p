@@ -632,6 +632,38 @@ describe('message stream async iterator', () => {
     await expect(collect(conn)).to.eventually.deep.equal([uint8ArrayFromString('hello')])
   })
 
+  it('should yield data buffered for a slow reader when resuming the remote fails', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const stalled = Promise.withResolvers<void>()
+    const received: number[] = []
+
+    const reading = (async () => {
+      for await (const buf of conn) {
+        received.push(...buf.subarray())
+        await stalled.promise
+      }
+    })()
+
+    for (let i = 0; i < 5; i++) {
+      conn.onData(Uint8Array.from([i, i, i, i]))
+    }
+
+    expect(conn.readStatus).to.equal('paused')
+
+    // eg. the connection the stream runs over has started closing
+    Sinon.stub(conn, 'sendResume').throws(new Error('Cannot write to a stream that is closing'))
+
+    stalled.resolve()
+    await delay(10)
+    conn.onRemoteCloseWrite()
+
+    await expect(reading).to.eventually.be.fulfilled()
+    expect(received).to.deep.equal([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4])
+  })
+
   it('should resume the remote when the readable end of a stream paused for a slow reader is closed', async () => {
     const [, inbound] = await streamPair({
       inbound: {

@@ -259,6 +259,54 @@ describe('stream', () => {
     })
   })
 
+  it('test send data - slow reader resumes while the connection is closing', async () => {
+    const [
+      s1, c1
+    ] = await Promise.all([
+      pEvent<'stream', CustomEvent<YamuxStream>>(server, 'stream').then(evt => evt.detail),
+      client.createStream(),
+      server.ping()
+    ])
+
+    const total = 32 * 1024 * 1024
+    const chunk = 64 * 1024
+    const stalled = Promise.withResolvers<void>()
+    let received = 0
+
+    // the connection closes before everything is sent
+    const sending = Promise.resolve().then(async () => {
+      for (let sent = 0; sent < total; sent += chunk) {
+        if (!c1.send(new Uint8Array(chunk))) {
+          await pEvent(c1, 'drain', { rejectionEvents: ['close'] })
+        }
+      }
+    }).catch(() => {})
+
+    const reading = Promise.resolve().then(async () => {
+      for await (const buf of s1) {
+        received += buf.byteLength
+        await stalled.promise
+      }
+    })
+
+    for (let i = 0; i < 100 && s1.readStatus !== 'paused'; i++) {
+      await sleep(10)
+    }
+
+    expect(s1.readStatus).to.equal('paused')
+    const buffered = s1.readBufferLength
+
+    const closing = outboundConnection.close()
+    stalled.resolve()
+
+    await expect(reading).to.eventually.be.fulfilled()
+    await closing
+    await sending
+
+    // everything queued for the reader or held in the read buffer was yielded
+    expect(received).to.be.greaterThan(s1.maxReadBufferLength + buffered)
+  })
+
   it('test many streams', async () => {
     for (let i = 0; i < 1000; i++) {
       await client.createStream()

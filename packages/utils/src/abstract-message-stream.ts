@@ -320,7 +320,12 @@ export abstract class AbstractMessageStream<Timeline extends MessageStreamTimeli
     // dispatching can pause or end the readable end again, and a stream that
     // closed while paused may no longer be able to send
     if (this.readStatus === 'readable' && this.status === 'open') {
-      this.sendResume()
+      // the transport may already be closing, the dispatched data is still read
+      try {
+        this.sendResume()
+      } catch (err) {
+        this.log.error('failed to send resume to remote - %e', err)
+      }
     }
   }
 
