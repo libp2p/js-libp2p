@@ -2848,9 +2848,9 @@ export class GossipSub extends TypedEventEmitter<GossipSubEvents> implements Typ
       }
     }
 
-    // the registrar does not report disconnects of peers that never identified
+    // the registrar does not report disconnects of peers that never identified or list no gossipsub protocol
     for (const id of this.inboundRpcDecodeErrors.keys()) {
-      if (!this.peers.has(id) && this.components.connectionManager.getConnections(peerIdFromString(id)).length === 0) {
+      if (this.components.connectionManager.getConnections(this.peers.get(id) ?? peerIdFromString(id)).length === 0) {
         this.inboundRpcDecodeErrors.delete(id)
       }
     }
