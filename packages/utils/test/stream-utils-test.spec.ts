@@ -509,6 +509,101 @@ describe('stream-pair', () => {
       .with.property('name', 'StreamResetError')
   })
 
+  it('should wait for every drain from onDrain when backpressure is applied repeatedly', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 10
+    })
+
+    for (let i = 0; i < 3; i++) {
+      while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+
+      let drained = false
+      outgoing.addEventListener('drain', () => {
+        drained = true
+      }, {
+        once: true
+      })
+
+      await outgoing.onDrain()
+
+      expect(drained, `onDrain resolved before drain event ${i}`).to.be.true()
+    }
+  })
+
+  it('should resolve all promises from onDrain when the stream drains', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 10
+    })
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    await outgoing.onDrain()
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+
+    let drained = false
+    outgoing.addEventListener('drain', () => {
+      drained = true
+    }, {
+      once: true
+    })
+
+    await expect(Promise.all([
+      outgoing.onDrain().then(() => drained),
+      outgoing.onDrain().then(() => drained)
+    ])).to.eventually.deep.equal([true, true])
+  })
+
+  it('should reject a promise from onDrain after the stream is aborted', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 10
+    })
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+
+    outgoing.abort(new Error('Abort!'))
+
+    await expect(outgoing.onDrain({
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.be.rejected
+      .with.property('message', 'Abort!')
+  })
+
+  it('should reject a promise from onDrain after the stream is closed', async () => {
+    const [outgoing] = await streamPair()
+
+    await outgoing.close()
+
+    await expect(outgoing.onDrain({
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.be.rejected
+      .with.property('name', 'StreamClosedError')
+  })
+
+  it('should reject a promise from onDrain after the stream is aborted while waiting for a drain', async () => {
+    const [outgoing] = await streamPair({
+      capacity: 1,
+      delay: 10
+    })
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+    await outgoing.onDrain()
+
+    while (outgoing.send(Uint8Array.from([0, 1, 2, 3]))) {}
+
+    const waiting = outgoing.onDrain()
+    outgoing.abort(new Error('Abort!'))
+
+    await expect(waiting).to.eventually.be.rejected
+      .with.property('message', 'Abort!')
+    await expect(outgoing.onDrain({
+      signal: AbortSignal.timeout(1000)
+    })).to.eventually.be.rejected
+      .with.property('message', 'Abort!')
+  })
+
   it('should not throw uncaught error on drain event when stream is closed', async () => {
     const [outgoing] = await streamPair({
       capacity: 1,
