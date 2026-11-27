@@ -707,6 +707,33 @@ describe('PeerScore', () => {
     ps.addPeer(peerA)
     expect(ps.peerStats.get(peerA)?.behaviourPenalty).to.equal(0)
   })
+
+  it('should replace retained IPs when a peer is added again', async function () {
+    const params = createPeerScoreParams({
+      IPColocationFactorThreshold: 1,
+      IPColocationFactorWeight: -1,
+      retainScore: 1000
+    })
+    const peerA = peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toString()
+    const peerB = peerIdFromPrivateKey(await generateKeyPair('Ed25519')).toString()
+
+    const ps = new PeerScore(params, null, logger, { scoreCacheValidityMs: 0 })
+    ps.addPeer(peerA)
+    ps.addIP(peerA, '1.2.3.4')
+    ps.addPeer(peerB)
+    ps.addIP(peerB, '1.2.3.4')
+    expect(ps.score(peerA)).to.equal(-1)
+
+    // retained with a negative score, then reconnects from a new IP
+    ps.removePeer(peerA)
+    ps.addPeer(peerA)
+    ps.addIP(peerA, '2.3.4.5')
+
+    expect(Array.from(ps.peerStats.get(peerA)?.knownIPs ?? [])).to.deep.equal(['2.3.4.5'])
+    expect(Array.from(ps.peerIPs.get('1.2.3.4') ?? [])).to.deep.equal([peerB])
+    expect(ps.score(peerA)).to.equal(0)
+    expect(ps.score(peerB)).to.equal(0)
+  })
 })
 
 describe('PeerScore score cache', function () {

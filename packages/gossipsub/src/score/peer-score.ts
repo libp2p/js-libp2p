@@ -227,6 +227,9 @@ export class PeerScore {
     // a peer that reconnects within retainScore resumes the stats removePeer retained
     const retained = this.peerStats.get(id)
     if (retained != null) {
+      // drop the retained IPs, the caller adds the IP of the new connection
+      this.removeIPsForPeer(id, retained.knownIPs)
+      retained.knownIPs.clear()
       retained.connected = true
       retained.expire = 0
       return
