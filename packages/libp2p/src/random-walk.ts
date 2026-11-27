@@ -112,8 +112,10 @@ export class RandomWalk extends TypedEventEmitter<RandomWalkEvents> implements R
     Promise.resolve().then(async () => {
       this.log('start walk')
 
-      // find peers until no more consumers are interested
-      while (this.walkers > 0) {
+      // find peers until no more consumers are interested or the walk is
+      // aborted, otherwise a consumer that is busy when the node stops keeps
+      // `walkers` above zero and the loop spins on immediately failing queries
+      while (this.walkers > 0 && !signal.aborted) {
         try {
           const data = crypto.getRandomValues(new Uint8Array(32))
           let s = Date.now()

@@ -223,6 +223,32 @@ describe('random-walk', () => {
     expect(fastPeers).to.have.lengthOf(5)
   })
 
+  it('should stop walking when stopped while a consumer is busy', async () => {
+    let calls = 0
+
+    peerRouting.getClosestPeers.callsFake(async function * (key, options?: AbortOptions) {
+      calls++
+
+      // without this the buggy walk loop never yields to the event loop so the
+      // consumer's macrotask never runs and the test would hang instead of fail
+      if (calls > 100) {
+        await delay(10)
+      }
+
+      options?.signal?.throwIfAborted()
+      yield await createRandomPeerInfo()
+    })
+
+    await expect(drain(map(randomWalk.walk(), async () => {
+      // stop the node while the consumer is doing async work (e.g. dialing)
+      await stop(randomWalk)
+      await delay(100)
+    }))).to.eventually.be.rejected
+      .with.property('name', 'AbortError')
+
+    expect(calls).to.be.lessThan(10)
+  })
+
   it('should abort a slow query', async () => {
     peerRouting.getClosestPeers.returns(slowIterator())
 
