@@ -12,6 +12,9 @@ export interface YamuxStreamOptions extends StreamOptions {
 
   /**
    * Used to control the maximum window size that we allow for a stream.
+   *
+   * The window does not grow past `maxReadBufferLength` so a paused stream can
+   * buffer everything the remote is allowed to send.
    */
   maxStreamWindowSize?: number
 }

@@ -74,6 +74,8 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
       return
     }
 
+    const paused = this.readStatus === 'paused'
+
     // throw away any unread data
     if (this.readBuffer.byteLength > 0) {
       this.readBuffer.consume(this.readBuffer.byteLength)
@@ -84,6 +86,16 @@ export abstract class AbstractStream extends AbstractMessageStream implements St
     // no more data can be read, so end iterators and emit 'end' without waiting
     // for the remote to be told
     this.maybeDispatchEnd()
+
+    // incoming data is discarded from now on, a remote held back by a pause
+    // that never ends would wait forever
+    if (paused && this.status === 'open' && this.remoteWriteStatus !== 'closed') {
+      try {
+        this.sendResume()
+      } catch (err) {
+        this.log.error('failed to send resume to remote - %e', err)
+      }
+    }
 
     try {
       await this.sendCloseRead(options)

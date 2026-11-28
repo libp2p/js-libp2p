@@ -75,6 +75,10 @@ export interface StreamOptions {
    *
    * If the internal buffer overflows this value the stream will be reset.
    *
+   * An async iterator or `pipe()` reader that falls more than this many bytes
+   * behind pauses the stream. If the transport cannot pause the remote, e.g.
+   * mplex, a reader that falls about twice this far behind is reset.
+   *
    * @default 4_194_304
    */
   maxReadBufferLength?: number

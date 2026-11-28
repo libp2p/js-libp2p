@@ -1,6 +1,5 @@
 import { StreamMessageEvent, StreamCloseEvent, InvalidParametersError, StreamBufferError } from '@libp2p/interface'
 import { pipe as itPipe } from 'it-pipe'
-import { pushable } from 'it-pushable'
 import { pEvent } from 'p-event'
 import { raceSignal } from 'race-signal'
 import * as varint from 'uint8-varint'
@@ -551,43 +550,26 @@ function isMessageStream (obj?: any): obj is Stream {
 }
 
 export function messageStreamToDuplex (stream: Stream): Duplex<AsyncGenerator<Uint8ArrayList | Uint8Array>, Iterable<Uint8ArrayList | Uint8Array> | AsyncIterable<Uint8ArrayList | Uint8Array>, Promise<void>> {
-  const source = pushable<Uint8ArrayList | Uint8Array>()
   let onError: PromiseWithResolvers<IteratorResult<Uint8ArrayList | Uint8Array>> | undefined
 
-  const onMessage = (evt: StreamMessageEvent): void => {
-    source.push(evt.data)
-  }
-
-  const onRemoteCloseWrite = (): void => {
-    source.end()
-
-    stream.removeEventListener('message', onMessage)
-    stream.removeEventListener('close', onClose)
-    stream.removeEventListener('remoteCloseWrite', onRemoteCloseWrite)
-  }
-
   const onClose = (evt: StreamCloseEvent): void => {
-    source.end(evt.error)
-
     if (evt.error != null) {
       onError?.reject(evt.error)
     }
-
-    stream.removeEventListener('message', onMessage)
-    stream.removeEventListener('close', onClose)
-    stream.removeEventListener('remoteCloseWrite', onRemoteCloseWrite)
   }
 
-  stream.addEventListener('message', onMessage)
   stream.addEventListener('close', onClose, {
     once: true
   })
-  stream.addEventListener('remoteCloseWrite', onRemoteCloseWrite, {
-    once: true
-  })
+
+  // only read once the source is consumed so a stream used as a sink keeps
+  // unread data in its read buffer, where maxReadBufferLength applies
+  async function * read (): AsyncGenerator<Uint8ArrayList | Uint8Array> {
+    yield * stream
+  }
 
   return {
-    source,
+    source: read(),
     async sink (source: Source<Uint8Array | Uint8ArrayList>) {
       async function * toGenerator (): AsyncGenerator<Uint8Array | Uint8ArrayList> {
         yield * source

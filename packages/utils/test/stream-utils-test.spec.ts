@@ -6,8 +6,10 @@ import drain from 'it-drain'
 import { pEvent } from 'p-event'
 import Sinon from 'sinon'
 import { Uint8ArrayList } from 'uint8arraylist'
+import { multiaddrConnectionPair } from '../src/multiaddr-connection-pair.ts'
 import { streamPair } from '../src/stream-pair.ts'
 import { echo, pipe, messageStreamToDuplex, byteStream } from '../src/stream-utils.ts'
+import type { AbstractMultiaddrConnection } from '../src/abstract-multiaddr-connection.ts'
 
 describe('messageStreamToDuplex', () => {
   it('should source all reads', async () => {
@@ -140,6 +142,53 @@ describe('pipe', () => {
       Uint8Array.from([5, 6, 7, 8]),
       Uint8Array.from([9, 10, 1, 2])
     ).subarray())
+  })
+
+  it('should pause the stream while a slow sink is more than maxReadBufferLength behind', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const stalled = Promise.withResolvers<void>()
+    const received: number[] = []
+
+    const piping = pipe(conn, async (source) => {
+      for await (const buf of source) {
+        received.push(...buf.subarray())
+        await stalled.promise
+      }
+    })
+
+    for (let i = 0; i < 4; i++) {
+      conn.onData(Uint8Array.from([i, i, i, i]))
+    }
+
+    expect(conn.readStatus).to.equal('paused')
+
+    // data buffered while paused is still delivered after the remote closes
+    conn.onData(Uint8Array.from([4, 4, 4, 4]))
+    conn.onRemoteCloseWrite()
+
+    stalled.resolve()
+    await piping
+
+    expect(received).to.deep.equal([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4])
+  })
+
+  it('should not read from a stream that is only used as a sink', async () => {
+    const [outgoing, incoming] = await streamPair({
+      inbound: {
+        maxReadBufferLength: 10
+      }
+    })
+
+    await pipe([Uint8Array.from([0, 1, 2, 3])], incoming)
+
+    // data nobody reads stays in the read buffer, where the limit applies
+    outgoing.send(new Uint8Array(11))
+    await pEvent(incoming, 'close', { timeout: 1000 })
+
+    expect(incoming.status).to.equal('aborted')
   })
 })
 

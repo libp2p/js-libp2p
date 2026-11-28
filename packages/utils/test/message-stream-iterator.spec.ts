@@ -2,6 +2,7 @@ import { expect } from 'aegir/chai'
 import delay from 'delay'
 import all from 'it-all'
 import { pEvent } from 'p-event'
+import Sinon from 'sinon'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { multiaddrConnectionPair } from '../src/multiaddr-connection-pair.ts'
 import { streamPair } from '../src/stream-pair.ts'
@@ -444,5 +445,258 @@ describe('message stream async iterator', () => {
     conn.onRemoteCloseWrite()
 
     await expect(reading).to.eventually.be.empty()
+  })
+
+  it('should pause the stream while a slow reader is more than maxReadBufferLength behind', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const stalled = Promise.withResolvers<void>()
+    const received: number[] = []
+
+    const reading = (async () => {
+      for await (const buf of conn) {
+        received.push(...buf.subarray())
+        await stalled.promise
+      }
+    })()
+
+    // the reader takes the first chunk then stalls, the rest queue for it
+    for (let i = 0; i < 4; i++) {
+      conn.onData(Uint8Array.from([i, i, i, i]))
+    }
+
+    expect(conn.readStatus).to.equal('paused')
+
+    // further data waits in the read buffer
+    conn.onData(Uint8Array.from([4, 4, 4, 4]))
+    expect(conn.readBufferLength).to.equal(4)
+
+    stalled.resolve()
+    await delay(10)
+
+    expect(conn.readStatus).to.equal('readable')
+
+    conn.onRemoteCloseWrite()
+    await reading
+
+    expect(received).to.deep.equal([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4])
+  })
+
+  it('should reset the stream when the read buffer of a stream paused for a slow reader fills up', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const stalled = Promise.withResolvers<void>()
+    let received = 0
+
+    const reading = (async () => {
+      for await (const buf of conn) {
+        received += buf.byteLength
+        await stalled.promise
+      }
+    })()
+
+    for (let i = 0; i < 4; i++) {
+      conn.onData(new Uint8Array(4))
+    }
+
+    expect(conn.readStatus).to.equal('paused')
+
+    conn.onData(new Uint8Array(11))
+
+    expect(conn.status).to.equal('aborted')
+
+    stalled.resolve()
+
+    // data queued before the reset is still yielded
+    await expect(reading).to.eventually.be.rejected
+      .with.property('name', 'StreamBufferError')
+    expect(received).to.equal(16)
+  })
+
+  it('should yield data buffered for a slow reader when the remote closes while paused', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const stalled = Promise.withResolvers<void>()
+    const received: number[] = []
+
+    const reading = (async () => {
+      for await (const buf of conn) {
+        received.push(...buf.subarray())
+        await stalled.promise
+      }
+    })()
+
+    for (let i = 0; i < 5; i++) {
+      conn.onData(Uint8Array.from([i, i, i, i]))
+    }
+
+    expect(conn.readStatus).to.equal('paused')
+    expect(conn.readBufferLength).to.equal(4)
+
+    // a muxer may not be able to send once the remote has closed
+    const sendResume = Sinon.stub(conn, 'sendResume').throws(new Error('stream closed'))
+    conn.onRemoteCloseWrite()
+
+    stalled.resolve()
+    await reading
+
+    expect(received).to.deep.equal([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4])
+    expect(sendResume.called).to.be.false()
+  })
+
+  it('should not resume the remote when resuming a stream that closed while paused', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    const sendResume = Sinon.stub(conn, 'sendResume').throws(new Error('connection closed'))
+
+    const reading = collect(conn)
+
+    conn.pause()
+    conn.onData(uint8ArrayFromString('hello world'))
+    conn.onTransportClosed()
+    conn.resume()
+
+    await expect(reading).to.eventually.deep.equal([uint8ArrayFromString('hello world')])
+    expect(sendResume.called).to.be.false()
+  })
+
+  it('should stay paused when resuming leaves a slow reader more than maxReadBufferLength behind', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const stalled = Promise.withResolvers<void>()
+    let received = 0
+
+    const reading = (async () => {
+      for await (const buf of conn) {
+        received += buf.byteLength
+        await stalled.promise
+      }
+    })()
+
+    // the reader takes the first chunk, the second queues for it
+    conn.onData(new Uint8Array(4))
+    conn.onData(new Uint8Array(8))
+
+    conn.pause()
+    conn.onData(new Uint8Array(4))
+
+    const sendResume = Sinon.spy(conn, 'sendResume')
+    conn.resume()
+
+    expect(conn.readStatus).to.equal('paused')
+    expect(sendResume.called).to.be.false()
+
+    stalled.resolve()
+    await delay(10)
+
+    expect(conn.readStatus).to.equal('readable')
+    expect(sendResume.calledOnce).to.be.true()
+
+    conn.onRemoteCloseWrite()
+    await reading
+
+    expect(received).to.equal(16)
+  })
+
+  it('should resume the stream when a reader that paused it stops early', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const iterator = conn[Symbol.asyncIterator]()
+    const first = iterator.next()
+
+    for (let i = 0; i < 4; i++) {
+      conn.onData(new Uint8Array(4))
+    }
+
+    conn.onData(uint8ArrayFromString('hello'))
+
+    await expect(first).to.eventually.have.nested.property('value.byteLength', 4)
+    expect(conn.readStatus).to.equal('paused')
+
+    await iterator.return(undefined)
+
+    expect(conn.readStatus).to.equal('readable')
+
+    conn.onRemoteCloseWrite()
+
+    await expect(collect(conn)).to.eventually.deep.equal([uint8ArrayFromString('hello')])
+  })
+
+  it('should yield data buffered for a slow reader when resuming the remote fails', async () => {
+    const [, inbound] = multiaddrConnectionPair()
+    const conn = inbound as AbstractMultiaddrConnection
+    conn.maxReadBufferLength = 10
+
+    const stalled = Promise.withResolvers<void>()
+    const received: number[] = []
+
+    const reading = (async () => {
+      for await (const buf of conn) {
+        received.push(...buf.subarray())
+        await stalled.promise
+      }
+    })()
+
+    for (let i = 0; i < 5; i++) {
+      conn.onData(Uint8Array.from([i, i, i, i]))
+    }
+
+    expect(conn.readStatus).to.equal('paused')
+
+    // eg. the connection the stream runs over has started closing
+    Sinon.stub(conn, 'sendResume').throws(new Error('Cannot write to a stream that is closing'))
+
+    stalled.resolve()
+    await delay(10)
+    conn.onRemoteCloseWrite()
+
+    await expect(reading).to.eventually.be.fulfilled()
+    expect(received).to.deep.equal([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4])
+  })
+
+  it('should resume the remote when the readable end of a stream paused for a slow reader is closed', async () => {
+    const [, inbound] = await streamPair({
+      inbound: {
+        maxReadBufferLength: 10
+      }
+    })
+    const stream = inbound as unknown as AbstractStream
+
+    const stalled = Promise.withResolvers<void>()
+    let received = 0
+
+    const reading = (async () => {
+      for await (const buf of stream) {
+        received += buf.byteLength
+        await stalled.promise
+      }
+    })()
+
+    for (let i = 0; i < 4; i++) {
+      stream.onData(new Uint8Array(4))
+    }
+
+    expect(stream.readStatus).to.equal('paused')
+
+    const sendResume = Sinon.spy(stream, 'sendResume')
+    await stream.closeRead()
+
+    // data is discarded from now on, a remote left paused would wait forever
+    expect(sendResume.calledOnce).to.be.true()
+
+    stalled.resolve()
+    await reading
+
+    expect(received).to.equal(16)
   })
 })
