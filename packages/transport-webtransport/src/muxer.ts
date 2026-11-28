@@ -65,7 +65,14 @@ class WebTransportStreamMuxer extends AbstractStreamMuxer<WebTransportStream> {
   }
 
   sendReset (): void {
-    this.webTransport.close()
+    // Chromium crashes if WebTransport.close() runs in the same task as
+    // WritableStreamDefaultWriter.abort() on a stream with a pending write.
+    // See https://github.com/libp2p/js-libp2p/issues/3699
+    queueMicrotask(() => {
+      try {
+        this.webTransport.close()
+      } catch {}
+    })
   }
 }
 

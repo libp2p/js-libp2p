@@ -151,18 +151,31 @@ class WebTransportTransport implements Transport<WebTransportDialEvents> {
           return
         }
 
-        try {
-          this.metrics?.dialerEvents.increment({ [metric]: true })
-          wt.close()
-        } catch (err) {
-          this.log.error('error closing wt session - %e', err)
-        } finally {
-          // This is how we specify the connection is closed and shouldn't be used.
-          if (maConn != null) {
-            maConn.timeline.close = Date.now()
-          }
+        // Mark closed synchronously so re-entry is a no-op while a deferred
+        // abort close is still pending.
+        closed = true
 
-          closed = true
+        const closeSession = (): void => {
+          try {
+            this.metrics?.dialerEvents.increment({ [metric]: true })
+            wt.close()
+          } catch (err) {
+            this.log.error('error closing wt session - %e', err)
+          } finally {
+            // This is how we specify the connection is closed and shouldn't be used.
+            if (maConn != null) {
+              maConn.timeline.close = Date.now()
+            }
+          }
+        }
+
+        // Chromium crashes if WebTransport.close() runs in the same task as
+        // WritableStreamDefaultWriter.abort() on a stream with a pending write.
+        // See https://github.com/libp2p/js-libp2p/issues/3699
+        if (metric === 'abort') {
+          queueMicrotask(closeSession)
+        } else {
+          closeSession()
         }
       }
 
