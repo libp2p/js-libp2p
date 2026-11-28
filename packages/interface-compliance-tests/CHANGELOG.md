@@ -75,6 +75,24 @@
   * dependencies
     * @libp2p/utils bumped from ^5.2.4 to ^5.2.5
 
+## [7.0.38](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v7.0.37...interface-compliance-tests-v7.0.38) (2026-11-28)
+
+
+### Dependencies
+
+* bump major versions from dependabot ([#3737](https://github.com/libp2p/js-libp2p/issues/3737)) ([848e264](https://github.com/libp2p/js-libp2p/commit/848e2648868514e54d7477b6b6a9d4cdcb5b44e8))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.2.0 to ^5.2.1
+    * @libp2p/echo bumped from ^3.1.19 to ^3.1.20
+    * @libp2p/interface-internal bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/logger bumped from ^6.2.16 to ^6.2.17
+    * @libp2p/memory bumped from ^2.0.33 to ^2.0.34
+    * @libp2p/peer-id bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/plaintext bumped from ^3.0.33 to ^3.0.34
+    * @libp2p/utils bumped from ^7.4.6 to ^7.4.7
+    * libp2p bumped from ^3.5.2 to ^3.5.3
+
 ## [7.0.37](https://github.com/libp2p/js-libp2p/compare/interface-compliance-tests-v7.0.36...interface-compliance-tests-v7.0.37) (2026-11-20)
 
 

@@ -6,6 +6,20 @@
   * devDependencies
     * @libp2p/interface-compliance-tests bumped from ^5.3.0 to ^5.3.1
 
+## [3.1.16](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.15...tls-v3.1.16) (2026-11-28)
+
+
+### Dependencies
+
+* bump major versions from dependabot ([#3737](https://github.com/libp2p/js-libp2p/issues/3737)) ([848e264](https://github.com/libp2p/js-libp2p/commit/848e2648868514e54d7477b6b6a9d4cdcb5b44e8))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.2.0 to ^5.2.1
+    * @libp2p/peer-id bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/utils bumped from ^7.4.6 to ^7.4.7
+  * devDependencies
+    * @libp2p/logger bumped from ^6.2.16 to ^6.2.17
+
 ## [3.1.15](https://github.com/libp2p/js-libp2p/compare/tls-v3.1.14...tls-v3.1.15) (2026-11-20)
 
 
