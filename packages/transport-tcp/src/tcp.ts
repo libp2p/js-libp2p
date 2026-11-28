@@ -44,6 +44,7 @@ export class TCP implements Transport<TCPDialEvents> {
   private readonly metrics?: TCPMetrics
   private readonly components: TCPComponents
   private readonly log: Logger
+  private readonly listeners = new Set<TCPListener>()
 
   constructor (components: TCPComponents, options: TCPOptions = {}) {
     this.log = components.logger.forComponent('libp2p:tcp')
@@ -51,6 +52,22 @@ export class TCP implements Transport<TCPDialEvents> {
     this.components = components
 
     if (components.metrics != null) {
+      // metric groups with a `calculate` function are registered once per name,
+      // so report every listener from here instead of from each listener
+      components.metrics.registerMetricGroup('libp2p_tcp_inbound_connections_total', {
+        label: 'address',
+        help: 'Current active connections in TCP listener',
+        calculate: () => {
+          const counts: Record<string, number> = {}
+
+          for (const listener of this.listeners) {
+            Object.assign(counts, listener.getConnectionCounts())
+          }
+
+          return counts
+        }
+      })
+
       this.metrics = {
         events: components.metrics.registerCounterGroup('libp2p_tcp_dialer_events_total', {
           label: 'event',
@@ -187,7 +204,7 @@ export class TCP implements Transport<TCPDialEvents> {
    * `upgrader.upgradeInbound`.
    */
   createListener (options: TCPCreateListenerOptions): Listener {
-    return new TCPListener({
+    const listener = new TCPListener({
       ...(this.opts.listenOpts ?? {}),
       ...options,
       maxConnections: this.opts.maxConnections,
@@ -197,6 +214,13 @@ export class TCP implements Transport<TCPDialEvents> {
       metrics: this.components.metrics,
       logger: this.components.logger
     })
+
+    this.listeners.add(listener)
+    listener.addEventListener('close', () => {
+      this.listeners.delete(listener)
+    }, { once: true })
+
+    return listener
   }
 
   /**

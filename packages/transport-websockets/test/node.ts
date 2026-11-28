@@ -3,6 +3,7 @@
 
 import fs from 'node:fs'
 import http from 'node:http'
+import net from 'node:net'
 import { defaultLogger } from '@libp2p/logger'
 import { getNetConfig } from '@libp2p/utils'
 import { multiaddr } from '@multiformats/multiaddr'
@@ -16,7 +17,7 @@ import Sinon from 'sinon'
 import { stubInterface } from 'sinon-ts'
 import { setGlobalDispatcher, Agent } from 'undici'
 import { webSockets } from '../src/index.ts'
-import type { Connection, Libp2pEvents, Listener, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
+import type { Connection, Libp2pEvents, Listener, Metrics, Transport, Upgrader, TLSCertificate } from '@libp2p/interface'
 import type { StubbedInstance } from 'sinon-ts'
 
 // allow connecting to self-signed certificates
@@ -559,5 +560,97 @@ describe('auto-tls (IPv6)', () => {
 
     expect(wsOptions.host).to.equal(wssOptions.host)
     expect(wsOptions.port).to.equal(wssOptions.port)
+  })
+})
+
+describe('metrics', () => {
+  const INBOUND_CONNECTIONS = 'libp2p_websockets_inbound_connections_total'
+  const cleanup: Array<() => Promise<any> | any> = []
+  let calculate: Map<string, () => Record<string, number>>
+  let metrics: Metrics
+  let ws: Transport
+
+  beforeEach(() => {
+    // like `@libp2p/prometheus-metrics`, keep the first group registered under
+    // a name and drop the `calculate` function of any later registration
+    calculate = new Map()
+    metrics = stubInterface<Metrics>()
+    ;(metrics.registerMetricGroup as any) = (name: string, opts: { calculate?(): Record<string, number> } = {}): any => {
+      if (opts.calculate != null && !calculate.has(name)) {
+        calculate.set(name, opts.calculate)
+      }
+
+      if (opts.calculate == null) {
+        return { update: () => {}, increment: () => {} }
+      }
+    }
+    ;(metrics.registerCounterGroup as any) = () => ({ increment: () => {} })
+
+    ws = webSockets()({
+      events: new TypedEventEmitter(),
+      logger: defaultLogger(),
+      metrics
+    })
+  })
+
+  afterEach(async () => {
+    await Promise.all(cleanup.map(fn => fn()))
+    cleanup.length = 0
+  })
+
+  async function listen (port: number): Promise<{ listener: Listener, address: string }> {
+    const listener = ws.createListener({
+      upgrader: stubInterface<Upgrader>({
+        upgradeInbound: Sinon.stub().resolves()
+      })
+    })
+    cleanup.push(async () => listener.close())
+    await listener.listen(multiaddr(`/ip4/127.0.0.1/tcp/${port}/ws`))
+
+    return { listener, address: `127.0.0.1:${port}` }
+  }
+
+  async function connect (address: string): Promise<void> {
+    const [host, port] = address.split(':')
+    const socket = net.connect({ host, port: Number(port) })
+    cleanup.unshift(() => socket.destroy())
+
+    await pEvent(socket, 'connect')
+
+    // the listener tracks the socket once it has seen the first byte
+    socket.write('G')
+  }
+
+  it('reports inbound connections of every listener', async () => {
+    const first = await listen(47391)
+    const second = await listen(47392)
+
+    await connect(first.address)
+    await connect(second.address)
+    await connect(second.address)
+
+    await pWaitFor(() => {
+      const counts = calculate.get(INBOUND_CONNECTIONS)?.() ?? {}
+      return counts[first.address] === 1 && counts[second.address] === 2
+    }, { timeout: 2000 })
+
+    expect(calculate.get(INBOUND_CONNECTIONS)?.()).to.deep.equal({
+      [first.address]: 1,
+      [second.address]: 2
+    })
+  })
+
+  it('stops reporting a listener once it is closed', async () => {
+    const first = await listen(47391)
+    const second = await listen(47392)
+
+    await connect(second.address)
+    await first.listener.close()
+
+    await pWaitFor(() => calculate.get(INBOUND_CONNECTIONS)?.()[second.address] === 1, { timeout: 2000 })
+
+    expect(calculate.get(INBOUND_CONNECTIONS)?.()).to.deep.equal({
+      [second.address]: 1
+    })
   })
 })

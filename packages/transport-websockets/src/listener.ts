@@ -76,20 +76,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     })
     this.wsServer.addListener('connection', this.onWsServerConnection.bind(this))
 
-    components.metrics?.registerMetricGroup('libp2p_websockets_inbound_connections_total', {
-      label: 'address',
-      help: 'Current active connections in WebSocket listener',
-      calculate: () => {
-        if (this.addr == null) {
-          return {}
-        }
-
-        return {
-          [this.addr]: this.sockets.size
-        }
-      }
-    })
-
     this.metrics = {
       status: components.metrics?.registerMetricGroup('libp2p_websockets_listener_status_info', {
         label: 'address',
@@ -349,6 +335,21 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
     this.safeDispatchEvent('close')
   }
 
+  /**
+   * Returns the number of active inbound connections keyed by listen address,
+   * for the `libp2p_websockets_inbound_connections_total` metric the transport
+   * reports on behalf of all of its listeners
+   */
+  getConnectionCounts (): Record<string, number> {
+    if (this.addr == null) {
+      return {}
+    }
+
+    return {
+      [this.addr]: this.sockets.size
+    }
+  }
+
   getAddrs (): Multiaddr[] {
     const address = this.server.address()
 
@@ -394,6 +395,6 @@ export class WebSocketListener extends TypedEventEmitter<ListenerEvents> impleme
   }
 }
 
-export function createListener (components: WebSocketListenerComponents, init: WebSocketListenerInit): Listener {
+export function createListener (components: WebSocketListenerComponents, init: WebSocketListenerInit): WebSocketListener {
   return new WebSocketListener(components, init)
 }
