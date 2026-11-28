@@ -1,6 +1,6 @@
 {
   "name": "@libp2p/webrtc",
-  "version": "7.0.3",
+  "version": "7.0.4",
   "description": "A libp2p transport using WebRTC connections",
   "license": "Apache-2.0 OR MIT",
   "homepage": "https://github.com/libp2p/js-libp2p/tree/main/packages/transport-webrtc#readme",
@@ -46,13 +46,13 @@
   },
   "dependencies": {
     "@chainsafe/is-ip": "^2.1.0",
-    "@libp2p/crypto": "^5.2.0",
+    "@libp2p/crypto": "^5.2.1",
     "@libp2p/interface": "^3.4.0",
-    "@libp2p/interface-internal": "^3.2.3",
-    "@libp2p/keychain": "^6.1.10",
-    "@libp2p/noise": "^17.0.8",
-    "@libp2p/peer-id": "^6.0.18",
-    "@libp2p/utils": "^7.4.6",
+    "@libp2p/interface-internal": "^3.2.4",
+    "@libp2p/keychain": "^6.1.11",
+    "@libp2p/noise": "^17.0.9",
+    "@libp2p/peer-id": "^6.0.19",
+    "@libp2p/utils": "^7.4.7",
     "@multiformats/multiaddr": "^13.0.3",
     "@multiformats/multiaddr-matcher": "^3.0.2",
     "@peculiar/webcrypto": "^2.0.0",
@@ -78,7 +78,7 @@
     "uint8arrays": "^6.1.1"
   },
   "devDependencies": {
-    "@libp2p/logger": "^6.2.16",
+    "@libp2p/logger": "^6.2.17",
     "@types/sinon": "^22.0.0",
     "aegir": "^48.1.1",
     "any-signal": "^4.1.1",

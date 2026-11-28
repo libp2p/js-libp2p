@@ -110,6 +110,28 @@
     * @libp2p/tcp bumped from ^9.0.14 to ^9.0.15
     * @libp2p/websockets bumped from ^8.0.14 to ^8.0.15
 
+## [3.5.3](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.5.2...libp2p-v3.5.3) (2026-11-28)
+
+
+### Bug Fixes
+
+* stop random walk loop when the node shuts down ([#3742](https://github.com/libp2p/js-libp2p/issues/3742)) ([19dc7bb](https://github.com/libp2p/js-libp2p/commit/19dc7bbd434082d19892feff97d6d4070e8c427b))
+
+
+### Dependencies
+
+* bump major versions from dependabot ([#3737](https://github.com/libp2p/js-libp2p/issues/3737)) ([848e264](https://github.com/libp2p/js-libp2p/commit/848e2648868514e54d7477b6b6a9d4cdcb5b44e8))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/crypto bumped from ^5.2.0 to ^5.2.1
+    * @libp2p/interface-internal bumped from ^3.2.3 to ^3.2.4
+    * @libp2p/logger bumped from ^6.2.16 to ^6.2.17
+    * @libp2p/multistream-select bumped from ^7.0.33 to ^7.0.34
+    * @libp2p/peer-collections bumped from ^7.0.33 to ^7.0.34
+    * @libp2p/peer-id bumped from ^6.0.18 to ^6.0.19
+    * @libp2p/peer-store bumped from ^12.0.33 to ^12.0.34
+    * @libp2p/utils bumped from ^7.4.6 to ^7.4.7
+
 ## [3.5.2](https://github.com/libp2p/js-libp2p/compare/libp2p-v3.5.1...libp2p-v3.5.2) (2026-11-20)
 
 

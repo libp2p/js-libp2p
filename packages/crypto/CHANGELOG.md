@@ -17,6 +17,13 @@
   * dependencies
     * @libp2p/interface bumped from ^1.0.2 to ^1.1.0
 
+## [5.2.1](https://github.com/libp2p/js-libp2p/compare/crypto-v5.2.0...crypto-v5.2.1) (2026-11-28)
+
+
+### Dependencies
+
+* bump major versions from dependabot ([#3737](https://github.com/libp2p/js-libp2p/issues/3737)) ([848e264](https://github.com/libp2p/js-libp2p/commit/848e2648868514e54d7477b6b6a9d4cdcb5b44e8))
+
 ## [5.2.0](https://github.com/libp2p/js-libp2p/compare/crypto-v5.1.25...crypto-v5.2.0) (2026-10-17)
 
 

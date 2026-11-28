@@ -36,6 +36,24 @@
     * @libp2p/logger bumped from ^4.0.2 to ^4.0.3
     * @libp2p/peer-id-factory bumped from ^4.0.1 to ^4.0.2
 
+## [7.4.7](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.6...utils-v7.4.7) (2026-11-28)
+
+
+### Bug Fixes
+
+* **utils:** wait for every drain in onDrain ([#3738](https://github.com/libp2p/js-libp2p/issues/3738)) ([15cea79](https://github.com/libp2p/js-libp2p/commit/15cea799590b2ecfe9792fd65d7a419589439e1b))
+
+
+### Dependencies
+
+* bump major versions from dependabot ([#3737](https://github.com/libp2p/js-libp2p/issues/3737)) ([848e264](https://github.com/libp2p/js-libp2p/commit/848e2648868514e54d7477b6b6a9d4cdcb5b44e8))
+* The following workspace dependencies were updated
+  * dependencies
+    * @libp2p/logger bumped from ^6.2.16 to ^6.2.17
+  * devDependencies
+    * @libp2p/crypto bumped from ^5.2.0 to ^5.2.1
+    * @libp2p/peer-id bumped from ^6.0.18 to ^6.0.19
+
 ## [7.4.6](https://github.com/libp2p/js-libp2p/compare/utils-v7.4.5...utils-v7.4.6) (2026-11-20)
 
 
