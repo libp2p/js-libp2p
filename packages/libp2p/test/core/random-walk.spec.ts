@@ -229,8 +229,8 @@ describe('random-walk', () => {
     peerRouting.getClosestPeers.callsFake(async function * (key, options?: AbortOptions) {
       calls++
 
-      // without this the buggy walk loop never yields to the event loop so the
-      // consumer's macrotask never runs and the test would hang instead of fail
+      // yield to the event loop once the walk is clearly spinning so a regression
+      // fails the call count assertion instead of hanging the test
       if (calls > 100) {
         await delay(10)
       }
